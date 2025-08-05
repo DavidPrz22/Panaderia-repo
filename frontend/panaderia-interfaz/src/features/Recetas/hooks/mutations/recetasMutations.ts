@@ -1,5 +1,5 @@
 import { useMutation } from "@tanstack/react-query";
-import { componentesRecetaSearch, registerReceta } from "../../api/api";
+import { componentesRecetaSearch, getRecetaDetalles, registerReceta } from "../../api/api";
 import { useRecetasContext } from "@/context/RecetasContext";
 import type { TRecetasFormSchema } from "../../schemas/schemas";
 
@@ -25,3 +25,12 @@ export const useRegisterRecetaMutation = () => {
         }
     })
 }
+
+export const useRecetaDetallesMutation = () => {
+    return useMutation({
+        mutationFn: (id: number) => getRecetaDetalles(id),
+        onSuccess: (data) => {
+            console.log(data)
+        }
+    })
+}   

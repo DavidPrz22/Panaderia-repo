@@ -77,3 +77,9 @@ export type watchSetValueProps = {
     watch: UseFormWatch<TRecetasFormSchema>,
     setValue: UseFormSetValue<TRecetasFormSchema>,
 }
+
+export type recetaItem = {
+    id: number,
+    nombre: string,
+    fecha_creacion: string,
+}

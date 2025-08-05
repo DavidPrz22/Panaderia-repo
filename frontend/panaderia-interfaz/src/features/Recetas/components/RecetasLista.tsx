@@ -12,11 +12,6 @@ export default function RecetasLista({isLoadingDetalles}: {isLoadingDetalles: bo
             headers={[
               "ID",
               "Nombre",
-              "SKU",
-              "Precio Promedio",
-              "Stock",
-              "Categoria",
-              "Punto de reorden",
               "Fecha de creación",
             ]}
           />

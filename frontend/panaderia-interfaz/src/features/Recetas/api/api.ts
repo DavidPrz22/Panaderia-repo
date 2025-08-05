@@ -20,3 +20,24 @@ export const registerReceta = async (data: TRecetasFormSchema) => {
         throw error
     }
 }
+
+export const getRecetas = async () => {
+    try {
+        const response = await apiClient.get('/api/recetas-detalles/')
+        console.log(response.data)
+        return response.data
+    } catch (error) {
+        console.error('Error fetching recetas:', error)
+        throw error
+    }
+}
+
+export const getRecetaDetalles = async (id: number) => {
+    try {
+        const response = await apiClient.get(`/api/recetas-detalles/${id}/get_receta_detalles/`)
+        return response.data
+    } catch (error) {
+        console.error('Error fetching receta detalles:', error)
+        throw error
+    }
+}

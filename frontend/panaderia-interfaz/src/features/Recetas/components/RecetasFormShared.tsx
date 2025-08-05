@@ -37,8 +37,6 @@ export default function RecetasFormShared(
     });
 
 
-
-
     useEffect(() => {
         if (!searchListActiveRecetas) return;
         const componentesRecetaContainer = document.getElementById("componentes-receta-container");

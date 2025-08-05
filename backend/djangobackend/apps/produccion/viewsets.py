@@ -1,16 +1,40 @@
 from rest_framework import viewsets, status
+from rest_framework.decorators import action
 from rest_framework.response import Response
-from .models import Recetas, RecetasDetalles, MateriasPrimas
+from .models import Recetas, RecetasDetalles
 from apps.produccion.serializers import RecetasSerializer, RecetasDetallesSerializer
-
-class RecetasDetallesViewSet(viewsets.ModelViewSet):
-    queryset = RecetasDetalles.objects.all()
-    serializer_class = RecetasDetallesSerializer
-
 
 class RecetasViewSet(viewsets.ModelViewSet):
     queryset = Recetas.objects.all()
     serializer_class = RecetasSerializer
+
+    @action(detail=True, methods=['get'])
+    def get_receta_detalles(self, request, *args, **kwargs):
+        receta_id = kwargs.get('pk')
+        receta_componentes = Recetas.objects.filter(id=receta_id)
+
+        data = []
+        for receta_componente in receta_componentes:
+            if receta_componente.componente_materia_prima:
+                data.append({
+                    'id': receta_componente.id,
+                    'nombre': receta_componente.componente_materia_prima.nombre,
+                    'tipo': 'Materia Prima',
+                    'producto_elaborado': receta_componente.producto_elaborado.nombre if receta_componente.producto_elaborado else None,
+                })
+            elif receta_componente.componente_producto_intermedio:
+                data.append({
+                    'id': receta_componente.id,
+                    'nombre': receta_componente.componente_producto_intermedio.nombre,
+                    'tipo': 'Producto Intermedio',
+                    'producto_elaborado': receta_componente.producto_elaborado.nombre if receta_componente.producto_elaborado else None,
+                })
+
+        return Response(data)
+
+class RecetasDetallesViewSet(viewsets.ModelViewSet):
+    queryset = RecetasDetalles.objects.all()
+    serializer_class = RecetasDetallesSerializer
 
     def create(self, request, *args, **kwargs):
     # Step 1: Manual validation of frontend data
@@ -24,25 +48,23 @@ class RecetasViewSet(viewsets.ModelViewSet):
         if not componentes or len(componentes) == 0:
             return Response({'error': 'Los componentes son requeridos'}, status=status.HTTP_400_BAD_REQUEST)
         
-        receta_detalle = RecetasDetalles.objects.create(nombre=nombre)
+        receta = Recetas.objects.create(nombre=nombre)
 
         recetas_created = []
         for componente in componentes:
             objecto_componente = {}
             if componente.get('materia_prima') == True:
                 objecto_componente = {
-                    'producto_elaborado': None,
                     'componente_materia_prima': componente['componente_id'],        
                     'componente_producto_intermedio': None,
-                    'receta_detalle': receta_detalle.id,
+                    'receta': receta.id,
                 }
                 
             elif componente.get('producto_intermedio') == True:
                 objecto_componente = {
-                    'producto_elaborado': None,
                     'componente_materia_prima': None,
                     'componente_producto_intermedio': componente['componente_id'],
-                    'receta_detalle': receta_detalle.id,
+                    'receta': receta.id,
                 }
             serializer = self.get_serializer(data=objecto_componente)
             if serializer.is_valid():
@@ -75,5 +97,4 @@ class RecetasViewSet(viewsets.ModelViewSet):
         #         recetas_created.append(serializer.data)
         #     else:
         #         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        
-        return Response(data, status=status.HTTP_400_BAD_REQUEST)
+

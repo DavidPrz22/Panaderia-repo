@@ -5,8 +5,8 @@ import type { componenteListadosReceta } from "@/features/Recetas/types/types";
 type RecetasContextType = {
   showRecetasDetalles: boolean;
   setShowRecetasDetalles: (show: boolean) => void;
-  recetaId: string | null;
-  setRecetaId: (id: string | null) => void;
+  recetaId: number | null;
+  setRecetaId: (id: number | null) => void;
   showRecetasForm: boolean;
   setShowRecetasForm: (show: boolean) => void;
   updateRegistro: boolean;
@@ -37,7 +37,7 @@ export const useRecetasContext = () => {
 export const RecetasProvider = ({ children }: { children: React.ReactNode }) => {
   const [showRecetasDetalles, setShowRecetasDetalles] = useState(false);
   const [showRecetasForm, setShowRecetasForm] = useState(false);
-  const [recetaId, setRecetaId] = useState<string | null>(null);
+  const [recetaId, setRecetaId] = useState<number | null>(null);
   const [updateRegistro, setUpdateRegistro] = useState(false);
   const [registroDelete, setRegistroDelete] = useState<boolean | null>(null);
 
