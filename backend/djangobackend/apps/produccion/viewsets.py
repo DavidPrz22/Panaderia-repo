@@ -11,7 +11,7 @@ class RecetasViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=['get'])
     def get_receta_detalles(self, request, *args, **kwargs):
         receta_id = kwargs.get('pk')
-        receta_componentes = Recetas.objects.filter(id=receta_id)
+        receta_componentes = RecetasDetalles.objects.filter(receta=receta_id)
 
         data = []
         for receta_componente in receta_componentes:
@@ -19,16 +19,14 @@ class RecetasViewSet(viewsets.ModelViewSet):
                 data.append({
                     'id': receta_componente.id,
                     'nombre': receta_componente.componente_materia_prima.nombre,
-                    'tipo': 'Materia Prima',
-                    'producto_elaborado': receta_componente.producto_elaborado.nombre if receta_componente.producto_elaborado else None,
-                })
+                    'tipo': 'Materia Prima'
+                    })
             elif receta_componente.componente_producto_intermedio:
                 data.append({
                     'id': receta_componente.id,
                     'nombre': receta_componente.componente_producto_intermedio.nombre,
-                    'tipo': 'Producto Intermedio',
-                    'producto_elaborado': receta_componente.producto_elaborado.nombre if receta_componente.producto_elaborado else None,
-                })
+                    'tipo': 'Producto Intermedio'
+                    })
 
         return Response(data)
 
@@ -55,16 +53,16 @@ class RecetasDetallesViewSet(viewsets.ModelViewSet):
             objecto_componente = {}
             if componente.get('materia_prima') == True:
                 objecto_componente = {
+                    'receta': receta.id,
                     'componente_materia_prima': componente['componente_id'],        
                     'componente_producto_intermedio': None,
-                    'receta': receta.id,
                 }
                 
             elif componente.get('producto_intermedio') == True:
                 objecto_componente = {
+                    'receta': receta.id,
                     'componente_materia_prima': None,
                     'componente_producto_intermedio': componente['componente_id'],
-                    'receta': receta.id,
                 }
             serializer = self.get_serializer(data=objecto_componente)
             if serializer.is_valid():

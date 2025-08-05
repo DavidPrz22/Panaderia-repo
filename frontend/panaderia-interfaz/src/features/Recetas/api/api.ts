@@ -13,7 +13,7 @@ export const componentesRecetaSearch = async (search: string) => {
 
 export const registerReceta = async (data: TRecetasFormSchema) => {
     try {
-        const response = await apiClient.post('/api/recetas/', data)
+        const response = await apiClient.post('/api/recetas-detalles/', data)
         return response.data
     } catch (error) {
         console.error('Error registering receta:', error)
@@ -23,7 +23,7 @@ export const registerReceta = async (data: TRecetasFormSchema) => {
 
 export const getRecetas = async () => {
     try {
-        const response = await apiClient.get('/api/recetas-detalles/')
+        const response = await apiClient.get('/api/recetas/')
         console.log(response.data)
         return response.data
     } catch (error) {
@@ -34,7 +34,7 @@ export const getRecetas = async () => {
 
 export const getRecetaDetalles = async (id: number) => {
     try {
-        const response = await apiClient.get(`/api/recetas-detalles/${id}/get_receta_detalles/`)
+        const response = await apiClient.get(`/api/recetas/${id}/get_receta_detalles/`)
         return response.data
     } catch (error) {
         console.error('Error fetching receta detalles:', error)

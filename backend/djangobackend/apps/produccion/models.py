@@ -7,21 +7,24 @@ from apps.users.models import User
 # Create your models here.
 
 class Recetas(models.Model):
-    nombre = models.CharField(max_length=255, null=False, blank=False, default='Receta')
+    nombre = models.CharField(max_length=255, null=True, blank=True)
     producto_elaborado = models.ForeignKey(ProductosElaborados, on_delete=models.CASCADE, related_name='recetas_como_producto_final', null=True, blank=True)
-    fecha_creacion = models.DateTimeField(auto_now_add=True)
+    fecha_creacion = models.DateTimeField(auto_now_add=True, null=True, blank=True)
 
     def __str__(self):
         return f"{self.nombre}"
 
 
 class RecetasDetalles(models.Model):
-    receta = models.ForeignKey(Recetas, on_delete=models.CASCADE, null=False, blank=False, related_name='componentes')
+    receta = models.ForeignKey(Recetas, on_delete=models.CASCADE, null=True, blank=True, related_name='componentes')
     componente_materia_prima = models.ForeignKey(MateriasPrimas, on_delete=models.CASCADE, null=True, blank=True)
     componente_producto_intermedio = models.ForeignKey(ProductosElaborados, on_delete=models.CASCADE, related_name='recetas_como_componente', null=True, blank=True)
 
     def __str__(self):
-        return f"{self.producto_elaborado.nombre} - {self.componente_materia_prima.nombre}"
+        if self.componente_materia_prima:
+            return f"{self.receta.nombre} - {self.componente_materia_prima.nombre}"
+        else:
+            return f"{self.receta.nombre} - {self.componente_producto_intermedio.nombre}"
 
     class Meta:
         constraints = [

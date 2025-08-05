@@ -7,13 +7,14 @@ class RecetasSerializer(serializers.ModelSerializer):
         fields = [
                     'id',
                     'producto_elaborado', 
-                    'componente_materia_prima', 
-                    'componente_producto_intermedio',
-                    'receta_detalle'
+                    'nombre',
+                    'fecha_creacion',
+                    'componentes'
                 ]
+        read_only_fields = ['componentes']
 
 
 class RecetasDetallesSerializer(serializers.ModelSerializer):
     class Meta:
         model = RecetasDetalles
-        fields = ['id', 'nombre', 'fecha_creacion']
+        fields = ['id', 'receta', 'componente_materia_prima', 'componente_producto_intermedio']
