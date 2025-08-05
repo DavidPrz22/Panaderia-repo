@@ -1,0 +1,9 @@
+@import "tailwindcss";
+
+@theme {
+  --sidebar-width: 250px;
+  --header-height: 70px;
+  --search-input-width: 400px;
+  --search-list-long-height: 450px;
+  --search-list-short-height: 70px;
+}

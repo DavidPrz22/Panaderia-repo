@@ -1,0 +1,79 @@
+import type { ReactNode } from "react";
+import type { TRecetasFormSchema } from "../schemas/schemas";
+import type { FieldErrors, Path, UseFormRegister, UseFormSetValue, UseFormWatch } from "react-hook-form";
+
+export type childrenType = {
+    children: ReactNode;
+}
+
+export type RecetasFormSharedProps = {
+    title: string;
+    isUpdate?: boolean;
+    initialData?: string;
+    onClose: () => void;
+    onSubmitSuccess: () => void;
+}
+
+export type RecetasFormInputProps = {
+    register?: UseFormRegister<TRecetasFormSchema>,
+    name?: Path<TRecetasFormSchema>,
+    typeInput: string, 
+    placeholder?: string
+}
+
+export type RecetasFormSearchInputProps = {
+    typeInput: string, 
+    placeholder?: string,
+    onChange?: (search: string) => void,
+}
+
+export type RecetasFormInputContainerProps = {
+    register?: UseFormRegister<TRecetasFormSchema>,
+    title: string,
+    name?: Path<TRecetasFormSchema>,
+    errors: FieldErrors<TRecetasFormSchema>,
+    inputType: string,
+    optional?: boolean,
+    recetaBusqueda?: boolean,
+    onChange?: (search: string) => void,
+}
+
+export type itemRecetasSearchList = {
+    id: string,
+    nombre: string,
+    tipo: 'MateriaPrima' | 'ProductoIntermedio';
+}
+
+
+export type RecetasSearchListContentProps = {
+    category: string;
+    items: itemRecetasSearchList [];
+}
+
+export type recetasSearchList = {
+    [categoria: string]: itemRecetasSearchList [];
+}
+
+export type componenteListadosReceta = {
+    id_componente: string,
+    componente_tipo: 'MateriaPrima' | 'ProductoIntermedio',
+    nombre: string,
+}
+
+export type componenteListadosRecetaProps = {
+    id_componente: string,
+    componente_tipo: 'MateriaPrima' | 'ProductoIntermedio',
+    nombre: string,
+}
+
+export type recetasComponentListProps = {
+    nombre: string,
+    type: 'MateriaPrima' | 'ProductoIntermedio',
+    id: string,
+    last?: boolean,
+}
+
+export type watchSetValueProps = {
+    watch: UseFormWatch<TRecetasFormSchema>,
+    setValue: UseFormSetValue<TRecetasFormSchema>,
+}
