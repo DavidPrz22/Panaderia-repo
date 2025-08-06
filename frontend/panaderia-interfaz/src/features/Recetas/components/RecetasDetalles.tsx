@@ -11,20 +11,40 @@ import {
 } from "@/assets/DashboardAssets";
 import { TitleDetails } from "@/components/TitleDetails";
 import { DetailsTable } from "./DetailsTable";
+import { useRecetaDetallesQuery } from "../hooks/queries/queries";
+import { useEffect } from "react";
 
 
 export default function RecetasDetalles() {
-  
   const { 
     showRecetasDetalles, 
     updateRegistro, 
     setUpdateRegistro, 
     setRegistroDelete, 
-    setShowRecetasDetalles, 
+    setShowRecetasDetalles,
+    setRecetaDetalles,
+    setRecetaDetallesLoading,
     registroDelete, 
-    recetaId } = useRecetasContext();
-  
-  if (!showRecetasDetalles) return <></>;
+    recetaId,
+    setEnabledRecetaDetalles,
+    enabledRecetaDetalles,
+  } = useRecetasContext();
+    
+    const { data: recetaDetalles, isSuccess, isLoading } = useRecetaDetallesQuery(recetaId!);
+
+    useEffect(() => {
+      if (recetaId && enabledRecetaDetalles && isSuccess) {
+        setRecetaDetalles(recetaDetalles || []);
+        setShowRecetasDetalles(true);
+        setEnabledRecetaDetalles(false);
+      }
+    }, [recetaId, enabledRecetaDetalles, isSuccess, recetaDetalles, setRecetaDetalles, setShowRecetasDetalles, setEnabledRecetaDetalles]);
+
+    useEffect(() => {
+      setRecetaDetallesLoading(isLoading);
+    }, [isLoading, setRecetaDetallesLoading]);
+
+    if (!showRecetasDetalles) return <></>;
 
   const handleCloseUpdate = () => {
     setShowRecetasDetalles(false);
@@ -84,7 +104,7 @@ export default function RecetasDetalles() {
         <TitleDetails>
           Detalles
         </TitleDetails>
-        <DetailsTable />
+        <DetailsTable detalles={recetaDetalles || []} />
       </div>
     </div>
   );

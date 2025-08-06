@@ -4,7 +4,7 @@ import FilterSearch from "./FilterSearch";
 
 export default function RecetasPanel() {
 
-  const { showRecetasForm, showRecetasDetalles } = useRecetasContext();
+  const { showRecetasForm, showRecetasDetalles, recetaDetallesLoading} = useRecetasContext();
 
   if (showRecetasForm || showRecetasDetalles) return <></>;
 
@@ -12,7 +12,7 @@ export default function RecetasPanel() {
     <>
       <div className="flex flex-col gap-6 h-full">
         <FilterSearch />
-        <RecetasLista isLoadingDetalles={false} />
+        <RecetasLista isLoadingDetalles={recetaDetallesLoading} />
       </div>
     </>
   );

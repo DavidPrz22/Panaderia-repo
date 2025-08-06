@@ -1,4 +1,4 @@
-import type { recetasSearchList } from "@/features/Recetas/types/types";
+import type { recetaDetallesItem, recetasSearchList } from "@/features/Recetas/types/types";
 import { createContext, useContext, useState, useRef } from "react";
 import type { componenteListadosReceta } from "@/features/Recetas/types/types";
 
@@ -22,6 +22,12 @@ type RecetasContextType = {
   setTimer: (timer: NodeJS.Timeout | null) => void;
   componentesListadosReceta: componenteListadosReceta[];
   setComponentesListadosReceta: (componentes: componenteListadosReceta[]) => void;
+  recetaDetalles: recetaDetallesItem[];
+  setRecetaDetalles: (recetaDetalles: recetaDetallesItem[]) => void;
+  recetaDetallesLoading: boolean;
+  setRecetaDetallesLoading: (loading: boolean) => void;
+  enabledRecetaDetalles: boolean;
+  setEnabledRecetaDetalles: (enable: boolean) => void;
 };
 
 const RecetasContext = createContext<RecetasContextType | null>(null);
@@ -49,6 +55,11 @@ export const RecetasProvider = ({ children }: { children: React.ReactNode }) => 
   const [componentesListadosReceta, setComponentesListadosReceta] = useState<componenteListadosReceta[]>([]);
   const [timer, setTimer] = useState<NodeJS.Timeout | null>(null);
 
+  const [recetaDetalles, setRecetaDetalles] = useState<recetaDetallesItem[]>([]);
+
+  const [recetaDetallesLoading, setRecetaDetallesLoading] = useState<boolean>(false);
+
+  const [enabledRecetaDetalles, setEnabledRecetaDetalles] = useState<boolean>(false);
 
   return <RecetasContext.Provider value={{ 
     showRecetasDetalles, setShowRecetasDetalles, 
@@ -61,5 +72,8 @@ export const RecetasProvider = ({ children }: { children: React.ReactNode }) => 
     searchListItems, setSearchListItems,
     timer, setTimer,
     componentesListadosReceta, setComponentesListadosReceta,
+    recetaDetalles, setRecetaDetalles,
+    recetaDetallesLoading, setRecetaDetallesLoading,
+    enabledRecetaDetalles, setEnabledRecetaDetalles,
   }}>{children}</RecetasContext.Provider>;
 };

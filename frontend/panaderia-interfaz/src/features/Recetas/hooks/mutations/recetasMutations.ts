@@ -1,7 +1,8 @@
-import { useMutation } from "@tanstack/react-query";
-import { componentesRecetaSearch, getRecetaDetalles, registerReceta } from "../../api/api";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { componentesRecetaSearch, registerReceta } from "../../api/api";
 import { useRecetasContext } from "@/context/RecetasContext";
 import type { TRecetasFormSchema } from "../../schemas/schemas";
+import { recetasQueryOptions } from "../queries/RecetasQueryOptions";
 
 export const useComponentesRecetaSearchMutation = () => {
     const { setSearchListItems } = useRecetasContext();
@@ -18,19 +19,21 @@ export const useComponentesRecetaSearchMutation = () => {
 
 export const useRegisterRecetaMutation = () => {    
     const { setComponentesListadosReceta } = useRecetasContext();
+    const queryClient = useQueryClient();
     return useMutation({
         mutationFn: (data: TRecetasFormSchema) => registerReceta(data),
-        onSuccess: () => {
+        onSuccess: async () => {
+            await queryClient.invalidateQueries({ queryKey: recetasQueryOptions.queryKey });
             setComponentesListadosReceta([]);
         }
     })
 }
 
-export const useRecetaDetallesMutation = () => {
-    return useMutation({
-        mutationFn: (id: number) => getRecetaDetalles(id),
-        onSuccess: (data) => {
-            console.log(data)
-        }
-    })
-}   
+// export const useRecetaDetallesMutation = () => {
+//     return useMutation({
+//         mutationFn: (id: number) => getRecetaDetalles(id),
+//         onSuccess: (data) => {
+//             console.log(data)
+//         }
+//     })
+// }   

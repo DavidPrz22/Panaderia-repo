@@ -12,6 +12,7 @@ import NoResults from "./NoResults";
 import RecetasSearchListContainer from "./RecetasSearchListContainer";
 import RecetasFormLoading from "./RecetasFormLoading";
 import RecetesComponentesListados from "./RecetesComponentesListados";
+import { PendingTubeSpinner } from "./PendingTubeSpinner";
 
 export default function RecetasFormShared(
     {
@@ -26,7 +27,7 @@ export default function RecetasFormShared(
     const { mutate: componentesRecetaSearchMutation, isPending: isComponentesRecetaSearchPending } 
     = useComponentesRecetaSearchMutation();
 
-    const { mutate: registerRecetaMutation  } = useRegisterRecetaMutation();
+    const { mutateAsync: registerRecetaMutation, isPending: isRegisterRecetaPending  } = useRegisterRecetaMutation();
     
     const { register, formState: { errors } , handleSubmit, watch, setValue} = useForm<TRecetasFormSchema>({
         resolver: zodResolver(recetasFormSchema),
@@ -68,7 +69,7 @@ export default function RecetasFormShared(
 
 
     const onSubmit = async (data: TRecetasFormSchema) => {
-        registerRecetaMutation(data);
+        await registerRecetaMutation(data);
         onSubmitSuccess();
     }
 
@@ -76,9 +77,12 @@ export default function RecetasFormShared(
         <form
           onSubmit={handleSubmit(onSubmit)}
           id="productos-intermedios-form"
-          className="relative "
         >
-          <div className="flex flex-col mx-8 mt-4 rounded-md border border-gray-200 shadow-md">
+  
+          <div className="flex flex-col mx-8 mt-4 rounded-md border border-gray-200 shadow-md relative">
+            {isRegisterRecetaPending && (
+              <PendingTubeSpinner size={28} extraClass="absolute bg-white opacity-50 w-full h-full" />
+            )} 
             <div className="p-5 font-[Roboto] text-lg font-semibold border-b border-gray-300 bg-gray-50 rounded-t-md">
               {title}
             </div>

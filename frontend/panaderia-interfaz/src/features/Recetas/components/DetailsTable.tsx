@@ -1,7 +1,9 @@
 import { DetailsField } from "@/components/DetailsField";
 import { DetailFieldValue } from "@/components/DetailFieldValue";
+import type { recetaDetallesItem } from "../types/types";
 
-export const DetailsTable = () => {
+export const DetailsTable = ({detalles}: {detalles: recetaDetallesItem[]}) => {
+  console.log(detalles);
   return (
     <div className="flex items-center gap-20">
           <div className="grid grid-rows-12 grid-cols-1 gap-2">

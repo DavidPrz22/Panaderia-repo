@@ -1,5 +1,6 @@
 import apiClient from '@/api/client';
 import type { TRecetasFormSchema } from '../schemas/schemas';
+import type { recetaDetallesItem, recetaItem } from '../types/types';
 
 export const componentesRecetaSearch = async (search: string) => {
     try {
@@ -21,7 +22,7 @@ export const registerReceta = async (data: TRecetasFormSchema) => {
     }
 }
 
-export const getRecetas = async () => {
+export const getRecetas = async () : Promise<recetaItem[]> => {
     try {
         const response = await apiClient.get('/api/recetas/')
         console.log(response.data)
@@ -32,7 +33,7 @@ export const getRecetas = async () => {
     }
 }
 
-export const getRecetaDetalles = async (id: number) => {
+export const getRecetaDetalles = async (id: number) : Promise<recetaDetallesItem[]> => {
     try {
         const response = await apiClient.get(`/api/recetas/${id}/get_receta_detalles/`)
         return response.data

@@ -1,6 +1,5 @@
 import { useRecetasContext } from "@/context/RecetasContext";
 import type { recetaItem } from "../types/types";
-import { useRecetaDetallesMutation } from "../hooks/mutations/recetasMutations";
 
 export const RecetaTablerow = ({
   item,
@@ -10,16 +9,16 @@ export const RecetaTablerow = ({
   index: number;
 }) => {
 
-  const { setShowRecetasDetalles, setRecetaId } = useRecetasContext();
-  const { mutate: getRecetaDetalles } = useRecetaDetallesMutation();
-  const setDetails = () => {
-    setShowRecetasDetalles(true);
+  const { setRecetaId, setEnabledRecetaDetalles } = useRecetasContext();
+
+  const activateRecetaDetalles = () => {
     setRecetaId(item.id);
-    getRecetaDetalles(item.id);
+    setEnabledRecetaDetalles(true);
   }
+
   return (
     <div
-      onClick={setDetails}
+      onClick={activateRecetaDetalles}
       key={item.id}
       className={`cursor-pointer hover:bg-gray-100 grid grid-cols-[1fr_1fr_1fr] justify-between items-center px-8 py-4 border-b border-gray-300 ${index % 2 == 0 ? "bg-white" : "bg-gray-50"} font-[Roboto] text-sm`}
     >

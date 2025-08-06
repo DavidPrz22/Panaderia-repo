@@ -83,3 +83,9 @@ export type recetaItem = {
     nombre: string,
     fecha_creacion: string,
 }
+
+export type recetaDetallesItem = {
+    id: number,
+    nombre: string,
+    tipo: 'Materia Prima' | 'Producto Intermedio',
+}
