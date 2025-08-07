@@ -12,23 +12,30 @@ class RecetasViewSet(viewsets.ModelViewSet):
     def get_receta_detalles(self, request, *args, **kwargs):
         receta_id = kwargs.get('pk')
         receta_componentes = RecetasDetalles.objects.filter(receta=receta_id)
+        receta_instance = Recetas.objects.get(id=receta_id)
+        
+        # Serialize the main recipe instance
+        receta_serializer = self.get_serializer(receta_instance)
 
-        data = []
+        lista_componentes = []
         for receta_componente in receta_componentes:
             if receta_componente.componente_materia_prima:
-                data.append({
+                lista_componentes.append({
                     'id': receta_componente.id,
                     'nombre': receta_componente.componente_materia_prima.nombre,
                     'tipo': 'Materia Prima'
                     })
             elif receta_componente.componente_producto_intermedio:
-                data.append({
+                lista_componentes.append({
                     'id': receta_componente.id,
                     'nombre': receta_componente.componente_producto_intermedio.nombre,
                     'tipo': 'Producto Intermedio'
                     })
 
-        return Response(data)
+        return Response({
+            'receta': receta_serializer.data,
+            'componentes': lista_componentes
+            })
 
 class RecetasDetallesViewSet(viewsets.ModelViewSet):
     queryset = RecetasDetalles.objects.all()

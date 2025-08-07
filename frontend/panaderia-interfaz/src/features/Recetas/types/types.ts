@@ -9,7 +9,7 @@ export type childrenType = {
 export type RecetasFormSharedProps = {
     title: string;
     isUpdate?: boolean;
-    initialData?: string;
+    initialData?: TRecetasFormSchema;
     onClose: () => void;
     onSubmitSuccess: () => void;
 }
@@ -84,8 +84,13 @@ export type recetaItem = {
     fecha_creacion: string,
 }
 
-export type recetaDetallesItem = {
+export type recetaDetallesItemComponente = {
     id: number,
     nombre: string,
     tipo: 'Materia Prima' | 'Producto Intermedio',
+}
+
+export type recetaDetallesItem = {
+    receta: recetaItem,
+    componentes: recetaDetallesItemComponente[],
 }

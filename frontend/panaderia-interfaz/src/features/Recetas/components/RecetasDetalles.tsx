@@ -9,6 +9,8 @@ import { TitleDetails } from "@/components/TitleDetails";
 import { DetailsTable } from "./DetailsTable";
 import { useRecetaDetallesQuery } from "../hooks/queries/queries";
 import { useEffect } from "react";
+import type { TRecetasFormSchema } from "../schemas/schemas";
+import type { componenteListadosReceta } from "../types/types";
 
 export default function RecetasDetalles() {
   const {
@@ -20,20 +22,22 @@ export default function RecetasDetalles() {
     setRecetaDetalles,
     setRecetaDetallesLoading,
     registroDelete,
+    recetaDetalles,
     recetaId,
     setEnabledRecetaDetalles,
     enabledRecetaDetalles,
+    setComponentesListadosReceta,
   } = useRecetasContext();
 
   const {
-    data: recetaDetalles,
+    data: recetaDetallesData,
     isSuccess,
     isLoading,
   } = useRecetaDetallesQuery(recetaId!);
 
   useEffect(() => {
     if (recetaId && enabledRecetaDetalles && isSuccess) {
-      setRecetaDetalles(recetaDetalles || []);
+      setRecetaDetalles(recetaDetallesData);
       setShowRecetasDetalles(true);
       setEnabledRecetaDetalles(false);
     }
@@ -41,7 +45,7 @@ export default function RecetasDetalles() {
     recetaId,
     enabledRecetaDetalles,
     isSuccess,
-    recetaDetalles,
+    recetaDetallesData,
     setRecetaDetalles,
     setShowRecetasDetalles,
     setEnabledRecetaDetalles,
@@ -51,7 +55,22 @@ export default function RecetasDetalles() {
     setRecetaDetallesLoading(isLoading);
   }, [isLoading, setRecetaDetallesLoading]);
 
+  useEffect(() => {
+    if (updateRegistro && recetaDetalles?.componentes) {
+      const ListedComponentes: componenteListadosReceta[] = recetaDetalles.componentes.map(({id, nombre, tipo}) => {
+        return {
+          id_componente: id.toString(),
+          nombre,
+          componente_tipo: tipo === 'Materia Prima' ? 'MateriaPrima' : 'ProductoIntermedio'
+        }
+      });
+      setComponentesListadosReceta(ListedComponentes);
+    }
+  }, [updateRegistro, recetaDetalles, setComponentesListadosReceta]);
+
   if (!showRecetasDetalles) return <></>;
+
+
   const handleCloseUpdate = () => {
     setShowRecetasDetalles(false);
     setUpdateRegistro(false);
@@ -62,9 +81,32 @@ export default function RecetasDetalles() {
   }
 
   if (updateRegistro) {
+
+    const componentesReceta = recetaDetalles?.componentes.map(({tipo, id}) => {
+
+        if (tipo === 'Materia Prima') {
+        return {
+          componente_id: id,
+          materia_prima: true
+        }
+      }
+      if (tipo === 'Producto Intermedio') {
+          return {
+            componente_id: id,
+            producto_intermedio: true
+          }
+        }
+    })
+
+    const formatData: TRecetasFormSchema = {
+      nombre: recetaDetalles!.receta.nombre,
+      componente_receta: componentesReceta as TRecetasFormSchema['componente_receta']
+    };
+
     return (
       <RecetasFormShared
         title="Editar Receta"
+        initialData={formatData}
         isUpdate={true}
         onClose={handleCloseUpdate}
         onSubmitSuccess={handleCloseUpdate}
@@ -75,7 +117,7 @@ export default function RecetasDetalles() {
   return (
     <div className="flex flex-col gap-5 mx-8 border border-gray-200 p-5 rounded-lg shadow-md h-full">
       <div className="flex justify-between items-center">
-        <Title>Text</Title>
+        <Title>{recetaDetalles?.receta.nombre}</Title>
         <div className="flex gap-2">
           <Button
             type="edit"
@@ -110,7 +152,7 @@ export default function RecetasDetalles() {
       {registroDelete && recetaId !== null && <DeleteComponent />}
       <div className="flex flex-col gap-6">
         <TitleDetails>Detalles de la receta</TitleDetails>
-        <DetailsTable detalles={recetaDetalles || []} />
+        <DetailsTable/>
       </div>
     </div>
   );

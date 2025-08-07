@@ -1,4 +1,4 @@
-import type { recetaDetallesItem } from "../types/types";
+import type { recetaDetallesItemComponente } from "../types/types";
 
 export const DetailsTableElement = ({
   header,
@@ -7,7 +7,7 @@ export const DetailsTableElement = ({
   attribute,
 }: {
   header: string;
-  data: recetaDetallesItem[];
+  data: recetaDetallesItemComponente[];
   attribute: string;
   right?: boolean;
 }) => {
@@ -24,7 +24,7 @@ export const DetailsTableElement = ({
                 className={`p-2 ${index === data.length - 1 ? "border-b-0" : "border-b"} border-gray-300`}
                 key={detalle.id}
               >
-                {detalle[attribute as keyof recetaDetallesItem]}
+                {detalle[attribute as keyof recetaDetallesItemComponente]}
               </div>
             );
           })}

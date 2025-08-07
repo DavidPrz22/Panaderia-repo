@@ -19,7 +19,8 @@ import { PendingTubeSpinner } from "./PendingTubeSpinner";
 
 export default function RecetasFormShared({
   title,
-  isUpdate: _isUpdate = false, // eslint-disable-line @typescript-eslint/no-unused-vars
+  isUpdate,
+  initialData,
   onClose,
   onSubmitSuccess,
 }: RecetasFormSharedProps) {
@@ -49,10 +50,14 @@ export default function RecetasFormShared({
     setValue,
   } = useForm<TRecetasFormSchema>({
     resolver: zodResolver(recetasFormSchema),
-    defaultValues: {
-      nombre: "",
-      componente_receta: [],
-    },
+    defaultValues: 
+      isUpdate && initialData ? {
+        nombre: initialData.nombre,
+        componente_receta: initialData.componente_receta,
+      } : {
+        nombre: "",
+        componente_receta: [],
+      }
   });
 
   useEffect(() => {

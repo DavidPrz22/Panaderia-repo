@@ -22,8 +22,8 @@ type RecetasContextType = {
   setTimer: (timer: NodeJS.Timeout | null) => void;
   componentesListadosReceta: componenteListadosReceta[];
   setComponentesListadosReceta: (componentes: componenteListadosReceta[]) => void;
-  recetaDetalles: recetaDetallesItem[];
-  setRecetaDetalles: (recetaDetalles: recetaDetallesItem[]) => void;
+  recetaDetalles: recetaDetallesItem | null;
+  setRecetaDetalles: (recetaDetalles: recetaDetallesItem | null) => void;
   recetaDetallesLoading: boolean;
   setRecetaDetallesLoading: (loading: boolean) => void;
   enabledRecetaDetalles: boolean;
@@ -55,7 +55,7 @@ export const RecetasProvider = ({ children }: { children: React.ReactNode }) => 
   const [componentesListadosReceta, setComponentesListadosReceta] = useState<componenteListadosReceta[]>([]);
   const [timer, setTimer] = useState<NodeJS.Timeout | null>(null);
 
-  const [recetaDetalles, setRecetaDetalles] = useState<recetaDetallesItem[]>([]);
+  const [recetaDetalles, setRecetaDetalles] = useState<recetaDetallesItem | null>(null);
 
   const [recetaDetallesLoading, setRecetaDetallesLoading] = useState<boolean>(false);
 

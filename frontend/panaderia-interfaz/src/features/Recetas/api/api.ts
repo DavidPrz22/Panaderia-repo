@@ -33,7 +33,7 @@ export const getRecetas = async () : Promise<recetaItem[]> => {
     }
 }
 
-export const getRecetaDetalles = async (id: number) : Promise<recetaDetallesItem[]> => {
+export const getRecetaDetalles = async (id: number) : Promise<recetaDetallesItem> => {
     try {
         const response = await apiClient.get(`/api/recetas/${id}/get_receta_detalles/`)
         return response.data
