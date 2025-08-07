@@ -1,63 +1,28 @@
-import { DetailsField } from "@/components/DetailsField";
-import { DetailFieldValue } from "@/components/DetailFieldValue";
 import type { recetaDetallesItem } from "../types/types";
+import { DetailsTableElement } from "./DetailsTableElement";
 
-export const DetailsTable = ({detalles}: {detalles: recetaDetallesItem[]}) => {
-  console.log(detalles);
+export const DetailsTable = ({
+  detalles,
+}: {
+  detalles: recetaDetallesItem[];
+}) => {
   return (
     <div className="flex items-center gap-20">
-          <div className="grid grid-rows-12 grid-cols-1 gap-2">
-            <DetailsField>Nombre</DetailsField>
-            <DetailsField>SKU</DetailsField>
-            <DetailsField>Punto de reorden</DetailsField>
-            <DetailsField>Unidad de medida</DetailsField>
-            <DetailsField>Categoría</DetailsField>
-            <DetailsField>Nombre de empaque</DetailsField>
-            <DetailsField>Cantidad de empaquete</DetailsField>
-            <DetailsField>Unidad de medida de empaque</DetailsField>
-            <DetailsField>Fecha de última actualización</DetailsField>
-            <DetailsField>Fecha de creación del registro</DetailsField>
-            <DetailsField>Fecha de modificación del registro</DetailsField>
-            <DetailsField>Descripción</DetailsField>
-          </div>
-          <div className="grid grid-rows-12 grid-cols-1 gap-2">
-            <DetailFieldValue>
-              Randon Text
-            </DetailFieldValue>
-            <DetailFieldValue>
-              Random Text
-            </DetailFieldValue>
-            <DetailFieldValue>
-              Random Text
-            </DetailFieldValue>
-            <DetailFieldValue>
-              Random Text
-            </DetailFieldValue>
-            <DetailFieldValue>
-              Random Text
-            </DetailFieldValue>
-            <DetailFieldValue>
-              Random Text
-            </DetailFieldValue>
-            <DetailFieldValue>
-              Random Text
-            </DetailFieldValue>
-            <DetailFieldValue>
-              Random Text
-            </DetailFieldValue>
-            <DetailFieldValue>
-              Random Text
-            </DetailFieldValue>
-            <DetailFieldValue>
-              Random Text
-            </DetailFieldValue>
-            <DetailFieldValue>
-              Random Text
-            </DetailFieldValue>
-            <DetailFieldValue>
-              Random Text
-            </DetailFieldValue>
-          </div>
-        </div>  
+      <div className="flex flex-col min-w-[650px] w-[50%] border border-gray-300 rounded-md">
+        <div className="grid grid-cols-2">
+          <DetailsTableElement
+            header="Componente"
+            data={detalles}
+            attribute="nombre"
+            right={true}
+          />
+          <DetailsTableElement
+            header="Tipo de componente"
+            data={detalles}
+            attribute="tipo"
+          />
+        </div>
+      </div>
+    </div>
   );
 };

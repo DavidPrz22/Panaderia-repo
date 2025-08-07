@@ -8,17 +8,20 @@ import { PendingTubeSpinner } from "./PendingTubeSpinner";
 import { NoDataMessage } from "./NoDataMessage";
 
 export const RecetasTableBody = () => {
-    const { data: recetas, isFetching } = useRecetasQuery();
-    const displayData: recetaItem[] = recetas || [];
+  const { data: recetas, isFetching } = useRecetasQuery();
+  const displayData: recetaItem[] = recetas || [];
 
   return (
     <>
-      { isFetching ? (
-        <PendingTubeSpinner size={28} extraClass="absolute bg-white opacity-50 h-full w-full" />
+      {isFetching ? (
+        <PendingTubeSpinner
+          size={28}
+          extraClass="absolute bg-white opacity-50 h-full w-full"
+        />
       ) : displayData.length > 0 ? (
         <RecetasTablerows data={displayData} />
       ) : (
-          <NoDataMessage />
+        <NoDataMessage />
       )}
     </>
   );
