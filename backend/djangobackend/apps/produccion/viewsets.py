@@ -1,7 +1,9 @@
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from .models import Recetas, RecetasDetalles
+from django.db import transaction
+from apps.produccion.models import Recetas, RecetasDetalles
+from apps.inventario.models import MateriasPrimas, ProductosElaborados
 from apps.produccion.serializers import RecetasSerializer, RecetasDetallesSerializer
 
 class RecetasViewSet(viewsets.ModelViewSet):
@@ -10,32 +12,119 @@ class RecetasViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=['get'])
     def get_receta_detalles(self, request, *args, **kwargs):
+        try:
+            receta_id = kwargs.get('pk')
+            receta_componentes = RecetasDetalles.objects.filter(receta=receta_id)
+            receta_instance = Recetas.objects.get(id=receta_id)
+            
+            # Serialize the main recipe instance
+            receta_serializer = self.get_serializer(receta_instance)
+
+            lista_componentes = []
+            for receta_componente in receta_componentes:
+                if receta_componente.componente_materia_prima:
+                    lista_componentes.append({
+                        'id': receta_componente.componente_materia_prima.id,
+                        'nombre': receta_componente.componente_materia_prima.nombre,
+                        'tipo': 'Materia Prima'
+                        })
+                elif receta_componente.componente_producto_intermedio:
+                    lista_componentes.append({
+                        'id': receta_componente.componente_producto_intermedio.id,
+                        'nombre': receta_componente.componente_producto_intermedio.nombre,
+                        'tipo': 'Producto Intermedio'
+                        })
+
+            return Response({
+                'receta': receta_serializer.data,
+                'componentes': lista_componentes
+                    })
+        except Recetas.DoesNotExist:
+            return Response({'error': 'Receta not found'}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    @action(detail=True, methods=['put'])
+    def update_receta(self, request, *args, **kwargs):
         receta_id = kwargs.get('pk')
-        receta_componentes = RecetasDetalles.objects.filter(receta=receta_id)
-        receta_instance = Recetas.objects.get(id=receta_id)
         
-        # Serialize the main recipe instance
-        receta_serializer = self.get_serializer(receta_instance)
+        try:
+            with transaction.atomic():
+                # Update the main recipe
+                receta_instance = Recetas.objects.get(id=receta_id)
+                serializer = self.get_serializer(receta_instance, data=request.data)
+                if serializer.is_valid():
+                    serializer.save()
+                else:
+                    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                    
+                componentes = request.data.get('componente_receta', [])
+                
+                # Get existing components
+                componentes_registrados_materia_prima = RecetasDetalles.objects.filter(
+                    receta=receta_instance, 
+                    componente_materia_prima__isnull=False
+                )
+                componentes_registrados_producto_intermedio = RecetasDetalles.objects.filter(
+                    receta=receta_instance, 
+                    componente_producto_intermedio__isnull=False
+                )
 
-        lista_componentes = []
-        for receta_componente in receta_componentes:
-            if receta_componente.componente_materia_prima:
-                lista_componentes.append({
-                    'id': receta_componente.id,
-                    'nombre': receta_componente.componente_materia_prima.nombre,
-                    'tipo': 'Materia Prima'
-                    })
-            elif receta_componente.componente_producto_intermedio:
-                lista_componentes.append({
-                    'id': receta_componente.id,
-                    'nombre': receta_componente.componente_producto_intermedio.nombre,
-                    'tipo': 'Producto Intermedio'
-                    })
+                # Get new components from request
+                componentes_update_materia_prima = [
+                    MateriasPrimas.objects.get(id=componente.get('componente_id')) 
+                    for componente in componentes 
+                    if componente.get('materia_prima') == True
+                ]
+                
+                componentes_update_producto_intermedio = [
+                    ProductosElaborados.objects.get(id=componente.get('componente_id')) 
+                    for componente in componentes 
+                    if componente.get('producto_intermedio') == True
+                ]
 
-        return Response({
-            'receta': receta_serializer.data,
-            'componentes': lista_componentes
-            })
+                # Delete components that are no longer in the update
+                for componente in componentes_registrados_materia_prima:
+                    if componente.componente_materia_prima not in componentes_update_materia_prima:
+                        componente.delete()
+                
+                for componente in componentes_registrados_producto_intermedio:
+                    if componente.componente_producto_intermedio not in componentes_update_producto_intermedio:
+                        componente.delete()
+
+                # Get existing component values for comparison
+                existing_materia_prima_ids = set(
+                    comp.componente_materia_prima.id for comp in componentes_registrados_materia_prima
+                )
+                existing_producto_intermedio_ids = set(
+                    comp.componente_producto_intermedio.id for comp in componentes_registrados_producto_intermedio
+                )
+
+                # Create new components that don't exist yet
+                for componente in componentes_update_materia_prima:
+                    if componente.id not in existing_materia_prima_ids:
+                        RecetasDetalles.objects.create(
+                            receta=receta_instance, 
+                            componente_materia_prima=componente
+                        )
+
+                for componente in componentes_update_producto_intermedio:
+                    if componente.id not in existing_producto_intermedio_ids:
+                        RecetasDetalles.objects.create(
+                            receta=receta_instance, 
+                            componente_producto_intermedio=componente
+                        )
+
+                return Response(serializer.data, status=status.HTTP_200_OK)
+                
+        except Recetas.DoesNotExist:
+            return Response({'error': 'Receta not found'}, status=status.HTTP_404_NOT_FOUND)
+        except (MateriasPrimas.DoesNotExist, ProductosElaborados.DoesNotExist):
+            return Response({'error': 'Component not found'}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
 
 class RecetasDetallesViewSet(viewsets.ModelViewSet):
     queryset = RecetasDetalles.objects.all()
@@ -45,6 +134,7 @@ class RecetasDetallesViewSet(viewsets.ModelViewSet):
     # Step 1: Manual validation of frontend data
         data = request.data
         nombre = data.get('nombre')
+        notas = data.get('notas', '')
         componentes = data.get('componente_receta', [])
         # Basic validation
         if not nombre:
@@ -53,7 +143,7 @@ class RecetasDetallesViewSet(viewsets.ModelViewSet):
         if not componentes or len(componentes) == 0:
             return Response({'error': 'Los componentes son requeridos'}, status=status.HTTP_400_BAD_REQUEST)
         
-        receta = Recetas.objects.create(nombre=nombre)
+        receta = Recetas.objects.create(nombre=nombre, notas=notas)
 
         recetas_created = []
         for componente in componentes:
@@ -78,28 +168,3 @@ class RecetasDetallesViewSet(viewsets.ModelViewSet):
             else:
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         return Response(recetas_created, status=status.HTTP_201_CREATED)
-
-        
-
-        # Step 2: Transform and create records
-        # recetas_created = []
-        
-        # for componente in componentes:
-        #     componente_id = componente.get('componente_id')
-        #     is_materia_prima = componente.get('materia_prima', False)
-            
-        #     # Transform to Django model format
-        #     receta_data = {
-        #         'nombre': nombre,
-        #         'componente_materia_prima': componente_id if is_materia_prima else None,
-        #         'componente_producto_intermedio': componente_id if not is_materia_prima else None,
-        #     }
-            
-        #     # Step 3: Use existing serializer for model validation
-        #     serializer = self.get_serializer(data=receta_data)
-        #     if serializer.is_valid():
-        #         receta = serializer.save()
-        #         recetas_created.append(serializer.data)
-        #     else:
-        #         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-

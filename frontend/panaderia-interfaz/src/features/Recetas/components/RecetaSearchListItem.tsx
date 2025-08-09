@@ -1,3 +1,4 @@
+
 import type {
   componenteListadosReceta,
   itemRecetasSearchList,
@@ -26,12 +27,12 @@ export default function RecetaSearchListItem({
     let componenteReceta;
     if (tipo === "MateriaPrima") {
       componenteReceta = {
-        componente_id: Number(id),
+        componente_id: id,
         materia_prima: true,
       };
     } else {
       componenteReceta = {
-        componente_id: Number(id),
+        componente_id: id,
         producto_intermedio: true,
       };
     }
@@ -42,7 +43,7 @@ export default function RecetaSearchListItem({
       componentesListadosReceta.find(
         (componente) => componente.id_componente === id,
       ) ||
-      currentFormData.find((item) => item.componente_id === Number(id))
+      currentFormData.find((item) => item.componente_id === id)
     ) {
       return;
     }
@@ -57,7 +58,7 @@ export default function RecetaSearchListItem({
   return (
     <li
       data-tipo={tipo}
-      id={id}
+      id={id.toString()}
       className={`py-2 px-6 border-b border-gray-300 hover:bg-gray-100 cursor-pointer `}
       onClick={() => handleClick()}
     >

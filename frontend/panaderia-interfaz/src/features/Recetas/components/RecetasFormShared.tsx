@@ -9,6 +9,7 @@ import { useEffect } from "react";
 import {
   useComponentesRecetaSearchMutation,
   useRegisterRecetaMutation,
+  useUpdateRecetaMutation,
 } from "../hooks/mutations/recetasMutations";
 
 import NoResults from "./NoResults";
@@ -30,6 +31,8 @@ export default function RecetasFormShared({
     searchListItems,
     timer,
     setTimer,
+    recetaId,
+    setComponentesListadosReceta,
   } = useRecetasContext();
 
   const {
@@ -43,6 +46,11 @@ export default function RecetasFormShared({
   } = useRegisterRecetaMutation();
 
   const {
+    mutateAsync: updateRecetaMutation,
+    isPending: isUpdateRecetaPending,
+  } = useUpdateRecetaMutation();
+
+  const {
     register,
     formState: { errors },
     handleSubmit,
@@ -54,9 +62,11 @@ export default function RecetasFormShared({
       isUpdate && initialData ? {
         nombre: initialData.nombre,
         componente_receta: initialData.componente_receta,
+        notas: initialData.notas,
       } : {
         nombre: "",
         componente_receta: [],
+        notas: "",
       }
   });
 
@@ -81,6 +91,7 @@ export default function RecetasFormShared({
 
   const handleCancelButtonClick = () => {
     onClose();
+    setComponentesListadosReceta([]);
   };
 
   const handleSearchListFocus = async (search: string) => {
@@ -95,14 +106,19 @@ export default function RecetasFormShared({
   };
 
   const onSubmit = async (data: TRecetasFormSchema) => {
-    await registerRecetaMutation(data);
+    if (isUpdate) {
+      await updateRecetaMutation({recetaId: recetaId!, data});
+    } else {
+      console.log(data);
+      await registerRecetaMutation(data);
+    }
     onSubmitSuccess();
   };
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} id="productos-intermedios-form">
       <div className="flex flex-col mx-8 mt-4 rounded-md border border-gray-200 shadow-md relative">
-        {isRegisterRecetaPending && (
+        {(isRegisterRecetaPending || isUpdateRecetaPending) && (
           <PendingTubeSpinner
             size={28}
             extraClass="absolute bg-white opacity-50 w-full h-full"
@@ -121,7 +137,6 @@ export default function RecetasFormShared({
               errors={errors}
               inputType="text"
             />
-
             <div
               className="flex flex-col relative"
               id="componentes-receta-container"
@@ -147,6 +162,15 @@ export default function RecetasFormShared({
                   !timer && <NoResults />
                 ))}
             </div>
+
+            <RecetasFormInputContainer
+              register={register}
+              title="Notas"
+              name="notas"
+              errors={errors}
+              inputType="textarea"
+              optional={true}
+            />
           </div>
 
           <div className="flex flex-col gap-2 border border-gray-300 py-5 px-7 rounded-md font-[Roboto]">

@@ -39,7 +39,7 @@ export type RecetasFormInputContainerProps = {
 }
 
 export type itemRecetasSearchList = {
-    id: string,
+    id: number,
     nombre: string,
     tipo: 'MateriaPrima' | 'ProductoIntermedio';
 }
@@ -55,13 +55,13 @@ export type recetasSearchList = {
 }
 
 export type componenteListadosReceta = {
-    id_componente: string,
+    id_componente: number,
     componente_tipo: 'MateriaPrima' | 'ProductoIntermedio',
     nombre: string,
 }
 
 export type componenteListadosRecetaProps = {
-    id_componente: string,
+    id_componente: number,
     componente_tipo: 'MateriaPrima' | 'ProductoIntermedio',
     nombre: string,
 }
@@ -69,7 +69,7 @@ export type componenteListadosRecetaProps = {
 export type recetasComponentListProps = {
     nombre: string,
     type: 'MateriaPrima' | 'ProductoIntermedio',
-    id: string,
+    id: number,
     last?: boolean,
 }
 
@@ -82,6 +82,8 @@ export type recetaItem = {
     id: number,
     nombre: string,
     fecha_creacion: string,
+    fecha_modificacion: string | null,
+    notas: string | null,
 }
 
 export type recetaDetallesItemComponente = {

@@ -9,9 +9,9 @@ class RecetasSerializer(serializers.ModelSerializer):
                     'producto_elaborado', 
                     'nombre',
                     'fecha_creacion',
-                    'componentes'
+                    'fecha_modificacion',
+                    'notas',
                 ]
-        read_only_fields = ['componentes']
 
 
 class RecetasDetallesSerializer(serializers.ModelSerializer):

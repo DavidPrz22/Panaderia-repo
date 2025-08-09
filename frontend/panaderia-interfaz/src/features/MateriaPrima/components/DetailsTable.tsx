@@ -59,6 +59,6 @@ export const DetailsTable = ({materiaprimaDetalles}: {materiaprimaDetalles: Mate
               {materiaprimaDetalles?.descripcion || "-"}
             </DetailFieldValue>
           </div>
-        </div>
+    </div>
   );
 };

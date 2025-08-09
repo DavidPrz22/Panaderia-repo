@@ -10,7 +10,9 @@ class Recetas(models.Model):
     nombre = models.CharField(max_length=255, null=True, blank=True)
     producto_elaborado = models.ForeignKey(ProductosElaborados, on_delete=models.CASCADE, related_name='recetas_como_producto_final', null=True, blank=True)
     fecha_creacion = models.DateTimeField(auto_now_add=True, null=True, blank=True)
-
+    fecha_modificacion = models.DateTimeField(auto_now=True, null=True, blank=True)
+    notas = models.TextField(max_length=250, null=True, blank=True)
+    
     def __str__(self):
         return f"{self.nombre}"
 
@@ -22,9 +24,9 @@ class RecetasDetalles(models.Model):
 
     def __str__(self):
         if self.componente_materia_prima:
-            return f"{self.receta.nombre} - {self.componente_materia_prima.nombre}"
+            return f"{self.receta.nombre} - {self.componente_materia_prima.nombre} - {self.componente_materia_prima.id}"
         else:
-            return f"{self.receta.nombre} - {self.componente_producto_intermedio.nombre}"
+            return f"{self.receta.nombre} - {self.componente_producto_intermedio.nombre} - {self.componente_producto_intermedio.id}"
 
     class Meta:
         constraints = [

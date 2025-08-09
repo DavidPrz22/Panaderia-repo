@@ -6,11 +6,13 @@ import Button from "@/components/Button";
 
 import { EditarIcon, BorrarIcon, CerrarIcon } from "@/assets/DashboardAssets";
 import { TitleDetails } from "@/components/TitleDetails";
-import { DetailsTable } from "./DetailsTable";
+import { DetailsComponentsTable } from "./DetailsComponentsTable";
 import { useRecetaDetallesQuery } from "../hooks/queries/queries";
 import { useEffect } from "react";
 import type { TRecetasFormSchema } from "../schemas/schemas";
 import type { componenteListadosReceta } from "../types/types";
+import { useDeleteRecetaMutation } from "../hooks/mutations/recetasMutations";
+import { DetailsTable } from "./DetailsTable";
 
 export default function RecetasDetalles() {
   const {
@@ -28,6 +30,11 @@ export default function RecetasDetalles() {
     enabledRecetaDetalles,
     setComponentesListadosReceta,
   } = useRecetasContext();
+
+  const {
+    mutateAsync: deleteRecetaMutation,
+    isPending: isDeleteRecetaPending,
+  } = useDeleteRecetaMutation();
 
   const {
     data: recetaDetallesData,
@@ -59,9 +66,9 @@ export default function RecetasDetalles() {
     if (updateRegistro && recetaDetalles?.componentes) {
       const ListedComponentes: componenteListadosReceta[] = recetaDetalles.componentes.map(({id, nombre, tipo}) => {
         return {
-          id_componente: id.toString(),
+          id_componente: id,
+          componente_tipo: tipo === 'Materia Prima' ? 'MateriaPrima' : 'ProductoIntermedio',
           nombre,
-          componente_tipo: tipo === 'Materia Prima' ? 'MateriaPrima' : 'ProductoIntermedio'
         }
       });
       setComponentesListadosReceta(ListedComponentes);
@@ -69,7 +76,6 @@ export default function RecetasDetalles() {
   }, [updateRegistro, recetaDetalles, setComponentesListadosReceta]);
 
   if (!showRecetasDetalles) return <></>;
-
 
   const handleCloseUpdate = () => {
     setShowRecetasDetalles(false);
@@ -100,7 +106,8 @@ export default function RecetasDetalles() {
 
     const formatData: TRecetasFormSchema = {
       nombre: recetaDetalles!.receta.nombre,
-      componente_receta: componentesReceta as TRecetasFormSchema['componente_receta']
+      componente_receta: componentesReceta as TRecetasFormSchema['componente_receta'],
+      notas: recetaDetalles!.receta.notas || "",
     };
 
     return (
@@ -149,10 +156,12 @@ export default function RecetasDetalles() {
         </div>
       </div>
 
-      {registroDelete && recetaId !== null && <DeleteComponent />}
+      {registroDelete && recetaId !== null && <DeleteComponent deleteFunction={() => deleteRecetaMutation(recetaId)
+        } isLoading={isDeleteRecetaPending} />}
       <div className="flex flex-col gap-6">
         <TitleDetails>Detalles de la receta</TitleDetails>
         <DetailsTable/>
+        <DetailsComponentsTable/>
       </div>
     </div>
   );

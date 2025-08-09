@@ -23,6 +23,7 @@ export const recetasFormSchema = z.object({
     componente_receta: z.array(componentesRecetasSchema).min(1, {
         message: "El componente es requerido",
     }),
+    notas: z.string().min(3, "Las notas no pueden tener menos de 3 caracteres").max(250, "Las notas no pueden tener más de 250 caracteres").optional(),
 })
 
 export type TRecetasFormSchema = z.infer<typeof recetasFormSchema>;
