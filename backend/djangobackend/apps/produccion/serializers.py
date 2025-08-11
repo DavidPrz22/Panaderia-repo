@@ -13,6 +13,11 @@ class RecetasSerializer(serializers.ModelSerializer):
                     'notas',
                 ]
 
+class RecetasSearchSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Recetas
+        fields = ['id', 'nombre']
+
 
 class RecetasDetallesSerializer(serializers.ModelSerializer):
     class Meta:

@@ -1,5 +1,5 @@
-import { createContext, useContext, useState } from "react";
-import type { childrenProp } from "@/features/ProductosIntermedios/types/types";
+import { createContext, useContext, useRef, useState } from "react";
+import type { CategoriaProductoIntermedio, childrenProp, recetasSearchItem, UnidadesDeMedida } from "@/features/ProductosIntermedios/types/types";
 
 type ProductosIntermediosContextType = {
     showProductosIntermediosForm: boolean;
@@ -12,6 +12,15 @@ type ProductosIntermediosContextType = {
     setRegistroDelete: (value: boolean) => void;
     productoIntermedioId: number | null;
     setProductoIntermedioId: (value: number | null) => void;
+    searchList: recetasSearchItem[];
+    setSearchList: (value: recetasSearchItem[]) => void;
+    searchTimer: NodeJS.Timeout | null;
+    setSearchTimer: (value: NodeJS.Timeout | null) => void;
+    recetaSearchInputRef: React.RefObject<HTMLInputElement | null>;
+    unidadesMedida: UnidadesDeMedida[];
+    setUnidadesMedida: (value: UnidadesDeMedida[]) => void;
+    categoriasProductoIntermedio: CategoriaProductoIntermedio[];
+    setCategoriasProductoIntermedio: (value: CategoriaProductoIntermedio[]) => void;
 };
 
 const ProductosIntermediosContext = createContext<ProductosIntermediosContextType | null>(null);
@@ -23,6 +32,16 @@ export const ProductosIntermediosProvider = ({ children }: childrenProp) => {
     const [updateRegistro, setUpdateRegistro] = useState(false);
     const [registroDelete, setRegistroDelete] = useState(false);
     const [productoIntermedioId, setProductoIntermedioId] = useState<number | null>(null);
+
+    const [searchList, setSearchList] = useState<recetasSearchItem[]>([]);
+    const [searchTimer, setSearchTimer] = useState<NodeJS.Timeout | null>(null);
+
+    const recetaSearchInputRef = useRef<HTMLInputElement | null>(null);
+
+
+    const [unidadesMedida, setUnidadesMedida] = useState<UnidadesDeMedida[]>([]);
+    const [categoriasProductoIntermedio, setCategoriasProductoIntermedio] = useState<CategoriaProductoIntermedio[]>([]);
+
   return <ProductosIntermediosContext.Provider value={{
     showProductosIntermediosForm,
     setShowProductosIntermediosForm,
@@ -34,6 +53,15 @@ export const ProductosIntermediosProvider = ({ children }: childrenProp) => {
     setRegistroDelete,
     productoIntermedioId,
     setProductoIntermedioId,
+    searchList,
+    setSearchList,
+    searchTimer,
+    setSearchTimer,
+    recetaSearchInputRef,
+    unidadesMedida,
+    setUnidadesMedida,
+    categoriasProductoIntermedio,
+    setCategoriasProductoIntermedio,
   }}>{children}</ProductosIntermediosContext.Provider>;
 };
 

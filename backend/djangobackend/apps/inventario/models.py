@@ -44,13 +44,13 @@ class ProductosElaborados(models.Model):
     nombre_producto = models.CharField(max_length=100, null=False, blank=False, unique=True)
     SKU = models.CharField(max_length=50, null=True, blank=True, unique=True)
     descripcion = models.TextField(max_length=255, null=True, blank=True)
-    tipo_manejo_venta = models.CharField(choices=[('UNIDAD', 'Unidad'), ('PESO_VOLUMEN', 'Peso_Volumen')], max_length=15, null=False, blank=False)
+    tipo_manejo_venta = models.CharField(choices=[('UNIDAD', 'Unidad'), ('PESO_VOLUMEN', 'Peso_Volumen')], max_length=15, null=True, blank=True)
     unidad_medida_nominal = models.ForeignKey(UnidadesDeMedida, on_delete=models.CASCADE, null=True, blank=True, related_name='productos_elaborados_unidad_nominal')
     #   Peso nominal o estándar del producto si se vende como una unidad contable.
     #   Por ejemplo, una "Torta Entera" (vendida por 'Unidad') puede tener un peso_nominal de 1.5 (kg).
     unidad_venta = models.ForeignKey(UnidadesDeMedida, on_delete=models.CASCADE, null=True, blank=True, related_name='productos_elaborados_unidad_venta') ## Si es por unidad, precio total. Si es por peso_volumen, sera el precio por unidad de volumen
     precio_venta_usd = models.DecimalField(max_digits=10, decimal_places=2, default=0)
-    punto_reorden = models.IntegerField(default=0, null=False, blank=False)
+    punto_reorden = models.DecimalField(max_digits=10, decimal_places=2, default=0, null=False, blank=False)
     stock_actual = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     categoria = models.ForeignKey(CategoriasProductosElaborados, on_delete=models.CASCADE)
     fecha_creacion_registro = models.DateField(auto_now_add=True)

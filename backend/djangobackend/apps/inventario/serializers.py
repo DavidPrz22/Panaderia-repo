@@ -1,9 +1,8 @@
 from rest_framework import serializers
-from .models import MateriasPrimas, LotesMateriasPrimas
+from .models import MateriasPrimas, LotesMateriasPrimas, ProductosElaborados
 from apps.core.models import UnidadesDeMedida, CategoriasMateriaPrima
 from apps.compras.serializers import ProveedoresSerializer
 from apps.compras.models import Proveedores
-from django.db.models import Sum
 
 class UnidadMedidaSerializer(serializers.ModelSerializer):
     class Meta:
@@ -242,4 +241,9 @@ class MateriaPrimaSerializer(serializers.ModelSerializer):
 
         return data
     
+
+class ProductosElaboradosSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProductosElaborados
+        fields = ['id', 'nombre_producto', 'SKU', 'descripcion', 'tipo_manejo_venta', 'unidad_medida_nominal', 'unidad_venta', 'precio_venta_usd', 'punto_reorden', 'stock_actual', 'categoria', 'fecha_creacion_registro', 'es_intermediario']
 

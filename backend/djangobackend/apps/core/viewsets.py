@@ -1,6 +1,6 @@
 from rest_framework import viewsets
-from .models import UnidadesDeMedida, CategoriasMateriaPrima
-from .serializers import UnidadMedidaSerializer, CategoriaMateriaPrimaSerializer
+from .models import UnidadesDeMedida, CategoriasMateriaPrima, CategoriasProductosElaborados
+from .serializers import UnidadMedidaSerializer, CategoriaMateriaPrimaSerializer, CategoriaProductoSerializer
 
 class UnidadMedidaViewSet(viewsets.ModelViewSet):
     queryset = UnidadesDeMedida.objects.all()
@@ -9,3 +9,11 @@ class UnidadMedidaViewSet(viewsets.ModelViewSet):
 class CategoriaMateriaPrimaViewSet(viewsets.ModelViewSet):
     queryset = CategoriasMateriaPrima.objects.all()
     serializer_class = CategoriaMateriaPrimaSerializer
+
+class CategoriaProductoIntermedioViewSet(viewsets.ModelViewSet):
+    queryset = CategoriasProductosElaborados.objects.filter(es_intermediario=True)
+    serializer_class = CategoriaProductoSerializer
+
+class CategoriaProductoElaboradoViewSet(viewsets.ModelViewSet):
+    queryset = CategoriasProductosElaborados.objects.filter(es_intermediario=False)
+    serializer_class = CategoriaProductoSerializer

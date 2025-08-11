@@ -4,7 +4,7 @@ from rest_framework.response import Response
 from django.db import transaction
 from apps.produccion.models import Recetas, RecetasDetalles
 from apps.inventario.models import MateriasPrimas, ProductosElaborados
-from apps.produccion.serializers import RecetasSerializer, RecetasDetallesSerializer
+from apps.produccion.serializers import RecetasSerializer, RecetasDetallesSerializer, RecetasSearchSerializer
 
 class RecetasViewSet(viewsets.ModelViewSet):
     queryset = Recetas.objects.all()
@@ -124,6 +124,19 @@ class RecetasViewSet(viewsets.ModelViewSet):
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+class RecetasSearchViewSet(viewsets.ModelViewSet):
+    queryset = Recetas.objects.all()
+    serializer_class = RecetasSearchSerializer
+
+    @action(detail=False, methods=['get'])
+    def list_recetas(self, request):
+        search_query = request.query_params.get('search')
+        if not search_query:
+            return Response(status=status.HTTP_400_BAD_REQUEST, data={"error": "El parámetro 'search' es requerido"})
+
+        recetas = Recetas.objects.filter(nombre__icontains=search_query)
+        serializer = self.get_serializer(recetas, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class RecetasDetallesViewSet(viewsets.ModelViewSet):

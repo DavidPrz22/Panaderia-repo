@@ -1,6 +1,6 @@
 from rest_framework import viewsets, status
-from apps.inventario.models import MateriasPrimas, LotesMateriasPrimas
-from apps.inventario.serializers import MateriaPrimaSerializer, LotesMateriaPrimaSerializer, MateriaPrimaSearchSerializer
+from apps.inventario.models import MateriasPrimas, LotesMateriasPrimas, ProductosElaborados     
+from apps.inventario.serializers import MateriaPrimaSerializer, LotesMateriaPrimaSerializer, MateriaPrimaSearchSerializer, ProductosElaboradosSerializer
 from django.db.models import Min, Sum
 from rest_framework.response import Response
 from rest_framework.decorators import action
@@ -117,3 +117,8 @@ class LotesMateriaPrimaViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_404_NOT_FOUND, 
                 data={"error": "Lote no encontrado"}
             )
+
+
+class ProductosElaboradosViewSet(viewsets.ModelViewSet):
+    queryset = ProductosElaborados.objects.all()
+    serializer_class = ProductosElaboradosSerializer

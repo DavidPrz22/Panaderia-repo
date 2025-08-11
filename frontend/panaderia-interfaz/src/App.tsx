@@ -9,7 +9,7 @@ import RecetasPage from "./pages/RecetasPage";
 // Create protected versions of your components
 const ProtectedLandingPage = withAuth(LandingPage);
 const ProtectedMateriaPrimaPage = withAuth(MateriaPrimaPage);
-
+const ProtectedProductosIntermediosPage = withAuth(ProductosIntermediosPage);
 function Logout() {
   // This will be handled by the AuthProvider's logout method
   const { logout } = useAuth();
@@ -33,7 +33,7 @@ function App() {
           />
           <Route
             path="/dashboard/productos-intermedios"
-            element={<ProductosIntermediosPage />}
+            element={<ProtectedProductosIntermediosPage />}
           />
           <Route
             path="/dashboard/recetas"
