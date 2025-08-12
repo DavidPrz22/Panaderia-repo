@@ -11,12 +11,34 @@ import {
 } from "@/assets/DashboardAssets";
 import { TitleDetails } from "@/components/TitleDetails";
 import { DetailsTable } from "./DetailsTable";
-
+import { useGetProductosIntermediosDetalles } from "../hooks/queries/queries";
+import { useEffect } from "react";
 
 export default function ProductosIntermediosDetalles() {
-  
-  const { showProductosIntermediosDetalles, updateRegistro, setUpdateRegistro, setRegistroDelete, setShowProductosIntermediosDetalles, registroDelete, productoIntermedioId } = useProductosIntermediosContext();
-  
+
+  const { showProductosIntermediosDetalles, updateRegistro, setUpdateRegistro, setRegistroDelete, setShowProductosIntermediosDetalles, registroDelete, productoIntermedioId, setProductoIntermediosDetalles, setIsLoadingDetalles, enabledDetalles, setEnabledDetalles } = useProductosIntermediosContext();
+
+  const { data: productoIntermediosDetalles, isLoading: isPendingDetalles, isSuccess: isSuccessDetalles } = useGetProductosIntermediosDetalles(productoIntermedioId!);
+
+  useEffect(() => {
+    if (isSuccessDetalles && productoIntermediosDetalles && enabledDetalles) {
+      setShowProductosIntermediosDetalles(true);
+      setProductoIntermediosDetalles(productoIntermediosDetalles);
+      setEnabledDetalles(false);
+    }
+  }, [productoIntermedioId, 
+    productoIntermediosDetalles, 
+    setProductoIntermediosDetalles, 
+    isSuccessDetalles, 
+    setIsLoadingDetalles, 
+    setShowProductosIntermediosDetalles,
+    setEnabledDetalles,
+    enabledDetalles]);
+
+  useEffect(() => {
+      setIsLoadingDetalles(isPendingDetalles);
+  }, [isPendingDetalles, setIsLoadingDetalles]);
+
   if (!showProductosIntermediosDetalles) return <></>;
 
   const handleCloseUpdate = () => {

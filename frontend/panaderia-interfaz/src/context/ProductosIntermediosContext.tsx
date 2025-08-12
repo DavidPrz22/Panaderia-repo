@@ -1,5 +1,5 @@
 import { createContext, useContext, useRef, useState } from "react";
-import type { CategoriaProductoIntermedio, childrenProp, recetasSearchItem, UnidadesDeMedida } from "@/features/ProductosIntermedios/types/types";
+import type { CategoriaProductoIntermedio, childrenProp, ProductosIntermedios, recetasSearchItem, UnidadesDeMedida } from "@/features/ProductosIntermedios/types/types";
 
 type ProductosIntermediosContextType = {
     showProductosIntermediosForm: boolean;
@@ -21,6 +21,12 @@ type ProductosIntermediosContextType = {
     setUnidadesMedida: (value: UnidadesDeMedida[]) => void;
     categoriasProductoIntermedio: CategoriaProductoIntermedio[];
     setCategoriasProductoIntermedio: (value: CategoriaProductoIntermedio[]) => void;
+    productoIntermediosDetalles: ProductosIntermedios | null;
+    setProductoIntermediosDetalles: (value: ProductosIntermedios | null) => void;
+    isLoadingDetalles: boolean;
+    setIsLoadingDetalles: (value: boolean) => void;
+    enabledDetalles: boolean;
+    setEnabledDetalles: (value: boolean) => void;
 };
 
 const ProductosIntermediosContext = createContext<ProductosIntermediosContextType | null>(null);
@@ -31,16 +37,20 @@ export const ProductosIntermediosProvider = ({ children }: childrenProp) => {
     const [showProductosIntermediosDetalles, setShowProductosIntermediosDetalles] = useState(false);
     const [updateRegistro, setUpdateRegistro] = useState(false);
     const [registroDelete, setRegistroDelete] = useState(false);
-    const [productoIntermedioId, setProductoIntermedioId] = useState<number | null>(null);
 
+    const [productoIntermedioId, setProductoIntermedioId] = useState<number | null>(null);
+    const [enabledDetalles, setEnabledDetalles] = useState(false);
     const [searchList, setSearchList] = useState<recetasSearchItem[]>([]);
     const [searchTimer, setSearchTimer] = useState<NodeJS.Timeout | null>(null);
 
     const recetaSearchInputRef = useRef<HTMLInputElement | null>(null);
 
-
     const [unidadesMedida, setUnidadesMedida] = useState<UnidadesDeMedida[]>([]);
     const [categoriasProductoIntermedio, setCategoriasProductoIntermedio] = useState<CategoriaProductoIntermedio[]>([]);
+
+    const [productoIntermediosDetalles, setProductoIntermediosDetalles] = useState<ProductosIntermedios | null>(null);
+    
+    const [isLoadingDetalles, setIsLoadingDetalles] = useState(false);
 
   return <ProductosIntermediosContext.Provider value={{
     showProductosIntermediosForm,
@@ -62,6 +72,12 @@ export const ProductosIntermediosProvider = ({ children }: childrenProp) => {
     setUnidadesMedida,
     categoriasProductoIntermedio,
     setCategoriasProductoIntermedio,
+    productoIntermediosDetalles,
+    setProductoIntermediosDetalles,
+    isLoadingDetalles,
+    setIsLoadingDetalles,
+    enabledDetalles,
+    setEnabledDetalles
   }}>{children}</ProductosIntermediosContext.Provider>;
 };
 

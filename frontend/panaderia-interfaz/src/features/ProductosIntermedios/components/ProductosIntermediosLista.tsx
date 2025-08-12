@@ -4,7 +4,7 @@ import { PITableBody } from "./PITableBody";
 import { PITableHeader } from "./PITableHeader";
 
 
-export default function MateriaPrimaLista({isLoadingDetalles}: {isLoadingDetalles: boolean}) {
+export default function ProductosIntermediosLista({isLoadingDetalles}: {isLoadingDetalles: boolean}) {
 
   return (
     <>
@@ -14,10 +14,9 @@ export default function MateriaPrimaLista({isLoadingDetalles}: {isLoadingDetalle
               "ID",
               "Nombre",
               "SKU",
-              "Precio Promedio",
               "Stock",
-              "Categoria",
               "Punto de reorden",
+              "Categoria",
               "Fecha de creación",
             ]}
           />

@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import MateriasPrimas, LotesMateriasPrimas, ProductosElaborados
+from .models import MateriasPrimas, LotesMateriasPrimas, ProductosIntermedios, ProductosFinales
 from apps.core.models import UnidadesDeMedida, CategoriasMateriaPrima
 from apps.compras.serializers import ProveedoresSerializer
 from apps.compras.models import Proveedores
@@ -242,8 +242,41 @@ class MateriaPrimaSerializer(serializers.ModelSerializer):
         return data
     
 
-class ProductosElaboradosSerializer(serializers.ModelSerializer):
+class ProductosIntermediosSerializer(serializers.ModelSerializer):
+    categoria_nombre = serializers.CharField(source='categoria.nombre_categoria', read_only=True)
     class Meta:
-        model = ProductosElaborados
-        fields = ['id', 'nombre_producto', 'SKU', 'descripcion', 'tipo_manejo_venta', 'unidad_medida_nominal', 'unidad_venta', 'precio_venta_usd', 'punto_reorden', 'stock_actual', 'categoria', 'fecha_creacion_registro', 'es_intermediario']
+        model = ProductosIntermedios
+        fields = [
+            'id', 
+            'nombre_producto', 
+            'SKU', 
+            'stock_actual', 
+            'punto_reorden', 
+            'categoria_nombre', 
+            'fecha_creacion_registro',
+            'descripcion',
+            'categoria', 
+        ]
+        extra_kwargs = {
+            'categoria': {'write_only': True},
+            'categoria_nombre': {'read_only': True},
+        }
 
+    def create(self, validated_data):
+
+        validated_data['es_intermediario'] = True
+        validated_data['precio_venta_usd'] = None
+        validated_data['tipo_manejo_venta'] = None
+        validated_data['unidad_venta'] = None
+
+        return ProductosIntermedios.objects.create(**validated_data)
+
+class ProductosFinalesSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProductosFinales
+        exclude = ['es_intermediario']
+    
+    def create(self, validated_data):
+
+        validated_data['es_intermediario'] = False
+        return ProductosFinales.objects.create(**validated_data)

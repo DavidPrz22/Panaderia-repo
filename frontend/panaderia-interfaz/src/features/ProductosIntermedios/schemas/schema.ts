@@ -22,8 +22,7 @@ export const productosIntermediosSchema = z.object({
         required_error: "La receta es requerida",
         invalid_type_error: "La receta no es válida",
       }).min(0, "La receta es requerida"),
-    descripcion: z.string().min(3, "La descripción debe tener al menos 3 caracteres").optional(),
-    es_intermediario: z.boolean().optional(),
+    descripcion: z.string().min(3, "La descripción debe tener al menos 3 caracteres").optional()
 });
 
 export type TProductosIntermediosSchema = z.infer<typeof productosIntermediosSchema>;

@@ -7,7 +7,7 @@ import type { CategoriaProductoIntermedio, UnidadesDeMedida } from "../types/typ
 
 export default function ProductosIntermediosPanel() {
 
-  const { showProductosIntermediosForm, showProductosIntermediosDetalles, setUnidadesMedida, setCategoriasProductoIntermedio } = useProductosIntermediosContext();
+  const { showProductosIntermediosForm, showProductosIntermediosDetalles, setUnidadesMedida, setCategoriasProductoIntermedio, isLoadingDetalles } = useProductosIntermediosContext();
 
   const [{ data: unidadesMedida }, { data: categoriasProductoIntermedio }] = useGetParametros();
   useEffect(() => {
@@ -23,7 +23,7 @@ export default function ProductosIntermediosPanel() {
     <>
       <div className="flex flex-col gap-6 h-full">
         <FilterSearch />
-        <ProductosIntermediosLista isLoadingDetalles={false} />
+        <ProductosIntermediosLista isLoadingDetalles={isLoadingDetalles} />
       </div>
     </>
   );

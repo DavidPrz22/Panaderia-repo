@@ -1,11 +1,7 @@
 import apiClient from "@/api/client";
 import type { TProductosIntermediosSchema } from "../schemas/schema";
-import type { CategoriaProductoIntermedio, recetasSearchItem, UnidadesDeMedida } from "../types/types";
+import type { CategoriaProductoIntermedio, ProductosIntermedios, recetasSearchItem, UnidadesDeMedida } from "../types/types";
 
-export const getProductosIntermedios = async () => {
-    const response = await apiClient.get("/productos-intermedios/");
-    return response.data;
-};
 
 export const createProductoIntermedio = async (productoIntermedio: TProductosIntermediosSchema) => {
     const response = await apiClient.post("/productos-intermedios/", productoIntermedio);
@@ -44,7 +40,28 @@ export const getCategoriasProductoIntermedio = async (): Promise<CategoriaProduc
 
 export const createProductosIntermedios = async (data: TProductosIntermediosSchema) => {
     try {
-        const response = await apiClient.post("/api/productoselaborados/", data);
+        const response = await apiClient.post("/api/productosintermedios/", data);
+        return response.data;
+    } catch (error) {
+        console.error(error);
+        return null;
+    }
+};
+
+export const getProductosIntermedios = async (): Promise<ProductosIntermedios[]> => {
+    try {
+        const response = await apiClient.get("/api/productosintermedios/");
+        return response.data;
+    } catch (error) {
+        console.error(error);
+        return [];
+    }
+};
+
+
+export const getProductosIntermediosDetalles = async (id: number) => {
+    try {
+        const response = await apiClient.get(`/api/productosintermedios/${id}/`);
         return response.data;
     } catch (error) {
         console.error(error);

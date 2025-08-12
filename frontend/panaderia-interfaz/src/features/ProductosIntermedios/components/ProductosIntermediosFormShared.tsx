@@ -140,13 +140,9 @@ export default function ProductosIntermediosFormShared({
     onClose();
   };
 
-  const onSubmit = (data: TProductosIntermediosSchema) => {
-
-    const dataToSend = {
-      ...data,
-      es_intermediario: true,
-    }
-    createProductosIntermedios(dataToSend)
+  const onSubmit = async (data: TProductosIntermediosSchema) => {
+    await createProductosIntermedios(data)
+    onSubmitSuccess()
   };
 
   return (

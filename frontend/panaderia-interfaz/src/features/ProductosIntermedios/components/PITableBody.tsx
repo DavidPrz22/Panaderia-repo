@@ -1,11 +1,14 @@
 // import { useEffect } from "react";
 // import { DoubleSpinner } from "@/assets";
 
+import { useGetProductosIntermedios } from "../hooks/queries/queries";
 import { PITableRows } from "./PITableRows";
+import { PendingTubeSpinner } from "./PendingTubeSpinner";
 
 export const PITableBody = () => {
 
-    const displayData: any[] = []
+    const { data: productosIntermedios, isPending } = useGetProductosIntermedios();
+    const displayData = productosIntermedios || [];
 
   const NoDataMessage = () => (
     <div className="flex justify-center h-full items-center font-bold text-2xl text-gray-700">
@@ -15,10 +18,17 @@ export const PITableBody = () => {
 
   return (
     <>
-      { displayData ? (
-        <PITableRows data={displayData} />
+      { isPending ? (
+        <PendingTubeSpinner
+            size={28}
+            extraClass="absolute bg-white opacity-50 w-full h-full"
+          />
       ) : (
-        <NoDataMessage />
+          displayData ? (
+          <PITableRows data={displayData} />
+        ) : (
+          <NoDataMessage />
+        )
       )}
     </>
   );

@@ -1,4 +1,4 @@
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { createProductosIntermedios, getRecetasSearch } from "../../api/api";
 import type { TProductosIntermediosSchema } from "../../schemas/schema";
 
@@ -15,10 +15,11 @@ export const useGetRecetasSearchMutation = () => {
 };  
 
 export const useCreateProductosIntermediosMutation = () => {
+    const queryClient = useQueryClient();
     return useMutation({
         mutationFn: (data: TProductosIntermediosSchema) => createProductosIntermedios(data),
-        onSuccess: (data) => {
-            console.log(data);
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["productos-intermedios"] });
         },
         onError: (error) => {
             console.log(error);

@@ -4,6 +4,7 @@ from django.db.models import Q, Sum
 from django.db.models.signals import post_save, post_delete
 from django.dispatch import receiver
 from django.utils import timezone
+from django.core.exceptions import ValidationError
 
 # Create your models here.
 class MateriasPrimas(models.Model):
@@ -49,7 +50,7 @@ class ProductosElaborados(models.Model):
     #   Peso nominal o estándar del producto si se vende como una unidad contable.
     #   Por ejemplo, una "Torta Entera" (vendida por 'Unidad') puede tener un peso_nominal de 1.5 (kg).
     unidad_venta = models.ForeignKey(UnidadesDeMedida, on_delete=models.CASCADE, null=True, blank=True, related_name='productos_elaborados_unidad_venta') ## Si es por unidad, precio total. Si es por peso_volumen, sera el precio por unidad de volumen
-    precio_venta_usd = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    precio_venta_usd = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     punto_reorden = models.DecimalField(max_digits=10, decimal_places=2, default=0, null=False, blank=False)
     stock_actual = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     categoria = models.ForeignKey(CategoriasProductosElaborados, on_delete=models.CASCADE)
@@ -62,9 +63,9 @@ class ProductosElaborados(models.Model):
     class Meta:
         constraints = [
             models.CheckConstraint(
-                check=(Q(es_intermediario=True) & Q(precio_venta_usd__isnull=False)) |
-                    (Q(es_intermediario=False) & Q(precio_venta_usd__isnull=True)),
-                name='intermediario_punto_reorden'
+                check=(Q(es_intermediario=True) & Q(precio_venta_usd__isnull=True) & Q(unidad_venta__isnull=True) & Q(tipo_manejo_venta__isnull=True))|
+                    (Q(es_intermediario=False) & Q(precio_venta_usd__isnull=False) & Q(unidad_venta__isnull=False) & Q(tipo_manejo_venta__isnull=False)),
+                name='intermedio_o_producto'
             )
         ]
 
@@ -83,6 +84,40 @@ class LotesProductosElaborados(models.Model):
 
     def __str__(self):
         return f"Lote {self.id} - {self.producto_elaborado.nombre_producto} - {self.stock_actual_lote}"
+
+
+class ProductosIntermediosManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().filter(es_intermediario=True)
+
+class ProductosFinalesManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().filter(es_intermediario=False)
+
+class ProductosIntermedios(ProductosElaborados):
+    objects = ProductosIntermediosManager()
+
+    class Meta:
+        proxy = True
+        verbose_name = "Producto Intermedio"
+        verbose_name_plural = "Productos Intermedios"
+
+    def clean(self):
+        if self.precio_venta_usd:
+            raise ValidationError("Productos intermedios no pueden tener precio de venta")
+
+
+class ProductosFinales(ProductosElaborados):
+    objects = ProductosFinalesManager()
+
+    class Meta:
+        proxy = True
+        verbose_name = "Producto Final"
+        verbose_name_plural = "Productos Finales"
+
+    def clean(self):
+        if not self.precio_venta_usd:
+            raise ValidationError("Productos finales deben tener precio de venta")
 
 
 class ProductosReventa(models.Model):

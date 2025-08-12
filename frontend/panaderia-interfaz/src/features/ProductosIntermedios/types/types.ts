@@ -60,3 +60,14 @@ export type CategoriaProductoIntermedio = {
 export type setValueProps = {
     setValue?: UseFormSetValue<TProductosIntermediosSchema>,
 }
+
+
+export type ProductosIntermedios = {
+    id: number;
+    nombre_producto: string;
+    SKU: string;
+    stock_actual: number;
+    punto_reorden: number;
+    categoria_nombre: string;
+    fecha_creacion_registro: string;
+}

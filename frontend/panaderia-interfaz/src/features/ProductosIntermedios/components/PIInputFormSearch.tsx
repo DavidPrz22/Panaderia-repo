@@ -48,6 +48,8 @@ export default function PIInputFormSearch({ setValue }: setValueProps) {
         };
 
         const timer = setTimeout(() => {
+            if (e.target.value.length === 0) return;
+
             getRecetasSearch(e.target.value, {
                 onSuccess: (data) => {
                     setSearchList(data);
