@@ -11,6 +11,7 @@ export interface SidebarCardProps {
   onclick: (e: MouseEvent<HTMLDivElement>) => void;
   link?: string;
   id?: string;
+  dropdown?: boolean;
 }
 
 export type childrenProp = {

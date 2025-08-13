@@ -8,14 +8,16 @@ export default function SidebarDropdownCard({
   icon,
   onclick,
   elements,
+  id,
 }: {
   children: React.ReactNode;
   icon: string;
   onclick: (e: React.MouseEvent<HTMLDivElement>) => void;
   elements: { url: string; title: string; id: string; link?: string }[];
-}) {
+  id: string;
+  }) {
   const [isOpen, setIsOpen] = useState(false);
-  const { setSelectedModule } = useAppContext();
+  const { setSelectedModule, isOpenDropdownCard, refDropdownCard } = useAppContext();
   const handleClick = (e: React.MouseEvent<HTMLDivElement>) => {
     setIsOpen((prev) => !prev);
     setSelectedModule(e.currentTarget.id);
@@ -23,7 +25,7 @@ export default function SidebarDropdownCard({
   };
 
   return (
-    <>
+    <div className="flex flex-col gap-1.5" id={id} data-id="DropdownContainer">
       <div
         className="flex items-center justify-between gap-2.5 p-2 hover:bg-white/20 transition-colors duration-200 ease-in-out rounded-md cursor-pointer"
         onClick={handleClick}
@@ -39,7 +41,7 @@ export default function SidebarDropdownCard({
         />
       </div>
       <div
-        className={`overflow-hidden transition-[max-height, opacity] duration-300 ease-in-out ${isOpen ? "max-h-[200px] opacity-100" : "max-h-0 opacity-0"}`}
+        className={`overflow-hidden transition-[max-height, opacity] duration-300 ease-in-out ${isOpen || (isOpenDropdownCard && refDropdownCard.current?.id === id) ?  "max-h-[200px] opacity-100" : "max-h-0 opacity-0"}`}
       >
         <div className="flex flex-col gap-2 pl-4.5">
           {elements.map((el, index) => {
@@ -47,9 +49,10 @@ export default function SidebarDropdownCard({
               <SidebarCard
                 key={index}
                 icon={el.url}
-                onclick={() => handleClick}
+                onclick={handleClick}
                 id={el.id}
                 link={el.link}
+                dropdown={true}
               >
                 {el.title}
               </SidebarCard>
@@ -57,6 +60,6 @@ export default function SidebarDropdownCard({
           })}
         </div>
       </div>
-    </>
+    </div>
   );
 }
