@@ -1,8 +1,6 @@
 import { useQueries, useQuery } from "@tanstack/react-query";
 import { productosIntermediosDetallesQueryOptions, productosIntermediosQueryOptions, unidadesMedidaQueryOptions } from "./queryOptions";
 import { categoriasProductoIntermedioQueryOptions } from "./queryOptions";
-import { useProductosIntermediosContext } from "@/context/ProductosIntermediosContext";
-
 
 
 export const useGetParametros = () => {
@@ -20,9 +18,8 @@ export const useGetProductosIntermedios = () => {
 };
 
 export const useGetProductosIntermediosDetalles = (id: number) => {
-    const { productoIntermedioId } = useProductosIntermediosContext();
     return useQuery({
         ...productosIntermediosDetallesQueryOptions(id), 
-        enabled: !!id && id === productoIntermedioId,
+        enabled: !!id
     });
 };
