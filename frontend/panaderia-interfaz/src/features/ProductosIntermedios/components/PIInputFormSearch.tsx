@@ -67,7 +67,7 @@ export default function PIInputFormSearch({ setValue }: setValueProps) {
         }
         setSearchList([]);
         if (setValue) {
-            setValue("receta", -1);
+            setValue("receta_relacionada", -1);
         }
     }
 

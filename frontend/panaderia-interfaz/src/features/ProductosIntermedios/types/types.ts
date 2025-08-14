@@ -71,3 +71,16 @@ export type ProductosIntermedios = {
     categoria_nombre: string;
     fecha_creacion_registro: string;
 }
+
+export type ProductosIntermediosDetalles = {
+    id: number;
+    nombre_producto: string;
+    SKU: string;
+    stock_actual: number;
+    punto_reorden: number;
+    categoria_nombre: string;
+    fecha_creacion_registro: string;
+    fecha_modificacion_registro: string;
+    descripcion: string;
+    receta_relacionada: string;
+}

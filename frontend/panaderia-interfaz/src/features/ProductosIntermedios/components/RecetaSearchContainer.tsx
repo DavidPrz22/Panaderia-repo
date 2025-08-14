@@ -24,7 +24,7 @@ export default function RecetaSearchContainer({
                     }
                     setSearchList([]);
                     if (setValue) {
-                        setValue("receta", item.id);
+                        setValue("receta_relacionada", item.id);
                     }
                 }}
                 >

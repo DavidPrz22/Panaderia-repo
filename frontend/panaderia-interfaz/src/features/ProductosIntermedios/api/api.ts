@@ -61,7 +61,8 @@ export const getProductosIntermedios = async (): Promise<ProductosIntermedios[]>
 
 export const getProductosIntermediosDetalles = async (id: number) => {
     try {
-        const response = await apiClient.get(`/api/productosintermedios/${id}/`);
+        const response = await apiClient.get(`/api/productosintermedios-detalles/${id}/`);
+        console.log(response.data);
         return response.data;
     } catch (error) {
         console.error(error);

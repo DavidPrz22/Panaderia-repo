@@ -55,6 +55,7 @@ class ProductosElaborados(models.Model):
     stock_actual = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     categoria = models.ForeignKey(CategoriasProductosElaborados, on_delete=models.CASCADE)
     fecha_creacion_registro = models.DateField(auto_now_add=True)
+    fecha_modificacion_registro = models.DateField(auto_now=True)
     es_intermediario = models.BooleanField(default=False, null=False)
 
     def __str__(self):

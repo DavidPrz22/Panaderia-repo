@@ -3,6 +3,7 @@ from .models import MateriasPrimas, LotesMateriasPrimas, ProductosIntermedios, P
 from apps.core.models import UnidadesDeMedida, CategoriasMateriaPrima
 from apps.compras.serializers import ProveedoresSerializer
 from apps.compras.models import Proveedores
+from apps.produccion.models import Recetas
 
 class UnidadMedidaSerializer(serializers.ModelSerializer):
     class Meta:
@@ -244,6 +245,8 @@ class MateriaPrimaSerializer(serializers.ModelSerializer):
 
 class ProductosIntermediosSerializer(serializers.ModelSerializer):
     categoria_nombre = serializers.CharField(source='categoria.nombre_categoria', read_only=True)
+    receta_relacionada = serializers.CharField(write_only=True, required=True)
+    
     class Meta:
         model = ProductosIntermedios
         fields = [
@@ -254,8 +257,8 @@ class ProductosIntermediosSerializer(serializers.ModelSerializer):
             'punto_reorden', 
             'categoria_nombre', 
             'fecha_creacion_registro',
-            'descripcion',
-            'categoria', 
+            'categoria',
+            'receta_relacionada',
         ]
         extra_kwargs = {
             'categoria': {'write_only': True},
@@ -263,20 +266,55 @@ class ProductosIntermediosSerializer(serializers.ModelSerializer):
         }
 
     def create(self, validated_data):
+        receta_relacionada = validated_data.pop('receta_relacionada', None)
 
         validated_data['es_intermediario'] = True
         validated_data['precio_venta_usd'] = None
         validated_data['tipo_manejo_venta'] = None
         validated_data['unidad_venta'] = None
 
-        return ProductosIntermedios.objects.create(**validated_data)
+        producto_intermedio = ProductosIntermedios.objects.create(**validated_data)
+
+        if receta_relacionada:
+            try:
+                receta = Recetas.objects.get(id=receta_relacionada)
+                receta.producto_elaborado = producto_intermedio
+                receta.save()
+            except Recetas.DoesNotExist:
+                pass
+        return producto_intermedio
 
 class ProductosFinalesSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProductosFinales
         exclude = ['es_intermediario']
-    
+
     def create(self, validated_data):
 
         validated_data['es_intermediario'] = False
         return ProductosFinales.objects.create(**validated_data)
+
+
+class ProductosIntermediosDetallesSerializer(serializers.ModelSerializer):
+    categoria_nombre = serializers.CharField(source='categoria.nombre_categoria', read_only=True)
+    receta_relacionada = serializers.SerializerMethodField()
+
+    class Meta:
+        model = ProductosIntermedios
+        fields = [
+            'id',
+            'nombre_producto',
+            'SKU',
+            'stock_actual',
+            'punto_reorden',
+            'categoria_nombre',
+            'fecha_creacion_registro',
+            'fecha_modificacion_registro',
+            'descripcion',
+            'receta_relacionada',
+        ]
+
+    def get_receta_relacionada(self, obj):
+
+        receta = Recetas.objects.get(producto_elaborado=obj.id)
+        return receta.nombre

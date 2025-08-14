@@ -18,7 +18,7 @@ export const productosIntermediosSchema = z.object({
         required_error: "La unidad de medida es requerida",
         invalid_type_error: "La unidad de medida no es válida",
       }).min(1, "La unidad de medida es requerida"),
-    receta: z.coerce.number({
+    receta_relacionada: z.coerce.number({
         required_error: "La receta es requerida",
         invalid_type_error: "La receta no es válida",
       }).min(0, "La receta es requerida"),

@@ -91,10 +91,10 @@ export default function ProductosIntermediosFormShared({
     if (isUpdate && initialData) {
       return (
         <>
-          <option value={initialData.unidad_medida}>
+          <option value={initialData.unidad_medida_nominal}>
             {
               unidadesMedida.find(
-                (unidad) => unidad.id === initialData.unidad_medida,
+                (unidad) => unidad.id === initialData.unidad_medida_nominal,
               )?.nombre_completo
             }
           </option>
@@ -106,7 +106,7 @@ export default function ProductosIntermediosFormShared({
               id: number;
               nombre_completo: string;
             }) =>
-              id !== initialData.unidad_medida && (
+              id !== initialData.unidad_medida_nominal && (
                 <option key={id} value={id}>
                   {nombre_completo}
                 </option>
@@ -179,7 +179,7 @@ export default function ProductosIntermediosFormShared({
             <PIFormInputContainer
               inputType="text"
               title="Receta"
-              name="receta"
+              name="receta_relacionada"
               register={register}
               errors={errors}
               search={true}

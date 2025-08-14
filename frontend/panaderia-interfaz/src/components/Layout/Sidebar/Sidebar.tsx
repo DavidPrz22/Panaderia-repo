@@ -32,9 +32,10 @@ export default function Sidebar() {
     refCard.current = currentTarget;
     refCard.current.classList.add("bg-white/20");
     setSelectedModule(currentId);
-    if (isOpenDropdownCard) {
-      setIsOpenDropdownCard(false);
-    }
+    
+  if (isOpenDropdownCard && !currentTarget.closest('[data-id="DropdownContainer"]')) {
+    setIsOpenDropdownCard(false);
+  }
   }
 
   return (

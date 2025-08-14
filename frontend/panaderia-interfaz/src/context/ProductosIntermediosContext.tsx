@@ -1,5 +1,5 @@
 import { createContext, useContext, useRef, useState } from "react";
-import type { CategoriaProductoIntermedio, childrenProp, ProductosIntermedios, recetasSearchItem, UnidadesDeMedida } from "@/features/ProductosIntermedios/types/types";
+import type { CategoriaProductoIntermedio, childrenProp, ProductosIntermediosDetalles, recetasSearchItem, UnidadesDeMedida } from "@/features/ProductosIntermedios/types/types";
 
 type ProductosIntermediosContextType = {
     showProductosIntermediosForm: boolean;
@@ -21,8 +21,8 @@ type ProductosIntermediosContextType = {
     setUnidadesMedida: (value: UnidadesDeMedida[]) => void;
     categoriasProductoIntermedio: CategoriaProductoIntermedio[];
     setCategoriasProductoIntermedio: (value: CategoriaProductoIntermedio[]) => void;
-    productoIntermediosDetalles: ProductosIntermedios | null;
-    setProductoIntermediosDetalles: (value: ProductosIntermedios | null) => void;
+    productoIntermediosDetalles: ProductosIntermediosDetalles | null;
+    setProductoIntermediosDetalles: (value: ProductosIntermediosDetalles | null) => void;
     isLoadingDetalles: boolean;
     setIsLoadingDetalles: (value: boolean) => void;
     enabledDetalles: boolean;
@@ -48,7 +48,7 @@ export const ProductosIntermediosProvider = ({ children }: childrenProp) => {
     const [unidadesMedida, setUnidadesMedida] = useState<UnidadesDeMedida[]>([]);
     const [categoriasProductoIntermedio, setCategoriasProductoIntermedio] = useState<CategoriaProductoIntermedio[]>([]);
 
-    const [productoIntermediosDetalles, setProductoIntermediosDetalles] = useState<ProductosIntermedios | null>(null);
+    const [productoIntermediosDetalles, setProductoIntermediosDetalles] = useState<ProductosIntermediosDetalles | null>(null);
     
     const [isLoadingDetalles, setIsLoadingDetalles] = useState(false);
 

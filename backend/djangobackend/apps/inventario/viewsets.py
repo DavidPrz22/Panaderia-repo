@@ -1,6 +1,6 @@
 from rest_framework import viewsets, status
-from apps.inventario.models import MateriasPrimas, LotesMateriasPrimas, ProductosElaborados, ProductosIntermedios, ProductosFinales     
-from apps.inventario.serializers import MateriaPrimaSerializer, LotesMateriaPrimaSerializer, MateriaPrimaSearchSerializer, ProductosIntermediosSerializer, ProductosFinalesSerializer
+from apps.inventario.models import MateriasPrimas, LotesMateriasPrimas, ProductosIntermedios, ProductosFinales     
+from apps.inventario.serializers import MateriaPrimaSerializer, LotesMateriaPrimaSerializer, MateriaPrimaSearchSerializer, ProductosIntermediosSerializer, ProductosFinalesSerializer, ProductosIntermediosDetallesSerializer
 from django.db.models import Min, Sum
 from rest_framework.response import Response
 from rest_framework.decorators import action
@@ -127,3 +127,8 @@ class ProductosIntermediosViewSet(viewsets.ModelViewSet):
 class ProductosFinalesViewSet(viewsets.ModelViewSet):
     queryset = ProductosFinales.objects.all()
     serializer_class = ProductosFinalesSerializer
+
+
+class ProductosIntermediosDetallesViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = ProductosIntermedios.objects.all()
+    serializer_class = ProductosIntermediosDetallesSerializer   
