@@ -12,7 +12,8 @@ export const DeleteComponent = ({
   deleteFunction: () => Promise<void>;
   isLoading: boolean;
 }) => {
-  const { setRegistroDelete, setShowRecetasDetalles, setRecetaId } = useRecetasContext();
+  const { setRegistroDelete, setShowRecetasDetalles, setRecetaId } =
+    useRecetasContext();
 
   const handleDelete = async () => {
     await deleteFunction();

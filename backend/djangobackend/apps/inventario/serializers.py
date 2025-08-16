@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import MateriasPrimas, LotesMateriasPrimas, ProductosIntermedios, ProductosFinales
+from .models import MateriasPrimas, LotesMateriasPrimas, ProductosIntermedios, ProductosFinales, ProductosElaborados
 from apps.core.models import UnidadesDeMedida, CategoriasMateriaPrima
 from apps.compras.serializers import ProveedoresSerializer
 from apps.compras.models import Proveedores
@@ -315,6 +315,19 @@ class ProductosIntermediosDetallesSerializer(serializers.ModelSerializer):
         ]
 
     def get_receta_relacionada(self, obj):
+        """Get the related recipe for a product."""
 
-        receta = Recetas.objects.get(producto_elaborado=obj.id)
-        return receta.nombre
+        try:
+            receta_relacionada = Recetas.objects.get(producto_elaborado=obj.id)
+            return {
+            'id': receta_relacionada.id,
+            'nombre': receta_relacionada.nombre,
+        }
+        except Recetas.DoesNotExist:
+            return False
+
+
+class ProductosElaboradosSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProductosElaborados
+        fields = "__all__"

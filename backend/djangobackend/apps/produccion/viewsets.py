@@ -124,6 +124,7 @@ class RecetasViewSet(viewsets.ModelViewSet):
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+
 class RecetasSearchViewSet(viewsets.ModelViewSet):
     queryset = Recetas.objects.all()
     serializer_class = RecetasSearchSerializer

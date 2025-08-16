@@ -7,18 +7,18 @@ import { RecetasProvider } from "@/context/RecetasContext";
 
 export default function RecetasPage() {
   return (
-  <RecetasProvider>
-    <Sidebar />
-    <HeaderBar />
-    <div className="flex min-h-screen">
-      <div className={`flex-1 ml-(--sidebar-width) pt-(--header-height)`}>
-        <main className="pt-7 pb-3 h-full">
-          <RecetasPanel />
-          <RecetasForma />
-          <RecetasDetalles />
-        </main>
+    <RecetasProvider>
+      <Sidebar />
+      <HeaderBar />
+      <div className="flex min-h-screen">
+        <div className={`flex-1 ml-(--sidebar-width) pt-(--header-height)`}>
+          <main className="pt-7 pb-3 h-full">
+            <RecetasPanel />
+            <RecetasForma />
+            <RecetasDetalles />
+          </main>
+        </div>
       </div>
-    </div>
-  </RecetasProvider>
+    </RecetasProvider>
   );
 }

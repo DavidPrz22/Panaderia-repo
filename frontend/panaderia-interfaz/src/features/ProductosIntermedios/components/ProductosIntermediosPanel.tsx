@@ -3,21 +3,33 @@ import ProductosIntermediosLista from "./ProductosIntermediosLista";
 import { useProductosIntermediosContext } from "@/context/ProductosIntermediosContext";
 import { useGetParametros } from "../hooks/queries/queries";
 import { useEffect } from "react";
-import type { CategoriaProductoIntermedio, UnidadesDeMedida } from "../types/types";
+import type {
+  CategoriaProductoIntermedio,
+  UnidadesDeMedida,
+} from "../types/types";
 
 export default function ProductosIntermediosPanel() {
+  const {
+    showProductosIntermediosForm,
+    showProductosIntermediosDetalles,
+    setUnidadesMedida,
+    setCategoriasProductoIntermedio,
+    isLoadingDetalles,
+  } = useProductosIntermediosContext();
 
-  const { showProductosIntermediosForm, showProductosIntermediosDetalles, setUnidadesMedida, setCategoriasProductoIntermedio, isLoadingDetalles } = useProductosIntermediosContext();
-
-  const [{ data: unidadesMedida }, { data: categoriasProductoIntermedio }] = useGetParametros();
+  const [{ data: unidadesMedida }, { data: categoriasProductoIntermedio }] =
+    useGetParametros();
   useEffect(() => {
-    if (unidadesMedida && categoriasProductoIntermedio) { 
+    if (unidadesMedida && categoriasProductoIntermedio) {
       setUnidadesMedida(unidadesMedida as UnidadesDeMedida[]);
-      setCategoriasProductoIntermedio(categoriasProductoIntermedio as CategoriaProductoIntermedio[]);
+      setCategoriasProductoIntermedio(
+        categoriasProductoIntermedio as CategoriaProductoIntermedio[],
+      );
     }
   }, [unidadesMedida, categoriasProductoIntermedio]);
 
-  if (showProductosIntermediosForm || showProductosIntermediosDetalles) return <></>;
+  if (showProductosIntermediosForm || showProductosIntermediosDetalles)
+    return <></>;
 
   return (
     <>

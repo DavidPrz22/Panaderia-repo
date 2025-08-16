@@ -19,23 +19,31 @@ import {
 } from "@/assets/DashboardAssets";
 
 export default function Sidebar() {
-  const { setSelectedModule, refCard, setIsOpenDropdownCard, isOpenDropdownCard } = useAppContext();
+  const {
+    setSelectedModule,
+    refCard,
+    setIsOpenDropdownCard,
+    isOpenDropdownCard,
+  } = useAppContext();
 
   function handleClick(e: React.MouseEvent<HTMLDivElement>) {
     if (refCard.current) {
       refCard.current.classList.remove("bg-white/20");
     }
-  
+
     const currentTarget = e.currentTarget;
     const currentId = currentTarget.id;
 
     refCard.current = currentTarget;
     refCard.current.classList.add("bg-white/20");
     setSelectedModule(currentId);
-    
-  if (isOpenDropdownCard && !currentTarget.closest('[data-id="DropdownContainer"]')) {
-    setIsOpenDropdownCard(false);
-  }
+
+    if (
+      isOpenDropdownCard &&
+      !currentTarget.closest('[data-id="DropdownContainer"]')
+    ) {
+      setIsOpenDropdownCard(false);
+    }
   }
 
   return (
@@ -109,11 +117,11 @@ export default function Sidebar() {
               Ventas
             </SidebarDropdownCard>
 
-            <SidebarCard 
-            icon={RecetasIcon} 
-            onclick={handleClick} 
-            id="recetas"
-            link="/dashboard/recetas"
+            <SidebarCard
+              icon={RecetasIcon}
+              onclick={handleClick}
+              id="recetas"
+              link="/dashboard/recetas"
             >
               Recetas
             </SidebarCard>

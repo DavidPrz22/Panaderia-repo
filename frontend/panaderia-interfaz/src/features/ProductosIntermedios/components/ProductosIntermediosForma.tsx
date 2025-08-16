@@ -1,10 +1,9 @@
 import { useProductosIntermediosContext } from "@/context/ProductosIntermediosContext";
 import ProductosIntermediosFormShared from "./ProductosIntermediosFormShared";
 
-
 export default function ProductosIntermediosForma() {
-
-  const { showProductosIntermediosForm, setShowProductosIntermediosForm } = useProductosIntermediosContext();
+  const { showProductosIntermediosForm, setShowProductosIntermediosForm } =
+    useProductosIntermediosContext();
 
   const handleSuccessClose = () => {
     setShowProductosIntermediosForm(false);

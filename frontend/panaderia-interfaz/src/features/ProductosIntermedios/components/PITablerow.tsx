@@ -8,12 +8,12 @@ export const PITableRow = ({
   item: ProductosIntermedios;
   index: number;
 }) => {
-
-  const { setProductoIntermedioId, setEnabledDetalles } = useProductosIntermediosContext();
+  const { setProductoIntermedioId, setEnabledDetalles } =
+    useProductosIntermediosContext();
   const setDetails = () => {
     setProductoIntermedioId(item.id || null);
     setEnabledDetalles(true);
-  }
+  };
   return (
     <div
       onClick={setDetails}

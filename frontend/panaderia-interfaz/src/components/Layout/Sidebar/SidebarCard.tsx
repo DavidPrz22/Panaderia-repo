@@ -10,12 +10,18 @@ export default function SidebarCard({
   dropdown,
 }: SidebarCardProps) {
   const navigate = useNavigate();
-  const { selectedModule, setIsOpenDropdownCard, isOpenDropdownCard, refDropdownCard } = useAppContext();
+  const {
+    selectedModule,
+    setIsOpenDropdownCard,
+    isOpenDropdownCard,
+    refDropdownCard,
+  } = useAppContext();
   function handleClick(e: React.MouseEvent<HTMLDivElement>) {
     if (dropdown) {
       setIsOpenDropdownCard(true);
-      const dropdownContainer = e.currentTarget.closest('[data-id="DropdownContainer"]');
-      console.log(dropdownContainer);
+      const dropdownContainer = e.currentTarget.closest(
+        '[data-id="DropdownContainer"]',
+      );
       if (dropdownContainer) {
         refDropdownCard.current = dropdownContainer as HTMLDivElement;
       }

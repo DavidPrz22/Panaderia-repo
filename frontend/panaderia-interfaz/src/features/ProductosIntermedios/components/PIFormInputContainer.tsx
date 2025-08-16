@@ -23,15 +23,13 @@ export const PIFormInputContainer = ({
         </div>
         <div className="basis-2/4">
           {search ? (
-            <PIInputFormSearch
-              setValue={setValue}
-            />
+            <PIInputFormSearch setValue={setValue} />
           ) : (
-          <PIInputForm
-            typeInput={inputType}
-            name={name}
-            register={register}
-          />
+            <PIInputForm
+              typeInput={inputType}
+              name={name}
+              register={register}
+            />
           )}
         </div>
       </div>

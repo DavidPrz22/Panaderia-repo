@@ -25,8 +25,7 @@ export default function RecetasComponentList({
     setComponentesListadosReceta(listaFiltrada);
 
     const listaFiltradaValidacion = watch("componente_receta")?.filter(
-      ({ componente_id }: { componente_id: number }) =>
-        componente_id !== id,
+      ({ componente_id }: { componente_id: number }) => componente_id !== id,
     );
     setValue("componente_receta", listaFiltradaValidacion || []);
   };

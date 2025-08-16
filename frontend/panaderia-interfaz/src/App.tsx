@@ -35,10 +35,7 @@ function App() {
             path="/dashboard/productos-intermedios"
             element={<ProtectedProductosIntermediosPage />}
           />
-          <Route
-            path="/dashboard/recetas"
-            element={<RecetasPage />}
-          />
+          <Route path="/dashboard/recetas" element={<RecetasPage />} />
         </Routes>
       </AuthProvider>
     </BrowserRouter>

@@ -1,6 +1,7 @@
 from rest_framework import viewsets, status
-from apps.inventario.models import MateriasPrimas, LotesMateriasPrimas, ProductosIntermedios, ProductosFinales     
-from apps.inventario.serializers import MateriaPrimaSerializer, LotesMateriaPrimaSerializer, MateriaPrimaSearchSerializer, ProductosIntermediosSerializer, ProductosFinalesSerializer, ProductosIntermediosDetallesSerializer
+from apps.inventario.models import MateriasPrimas, LotesMateriasPrimas, ProductosIntermedios, ProductosFinales, ProductosElaborados
+from apps.produccion.models import Recetas    
+from apps.inventario.serializers import MateriaPrimaSerializer, LotesMateriaPrimaSerializer, MateriaPrimaSearchSerializer, ProductosIntermediosSerializer, ProductosFinalesSerializer, ProductosIntermediosDetallesSerializer, ProductosElaboradosSerializer
 from django.db.models import Min, Sum
 from rest_framework.response import Response
 from rest_framework.decorators import action
@@ -117,6 +118,19 @@ class LotesMateriaPrimaViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_404_NOT_FOUND, 
                 data={"error": "Lote no encontrado"}
             )
+
+
+class ProductosElaboradosViewSet(viewsets.ModelViewSet):
+    queryset = ProductosElaborados.objects.all()
+    serializer_class = ProductosElaboradosSerializer
+
+    @action(detail=True, methods=['post'], url_path='clear-receta-relacionada')
+    def clear_receta_relacionada(self, request, *args, **kwargs):
+        producto_id = kwargs.get('pk')
+        receta = Recetas.objects.filter(producto_elaborado=producto_id)
+        if receta.exists():
+            receta.update(producto_elaborado=None)
+        return Response(status=status.HTTP_200_OK)
 
 
 class ProductosIntermediosViewSet(viewsets.ModelViewSet):

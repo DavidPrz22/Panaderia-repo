@@ -7,18 +7,18 @@ import { ProductosIntermediosProvider } from "@/context/ProductosIntermediosCont
 
 export default function ProductosIntermediosPage() {
   return (
-  <ProductosIntermediosProvider>
-    <Sidebar />
-    <HeaderBar />
-    <div className="flex min-h-screen">
-      <div className={`flex-1 ml-(--sidebar-width) pt-(--header-height)`}>
-        <main className="pt-7 pb-3 h-full">
-          <ProductosIntermediosPanel />
-          <ProductosIntermediosForma />
-          <ProductosIntermediosDetalles />
-        </main>
+    <ProductosIntermediosProvider>
+      <Sidebar />
+      <HeaderBar />
+      <div className="flex min-h-screen">
+        <div className={`flex-1 ml-(--sidebar-width) pt-(--header-height)`}>
+          <main className="pt-7 pb-3 h-full">
+            <ProductosIntermediosPanel />
+            <ProductosIntermediosForma />
+            <ProductosIntermediosDetalles />
+          </main>
+        </div>
       </div>
-    </div>
-  </ProductosIntermediosProvider>
+    </ProductosIntermediosProvider>
   );
 }

@@ -1,98 +1,103 @@
 import type { ReactNode } from "react";
 import type { TRecetasFormSchema } from "../schemas/schemas";
-import type { FieldErrors, Path, UseFormRegister, UseFormSetValue, UseFormWatch } from "react-hook-form";
+import type {
+  FieldErrors,
+  Path,
+  UseFormRegister,
+  UseFormSetValue,
+  UseFormWatch,
+} from "react-hook-form";
 
 export type childrenType = {
-    children: ReactNode;
-}
+  children: ReactNode;
+};
 
 export type RecetasFormSharedProps = {
-    title: string;
-    isUpdate?: boolean;
-    initialData?: TRecetasFormSchema;
-    onClose: () => void;
-    onSubmitSuccess: () => void;
-}
+  title: string;
+  isUpdate?: boolean;
+  initialData?: TRecetasFormSchema;
+  onClose: () => void;
+  onSubmitSuccess: () => void;
+};
 
 export type RecetasFormInputProps = {
-    register?: UseFormRegister<TRecetasFormSchema>,
-    name?: Path<TRecetasFormSchema>,
-    typeInput: string, 
-    placeholder?: string
-}
+  register?: UseFormRegister<TRecetasFormSchema>;
+  name?: Path<TRecetasFormSchema>;
+  typeInput: string;
+  placeholder?: string;
+};
 
 export type RecetasFormSearchInputProps = {
-    typeInput: string, 
-    placeholder?: string,
-    onChange?: (search: string) => void,
-}
+  typeInput: string;
+  placeholder?: string;
+  onChange?: (search: string) => void;
+};
 
 export type RecetasFormInputContainerProps = {
-    register?: UseFormRegister<TRecetasFormSchema>,
-    title: string,
-    name?: Path<TRecetasFormSchema>,
-    errors: FieldErrors<TRecetasFormSchema>,
-    inputType: string,
-    optional?: boolean,
-    recetaBusqueda?: boolean,
-    onChange?: (search: string) => void,
-}
+  register?: UseFormRegister<TRecetasFormSchema>;
+  title: string;
+  name?: Path<TRecetasFormSchema>;
+  errors: FieldErrors<TRecetasFormSchema>;
+  inputType: string;
+  optional?: boolean;
+  recetaBusqueda?: boolean;
+  onChange?: (search: string) => void;
+};
 
 export type itemRecetasSearchList = {
-    id: number,
-    nombre: string,
-    tipo: 'MateriaPrima' | 'ProductoIntermedio';
-}
-
+  id: number;
+  nombre: string;
+  tipo: "MateriaPrima" | "ProductoIntermedio";
+};
 
 export type RecetasSearchListContentProps = {
-    category: string;
-    items: itemRecetasSearchList [];
-}
+  category: string;
+  items: itemRecetasSearchList[];
+};
 
 export type recetasSearchList = {
-    [categoria: string]: itemRecetasSearchList [];
-}
+  [categoria: string]: itemRecetasSearchList[];
+};
 
 export type componenteListadosReceta = {
-    id_componente: number,
-    componente_tipo: 'MateriaPrima' | 'ProductoIntermedio',
-    nombre: string,
-}
+  id_componente: number;
+  componente_tipo: "MateriaPrima" | "ProductoIntermedio";
+  nombre: string;
+};
 
 export type componenteListadosRecetaProps = {
-    id_componente: number,
-    componente_tipo: 'MateriaPrima' | 'ProductoIntermedio',
-    nombre: string,
-}
+  id_componente: number;
+  componente_tipo: "MateriaPrima" | "ProductoIntermedio";
+  nombre: string;
+};
 
 export type recetasComponentListProps = {
-    nombre: string,
-    type: 'MateriaPrima' | 'ProductoIntermedio',
-    id: number,
-    last?: boolean,
-}
+  nombre: string;
+  type: "MateriaPrima" | "ProductoIntermedio";
+  id: number;
+  last?: boolean;
+};
 
 export type watchSetValueProps = {
-    watch: UseFormWatch<TRecetasFormSchema>,
-    setValue: UseFormSetValue<TRecetasFormSchema>,
-}
+  watch: UseFormWatch<TRecetasFormSchema>;
+  setValue: UseFormSetValue<TRecetasFormSchema>;
+};
 
 export type recetaItem = {
-    id: number,
-    nombre: string,
-    fecha_creacion: string,
-    fecha_modificacion: string | null,
-    notas: string | null,
-}
+  id: number;
+  nombre: string;
+  fecha_creacion: string;
+  fecha_modificacion: string | null;
+  notas: string | null;
+};
 
 export type recetaDetallesItemComponente = {
-    id: number,
-    nombre: string,
-    tipo: 'Materia Prima' | 'Producto Intermedio',
-}
+  id: number;
+  nombre: string;
+  tipo: "Materia Prima" | "Producto Intermedio";
+};
 
 export type recetaDetallesItem = {
-    receta: recetaItem,
-    componentes: recetaDetallesItemComponente[],
-}
+  receta: recetaItem;
+  componentes: recetaDetallesItemComponente[];
+};

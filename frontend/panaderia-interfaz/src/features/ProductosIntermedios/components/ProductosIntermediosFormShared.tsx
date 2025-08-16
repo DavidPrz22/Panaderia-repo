@@ -36,7 +36,8 @@ export default function ProductosIntermediosFormShared({
   const { unidadesMedida, categoriasProductoIntermedio } =
     useProductosIntermediosContext();
 
-  const { mutateAsync: createProductosIntermedios, isPending } = useCreateProductosIntermediosMutation();
+  const { mutateAsync: createProductosIntermedios, isPending } =
+    useCreateProductosIntermediosMutation();
 
   function renderCategoriasProductoIntermedio() {
     if (isUpdate && initialData) {
@@ -141,17 +142,14 @@ export default function ProductosIntermediosFormShared({
   };
 
   const onSubmit = async (data: TProductosIntermediosSchema) => {
-    await createProductosIntermedios(data)
-    onSubmitSuccess()
+    await createProductosIntermedios(data);
+    onSubmitSuccess();
   };
 
   return (
-    <form
-      onSubmit={handleSubmit(onSubmit)}
-      id="productos-intermedios-form"
-    >
+    <form onSubmit={handleSubmit(onSubmit)} id="productos-intermedios-form">
       <div className="flex flex-col mx-8 mt-4 rounded-md border border-gray-200 shadow-md relative">
-        {(isPending) && (
+        {isPending && (
           <PendingTubeSpinner
             size={28}
             extraClass="absolute bg-white opacity-50 w-full h-full"

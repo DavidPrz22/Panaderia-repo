@@ -6,9 +6,9 @@ import { PITableRows } from "./PITableRows";
 import { PendingTubeSpinner } from "./PendingTubeSpinner";
 
 export const PITableBody = () => {
-
-    const { data: productosIntermedios, isPending } = useGetProductosIntermedios();
-    const displayData = productosIntermedios || [];
+  const { data: productosIntermedios, isFetching } =
+    useGetProductosIntermedios();
+  const displayData = productosIntermedios || [];
 
   const NoDataMessage = () => (
     <div className="flex justify-center h-full items-center font-bold text-2xl text-gray-700">
@@ -18,17 +18,15 @@ export const PITableBody = () => {
 
   return (
     <>
-      { isPending ? (
+      {isFetching ? (
         <PendingTubeSpinner
-            size={28}
-            extraClass="absolute bg-white opacity-50 w-full h-full"
-          />
+          size={28}
+          extraClass="absolute bg-white opacity-50 w-full h-full"
+        />
+      ) : displayData ? (
+        <PITableRows data={displayData} />
       ) : (
-          displayData ? (
-          <PITableRows data={displayData} />
-        ) : (
-          <NoDataMessage />
-        )
+        <NoDataMessage />
       )}
     </>
   );

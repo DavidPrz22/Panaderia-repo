@@ -1,4 +1,7 @@
-import type { recetaDetallesItem, recetasSearchList } from "@/features/Recetas/types/types";
+import type {
+  recetaDetallesItem,
+  recetasSearchList,
+} from "@/features/Recetas/types/types";
 import { createContext, useContext, useState, useRef } from "react";
 import type { componenteListadosReceta } from "@/features/Recetas/types/types";
 
@@ -21,7 +24,9 @@ type RecetasContextType = {
   timer: NodeJS.Timeout | null;
   setTimer: (timer: NodeJS.Timeout | null) => void;
   componentesListadosReceta: componenteListadosReceta[];
-  setComponentesListadosReceta: (componentes: componenteListadosReceta[]) => void;
+  setComponentesListadosReceta: (
+    componentes: componenteListadosReceta[],
+  ) => void;
   recetaDetalles: recetaDetallesItem | null;
   setRecetaDetalles: (recetaDetalles: recetaDetallesItem | null) => void;
   recetaDetallesLoading: boolean;
@@ -40,7 +45,11 @@ export const useRecetasContext = () => {
   return context;
 };
 
-export const RecetasProvider = ({ children }: { children: React.ReactNode }) => {
+export const RecetasProvider = ({
+  children,
+}: {
+  children: React.ReactNode;
+}) => {
   const [showRecetasDetalles, setShowRecetasDetalles] = useState(false);
   const [showRecetasForm, setShowRecetasForm] = useState(false);
   const [recetaId, setRecetaId] = useState<number | null>(null);
@@ -50,30 +59,55 @@ export const RecetasProvider = ({ children }: { children: React.ReactNode }) => 
   const searchListRecetasRef = useRef<HTMLInputElement | null>(null);
   const [searchListActiveRecetas, setSearchListActiveRecetas] = useState(false);
 
-  const [searchListItems, setSearchListItems] = useState<recetasSearchList[]>([]);
-  
-  const [componentesListadosReceta, setComponentesListadosReceta] = useState<componenteListadosReceta[]>([]);
+  const [searchListItems, setSearchListItems] = useState<recetasSearchList[]>(
+    [],
+  );
+
+  const [componentesListadosReceta, setComponentesListadosReceta] = useState<
+    componenteListadosReceta[]
+  >([]);
   const [timer, setTimer] = useState<NodeJS.Timeout | null>(null);
 
-  const [recetaDetalles, setRecetaDetalles] = useState<recetaDetallesItem | null>(null);
+  const [recetaDetalles, setRecetaDetalles] =
+    useState<recetaDetallesItem | null>(null);
 
-  const [recetaDetallesLoading, setRecetaDetallesLoading] = useState<boolean>(false);
+  const [recetaDetallesLoading, setRecetaDetallesLoading] =
+    useState<boolean>(false);
 
-  const [enabledRecetaDetalles, setEnabledRecetaDetalles] = useState<boolean>(false);
+  const [enabledRecetaDetalles, setEnabledRecetaDetalles] =
+    useState<boolean>(false);
 
-  return <RecetasContext.Provider value={{ 
-    showRecetasDetalles, setShowRecetasDetalles, 
-    recetaId, setRecetaId,
-    showRecetasForm, setShowRecetasForm,
-    updateRegistro, setUpdateRegistro,
-    registroDelete, setRegistroDelete,
-    searchListRecetasRef,
-    searchListActiveRecetas, setSearchListActiveRecetas,
-    searchListItems, setSearchListItems,
-    timer, setTimer,
-    componentesListadosReceta, setComponentesListadosReceta,
-    recetaDetalles, setRecetaDetalles,
-    recetaDetallesLoading, setRecetaDetallesLoading,
-    enabledRecetaDetalles, setEnabledRecetaDetalles,
-  }}>{children}</RecetasContext.Provider>;
+  return (
+    <RecetasContext.Provider
+      value={{
+        showRecetasDetalles,
+        setShowRecetasDetalles,
+        recetaId,
+        setRecetaId,
+        showRecetasForm,
+        setShowRecetasForm,
+        updateRegistro,
+        setUpdateRegistro,
+        registroDelete,
+        setRegistroDelete,
+        searchListRecetasRef,
+        searchListActiveRecetas,
+        setSearchListActiveRecetas,
+        searchListItems,
+        setSearchListItems,
+        timer,
+        setTimer,
+        componentesListadosReceta,
+        setComponentesListadosReceta,
+        recetaDetalles,
+        setRecetaDetalles,
+        recetaDetallesLoading,
+        setRecetaDetallesLoading,
+        enabledRecetaDetalles,
+        setEnabledRecetaDetalles,
+      }}
+    >
+      {children}
+    </RecetasContext.Provider>
+  );
 };

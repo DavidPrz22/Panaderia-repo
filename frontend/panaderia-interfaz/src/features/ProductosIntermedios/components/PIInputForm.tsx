@@ -4,7 +4,7 @@ export default function PIInputForm({
   typeInput,
   name,
   placeholder = "",
-  register
+  register,
 }: PIFormInputProps) {
   let inputElement: React.ReactNode = <></>;
   if (typeInput === "textarea") {

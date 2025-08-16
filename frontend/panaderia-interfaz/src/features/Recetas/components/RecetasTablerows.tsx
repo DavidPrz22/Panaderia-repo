@@ -5,7 +5,12 @@ export const RecetasTablerows = ({ data }: { data: recetaItem[] }) => {
   return (
     <>
       {data.map((item, index) => (
-        <RecetaTablerow item={item} index={index} key={item.id} last={index === data.length - 1} />
+        <RecetaTablerow
+          item={item}
+          index={index}
+          key={item.id}
+          last={index === data.length - 1}
+        />
       ))}
     </>
   );

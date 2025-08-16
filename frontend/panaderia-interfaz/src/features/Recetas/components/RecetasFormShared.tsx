@@ -58,16 +58,18 @@ export default function RecetasFormShared({
     setValue,
   } = useForm<TRecetasFormSchema>({
     resolver: zodResolver(recetasFormSchema),
-    defaultValues: 
-      isUpdate && initialData ? {
-        nombre: initialData.nombre,
-        componente_receta: initialData.componente_receta,
-        notas: initialData.notas,
-      } : {
-        nombre: "",
-        componente_receta: [],
-        notas: "",
-      }
+    defaultValues:
+      isUpdate && initialData
+        ? {
+            nombre: initialData.nombre,
+            componente_receta: initialData.componente_receta,
+            notas: initialData.notas,
+          }
+        : {
+            nombre: "",
+            componente_receta: [],
+            notas: "",
+          },
   });
 
   useEffect(() => {
@@ -107,7 +109,7 @@ export default function RecetasFormShared({
 
   const onSubmit = async (data: TRecetasFormSchema) => {
     if (isUpdate) {
-      await updateRecetaMutation({recetaId: recetaId!, data});
+      await updateRecetaMutation({ recetaId: recetaId!, data });
     } else {
       console.log(data);
       await registerRecetaMutation(data);
