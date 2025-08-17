@@ -15,6 +15,8 @@ import RecetesComponentesListados from "./RecetesComponentesListados";
 import { PendingTubeSpinner } from "./PendingTubeSpinner";
 import RecetaComponentsContainer from "./RecetaComponentsContainer";
 import RecetaListContainer from "./RecetaListContainer";
+import RecetasListadasForm from "./RecetasListadasForm";
+
 
 export default function RecetasFormShared({
   title,
@@ -109,6 +111,7 @@ export default function RecetasFormShared({
             <RecetaListContainer
               errors={errors}
               setValue={setValue}
+              watch={watch}
             />
 
             <RecetasFormInputContainer
@@ -124,6 +127,11 @@ export default function RecetasFormShared({
           <div className="flex flex-col gap-2 border border-gray-300 py-5 px-7 rounded-md font-[Roboto]">
             <div className=" text-lg font-semibold ">Componentes Listados</div>
             <RecetesComponentesListados watch={watch} setValue={setValue} />
+          </div>
+
+          <div className="flex flex-col gap-2 border border-gray-300  rounded-md font-[Roboto]">
+            <div className="px-5 py-2 text-lg font-semibold border-b border-gray-300">Recetas Listadas</div>
+            <RecetasListadasForm watch={watch} setValue={setValue} />
           </div>
         </div>
 

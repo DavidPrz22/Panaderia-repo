@@ -22,7 +22,7 @@ export default function RecetesComponentesListados({
           />
         ))
       ) : (
-        <div className="text-center text-gray-500 h-[150px] flex items-center justify-center font-[Roboto] text-lg">
+        <div className="text-center text-gray-500 h-[80px] flex items-center justify-center font-[Roboto] text-lg">
           No hay componentes listados
         </div>
       )}

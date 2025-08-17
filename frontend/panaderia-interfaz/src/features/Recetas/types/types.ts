@@ -114,3 +114,9 @@ export type RecetaComponentsContainerProps = {
   setValue: UseFormSetValue<TRecetasFormSchema>;
   errors: FieldErrors<TRecetasFormSchema>;
 };
+
+export type recetaListItemProps = {
+  nombre: string;
+  id: number;
+  last?: boolean;
+};

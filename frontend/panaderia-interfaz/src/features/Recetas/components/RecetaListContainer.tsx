@@ -5,15 +5,17 @@ import RecetasFormLoading from "./RecetasFormLoading";
 import { useRecetasContext } from "@/context/RecetasContext";
 import RecetaListSearchContainer from "./RecetaListSearchContainer";
 import type { TRecetasFormSchema } from "../schemas/schemas";
-import type { FieldErrors, UseFormSetValue } from "react-hook-form";
+import type { FieldErrors, UseFormSetValue, UseFormWatch } from "react-hook-form";
 import { useEffect } from "react";
 
 export default function RecetaListContainer({
   errors,
   setValue,
+  watch,
 }: {
   errors: FieldErrors<TRecetasFormSchema>;
   setValue: UseFormSetValue<TRecetasFormSchema>;
+  watch: UseFormWatch<TRecetasFormSchema>;
 }) {
   const { searchListActiveRecetaList, searchListRecetaList, timer, setTimer, setSearchListActiveRecetaList, setSearchListRecetaList } = useRecetasContext();
 
@@ -75,6 +77,7 @@ export default function RecetaListContainer({
       ) : searchListRecetaList.length > 0 ? (
         <RecetaListSearchContainer
           searchList={searchListRecetaList}
+          watch={watch}
           setValue={setValue}
         />
       ) : (

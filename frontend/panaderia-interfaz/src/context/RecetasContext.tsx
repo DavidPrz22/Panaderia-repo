@@ -39,6 +39,8 @@ type RecetasContextType = {
   setSearchListActiveRecetaList: (active: boolean) => void;
   searchListRecetaList: recetaRelacionada[];
   setSearchListRecetaList: (recetaList: recetaRelacionada[]) => void;
+  recetasListadas: recetaRelacionada[];
+  setRecetasListadas: (recetasListadas: recetaRelacionada[]) => void;
 };
 
 const RecetasContext = createContext<RecetasContextType | null>(null);
@@ -79,6 +81,7 @@ export const RecetasProvider = ({
     [],
   );
 
+  const [recetasListadas, setRecetasListadas] = useState<recetaRelacionada[]>([]);
 
   const [timer, setTimer] = useState<NodeJS.Timeout | null>(null);
 
@@ -124,6 +127,8 @@ export const RecetasProvider = ({
         setSearchListActiveRecetaList,
         searchListRecetaList,
         setSearchListRecetaList,
+        recetasListadas,
+        setRecetasListadas,
       }}
     >
       {children}
