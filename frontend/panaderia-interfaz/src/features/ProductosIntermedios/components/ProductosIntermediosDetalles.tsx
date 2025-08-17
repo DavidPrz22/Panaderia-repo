@@ -65,16 +65,18 @@ export default function ProductosIntermediosDetalles() {
   };
 
   if (updateRegistro) {
+
     return (
       <ProductosIntermediosFormShared
         title="Editar Producto Intermedio"
         isUpdate={true}
         onClose={handleCloseUpdate}
         onSubmitSuccess={handleCloseUpdate}
+        initialData={productoIntermediosDetalles!}
       />
     );
   }
-
+  console.log(productoIntermediosDetalles);
   const handleDelete = async () => {
     await deleteProductoIntermedio(productoIntermedioId!);
     setShowProductosIntermediosDetalles(false);

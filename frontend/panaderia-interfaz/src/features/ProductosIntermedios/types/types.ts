@@ -14,7 +14,7 @@ export type childrenProp = {
 export type ProductosIntermediosFormSharedProps = {
   title: string;
   isUpdate?: boolean;
-  initialData?: TProductosIntermediosSchema;
+  initialData?: ProductosIntermediosDetalles;
   onClose: () => void;
   onSubmitSuccess: () => void;
 };
@@ -27,6 +27,7 @@ export type PIFormInputContainerProps = {
   errors: FieldErrors<TProductosIntermediosSchema>;
   optional?: boolean;
   search?: boolean;
+  initialData?: RecetaRelacionada | false;
 };
 
 export type PIFormInputProps = {
@@ -88,7 +89,8 @@ export type ProductosIntermediosDetalles = {
   SKU: string;
   stock_actual: number;
   punto_reorden: number;
-  categoria_nombre: string;
+  categoria_producto: { id: number; nombre_categoria: string };
+  unidad_medida_nominal_producto: { id: number; nombre_completo: string };
   fecha_creacion_registro: string;
   fecha_modificacion_registro: string;
   descripcion: string;

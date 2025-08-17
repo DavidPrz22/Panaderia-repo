@@ -94,6 +94,17 @@ export const getProductosIntermediosDetalles = async (
   }
 };
 
+
+export const updateProductoIntermedio = async (id: number, data: TProductosIntermediosSchema) => {
+  try {
+    const response = await apiClient.put(`/api/productosintermedios/${id}/`, data);
+    return response.data;
+  } catch (error) {
+    console.error(error);
+    return null;
+  }
+};
+
 export const deleteProductoIntermedio = async (id: number) => {
   try {
     const response = await apiClient.delete(`/api/productosintermedios/${id}/`);

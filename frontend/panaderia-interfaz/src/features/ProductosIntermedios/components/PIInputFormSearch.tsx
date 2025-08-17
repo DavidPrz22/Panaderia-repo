@@ -6,9 +6,9 @@ import SearchIconContainer from "./searchIconContainer";
 import XIconContainer from "./xIconContainer";
 import NoResults from "./NoResults";
 import React, { useEffect, useState } from "react";
-import type { setValueProps } from "../types/types";
+import type { RecetaRelacionada, setValueProps } from "../types/types";
 
-export default function PIInputFormSearch({ setValue }: setValueProps) {
+export default function PIInputFormSearch({ setValue, initialData }: setValueProps & { initialData?: RecetaRelacionada }) {
   const {
     searchList,
     searchTimer,
@@ -17,7 +17,6 @@ export default function PIInputFormSearch({ setValue }: setValueProps) {
     recetaSearchInputRef,
   } = useProductosIntermediosContext();
   const { mutate: getRecetasSearch, isPending } = useGetRecetasSearchMutation();
-
   const [isFocused, setIsFocused] = useState(false);
   const [completed, setCompleted] = useState(false);
 
@@ -65,6 +64,7 @@ export default function PIInputFormSearch({ setValue }: setValueProps) {
   };
 
   const handleResetSearch = () => {
+  
     if (recetaSearchInputRef.current) {
       recetaSearchInputRef.current.value = "";
       recetaSearchInputRef.current.disabled = false;
@@ -80,18 +80,24 @@ export default function PIInputFormSearch({ setValue }: setValueProps) {
     setCompleted(false);
   };
 
+  
+
   return (
     <div id="receta-search-container" className="flex flex-col relative">
       <div className="relative">
+
         <input
-          ref={recetaSearchInputRef}
-          onChange={handleChange}
-          onFocus={handleFocus}
-          placeholder="Busca una receta para el producto"
-          type="text"
-          className="block w-full pl-3 pr-10 py-2.5 border border-gray-300 rounded-md shadow-xs font-[Roboto]
-                        focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-        />
+        ref={recetaSearchInputRef}
+        onChange={handleChange}
+        onFocus={handleFocus}
+        placeholder="Busca una receta para el producto"
+        defaultValue={initialData ? initialData.nombre : ""}
+        disabled={initialData ? true : false}
+        type="text"
+        className="block w-full pl-3 pr-10 py-2.5 border border-gray-300 rounded-md shadow-xs font-[Roboto]
+                      focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+      />
+
         {recetaSearchInputRef.current?.disabled ? (
           <XIconContainer onClick={handleResetSearch} />
         ) : (

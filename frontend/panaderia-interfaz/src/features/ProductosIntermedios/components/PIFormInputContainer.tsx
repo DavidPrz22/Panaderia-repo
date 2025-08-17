@@ -2,7 +2,6 @@ import type { PIFormInputContainerProps, setValueProps } from "../types/types";
 import PIInputForm from "./PIInputForm.tsx";
 import PIInputFormSearch from "./PIInputFormSearch.tsx";
 import { get } from "react-hook-form";
-
 export const PIFormInputContainer = ({
   inputType,
   title,
@@ -12,7 +11,9 @@ export const PIFormInputContainer = ({
   optional,
   search,
   setValue,
+  initialData,
 }: PIFormInputContainerProps & setValueProps) => {
+
   return (
     <div className="flex flex-col gap-1">
       <div className="flex items-center gap-2">
@@ -23,7 +24,7 @@ export const PIFormInputContainer = ({
         </div>
         <div className="basis-2/4">
           {search ? (
-            <PIInputFormSearch setValue={setValue} />
+            <PIInputFormSearch setValue={setValue} initialData={initialData} />
           ) : (
             <PIInputForm
               typeInput={inputType}

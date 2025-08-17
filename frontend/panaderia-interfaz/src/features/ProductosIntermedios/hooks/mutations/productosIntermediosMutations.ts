@@ -4,6 +4,7 @@ import {
   getRecetasSearch,
   removeRecetaRelacionada,
   deleteProductoIntermedio,
+  updateProductoIntermedio,
 } from "../../api/api";
 import type { TProductosIntermediosSchema } from "../../schemas/schema";
 import {
@@ -14,12 +15,6 @@ import {
 export const useGetRecetasSearchMutation = () => {
   return useMutation({
     mutationFn: (search: string) => getRecetasSearch(search),
-    onSuccess: (data) => {
-      console.log(data);
-    },
-    onError: (error) => {
-      console.log(error);
-    },
   });
 };
 
@@ -64,6 +59,24 @@ export const useDeleteProductoIntermedioMutation = () => {
         queryKey: productosIntermediosQueryOptions.queryKey,
       });
       queryClient.removeQueries({
+        queryKey: productosIntermediosDetallesQueryOptions(id).queryKey,
+      });
+    },
+    onError: (error) => {
+      console.log(error);
+    },
+  });
+};
+
+export const useUpdateProductosIntermediosMutation = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({id, data}: {id: number, data: TProductosIntermediosSchema}) => updateProductoIntermedio(id, data),
+    onSuccess: (_, {id}) => {
+      queryClient.invalidateQueries({
+        queryKey: productosIntermediosQueryOptions.queryKey,
+      });
+      queryClient.invalidateQueries({
         queryKey: productosIntermediosDetallesQueryOptions(id).queryKey,
       });
     },

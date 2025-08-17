@@ -5,7 +5,6 @@ from django.db.models.signals import post_save, post_delete
 from django.dispatch import receiver
 from django.utils import timezone
 from django.core.exceptions import ValidationError
-
 # Create your models here.
 class MateriasPrimas(models.Model):
     nombre = models.CharField(max_length=100, null=False, blank=False, unique=True)

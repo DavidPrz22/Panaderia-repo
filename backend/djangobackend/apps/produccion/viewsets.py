@@ -5,6 +5,7 @@ from django.db import transaction
 from apps.produccion.models import Recetas, RecetasDetalles
 from apps.inventario.models import MateriasPrimas, ProductosElaborados
 from apps.produccion.serializers import RecetasSerializer, RecetasDetallesSerializer, RecetasSearchSerializer
+from django.db.models import Q
 
 class RecetasViewSet(viewsets.ModelViewSet):
     queryset = Recetas.objects.all()
@@ -134,8 +135,11 @@ class RecetasSearchViewSet(viewsets.ModelViewSet):
         search_query = request.query_params.get('search')
         if not search_query:
             return Response(status=status.HTTP_400_BAD_REQUEST, data={"error": "El parámetro 'search' es requerido"})
-
-        recetas = Recetas.objects.filter(nombre__icontains=search_query)
+        recetas = Recetas.objects.filter(
+            Q(nombre__icontains=search_query) &
+            Q(producto_elaborado__isnull=True)
+        )
+        
         serializer = self.get_serializer(recetas, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 

@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from .models import MateriasPrimas, LotesMateriasPrimas, ProductosIntermedios, ProductosFinales, ProductosElaborados
-from apps.core.models import UnidadesDeMedida, CategoriasMateriaPrima
+from apps.core.models import UnidadesDeMedida, CategoriasMateriaPrima, CategoriasProductosElaborados
 from apps.compras.serializers import ProveedoresSerializer
 from apps.compras.models import Proveedores
 from apps.produccion.models import Recetas
@@ -255,9 +255,11 @@ class ProductosIntermediosSerializer(serializers.ModelSerializer):
             'SKU', 
             'stock_actual', 
             'punto_reorden', 
+            'categoria',
+            'unidad_medida_nominal',
+            'descripcion',
             'categoria_nombre', 
             'fecha_creacion_registro',
-            'categoria',
             'receta_relacionada',
         ]
         extra_kwargs = {
@@ -284,6 +286,21 @@ class ProductosIntermediosSerializer(serializers.ModelSerializer):
                 pass
         return producto_intermedio
 
+    def update(self, instance, validated_data):
+        receta_relacionada = validated_data.pop('receta_relacionada', None)
+
+        instance = super().update(instance, validated_data)
+        
+        if receta_relacionada:
+            try:
+                receta = Recetas.objects.get(id=receta_relacionada)
+                receta.producto_elaborado = instance
+                receta.save()
+            except Recetas.DoesNotExist:
+                pass
+                
+        return instance
+
 class ProductosFinalesSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProductosFinales
@@ -296,9 +313,9 @@ class ProductosFinalesSerializer(serializers.ModelSerializer):
 
 
 class ProductosIntermediosDetallesSerializer(serializers.ModelSerializer):
-    categoria_nombre = serializers.CharField(source='categoria.nombre_categoria', read_only=True)
+    categoria_producto = serializers.SerializerMethodField()
     receta_relacionada = serializers.SerializerMethodField()
-
+    unidad_medida_nominal_producto = serializers.SerializerMethodField()
     class Meta:
         model = ProductosIntermedios
         fields = [
@@ -307,12 +324,27 @@ class ProductosIntermediosDetallesSerializer(serializers.ModelSerializer):
             'SKU',
             'stock_actual',
             'punto_reorden',
-            'categoria_nombre',
+            'categoria_producto',
+            'unidad_medida_nominal_producto',
             'fecha_creacion_registro',
             'fecha_modificacion_registro',
             'descripcion',
             'receta_relacionada',
         ]
+
+    def get_categoria_producto(self, obj):
+        categoria = CategoriasProductosElaborados.objects.get(id=obj.categoria.id)
+        return {
+            'id': categoria.id,
+            'nombre_categoria': categoria.nombre_categoria,
+        }
+
+    def get_unidad_medida_nominal_producto(self, obj):
+        unidad_medida_nominal = UnidadesDeMedida.objects.get(id=obj.unidad_medida_nominal.id)
+        return {
+            'id': unidad_medida_nominal.id,
+            'nombre_completo': unidad_medida_nominal.nombre_completo,
+        }
 
     def get_receta_relacionada(self, obj):
         """Get the related recipe for a product."""

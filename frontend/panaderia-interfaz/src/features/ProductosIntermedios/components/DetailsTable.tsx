@@ -69,10 +69,10 @@ export const DetailsTable = ({
           {productoIntermediosDetalles.stock_actual}
         </DetailFieldValue>
         <DetailFieldValue extraClass="min-h-[25px] ">
-          {productoIntermediosDetalles.punto_reorden}
+          {productoIntermediosDetalles.unidad_medida_nominal_producto.nombre_completo}
         </DetailFieldValue>
         <DetailFieldValue extraClass="min-h-[25px] ">
-          {productoIntermediosDetalles.categoria_nombre}
+          {productoIntermediosDetalles.categoria_producto.nombre_categoria}
         </DetailFieldValue>
         <DetailFieldValue extraClass="min-h-[25px] ">
           {productoIntermediosDetalles.fecha_creacion_registro}
