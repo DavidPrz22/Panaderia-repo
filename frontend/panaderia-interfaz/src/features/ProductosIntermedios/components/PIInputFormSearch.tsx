@@ -76,6 +76,7 @@ export default function PIInputFormSearch({ setValue, initialData }: setValuePro
   };
 
   const handleFocus = () => {
+    setSearchList([]);
     setIsFocused(true);
     setCompleted(false);
   };
