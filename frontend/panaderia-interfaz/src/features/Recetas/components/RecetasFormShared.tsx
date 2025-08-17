@@ -5,18 +5,16 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import RecetasFormInputContainer from "./RecetasFormInputContainer";
 import { useRecetasContext } from "@/context/RecetasContext";
-import { useEffect } from "react";
 import {
-  useComponentesRecetaSearchMutation,
   useRegisterRecetaMutation,
   useUpdateRecetaMutation,
 } from "../hooks/mutations/recetasMutations";
 
-import NoResults from "./NoResults";
-import RecetasSearchListContainer from "./RecetasSearchListContainer";
-import RecetasFormLoading from "./RecetasFormLoading";
+
 import RecetesComponentesListados from "./RecetesComponentesListados";
 import { PendingTubeSpinner } from "./PendingTubeSpinner";
+import RecetaComponentsContainer from "./RecetaComponentsContainer";
+import RecetaListContainer from "./RecetaListContainer";
 
 export default function RecetasFormShared({
   title,
@@ -26,19 +24,9 @@ export default function RecetasFormShared({
   onSubmitSuccess,
 }: RecetasFormSharedProps) {
   const {
-    searchListActiveRecetas,
-    setSearchListActiveRecetas,
-    searchListItems,
-    timer,
-    setTimer,
     recetaId,
     setComponentesListadosReceta,
   } = useRecetasContext();
-
-  const {
-    mutate: componentesRecetaSearchMutation,
-    isPending: isComponentesRecetaSearchPending,
-  } = useComponentesRecetaSearchMutation();
 
   const {
     mutateAsync: registerRecetaMutation,
@@ -49,6 +37,7 @@ export default function RecetasFormShared({
     mutateAsync: updateRecetaMutation,
     isPending: isUpdateRecetaPending,
   } = useUpdateRecetaMutation();
+
 
   const {
     register,
@@ -72,46 +61,17 @@ export default function RecetasFormShared({
           },
   });
 
-  useEffect(() => {
-    if (!searchListActiveRecetas) return;
-    const componentesRecetaContainer = document.getElementById(
-      "componentes-receta-container",
-    );
-
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        componentesRecetaContainer &&
-        !componentesRecetaContainer.contains(event.target as Node)
-      ) {
-        setSearchListActiveRecetas(false);
-      }
-    };
-
-    document.addEventListener("click", handleClickOutside);
-    return () => document.removeEventListener("click", handleClickOutside);
-  }, [searchListActiveRecetas, setSearchListActiveRecetas]);
 
   const handleCancelButtonClick = () => {
     onClose();
     setComponentesListadosReceta([]);
   };
 
-  const handleSearchListFocus = async (search: string) => {
-    if (timer) {
-      clearTimeout(timer);
-    }
-    const interval = setTimeout(() => {
-      componentesRecetaSearchMutation(search);
-      setTimer(null);
-    }, 1000);
-    setTimer(interval as NodeJS.Timeout);
-  };
 
   const onSubmit = async (data: TRecetasFormSchema) => {
     if (isUpdate) {
       await updateRecetaMutation({ recetaId: recetaId!, data });
     } else {
-      console.log(data);
       await registerRecetaMutation(data);
     }
     onSubmitSuccess();
@@ -139,31 +99,17 @@ export default function RecetasFormShared({
               errors={errors}
               inputType="text"
             />
-            <div
-              className="flex flex-col relative"
-              id="componentes-receta-container"
-            >
-              <RecetasFormInputContainer
-                title="Componentes"
-                name="componente_receta"
-                errors={errors}
-                inputType="text"
-                recetaBusqueda={true}
-                onChange={handleSearchListFocus}
-              />
 
-              {searchListActiveRecetas &&
-                (isComponentesRecetaSearchPending ? (
-                  <RecetasFormLoading />
-                ) : searchListItems.length > 0 ? (
-                  <RecetasSearchListContainer
-                    watch={watch}
-                    setValue={setValue}
-                  />
-                ) : (
-                  !timer && <NoResults />
-                ))}
-            </div>
+            <RecetaComponentsContainer
+              watch={watch}
+              setValue={setValue}
+              errors={errors}
+            />
+
+            <RecetaListContainer
+              errors={errors}
+              setValue={setValue}
+            />
 
             <RecetasFormInputContainer
               register={register}

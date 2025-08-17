@@ -40,8 +40,10 @@ export type RecetasFormInputContainerProps = {
   errors: FieldErrors<TRecetasFormSchema>;
   inputType: string;
   optional?: boolean;
+  componenteBusqueda?: boolean;
   recetaBusqueda?: boolean;
   onChange?: (search: string) => void;
+  placeholder?: string;
 };
 
 export type itemRecetasSearchList = {
@@ -100,4 +102,15 @@ export type recetaDetallesItemComponente = {
 export type recetaDetallesItem = {
   receta: recetaItem;
   componentes: recetaDetallesItemComponente[];
+};
+
+export type recetaRelacionada = {
+  id: number;
+  nombre: string;
+};
+
+export type RecetaComponentsContainerProps = {
+  watch: UseFormWatch<TRecetasFormSchema>;
+  setValue: UseFormSetValue<TRecetasFormSchema>;
+  errors: FieldErrors<TRecetasFormSchema>;
 };

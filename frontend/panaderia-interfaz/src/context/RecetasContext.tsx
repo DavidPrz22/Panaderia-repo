@@ -1,5 +1,6 @@
 import type {
   recetaDetallesItem,
+  recetaRelacionada,
   recetasSearchList,
 } from "@/features/Recetas/types/types";
 import { createContext, useContext, useState, useRef } from "react";
@@ -16,11 +17,11 @@ type RecetasContextType = {
   setUpdateRegistro: (update: boolean) => void;
   registroDelete: boolean | null;
   setRegistroDelete: (registroDelete: boolean | null) => void;
-  searchListRecetasRef: React.RefObject<HTMLInputElement | null>;
-  searchListActiveRecetas: boolean;
-  setSearchListActiveRecetas: (active: boolean) => void;
-  searchListItems: recetasSearchList[];
-  setSearchListItems: (items: recetasSearchList[]) => void;
+  searchListComponentesRef: React.RefObject<HTMLInputElement | null>;
+  searchListActiveComponentes: boolean;
+  setSearchListActiveComponentes: (active: boolean) => void;
+  searchListComponentes: recetasSearchList[];
+  setSearchListComponentes: (items: recetasSearchList[]) => void;
   timer: NodeJS.Timeout | null;
   setTimer: (timer: NodeJS.Timeout | null) => void;
   componentesListadosReceta: componenteListadosReceta[];
@@ -33,6 +34,11 @@ type RecetasContextType = {
   setRecetaDetallesLoading: (loading: boolean) => void;
   enabledRecetaDetalles: boolean;
   setEnabledRecetaDetalles: (enable: boolean) => void;
+  searchListRecetaListRef: React.RefObject<HTMLInputElement | null>;
+  searchListActiveRecetaList: boolean;
+  setSearchListActiveRecetaList: (active: boolean) => void;
+  searchListRecetaList: recetaRelacionada[];
+  setSearchListRecetaList: (recetaList: recetaRelacionada[]) => void;
 };
 
 const RecetasContext = createContext<RecetasContextType | null>(null);
@@ -56,16 +62,24 @@ export const RecetasProvider = ({
   const [updateRegistro, setUpdateRegistro] = useState(false);
   const [registroDelete, setRegistroDelete] = useState<boolean | null>(null);
 
-  const searchListRecetasRef = useRef<HTMLInputElement | null>(null);
-  const [searchListActiveRecetas, setSearchListActiveRecetas] = useState(false);
-
-  const [searchListItems, setSearchListItems] = useState<recetasSearchList[]>(
+  const searchListComponentesRef = useRef<HTMLInputElement | null>(null);
+  const [searchListActiveComponentes, setSearchListActiveComponentes] = useState(false);
+  const [searchListComponentes, setSearchListComponentes] = useState<recetasSearchList[]>(
     [],
   );
-
   const [componentesListadosReceta, setComponentesListadosReceta] = useState<
     componenteListadosReceta[]
   >([]);
+
+  
+
+  const searchListRecetaListRef = useRef<HTMLInputElement | null>(null);
+  const [searchListActiveRecetaList, setSearchListActiveRecetaList] = useState(false);
+  const [searchListRecetaList, setSearchListRecetaList] = useState<recetaRelacionada[]>(
+    [],
+  );
+
+
   const [timer, setTimer] = useState<NodeJS.Timeout | null>(null);
 
   const [recetaDetalles, setRecetaDetalles] =
@@ -90,11 +104,11 @@ export const RecetasProvider = ({
         setUpdateRegistro,
         registroDelete,
         setRegistroDelete,
-        searchListRecetasRef,
-        searchListActiveRecetas,
-        setSearchListActiveRecetas,
-        searchListItems,
-        setSearchListItems,
+        searchListComponentesRef,
+        searchListActiveComponentes,
+        setSearchListActiveComponentes,
+        searchListComponentes,
+        setSearchListComponentes,
         timer,
         setTimer,
         componentesListadosReceta,
@@ -105,6 +119,11 @@ export const RecetasProvider = ({
         setRecetaDetallesLoading,
         enabledRecetaDetalles,
         setEnabledRecetaDetalles,
+        searchListRecetaListRef,
+        searchListActiveRecetaList,
+        setSearchListActiveRecetaList,
+        searchListRecetaList,
+        setSearchListRecetaList,
       }}
     >
       {children}

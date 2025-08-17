@@ -3,6 +3,7 @@ import type { TRecetasFormSchema } from "../schemas/schemas";
 import type {
   recetaDetallesItem,
   recetaItem,
+  recetaRelacionada,
   recetasSearchList,
 } from "../types/types";
 
@@ -78,5 +79,19 @@ export const deleteReceta = async (id: number) => {
   } catch (error) {
     console.error("Error deleting receta:", error);
     throw error;
+  }
+};
+
+export const getRecetasSearch = async (
+  search: string,
+): Promise<recetaRelacionada[]> => {
+  try {
+    const response = await apiClient.get(
+      `/api/recetas-search/list_recetas/?search=${search}`,
+    );
+    return response.data;
+  } catch (error) {
+    console.error(error);
+    return [];
   }
 };

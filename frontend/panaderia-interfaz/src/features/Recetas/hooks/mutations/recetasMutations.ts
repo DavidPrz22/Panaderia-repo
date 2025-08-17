@@ -2,6 +2,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   componentesRecetaSearch,
   deleteReceta,
+  getRecetasSearch,
   registerReceta,
   updateReceta,
 } from "../../api/api";
@@ -13,11 +14,11 @@ import {
 } from "../queries/RecetasQueryOptions";
 
 export const useComponentesRecetaSearchMutation = () => {
-  const { setSearchListItems } = useRecetasContext();
+  const { setSearchListComponentes } = useRecetasContext();
   return useMutation({
     mutationFn: (search: string) => componentesRecetaSearch(search),
     onSuccess: (data) => {
-      setSearchListItems(data);
+      setSearchListComponentes(data);
     },
     onError: (error) => {
       console.error("Error fetching componentes receta search:", error);
@@ -75,11 +76,12 @@ export const useDeleteRecetaMutation = () => {
   });
 };
 
-// export const useRecetaDetallesMutation = () => {
-//     return useMutation({
-//         mutationFn: (id: number) => getRecetaDetalles(id),
-//         onSuccess: (data) => {
-//             console.log(data)
-//         }
-//     })
-// }
+export const useRecetasSearchMutation = () => {
+  const { setSearchListRecetaList } = useRecetasContext();
+  return useMutation({
+    mutationFn: (search: string) => getRecetasSearch(search),
+    onSuccess: (data) => {
+      setSearchListRecetaList(data);
+    },
+  });
+};
