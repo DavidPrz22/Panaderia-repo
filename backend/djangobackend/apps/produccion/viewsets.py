@@ -2,7 +2,7 @@ from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.db import transaction
-from apps.produccion.models import Recetas, RecetasDetalles
+from apps.produccion.models import Recetas, RecetasDetalles, RelacionesRecetas
 from apps.inventario.models import MateriasPrimas, ProductosElaborados
 from apps.produccion.serializers import RecetasSerializer, RecetasDetallesSerializer, RecetasSearchSerializer
 from django.db.models import Q
@@ -10,6 +10,90 @@ from django.db.models import Q
 class RecetasViewSet(viewsets.ModelViewSet):
     queryset = Recetas.objects.all()
     serializer_class = RecetasSerializer
+
+    def create(self, request, *args, **kwargs):
+    # Step 1: Manual validation of frontend data
+        data = request.data
+        nombre = data.get('nombre')
+        notas = data.get('notas', '')
+        componentes = data.get('componente_receta', [])
+        
+        # Basic validation
+        if not nombre:
+            return Response({'error': 'El nombre es requerido'}, status=status.HTTP_400_BAD_REQUEST)
+
+        if not componentes or len(componentes) == 0:
+            return Response({'error': 'Los componentes son requeridos'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Create the main recipe using RecetasSerializer
+        recipe_data = {
+            'nombre': nombre,
+            'notas': notas,
+            'producto_elaborado': data.get('producto_elaborado', None)
+        }
+
+        recipe_serializer = self.get_serializer(data=recipe_data)
+        if recipe_serializer.is_valid():
+            receta = recipe_serializer.save()
+        else:
+            return Response(recipe_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        # Create recipe components using RecetasDetallesSerializer
+        recetas_created = []
+        for componente in componentes:
+            objecto_componente = {}
+            if componente.get('materia_prima') == True:
+                objecto_componente = {
+                    'receta': receta.id,
+                    'componente_materia_prima': componente['componente_id'],        
+                    'componente_producto_intermedio': None,
+                }
+                
+            elif componente.get('producto_intermedio') == True:
+                objecto_componente = {
+                    'receta': receta.id,
+                    'componente_materia_prima': None,
+                    'componente_producto_intermedio': componente['componente_id'],
+                }
+            
+            # Use RecetasDetallesSerializer for components
+            detail_serializer = RecetasDetallesSerializer(data=objecto_componente)
+            if detail_serializer.is_valid():
+                detail_serializer.save()
+                recetas_created.append(detail_serializer.data)
+            else:
+                return Response(detail_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        # Create recipe relationships
+        receta_relacionada = data.get('receta_relacionada', [])
+        if receta_relacionada:
+            # Validate that all recipe IDs exist
+            valid_recipe_ids = Recetas.objects.filter(
+                id__in=receta_relacionada
+            ).values_list('id', flat=True)
+
+            if len(valid_recipe_ids) != len(receta_relacionada):
+                return Response(
+                    {'error': 'Some recipe IDs are invalid'}, 
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            relaciones = [
+                RelacionesRecetas(
+                    receta_principal=receta,
+                    subreceta_id=receta_id
+                )
+                for receta_id in valid_recipe_ids
+            ]
+            RelacionesRecetas.objects.bulk_create(relaciones)
+
+        # Return the created recipe with components
+        return Response({
+            'receta': recipe_serializer.data,
+            'componentes': recetas_created,
+            'relaciones_count': len(receta_relacionada)
+        }, status=status.HTTP_201_CREATED)
+
 
     @action(detail=True, methods=['get'])
     def get_receta_detalles(self, request, *args, **kwargs):
@@ -44,6 +128,7 @@ class RecetasViewSet(viewsets.ModelViewSet):
             return Response({'error': 'Receta not found'}, status=status.HTTP_404_NOT_FOUND)
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 
     @action(detail=True, methods=['put'])
     def update_receta(self, request, *args, **kwargs):
@@ -143,46 +228,3 @@ class RecetasSearchViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(recetas, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-
-class RecetasDetallesViewSet(viewsets.ModelViewSet):
-    queryset = RecetasDetalles.objects.all()
-    serializer_class = RecetasDetallesSerializer
-
-    def create(self, request, *args, **kwargs):
-    # Step 1: Manual validation of frontend data
-        data = request.data
-        nombre = data.get('nombre')
-        notas = data.get('notas', '')
-        componentes = data.get('componente_receta', [])
-        # Basic validation
-        if not nombre:
-            return Response({'error': 'El nombre es requerido'}, status=status.HTTP_400_BAD_REQUEST)
-        
-        if not componentes or len(componentes) == 0:
-            return Response({'error': 'Los componentes son requeridos'}, status=status.HTTP_400_BAD_REQUEST)
-        
-        receta = Recetas.objects.create(nombre=nombre, notas=notas)
-
-        recetas_created = []
-        for componente in componentes:
-            objecto_componente = {}
-            if componente.get('materia_prima') == True:
-                objecto_componente = {
-                    'receta': receta.id,
-                    'componente_materia_prima': componente['componente_id'],        
-                    'componente_producto_intermedio': None,
-                }
-                
-            elif componente.get('producto_intermedio') == True:
-                objecto_componente = {
-                    'receta': receta.id,
-                    'componente_materia_prima': None,
-                    'componente_producto_intermedio': componente['componente_id'],
-                }
-            serializer = self.get_serializer(data=objecto_componente)
-            if serializer.is_valid():
-                serializer.save()
-                recetas_created.append(serializer.data)
-            else:
-                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        return Response(recetas_created, status=status.HTTP_201_CREATED)

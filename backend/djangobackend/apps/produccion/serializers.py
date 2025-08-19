@@ -2,6 +2,9 @@ from rest_framework import serializers
 from .models import Recetas, RecetasDetalles
 
 class RecetasSerializer(serializers.ModelSerializer):
+    componente_receta = serializers.ListField(write_only=True, required=False)
+    receta_relacionada = serializers.ListField(write_only=True, required=False)
+
     class Meta:
         model = Recetas
         fields = [
@@ -11,6 +14,8 @@ class RecetasSerializer(serializers.ModelSerializer):
                     'fecha_creacion',
                     'fecha_modificacion',
                     'notas',
+                    'componente_receta',
+                    'receta_relacionada',
                 ]
 
 class RecetasSearchSerializer(serializers.ModelSerializer):
@@ -20,6 +25,12 @@ class RecetasSearchSerializer(serializers.ModelSerializer):
 
 
 class RecetasDetallesSerializer(serializers.ModelSerializer):
+
     class Meta:
         model = RecetasDetalles
-        fields = ['id', 'receta', 'componente_materia_prima', 'componente_producto_intermedio']
+        fields = [
+            'id',
+            'receta',
+            'componente_materia_prima',
+            'componente_producto_intermedio',
+        ]

@@ -3,6 +3,7 @@ import type { RecetasFormSharedProps } from "@/features/Recetas/types/types";
 import { recetasFormSchema, type TRecetasFormSchema } from "../schemas/schemas";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import type { Resolver } from "react-hook-form";
 import RecetasFormInputContainer from "./RecetasFormInputContainer";
 import { useRecetasContext } from "@/context/RecetasContext";
 import {
@@ -48,18 +49,20 @@ export default function RecetasFormShared({
     watch,
     setValue,
   } = useForm<TRecetasFormSchema>({
-    resolver: zodResolver(recetasFormSchema),
+    resolver: zodResolver(recetasFormSchema) as Resolver<TRecetasFormSchema>,
     defaultValues:
       isUpdate && initialData
         ? {
             nombre: initialData.nombre,
             componente_receta: initialData.componente_receta,
             notas: initialData.notas,
+            receta_relacionada: initialData.receta_relacionada || [],
           }
         : {
             nombre: "",
             componente_receta: [],
             notas: "",
+            receta_relacionada: [],
           },
   });
 
@@ -71,6 +74,7 @@ export default function RecetasFormShared({
 
 
   const onSubmit = async (data: TRecetasFormSchema) => {
+
     if (isUpdate) {
       await updateRecetaMutation({ recetaId: recetaId!, data });
     } else {
@@ -129,7 +133,7 @@ export default function RecetasFormShared({
             <RecetesComponentesListados watch={watch} setValue={setValue} />
           </div>
 
-          <div className="flex flex-col gap-2 border border-gray-300  rounded-md font-[Roboto]">
+          <div className="flex flex-col border border-gray-300  rounded-md font-[Roboto]">
             <div className="px-5 py-2 text-lg font-semibold border-b border-gray-300">Recetas Listadas</div>
             <RecetasListadasForm watch={watch} setValue={setValue} />
           </div>

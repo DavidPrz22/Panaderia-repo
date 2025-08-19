@@ -24,7 +24,7 @@ export default function RecetaListItem({
     setRecetasListadas(listaFiltrada);
 
     const listaFiltradaValidacion = watch("receta_relacionada")?.filter(
-      ({ id }: { id: number }) => id !== id,
+      (itemId) => itemId !== id,
     );
     setValue("receta_relacionada", listaFiltradaValidacion || []);
   };

@@ -23,7 +23,7 @@ export default function RecetaListSearchContainer({
             onClick={() => {
                 setRecetasListadas([...recetasListadas, item]);
                 if (setValue) {
-                    setValue("receta_relacionada", [...watch?.("receta_relacionada") || [], { id: item.id }]);
+                    setValue("receta_relacionada", [...watch?.("receta_relacionada") || [], item.id]);
                 }
             }}
             >

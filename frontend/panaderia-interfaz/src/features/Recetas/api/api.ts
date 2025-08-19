@@ -23,7 +23,7 @@ export const componentesRecetaSearch = async (
 
 export const registerReceta = async (data: TRecetasFormSchema) => {
   try {
-    const response = await apiClient.post("/api/recetas-detalles/", data);
+    const response = await apiClient.post("/api/recetas/", data);
     return response.data;
   } catch (error) {
     console.error("Error registering receta:", error);
