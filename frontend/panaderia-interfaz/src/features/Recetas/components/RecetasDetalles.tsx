@@ -13,6 +13,7 @@ import type { TRecetasFormSchema } from "../schemas/schemas";
 import type { componenteListadosReceta } from "../types/types";
 import { useDeleteRecetaMutation } from "../hooks/mutations/recetasMutations";
 import { DetailsTable } from "./DetailsTable";
+import DetailsRecetasRelacionadas from "./DetailsRecetasRelacionadas";
 
 export default function RecetasDetalles() {
   const {
@@ -29,6 +30,7 @@ export default function RecetasDetalles() {
     setEnabledRecetaDetalles,
     enabledRecetaDetalles,
     setComponentesListadosReceta,
+    setRecetasListadas,
   } = useRecetasContext();
 
   const {
@@ -77,6 +79,12 @@ export default function RecetasDetalles() {
     }
   }, [updateRegistro, recetaDetalles, setComponentesListadosReceta]);
 
+  useEffect(() => {
+    if (recetaDetalles && recetaDetalles.relaciones_recetas.length > 0 && updateRegistro) {
+      setRecetasListadas(recetaDetalles.relaciones_recetas);
+    }
+  }, [recetaDetalles, setRecetasListadas, updateRegistro]);
+
   if (!showRecetasDetalles) return <></>;
 
   const handleCloseUpdate = () => {
@@ -109,8 +117,11 @@ export default function RecetasDetalles() {
     const formatData: TRecetasFormSchema = {
       nombre: recetaDetalles!.receta.nombre,
       componente_receta:
-        componentesReceta as TRecetasFormSchema["componente_receta"],
+      componentesReceta as TRecetasFormSchema["componente_receta"],
       notas: recetaDetalles!.receta.notas || "",
+      receta_relacionada: recetaDetalles!.relaciones_recetas.map(
+        ({ id }) => id,
+      ),
     };
 
     return (
@@ -169,6 +180,10 @@ export default function RecetasDetalles() {
         <TitleDetails>Detalles de la receta</TitleDetails>
         <DetailsTable />
         <DetailsComponentsTable />
+
+        {recetaDetalles?.relaciones_recetas && recetaDetalles?.relaciones_recetas.length > 0 && (
+          <DetailsRecetasRelacionadas />
+        )}
       </div>
     </div>
   );

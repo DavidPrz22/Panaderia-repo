@@ -29,6 +29,7 @@ export default function RecetasFormShared({
   const {
     recetaId,
     setComponentesListadosReceta,
+    setRecetasListadas,
   } = useRecetasContext();
 
   const {
@@ -70,6 +71,7 @@ export default function RecetasFormShared({
   const handleCancelButtonClick = () => {
     onClose();
     setComponentesListadosReceta([]);
+    setRecetasListadas([]);
   };
 
 

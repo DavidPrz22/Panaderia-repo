@@ -102,6 +102,7 @@ export type recetaDetallesItemComponente = {
 export type recetaDetallesItem = {
   receta: recetaItem;
   componentes: recetaDetallesItemComponente[];
+  relaciones_recetas: recetaRelacionada[];
 };
 
 export type recetaRelacionada = {

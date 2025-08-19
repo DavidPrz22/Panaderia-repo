@@ -21,6 +21,9 @@ export default function RecetaListSearchContainer({
             key={item.id}
             className="border-b border-gray-300 py-2 px-4 cursor-pointer hover:bg-gray-100"
             onClick={() => {
+                if (recetasListadas.find((receta) => receta.id === item.id)) {
+                    return;
+                }
                 setRecetasListadas([...recetasListadas, item]);
                 if (setValue) {
                     setValue("receta_relacionada", [...watch?.("receta_relacionada") || [], item.id]);

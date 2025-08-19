@@ -17,7 +17,7 @@ class RecetasViewSet(viewsets.ModelViewSet):
         nombre = data.get('nombre')
         notas = data.get('notas', '')
         componentes = data.get('componente_receta', [])
-        
+
         # Basic validation
         if not nombre:
             return Response({'error': 'El nombre es requerido'}, status=status.HTTP_400_BAD_REQUEST)
@@ -120,9 +120,18 @@ class RecetasViewSet(viewsets.ModelViewSet):
                         'tipo': 'Producto Intermedio'
                         })
 
+            relaciones_recetas = RelacionesRecetas.objects.filter(receta_principal=receta_id)
+            lista_relaciones_recetas = []
+            for relacion in relaciones_recetas:
+                lista_relaciones_recetas.append({
+                    'id': relacion.subreceta.id,
+                    'nombre': relacion.subreceta.nombre
+                })
+
             return Response({
                 'receta': receta_serializer.data,
-                'componentes': lista_componentes
+                'componentes': lista_componentes,
+                'relaciones_recetas': lista_relaciones_recetas
                     })
         except Recetas.DoesNotExist:
             return Response({'error': 'Receta not found'}, status=status.HTTP_404_NOT_FOUND)
@@ -200,6 +209,28 @@ class RecetasViewSet(viewsets.ModelViewSet):
                             receta=receta_instance, 
                             componente_producto_intermedio=componente
                         )
+                receta_relacionada_data = request.data.get('receta_relacionada', [])
+                receta_relacionadas_registradas = RelacionesRecetas.objects.filter(receta_principal=receta_instance)
+
+                current_related_ids = set(receta_relacionadas_registradas.values_list('subreceta_id', flat=True))
+                new_related_ids = set(receta_relacionada_data)
+
+                relationships_to_delete = receta_relacionadas_registradas.filter(
+                    subreceta_id__in=current_related_ids - new_related_ids
+                )
+                relationships_to_delete.delete()
+
+                # Create new relationships
+                ids_to_create = new_related_ids - current_related_ids
+                if ids_to_create:
+                    new_relationships = [
+                        RelacionesRecetas(
+                            receta_principal=receta_instance,
+                            subreceta_id=receta_id
+                        )
+                        for receta_id in ids_to_create
+                    ]
+                    RelacionesRecetas.objects.bulk_create(new_relationships)
 
                 return Response(serializer.data, status=status.HTTP_200_OK)
                 

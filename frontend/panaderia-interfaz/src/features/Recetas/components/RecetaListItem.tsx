@@ -31,7 +31,7 @@ export default function RecetaListItem({
 
   return (
     <div
-      className={`flex items-center justify-between text-md p-3 ${last ? "" : "border-b border-gray-300"}`}
+      className={`flex items-center justify-between text-md px-5 py-2 ${last ? "" : "border-b border-gray-300"}`}
     >
       {nombre}
       <div onClick={handleDelete} className="cursor-pointer">
