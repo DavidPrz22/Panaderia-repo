@@ -3,9 +3,10 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.db import transaction
 from apps.produccion.models import Recetas, RecetasDetalles, RelacionesRecetas
-from apps.inventario.models import MateriasPrimas, ProductosElaborados
+from apps.inventario.models import MateriasPrimas, ProductosElaborados, ProductosIntermedios
 from apps.produccion.serializers import RecetasSerializer, RecetasDetallesSerializer, RecetasSearchSerializer
 from django.db.models import Q
+
 
 class RecetasViewSet(viewsets.ModelViewSet):
     queryset = Recetas.objects.all()
@@ -116,7 +117,7 @@ class RecetasViewSet(viewsets.ModelViewSet):
                 elif receta_componente.componente_producto_intermedio:
                     lista_componentes.append({
                         'id': receta_componente.componente_producto_intermedio.id,
-                        'nombre': receta_componente.componente_producto_intermedio.nombre,
+                        'nombre': receta_componente.componente_producto_intermedio.nombre_producto,
                         'tipo': 'Producto Intermedio'
                         })
 
@@ -173,7 +174,7 @@ class RecetasViewSet(viewsets.ModelViewSet):
                 ]
                 
                 componentes_update_producto_intermedio = [
-                    ProductosElaborados.objects.get(id=componente.get('componente_id')) 
+                    ProductosIntermedios.objects.get(id=componente.get('componente_id')) 
                     for componente in componentes 
                     if componente.get('producto_intermedio') == True
                 ]

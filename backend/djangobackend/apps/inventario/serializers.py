@@ -44,11 +44,10 @@ class MateriaPrimaSerializer(serializers.ModelSerializer):
                 ]
 
 
-class MateriaPrimaSearchSerializer(serializers.ModelSerializer):
-    categoria_nombre = serializers.CharField(source='categoria.nombre_categoria', read_only=True)
-    class Meta:
-        model = MateriasPrimas
-        fields = ['id', 'nombre', 'categoria_nombre'] 
+class ComponentesSearchSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+    nombre = serializers.CharField()
+    tipo = serializers.CharField()
 
 
 class LotesMateriaPrimaSerializer(serializers.ModelSerializer):

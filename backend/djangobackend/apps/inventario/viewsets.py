@@ -1,8 +1,8 @@
 from rest_framework import viewsets, status
 from apps.inventario.models import MateriasPrimas, LotesMateriasPrimas, ProductosIntermedios, ProductosFinales, ProductosElaborados
 from apps.produccion.models import Recetas    
-from apps.inventario.serializers import MateriaPrimaSerializer, LotesMateriaPrimaSerializer, MateriaPrimaSearchSerializer, ProductosIntermediosSerializer, ProductosFinalesSerializer, ProductosIntermediosDetallesSerializer, ProductosElaboradosSerializer
-from django.db.models import Min, Sum
+from apps.inventario.serializers import ComponentesSearchSerializer, MateriaPrimaSerializer, LotesMateriaPrimaSerializer, ProductosIntermediosSerializer, ProductosFinalesSerializer, ProductosIntermediosDetallesSerializer, ProductosElaboradosSerializer
+from django.db.models import Min
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from datetime import datetime
@@ -13,18 +13,21 @@ class MateriaPrimaViewSet(viewsets.ModelViewSet):
     serializer_class = MateriaPrimaSerializer
 
 
-class MateriaPrimaSearchViewSet(viewsets.ModelViewSet):
-    queryset = MateriasPrimas.objects.all()
-    serializer_class = MateriaPrimaSearchSerializer
+class ComponenteSearchViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = MateriasPrimas.objects.none()
+    serializer_class = ComponentesSearchSerializer
 
-    @action(methods=['get'], detail=False, url_path='search-materia-prima')
-    def search_materia_prima(self, request):
+    def list(self, request, *args, **kwargs):
         search_query = request.query_params.get('search')
         if not search_query:
             return Response(status=status.HTTP_400_BAD_REQUEST, data={"error": "El parámetro 'search' es requerido"})
 
         materia_primas = MateriasPrimas.objects.filter(
             nombre__icontains=search_query
+        ).select_related('categoria')
+
+        productos_intermedios = ProductosIntermedios.objects.filter(
+            nombre_producto__icontains=search_query
         ).select_related('categoria')
 
         categorias_dict = defaultdict(list)
@@ -35,12 +38,22 @@ class MateriaPrimaSearchViewSet(viewsets.ModelViewSet):
                 'nombre': materia_prima.nombre,
                 'tipo': 'MateriaPrima'
             })
-        
-        materia_primas_por_categoria = [
-            {categoria: items} for categoria, items in categorias_dict.items()
-        ]
-        
-        return Response(materia_primas_por_categoria)
+
+        for intermedio in productos_intermedios:
+            categoria = intermedio.categoria.nombre_categoria
+            categorias_dict[categoria].append({
+                'id': intermedio.id,
+                'nombre': intermedio.nombre_producto,
+                'tipo': 'ProductoIntermedio'
+            })
+
+        # Use the serializer to format the data
+        componentes_por_categoria = []
+        for categoria, items in categorias_dict.items():
+            serializer = self.get_serializer(items, many=True)
+            componentes_por_categoria.append({categoria: serializer.data})
+
+        return Response(componentes_por_categoria)
 
 
 class LotesMateriaPrimaViewSet(viewsets.ModelViewSet):

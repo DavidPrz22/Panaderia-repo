@@ -12,7 +12,12 @@ export const componentesRecetaSearch = async (
 ): Promise<recetasSearchList[]> => {
   try {
     const response = await apiClient.get(
-      `/api/materiaprimasearch/search-materia-prima/?search=${search}`,
+      '/api/componentes-search/',
+      {
+        params: {
+          search
+        }
+      }
     );
     return response.data;
   } catch (error) {
