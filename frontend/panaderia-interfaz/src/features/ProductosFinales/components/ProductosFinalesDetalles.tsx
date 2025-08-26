@@ -1,102 +1,102 @@
 import { DeleteComponent } from "./DeleteComponent";
-import { useProductosIntermediosContext } from "@/context/ProductosIntermediosContext";
-import ProductosIntermediosFormShared from "./ProductosIntermediosFormShared";
+import { useProductosFinalesContext } from "@/context/ProductosFinalesContext";
+import ProductosFinalesFormShared from "./ProductosFinalesFormShared";
 import { TitleDetails } from "@/components/TitleDetails";
 import { DetailsTable } from "./DetailsTable";
-import { useGetProductosIntermediosDetalles } from "../hooks/queries/queries";
+import { useProductoFinalDetalles } from "../hooks/queries/queries";
 import { useEffect } from "react";
-import { useDeleteProductoIntermedioMutation } from "../hooks/mutations/productosIntermediosMutations";
+import { useDeleteProductoFinal } from "../hooks/mutations/productosFinalesMutations";
 import { PendingTubeSpinner } from "./PendingTubeSpinner";
 import { DetallesHeader } from "@/components/DetallesHeader";
 
-export default function ProductosIntermediosDetalles() {
+export default function ProductosFinalesDetalles() {
   const {
-    showProductosIntermediosDetalles,
+    showProductoDetalles,
+    setShowProductoDetalles,
     updateRegistro,
     setUpdateRegistro,
     setRegistroDelete,
-    setShowProductosIntermediosDetalles,
     registroDelete,
-    productoIntermedioId,
+    productoId,
     setIsLoadingDetalles,
-    enabledDetalles,
-    setEnabledDetalles,
-  } = useProductosIntermediosContext();
+    enabledProductoDetalles,
+    setEnabledProductoDetalles,
+  } = useProductosFinalesContext();
 
   const {
-    data: productoIntermediosDetalles,
+    data: productoFinalDetalles,
     isFetching: isFetchingDetalles,
     isSuccess: isSuccessDetalles,
-  } = useGetProductosIntermediosDetalles(productoIntermedioId!);
+  } = useProductoFinalDetalles(productoId!);
 
   const {
-    mutateAsync: deleteProductoIntermedio,
-    isPending: isPendingDeleteProductoIntermedio,
-  } = useDeleteProductoIntermedioMutation();
+    mutateAsync: deleteProductoFinal,
+    isPending: isPendingDeleteProductoFinal,
+  } = useDeleteProductoFinal();
 
   useEffect(() => {
-    if (isSuccessDetalles && productoIntermediosDetalles && enabledDetalles) {
-      setShowProductosIntermediosDetalles(true);
-      setEnabledDetalles(false);
+    if (isSuccessDetalles && productoFinalDetalles && enabledProductoDetalles) {
+      setShowProductoDetalles(true);
+      setEnabledProductoDetalles(false);
     }
   }, [
-    productoIntermedioId,
-    productoIntermediosDetalles,
+    productoId,
+    productoFinalDetalles,
     isSuccessDetalles,
-    enabledDetalles,
+    enabledProductoDetalles,
     setIsLoadingDetalles,
-    setShowProductosIntermediosDetalles,
-    setEnabledDetalles,
+    setShowProductoDetalles,
+    setEnabledProductoDetalles,
   ]);
 
   useEffect(() => {
     setIsLoadingDetalles(isFetchingDetalles);
   }, [isFetchingDetalles, setIsLoadingDetalles]);
 
-  if (!showProductosIntermediosDetalles) return <></>;
+  if (!showProductoDetalles) return <></>;
 
   const handleCloseUpdate = () => {
-    setShowProductosIntermediosDetalles(false);
+    setShowProductoDetalles(false);
     setUpdateRegistro(false);
   };
 
   const handleClose = () => {
-    setShowProductosIntermediosDetalles(false);
+    setShowProductoDetalles(false);
   };
 
   if (updateRegistro) {
 
     return (
-      <ProductosIntermediosFormShared
+      <ProductosFinalesFormShared
         title="Editar Producto Intermedio"
         isUpdate={true}
         onClose={handleCloseUpdate}
         onSubmitSuccess={handleCloseUpdate}
-        initialData={productoIntermediosDetalles!}
+        initialData={productoFinalDetalles!}
       />
     );
   }
-  console.log(productoIntermediosDetalles);
+  console.log(productoFinalDetalles);
   const handleDelete = async () => {
-    await deleteProductoIntermedio(productoIntermedioId!);
-    setShowProductosIntermediosDetalles(false);
+    await deleteProductoFinal(productoId!);
+    setShowProductoDetalles(false);
     setRegistroDelete(false);
   };
   return (
     <div className="flex flex-col gap-5 mx-8 border border-gray-200 p-5 rounded-lg shadow-md h-full relative">
       <DetallesHeader
-        title={productoIntermediosDetalles?.nombre_producto}
+        title={productoFinalDetalles?.nombre_producto}
         onEdit={() => setUpdateRegistro(true)}
         onDelete={() => setRegistroDelete(true)}
         onClose={handleClose}
       />
 
-      {registroDelete && productoIntermedioId !== null && (
+      {registroDelete && productoId !== null && (
         <DeleteComponent
           deleteFunction={handleDelete}
           cancelFunction={() => setRegistroDelete(false)}
-          isLoading={isPendingDeleteProductoIntermedio}
-          title="Eliminar Producto Intermedio"
+          isLoading={isPendingDeleteProductoFinal}
+          title="Eliminar Producto Final"
           buttonText="Eliminar"
         />
       )}
@@ -110,7 +110,7 @@ export default function ProductosIntermediosDetalles() {
       <div className="flex flex-col gap-6">
         <TitleDetails>Detalles</TitleDetails>
         <DetailsTable
-          productoIntermediosDetalles={productoIntermediosDetalles!}
+          productoFinalDetalles={productoFinalDetalles!}
         />
       </div>
     </div>

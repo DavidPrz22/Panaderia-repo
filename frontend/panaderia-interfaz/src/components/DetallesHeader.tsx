@@ -2,19 +2,19 @@ import Title from "@/components/Title";
 import Button from "@/components/Button";
 import { EditarIcon, BorrarIcon, CerrarIcon } from "@/assets/DashboardAssets";
 
-interface ProductosIntermediosDetallesHeaderProps {
+interface DetallesHeaderProps {
   title?: string;
   onEdit: () => void;
   onDelete: () => void;
   onClose: () => void;
 }
 
-export const ProductosIntermediosDetallesHeader = ({
+export const DetallesHeader = ({
   title,
   onEdit,
   onDelete,
   onClose,
-}: ProductosIntermediosDetallesHeaderProps) => {
+}: DetallesHeaderProps) => {
   return (
     <div className="flex justify-between items-center">
       <Title>{title}</Title>

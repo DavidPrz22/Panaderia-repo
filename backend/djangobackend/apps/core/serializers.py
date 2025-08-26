@@ -15,4 +15,4 @@ class CategoriaMateriaPrimaSerializer(serializers.ModelSerializer):
 class CategoriaProductoSerializer(serializers.ModelSerializer):
     class Meta:
         model = CategoriasProductosElaborados
-        fields = ['id', 'nombre_categoria', "es_intermediario"]
+        fields = ['id', 'nombre_categoria', 'es_intermediario']

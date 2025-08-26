@@ -1,21 +1,21 @@
 import RecetaSearchContainer from "./RecetaSearchContainer";
-import { useProductosIntermediosContext } from "@/context/ProductosIntermediosContext";
-import { useGetRecetasSearchMutation } from "../hooks/mutations/productosIntermediosMutations";
+import { useProductosFinalesContext } from "@/context/ProductosFinalesContext";
+import { useGetRecetasSearchMutation } from "../hooks/mutations/productosFinalesMutations";
 import { PendingTubeSpinner } from "./PendingTubeSpinner";
 import SearchIconContainer from "@/components/SearchIconContainer";
 import XIconContainer from "@/components/xIconContainer";
 import NoResults from "@/components/NoResults";
 import React, { useEffect, useState } from "react";
-import type { RecetaRelacionada, setValueProps } from "../types/types";
+import type { receta_relacionada, setValueProps } from "../types/types";
 
-export default function PIInputFormSearch({ setValue, initialData }: setValueProps & { initialData?: RecetaRelacionada }) {
+export default function PFInputFormSearch({ setValue, initialData }: setValueProps & { initialData?: receta_relacionada }) {
   const {
     searchList,
     searchTimer,
     setSearchTimer,
     setSearchList,
     recetaSearchInputRef,
-  } = useProductosIntermediosContext();
+  } = useProductosFinalesContext();
   const { mutate: getRecetasSearch, isPending } = useGetRecetasSearchMutation();
   const [isFocused, setIsFocused] = useState(false);
   const [completed, setCompleted] = useState(false);

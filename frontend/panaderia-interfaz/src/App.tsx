@@ -6,6 +6,7 @@ import MateriaPrimaPage from "./pages/MateriaPrimaPage";
 import { AuthProvider, useAuth, withAuth } from "./context/AuthContext";
 import ProductosIntermediosPage from "./pages/ProductosIntermediosPage";
 import RecetasPage from "./pages/RecetasPage";
+import ProductosElaboradosPage from "./pages/ProductosFinalesPage";
 // Create protected versions of your components
 const ProtectedLandingPage = withAuth(LandingPage);
 const ProtectedMateriaPrimaPage = withAuth(MateriaPrimaPage);
@@ -36,6 +37,10 @@ function App() {
             element={<ProtectedProductosIntermediosPage />}
           />
           <Route path="/dashboard/recetas" element={<RecetasPage />} />
+          <Route
+            path="/productos-elaborados"
+            element={<ProductosElaboradosPage />}
+          />
         </Routes>
       </AuthProvider>
     </BrowserRouter>

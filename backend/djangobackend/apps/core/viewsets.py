@@ -14,6 +14,6 @@ class CategoriaProductoIntermedioViewSet(viewsets.ModelViewSet):
     queryset = CategoriasProductosElaborados.objects.filter(es_intermediario=True)
     serializer_class = CategoriaProductoSerializer
 
-class CategoriaProductoElaboradoViewSet(viewsets.ModelViewSet):
+class CategoriaProductoFinalViewSet(viewsets.ModelViewSet):
     queryset = CategoriasProductosElaborados.objects.filter(es_intermediario=False)
     serializer_class = CategoriaProductoSerializer
