@@ -20,7 +20,7 @@ export const PFTableBody = () => {
           size={28}
           extraClass="absolute bg-white opacity-50 w-full h-full"
         />
-      ) : displayData ? (
+      ) : displayData.length > 0 ? (
         <PFTableRows data={displayData} />
       ) : (
         <NoDataMessage />

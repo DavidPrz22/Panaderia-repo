@@ -13,7 +13,7 @@ export default function SidebarDropdownCard({
   children: React.ReactNode;
   icon: string;
   onclick: (e: React.MouseEvent<HTMLDivElement>) => void;
-  elements: { url: string; title: string; id: string; link?: string }[];
+  elements: { icon: string; title: string; id: string; link?: string }[];
   id: string;
 }) {
   const [isOpen, setIsOpen] = useState(false);
@@ -58,7 +58,7 @@ export default function SidebarDropdownCard({
             return (
               <SidebarCard
                 key={index}
-                icon={el.url}
+                icon={el.icon}
                 onclick={handleClick}
                 id={el.id}
                 link={el.link}

@@ -7,7 +7,6 @@ import {
 } from "./productosFinalesQueryOptions";
 
 
-
 export const useGetProductosFinales = () => {
   return useQuery(productosFinalesQueryOptions());
 };

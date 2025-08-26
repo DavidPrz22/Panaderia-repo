@@ -16,6 +16,7 @@ import {
   ProductionIcon,
   ComprasIcon,
   ReportesIcon,
+  FinalesIcon,
 } from "@/assets/DashboardAssets";
 
 export default function Sidebar() {
@@ -75,13 +76,19 @@ export default function Sidebar() {
               icon={ProductosIcon}
               elements={[
                 {
-                  url: IntermediosIcon,
+                  icon: FinalesIcon,
+                  title: "Finales",
+                  id: "finales",
+                  link: "/dashboard/productos-finales",
+                },
+                {
+                  icon: IntermediosIcon,
                   title: "Intermedios",
                   id: "intermedios",
                   link: "/dashboard/productos-intermedios",
                 },
                 {
-                  url: ReventaIcon,
+                  icon: ReventaIcon,
                   title: "Reventa",
                   id: "reventa",
                 },
@@ -96,17 +103,17 @@ export default function Sidebar() {
               icon={VentaIcon}
               elements={[
                 {
-                  url: ClientesIcon,
+                  icon: ClientesIcon,
                   title: "Clientes",
                   id: "clientes",
                 },
                 {
-                  url: PedidosIcon,
+                  icon: PedidosIcon,
                   title: "Pedidos",
                   id: "pedidos",
                 },
                 {
-                  url: PuntoVentaIcon,
+                  icon: PuntoVentaIcon,
                   title: "Punto de Venta",
                   id: "punto-venta",
                 },

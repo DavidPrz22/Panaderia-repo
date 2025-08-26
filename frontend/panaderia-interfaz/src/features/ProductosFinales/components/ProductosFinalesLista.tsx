@@ -14,8 +14,8 @@ export default function ProductosFinalesLista({
         <PFTableHeader
           headers={[
             "ID",
-            "SKU",
             "Nombre",
+            "SKU",
             "Unidad de Venta",
             "Precio (USD)",
             "Punto de reorden",

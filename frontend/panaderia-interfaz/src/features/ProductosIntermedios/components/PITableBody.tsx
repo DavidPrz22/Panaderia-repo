@@ -23,7 +23,7 @@ export const PITableBody = () => {
           size={28}
           extraClass="absolute bg-white opacity-50 w-full h-full"
         />
-      ) : displayData ? (
+      ) : displayData.length > 0 ? (
         <PITableRows data={displayData} />
       ) : (
         <NoDataMessage />
