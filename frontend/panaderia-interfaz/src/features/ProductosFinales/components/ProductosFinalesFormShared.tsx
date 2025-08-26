@@ -3,9 +3,9 @@ import type { ProductosFinalesFormSharedProps } from "@/features/ProductosFinale
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 
-import type {
+import {
   productoFinalSchema,
-  TProductoFinalSchema
+  type TProductoFinalSchema
 } from "../schemas/schemas";
 
 import { useProductosFinalesContext } from "@/context/ProductosFinalesContext";
@@ -41,14 +41,14 @@ export default function ProductosFinalesFormShared({
     if (isUpdate && initialData) {
       return (
         <>
-          <option value={initialData.categoria_producto.id}>
+          <option value={initialData.categoria.id}>
             {
-              categoriasProductoIntermedio.find(
-                (categoria) => categoria.id === initialData.categoria_producto.id,
+              categoriasProductoFinal.find(
+                (categoria) => categoria.id === initialData.categoria.id,
               )?.nombre_categoria
             }
           </option>
-          {categoriasProductoIntermedio.map(
+          {categoriasProductoFinal.map(
             ({
               id,
               nombre_categoria,
@@ -56,7 +56,7 @@ export default function ProductosFinalesFormShared({
               id: number;
               nombre_categoria: string;
             }) =>
-              id !== initialData.categoria_producto.id && (
+              id !== initialData.categoria.id && (
                 <option key={id} value={id}>
                   {nombre_categoria}
                 </option>
@@ -69,7 +69,7 @@ export default function ProductosFinalesFormShared({
     return (
       <>
         <option value="">Seleccione una categoria</option>
-        {categoriasProductoIntermedio.map(
+        {categoriasProductoFinal.map(
           ({
             id,
             nombre_categoria,
@@ -90,24 +90,24 @@ export default function ProductosFinalesFormShared({
     if (isUpdate && initialData) {
       return (
         <>
-          <option value={initialData.unidad_medida_nominal_producto.id}>
+          <option value={initialData.unidad_medida.id}>
             {
               unidadesMedida.find(
-                (unidad) => unidad.id === initialData.unidad_medida_nominal_producto.id,
-              )?.nombre_completo
+                (unidad) => unidad.id === initialData.unidad_medida.id,
+              )?.nombre_medida
             }
           </option>
           {unidadesMedida.map(
             ({
               id,
-              nombre_completo,
+              nombre_medida,
             }: {
               id: number;
-              nombre_completo: string;
+              nombre_medida: string;
             }) =>
-              id !== initialData.unidad_medida_nominal_producto.id && (
+              id !== initialData.unidad_medida.id && (
                 <option key={id} value={id}>
-                  {nombre_completo}
+                  {nombre_medida}
                 </option>
               ),
           )}
@@ -121,13 +121,13 @@ export default function ProductosFinalesFormShared({
         {unidadesMedida.map(
           ({
             id,
-            nombre_completo,
+            nombre_medida,
           }: {
             id: number;
-            nombre_completo: string;
+            nombre_medida: string;
           }) => (
             <option key={id} value={id}>
-              {nombre_completo}
+              {nombre_medida}
             </option>
           ),
         )}

@@ -32,8 +32,7 @@ export type ProductoFinalDetalles = {
   stock_actual: number;
   punto_reorden: number;
   categoria: { id: number; nombre_categoria: string };
-  unidad_medida_nominal: { id: number; nombre_medida: string };
-  unidad_venta : { id: number, nombre_medida: string },
+  unidad_medida: { id: number; nombre_medida: string };
   tipo_manejo_venta: 'UNIDAD' | 'Unidad' | 'PESO_VOLUMEN' | 'Peso_Volumen';
   descripcion: string;
   fecha_creacion_registro: string;
