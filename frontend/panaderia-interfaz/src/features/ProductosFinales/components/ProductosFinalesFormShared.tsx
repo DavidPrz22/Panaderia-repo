@@ -12,7 +12,7 @@ import { useProductosFinalesContext } from "@/context/ProductosFinalesContext";
 
 import { PFFormInputContainer } from "./PFFormInputContainer";
 import { PFFormSelectContainer } from "./PFFormSelectContainer";
-
+import PFInputFormSearch from "./PFInputFormSearch";
 import { PendingTubeSpinner } from "./PendingTubeSpinner";
 
 export default function ProductosFinalesFormShared({
@@ -94,40 +94,39 @@ export default function ProductosFinalesFormShared({
             {
               unidadesMedida.find(
                 (unidad) => unidad.id === initialData.unidad_medida.id,
-              )?.nombre_medida
+              )?.nombre_completo
             }
           </option>
           {unidadesMedida.map(
             ({
               id,
-              nombre_medida,
+              nombre_completo,
             }: {
               id: number;
-              nombre_medida: string;
+              nombre_completo: string;
             }) =>
               id !== initialData.unidad_medida.id && (
                 <option key={id} value={id}>
-                  {nombre_medida}
+                  {nombre_completo}
                 </option>
               ),
           )}
         </>
       );
     }
-
     return (
       <>
         <option value="">Seleccione una unidad de medida</option>
         {unidadesMedida.map(
           ({
             id,
-            nombre_medida,
+            nombre_completo,
           }: {
             id: number;
-            nombre_medida: string;
+            nombre_completo: string;
           }) => (
             <option key={id} value={id}>
-              {nombre_medida}
+              {nombre_completo}
             </option>
           ),
         )}
@@ -165,7 +164,80 @@ export default function ProductosFinalesFormShared({
         </div>
         <div className="flex flex-col gap-2 px-5 bg-white">
           <div className="flex flex-col gap-2 border-b border-gray-300 py-8">
-            HOLA
+            <PFFormInputContainer
+              inputType="text"
+              title="Nombre del Producto"
+              name="nombre_producto"
+              register={register}
+              errors={errors}
+            />
+            <PFFormInputContainer
+              inputType="text"
+              title="SKU"
+              name="SKU"
+              register={register}
+              errors={errors}
+            />
+            <PFFormInputContainer
+              title="Receta Relacionada"
+              inputType="text"
+              name="receta_relacionada"
+              register={register}
+              errors={errors}
+              search={true}
+              setValue={setValue}
+              initialData={recetaRelacionadaValidatedData}
+            />
+            <PFFormInputContainer
+              inputType="number"
+              title="Precio de Venta (USD)"
+              name="precio_venta_usd"
+              register={register}
+              errors={errors}
+              optional={true}
+            />
+            <PFFormInputContainer
+              inputType="number"
+              title="Punto de Reorden"
+              name="punto_reorden"
+              register={register}
+              errors={errors}
+            />
+            <PFFormSelectContainer
+              title="Unidad de Venta"
+              name="unidad_venta"
+              register={register}
+              errors={errors}
+            >
+              {renderUnidadesMedida()}
+            </PFFormSelectContainer>
+  
+            <PFFormSelectContainer
+              title="Unidad Nominal"
+              name="unidad_medida_nominal"
+              register={register}
+              errors={errors}
+            >
+              {renderUnidadesMedida()}
+            </PFFormSelectContainer>
+            
+            <PFFormSelectContainer
+              title="Categoria del Producto"
+              name="categoria"
+              register={register}
+              errors={errors}
+            >
+              {renderCategoriasProductoIntermedio()}
+            </PFFormSelectContainer>
+
+            <PFFormInputContainer
+              inputType="textarea"
+              title="Descripción"
+              name="descripcion"
+              register={register}
+              errors={errors}
+              optional
+            />
           </div>
         </div>
         <div className="flex gap-2 justify-end py-4 px-5 bg-white">
