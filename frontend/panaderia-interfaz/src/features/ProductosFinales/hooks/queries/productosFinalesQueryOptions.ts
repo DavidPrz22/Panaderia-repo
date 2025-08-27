@@ -10,13 +10,15 @@ import {
 export const productoFinalDetallesQueryOptions = (id: number) =>
   queryOptions({
     queryKey: ["DetallesProductoFinal", id],
-    queryFn: () => getProductoFinalDetalles(id)
+    queryFn: () => getProductoFinalDetalles(id),
+    staleTime: Infinity,
   });
 
 export const productosFinalesQueryOptions = () =>
   queryOptions({
     queryKey: ["productosFinales"],
-    queryFn: () => getProductosFinales()
+    queryFn: () => getProductosFinales(),
+    staleTime: Infinity,
   });
 
 

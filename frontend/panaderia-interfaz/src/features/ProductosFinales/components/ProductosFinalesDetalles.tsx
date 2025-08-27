@@ -66,13 +66,15 @@ export default function ProductosFinalesDetalles() {
 
   if (updateRegistro) {
 
+    if (!productoFinalDetalles) return null
+
     return (
       <ProductosFinalesFormShared
         title="Editar Producto Intermedio"
         isUpdate={true}
         onClose={handleCloseUpdate}
         onSubmitSuccess={handleCloseUpdate}
-        initialData={productoFinalDetalles!}
+        initialData={productoFinalDetalles}
       />
     );
   }
@@ -104,7 +106,7 @@ export default function ProductosFinalesDetalles() {
       {isFetchingDetalles && (
         <PendingTubeSpinner
           size={28}
-          extraClass="absolute bg-white opacity-50 w-full h-full"
+          extraClass="absolute bg-white opacity-50 w-full h-full "
         />
       )}
       <div className="flex flex-col gap-6">

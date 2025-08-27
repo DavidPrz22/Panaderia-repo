@@ -21,7 +21,7 @@ export const DeleteComponent = ({
   };
 
   return (
-    <div className="fixed top-0 left-0 w-full h-full flex justify-center items-center bg-[rgba(0,0,0,0.5)] z-50">
+    <div className="fixed top-0 left-0 w-full h-full flex justify-center items-center bg-[rgba(0,0,0,0.5)] z-150">
       <div className="flex flex-col gap-5 w-[500px] bg-white rounded-lg shadow-md  p-5">
         <div className="flex flex-col gap-5 justify-between items-center">
           <Title extraClass="text-center">{title}</Title>

@@ -11,7 +11,7 @@ export type ProductoFinal = {
   nombre_producto: string;
   SKU: string;
   unidad_venta: string;
-  precio: number;
+  precio_venta_usd: number;
   stock_actual: string;
   punto_reorden: number;
   categoria: string;
@@ -31,8 +31,9 @@ export type ProductoFinalDetalles = {
   precio_venta_usd: number | null;
   stock_actual: number;
   punto_reorden: number;
-  categoria: { id: number; nombre_categoria: string };
-  unidad_medida: { id: number; nombre_completo: string };
+  categoria_producto: { id: number; nombre_categoria: string };
+  unidad_medida_nominal_producto: { id: number; nombre_completo: string };
+  unidad_venta_producto: { id: number; nombre_completo: string };
   tipo_manejo_venta: 'UNIDAD' | 'Unidad' | 'PESO_VOLUMEN' | 'Peso_Volumen';
   descripcion: string;
   fecha_creacion_registro: string;

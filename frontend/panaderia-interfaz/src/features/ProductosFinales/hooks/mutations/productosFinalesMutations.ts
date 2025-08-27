@@ -4,7 +4,7 @@ import type { TProductoFinalSchema } from "../../schemas/schemas";
 
 import { productosFinalesQueryOptions , productoFinalDetallesQueryOptions } from "../queries/productosFinalesQueryOptions";
 
-export const useAddProductoFinal = () => {
+export const useCreateProductoFinal = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (data: TProductoFinalSchema) =>
@@ -31,9 +31,9 @@ export const useDeleteProductoFinal = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (id: number) => deleteProductoFinal(id),
-    onSuccess: (_, id ) => {
+    onSuccess: (id) => {
       queryClient.invalidateQueries({ queryKey: productosFinalesQueryOptions().queryKey  });
-      queryClient.invalidateQueries({ queryKey: productoFinalDetallesQueryOptions(id).queryKey  });
+      queryClient.removeQueries({ queryKey: productoFinalDetallesQueryOptions(id).queryKey  });
     },
   });
 };

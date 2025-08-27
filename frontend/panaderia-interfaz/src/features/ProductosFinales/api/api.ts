@@ -1,11 +1,12 @@
 import apiClient from "@/api/client";
-import type { CategoriaProductoFinal, ProductoFinalDetalles, ProductosFinalesList } from "../types/types";
+import type { CategoriaProductoFinal, ProductoFinalDetalles, ProductosFinalesList, recetasSearchItem } from "../types/types";
 import type { TProductoFinalSchema } from "../schemas/schemas";
 import type { receta_relacionada, UnidadesDeMedida } from "../types/types"; 
 
 export const getProductosFinales = async (): Promise<ProductosFinalesList> => {
   try {
     const response = await apiClient.get("/api/productosfinales/");
+    console.log(response.data);
     return response.data;
   } catch (error) {
     console.error("Error fetching productos finales:", error);
@@ -17,7 +18,7 @@ export const getProductoFinalDetalles = async (
   id: number
 ): Promise<ProductoFinalDetalles> => {
   try {
-    const response = await apiClient.get(`/api/productosfinales/${id}/`);
+    const response = await apiClient.get(`/api/productosfinales-detalles/${id}/`);
     return response.data;
   } catch (error) {
     console.error("Error fetching producto elaborado:", error);
@@ -62,7 +63,7 @@ export const deleteProductoFinal = async (id: number) => {
 
 export const getRecetasSearch = async (
   search: string
-): Promise<receta_relacionada[]> => {
+): Promise<recetasSearchItem[]> => {
   try {
     const response = await apiClient.get(
       `/api/recetas-search/list_recetas/?search=${search}`,

@@ -87,16 +87,16 @@ export const DetailsTable = ({
           {productoFinalDetalles.precio_venta_usd || '-'}
         </DetailFieldValue>
         <DetailFieldValue extraClass="min-h-[25px] ">
-          {productoFinalDetalles.unidad_venta.nombre_medida || '-'}
+          {productoFinalDetalles.unidad_venta_producto.nombre_completo || '-'}
         </DetailFieldValue>
         <DetailFieldValue extraClass="min-h-[25px] ">
           {productoFinalDetalles.stock_actual || '-'}
         </DetailFieldValue>
         <DetailFieldValue extraClass="min-h-[25px] ">
-          {productoFinalDetalles.unidad_medida_nominal.nombre_medida || '-'}
+          {productoFinalDetalles.unidad_medida_nominal_producto.nombre_completo || '-'}
         </DetailFieldValue>
         <DetailFieldValue extraClass="min-h-[25px] ">
-          {productoFinalDetalles.categoria.nombre_categoria || '-'}
+          {productoFinalDetalles.categoria_producto.nombre_categoria || '-'}
         </DetailFieldValue>
         <DetailFieldValue extraClass="min-h-[25px] ">
           {productoFinalDetalles.tipo_manejo_venta || '-'}

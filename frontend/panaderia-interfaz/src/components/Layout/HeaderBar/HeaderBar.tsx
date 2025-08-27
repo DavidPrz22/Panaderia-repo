@@ -5,7 +5,7 @@ import { NotificationIcon, ConfigIcon } from "@/assets/DashboardAssets";
 
 export default function HeaderBar() {
   return (
-    <div className="fixed flex font-[Roboto] items-center top-0 py-3 shadow-md bg-white z-[9999] left-(--sidebar-width) w-[calc(100%-var(--sidebar-width))] max-h-(--header-height)">
+    <div className="fixed flex font-[Roboto] items-center top-0 py-3 shadow-md bg-white z-[149] left-(--sidebar-width) w-[calc(100%-var(--sidebar-width))] max-h-(--header-height)">
       <div className="flex-1 flex items-center justify-center">
         <HeaderPlusButton />
       </div>
