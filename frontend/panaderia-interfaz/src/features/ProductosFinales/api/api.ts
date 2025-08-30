@@ -1,7 +1,7 @@
 import apiClient from "@/api/client";
 import type { CategoriaProductoFinal, ProductoFinalDetalles, ProductosFinalesList, recetasSearchItem } from "../types/types";
 import type { TProductoFinalSchema } from "../schemas/schemas";
-import type { receta_relacionada, UnidadesDeMedida } from "../types/types"; 
+import type { UnidadesDeMedida } from "../types/types"; 
 
 export const getProductosFinales = async (): Promise<ProductosFinalesList> => {
   try {

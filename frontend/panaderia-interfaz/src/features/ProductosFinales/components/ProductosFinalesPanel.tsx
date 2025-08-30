@@ -15,7 +15,6 @@ export default function ProductosFinalesPanel() {
     showProductoDetalles,
     setUnidadesMedida,
     setCategoriasProductoFinal,
-    isLoadingDetalles,
   } = useProductosFinalesContext();
 
   const [{ data: unidadesMedida }, { data: categoriasProductoFinal }] =
@@ -36,7 +35,7 @@ export default function ProductosFinalesPanel() {
     <>
       <div className="flex flex-col gap-6 h-full">
         <FilterSearch />
-        <ProductosFinalesLista isLoadingDetalles={isLoadingDetalles} />
+        <ProductosFinalesLista />
       </div>
     </>
   );
