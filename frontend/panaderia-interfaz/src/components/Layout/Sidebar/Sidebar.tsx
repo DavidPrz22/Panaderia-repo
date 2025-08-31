@@ -136,6 +136,7 @@ export default function Sidebar() {
               icon={ProductionIcon}
               onclick={handleClick}
               id="produccion"
+              link="/dashboard/produccion"
             >
               Producción
             </SidebarCard>

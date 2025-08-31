@@ -7,11 +7,13 @@ import { AuthProvider, useAuth, withAuth } from "./context/AuthContext";
 import ProductosIntermediosPage from "./pages/ProductosIntermediosPage";
 import RecetasPage from "./pages/RecetasPage";
 import ProductosFinalesPage from "./pages/ProductosFinalesPage";
+import ProductionPage from "./pages/ProductionPage";
 // Create protected versions of your components
 const ProtectedLandingPage = withAuth(LandingPage);
 const ProtectedMateriaPrimaPage = withAuth(MateriaPrimaPage);
 const ProtectedProductosIntermediosPage = withAuth(ProductosIntermediosPage);
 const ProtectedProductosFinalesPage = withAuth(ProductosFinalesPage);
+const ProtectedProductionPage = withAuth(ProductionPage);
 function Logout() {
   // This will be handled by the AuthProvider's logout method
   const { logout } = useAuth();
@@ -45,6 +47,10 @@ function App() {
           <Route 
           path="/dashboard/productos-finales" 
           element={<ProtectedProductosFinalesPage />} 
+          />
+          <Route 
+          path="/dashboard/produccion" 
+          element={<ProtectedProductionPage />} 
           />
         </Routes>
       </AuthProvider>
