@@ -1,7 +1,9 @@
 import { SearchIconDark } from "@/assets/DashboardAssets";
+import { ProductSearchItem } from "./ProductSearchItem";
+
 export const ProductionInputProduct = ({ title }: { title: string }) => {
   return (
-    <div className="flex flex-1 flex-col gap-2 w-full">
+    <div className="flex flex-1 flex-col gap-2 w-full relative">
       <div className="font-semibold font-[Roboto]">{title}</div>
       <div className="flex gap-2 relative">
         <div className="absolute top-3 left-3">
@@ -14,6 +16,12 @@ export const ProductionInputProduct = ({ title }: { title: string }) => {
             placeholder="Busca un producto..."
           />
         </div>
+      </div>
+      <div className="absolute top-[107%] left-0 max-h-[400px] w-full overflow-auto bg-white border border-gray-300 border-b-0 rounded-md shadow-md z-10">
+        <ProductSearchItem product="Producto 1" />
+        <ProductSearchItem product="Producto 2" />
+        <ProductSearchItem product="Producto 3" />
+        <ProductSearchItem product="Producto 4" />
       </div>
     </div>
   );
