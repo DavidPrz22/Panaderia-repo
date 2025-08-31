@@ -1,6 +1,6 @@
 export const ProductionComponentItem = ({ title, stock, unit }: { title: string; stock: number; unit: string }) => {
   return (
-    <div className="flex items-center justify-between px-10 py-3 border border-gray-200 rounded-lg">
+    <div className="flex lg:flex-row flex-col lg:items-center justify-between px-10 py-3 border border-gray-200 rounded-lg gap-2">
         <div>
             <h2 className="flex gap-2 text-lg font-semibold mb-2">{title} 
                 <span className=" bg-gray-200 text-sm px-2 py-0.5 rounded-sm font-semibold">{unit}</span>

@@ -5,9 +5,9 @@ export const ProductionTypeContainer = ( ) => {
                 <div className="text-lg font-semibold">
                     Tipo de Producto
                 </div>
-                <div className="flex items-center gap-4">
+                <div className="flex lg:flex-row flex-col items-center gap-4">
                     <ProductionRadioInput 
-                        name="producto-final" 
+                        name="producto-final"
                         id="producto-final" 
                         label="Producto Final" />
                     <ProductionRadioInput 

@@ -1,7 +1,7 @@
 import { SearchIconDark } from "@/assets/DashboardAssets";
 export const ProductionInputProduct = ({title}:{title: string}) => {
   return (
-    <div className="flex flex-1 flex-col gap-2">
+    <div className="flex flex-1 flex-col gap-2 w-full">
                         <div className="font-semibold font-[Roboto]">{title}</div>
                         <div className="flex gap-2 relative">
                             <div className="absolute top-3 left-3">
