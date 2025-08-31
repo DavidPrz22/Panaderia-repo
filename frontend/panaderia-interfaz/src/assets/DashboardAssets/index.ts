@@ -33,3 +33,4 @@ export { default as XIcon } from "./X.svg";
 export { default as XRedIcon } from "./XRed.svg";
 export { default as FinalesIcon } from "./Finales.svg";
 export { default as SearchIconDark } from "./SearchDark.svg";
+export { default as FactoryIcon } from "./Factory.svg";

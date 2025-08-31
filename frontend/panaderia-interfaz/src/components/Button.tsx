@@ -2,6 +2,7 @@ export default function Button({
   children,
   type,
   onClick,
+  disabled
 }: {
   children: React.ReactNode;
   type: "submit" | "cancel" | "delete" | "edit" | "close" | "add";
@@ -12,6 +13,7 @@ export default function Button({
     <button
       onClick={onClick}
       type="submit"
+      disabled={disabled}
       className={`
         ${type === "submit" ? "bg-blue-500 text-white hover:bg-blue-600 border-none rounded-md px-4 py-2" : ""} 
         ${type === "cancel" ? "text-black hover:bg-gray-100 border border-gray-300 rounded-md px-4 py-2" : ""}
