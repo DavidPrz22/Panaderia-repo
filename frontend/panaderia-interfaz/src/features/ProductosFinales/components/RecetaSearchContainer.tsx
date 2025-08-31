@@ -10,8 +10,7 @@ export default function RecetaSearchContainer({
   searchList: recetasSearchItem[];
   setValue?: UseFormSetValue<TProductoFinalSchema>;
 }) {
-  const { setSearchList, recetaSearchInputRef } =
-    useProductosFinalesContext();
+  const { setSearchList, recetaSearchInputRef } = useProductosFinalesContext();
   return (
     <div className="absolute flex flex-col top-[100%] left-0 w-full max-h-[247px] overflow-y-auto border border-gray-300 rounded-md shadow-md bg-white z-10">
       {searchList.map((item) => (

@@ -3,8 +3,7 @@ import { PFTableRows } from "./PFTablerows";
 import { PendingTubeSpinner } from "./PendingTubeSpinner";
 
 export const PFTableBody = () => {
-  const { data: productosFinales, isFetching } =
-    useGetProductosFinales();
+  const { data: productosFinales, isFetching } = useGetProductosFinales();
   const displayData = productosFinales || [];
 
   const NoDataMessage = () => (

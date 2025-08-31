@@ -16,8 +16,6 @@ export default function RecetasFormInputContainer({
   onChange,
   placeholder,
 }: RecetasFormInputContainerProps) {
-
-  
   function handleRecetaBusqueda() {
     let inputElement;
     if (recetaBusqueda) {

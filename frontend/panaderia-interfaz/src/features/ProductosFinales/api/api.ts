@@ -1,7 +1,12 @@
 import apiClient from "@/api/client";
-import type { CategoriaProductoFinal, ProductoFinalDetalles, ProductosFinalesList, recetasSearchItem } from "../types/types";
+import type {
+  CategoriaProductoFinal,
+  ProductoFinalDetalles,
+  ProductosFinalesList,
+  recetasSearchItem,
+} from "../types/types";
 import type { TProductoFinalSchema } from "../schemas/schemas";
-import type { UnidadesDeMedida } from "../types/types"; 
+import type { UnidadesDeMedida } from "../types/types";
 
 export const getProductosFinales = async (): Promise<ProductosFinalesList> => {
   try {
@@ -15,10 +20,12 @@ export const getProductosFinales = async (): Promise<ProductosFinalesList> => {
 };
 
 export const getProductoFinalDetalles = async (
-  id: number
+  id: number,
 ): Promise<ProductoFinalDetalles> => {
   try {
-    const response = await apiClient.get(`/api/productosfinales-detalles/${id}/`);
+    const response = await apiClient.get(
+      `/api/productosfinales-detalles/${id}/`,
+    );
     return response.data;
   } catch (error) {
     console.error("Error fetching producto elaborado:", error);
@@ -26,9 +33,7 @@ export const getProductoFinalDetalles = async (
   }
 };
 
-export const registerProductoFinal = async (
-  data: TProductoFinalSchema
-) => {
+export const registerProductoFinal = async (data: TProductoFinalSchema) => {
   try {
     const response = await apiClient.post("/api/productosfinales/", data);
     return response.data;
@@ -40,7 +45,7 @@ export const registerProductoFinal = async (
 
 export const updateProductoFinal = async (
   id: number,
-  data: TProductoFinalSchema
+  data: TProductoFinalSchema,
 ) => {
   try {
     const response = await apiClient.put(`/api/productosfinales/${id}/`, data);
@@ -62,7 +67,7 @@ export const deleteProductoFinal = async (id: number) => {
 };
 
 export const getRecetasSearch = async (
-  search: string
+  search: string,
 ): Promise<recetasSearchItem[]> => {
   try {
     const response = await apiClient.get(
@@ -89,16 +94,13 @@ export const getCategoriasProductoFinal = async (): Promise<
   CategoriaProductoFinal[]
 > => {
   try {
-    const response = await apiClient.get(
-      "/api/categorias-producto-final/",
-    );
+    const response = await apiClient.get("/api/categorias-producto-final/");
     return response.data;
   } catch (error) {
     console.error(error);
     return [];
   }
 };
-
 
 export const removeRecetaRelacionada = async (id: number) => {
   try {

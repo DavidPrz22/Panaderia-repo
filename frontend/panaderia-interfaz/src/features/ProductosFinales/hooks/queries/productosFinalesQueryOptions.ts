@@ -3,9 +3,8 @@ import {
   getProductoFinalDetalles,
   getProductosFinales,
   getUnidadesMedida,
-  getCategoriasProductoFinal
+  getCategoriasProductoFinal,
 } from "../../api/api";
-
 
 export const productoFinalDetallesQueryOptions = (id: number) =>
   queryOptions({
@@ -21,15 +20,14 @@ export const productosFinalesQueryOptions = () =>
     staleTime: Infinity,
   });
 
+export const unidadesMedidaQueryOptions = {
+  queryKey: ["unidades-medida"],
+  queryFn: getUnidadesMedida,
+  staleTime: Infinity,
+};
 
-  export const unidadesMedidaQueryOptions = {
-    queryKey: ["unidades-medida"],
-    queryFn: getUnidadesMedida,
-    staleTime: Infinity,
-  };
-  
-  export const categoriasProductoFinalQueryOptions = {
-    queryKey: ["categorias-producto-final"],
-    queryFn: getCategoriasProductoFinal,
-    staleTime: Infinity,
-  };
+export const categoriasProductoFinalQueryOptions = {
+  queryKey: ["categorias-producto-final"],
+  queryFn: getCategoriasProductoFinal,
+  staleTime: Infinity,
+};

@@ -39,7 +39,11 @@ export default function RecetaComponentsContainer({
 
     document.addEventListener("click", handleClickOutside);
     return () => document.removeEventListener("click", handleClickOutside);
-  }, [searchListActiveComponentes, setSearchListActiveComponentes, setSearchListComponentes]);
+  }, [
+    searchListActiveComponentes,
+    setSearchListActiveComponentes,
+    setSearchListComponentes,
+  ]);
 
   const {
     mutateAsync: componentesRecetaSearchMutation,

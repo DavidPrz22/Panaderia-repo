@@ -65,8 +65,7 @@ export default function ProductosFinalesDetalles() {
   };
 
   if (updateRegistro) {
-
-    if (!productoFinalDetalles) return null
+    if (!productoFinalDetalles) return null;
 
     return (
       <ProductosFinalesFormShared
@@ -111,9 +110,7 @@ export default function ProductosFinalesDetalles() {
       )}
       <div className="flex flex-col gap-6">
         <TitleDetails>Detalles</TitleDetails>
-        <DetailsTable
-          productoFinalDetalles={productoFinalDetalles!}
-        />
+        <DetailsTable productoFinalDetalles={productoFinalDetalles!} />
       </div>
     </div>
   );

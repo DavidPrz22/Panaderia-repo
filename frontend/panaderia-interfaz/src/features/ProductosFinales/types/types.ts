@@ -19,12 +19,14 @@ export type ProductoFinal = {
 
 export type ProductosFinalesList = ProductoFinal[];
 
-export type receta_relacionada = {
-  id: number;
-  nombre: string;
-} | false;
+export type receta_relacionada =
+  | {
+      id: number;
+      nombre: string;
+    }
+  | false;
 
-export type ProductoFinalDetalles = { 
+export type ProductoFinalDetalles = {
   id: number;
   nombre_producto: string;
   SKU: string;
@@ -34,12 +36,12 @@ export type ProductoFinalDetalles = {
   categoria_producto: { id: number; nombre_categoria: string };
   unidad_medida_nominal_producto: { id: number; nombre_completo: string };
   unidad_venta_producto: { id: number; nombre_completo: string };
-  tipo_manejo_venta: 'UNIDAD' | 'Unidad' | 'PESO_VOLUMEN' | 'Peso_Volumen';
+  tipo_manejo_venta: "UNIDAD" | "Unidad" | "PESO_VOLUMEN" | "Peso_Volumen";
   descripcion: string;
   fecha_creacion_registro: string;
   fecha_modificacion_registro: string;
   receta_relacionada: receta_relacionada | null;
-}
+};
 
 export type PFFormInputContainerProps = {
   inputType: string;
@@ -50,7 +52,7 @@ export type PFFormInputContainerProps = {
   optional?: boolean;
   search?: boolean;
   initialData?: receta_relacionada;
-}
+};
 
 export type setValueProps = {
   setValue?: UseFormSetValue<TProductoFinalSchema>;
@@ -71,26 +73,26 @@ export type PFFormSelectContainerProps = {
   errors: FieldErrors;
   optional?: boolean;
   children: React.ReactNode;
-}
+};
 
 export type CategoriaProductoFinal = {
   id: number;
   nombre_categoria: string;
 };
 
-export type UnidadesDeMedida = { 
+export type UnidadesDeMedida = {
   id: number;
   nombre_completo: string;
-}
+};
 
 export type recetasSearchItem = {
   id: number;
   nombre: string;
-}
+};
 
 export type PFFormInputProps = {
   typeInput: string;
   name: Path<TProductoFinalSchema>;
   placeholder?: string;
   register: UseFormRegister<TProductoFinalSchema>;
-}
+};

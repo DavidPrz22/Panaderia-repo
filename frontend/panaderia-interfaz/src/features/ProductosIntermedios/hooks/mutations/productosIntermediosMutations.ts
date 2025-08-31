@@ -71,8 +71,14 @@ export const useDeleteProductoIntermedioMutation = () => {
 export const useUpdateProductosIntermediosMutation = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({id, data}: {id: number, data: TProductosIntermediosSchema}) => updateProductoIntermedio(id, data),
-    onSuccess: (_, {id}) => {
+    mutationFn: ({
+      id,
+      data,
+    }: {
+      id: number;
+      data: TProductosIntermediosSchema;
+    }) => updateProductoIntermedio(id, data),
+    onSuccess: (_, { id }) => {
       queryClient.invalidateQueries({
         queryKey: productosIntermediosQueryOptions.queryKey,
       });

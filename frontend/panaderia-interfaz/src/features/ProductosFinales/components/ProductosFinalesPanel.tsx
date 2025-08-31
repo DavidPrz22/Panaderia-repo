@@ -1,13 +1,9 @@
-
 import FilterSearch from "./FilterSearch";
 import ProductosFinalesLista from "./ProductosFinalesLista";
 import { useProductosFinalesContext } from "@/context/ProductosFinalesContext";
 import { useGetParametros } from "../hooks/queries/queries";
 import { useEffect } from "react";
-import type {
-  CategoriaProductoFinal,
-  UnidadesDeMedida,
-} from "../types/types";
+import type { CategoriaProductoFinal, UnidadesDeMedida } from "../types/types";
 
 export default function ProductosFinalesPanel() {
   const {
@@ -28,8 +24,7 @@ export default function ProductosFinalesPanel() {
     }
   }, [unidadesMedida, categoriasProductoFinal]);
 
-  if (showProductoForm || showProductoDetalles)
-    return <></>;
+  if (showProductoForm || showProductoDetalles) return <></>;
 
   return (
     <>

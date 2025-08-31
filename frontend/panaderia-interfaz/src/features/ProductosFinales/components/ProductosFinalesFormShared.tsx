@@ -5,7 +5,7 @@ import { useForm } from "react-hook-form";
 
 import {
   productoFinalSchema,
-  type TProductoFinalSchema
+  type TProductoFinalSchema,
 } from "../schemas/schemas";
 
 import { useProductosFinalesContext } from "@/context/ProductosFinalesContext";
@@ -35,13 +35,18 @@ export default function ProductosFinalesFormShared({
         ? {
             nombre_producto: initialData.nombre_producto,
             SKU: initialData.SKU,
-            tipo_manejo_venta: initialData.tipo_manejo_venta.toUpperCase() as "UNIDAD" | "PESO_VOLUMEN",
+            tipo_manejo_venta: initialData.tipo_manejo_venta.toUpperCase() as
+              | "UNIDAD"
+              | "PESO_VOLUMEN",
             categoria: initialData.categoria_producto.id,
-            receta_relacionada: initialData.receta_relacionada ? initialData.receta_relacionada.id : undefined,
+            receta_relacionada: initialData.receta_relacionada
+              ? initialData.receta_relacionada.id
+              : undefined,
             precio_venta_usd: initialData.precio_venta_usd ?? undefined,
             unidad_venta: initialData.unidad_venta_producto.id,
             punto_reorden: initialData.punto_reorden,
-            unidad_medida_nominal: initialData.unidad_medida_nominal_producto.id,
+            unidad_medida_nominal:
+              initialData.unidad_medida_nominal_producto.id,
             descripcion: initialData.descripcion,
           }
         : undefined,
@@ -50,8 +55,14 @@ export default function ProductosFinalesFormShared({
   const { unidadesMedida, categoriasProductoFinal, productoId } =
     useProductosFinalesContext();
 
-  const { mutateAsync: createProductosFinales, isPending: isPendingCreateProductosFinales } = useCreateProductoFinal();
-  const { mutateAsync: updateProductosFinales, isPending: isPendingUpdateProductosFinales } = useUpdateProductoFinal();
+  const {
+    mutateAsync: createProductosFinales,
+    isPending: isPendingCreateProductosFinales,
+  } = useCreateProductoFinal();
+  const {
+    mutateAsync: updateProductosFinales,
+    isPending: isPendingUpdateProductosFinales,
+  } = useUpdateProductoFinal();
 
   function renderCategoriasProductoIntermedio() {
     if (isUpdate && initialData) {
@@ -60,7 +71,8 @@ export default function ProductosFinalesFormShared({
           <option value={initialData.categoria_producto.id}>
             {
               categoriasProductoFinal.find(
-                (categoria) => categoria.id === initialData.categoria_producto.id,
+                (categoria) =>
+                  categoria.id === initialData.categoria_producto.id,
               )?.nombre_categoria
             }
           </option>
@@ -102,7 +114,9 @@ export default function ProductosFinalesFormShared({
     );
   }
 
-  function renderUnidadesMedida(unidadType : "unidad_venta_producto" | "unidad_medida_nominal_producto") {
+  function renderUnidadesMedida(
+    unidadType: "unidad_venta_producto" | "unidad_medida_nominal_producto",
+  ) {
     if (isUpdate && initialData) {
       return (
         <>
@@ -150,30 +164,32 @@ export default function ProductosFinalesFormShared({
     );
   }
 
-  function renderTipoManejo(){
+  function renderTipoManejo() {
     if (isUpdate && initialData) {
       return (
         <>
-        {initialData.tipo_manejo_venta && initialData.tipo_manejo_venta === 'UNIDAD' ? (
-          <>
-            <option value='UNIDAD'>Unidad</option>
-            <option value='PESO_VOLUMEN'>Peso/Volumen</option>
-          </>
-          
-        ) : (
-          <>
-            <option value='PESO_VOLUMEN'>Peso/Volumen</option>
-            <option value='UNIDAD'>Unidad</option>
-          </>
-        )}
+          {initialData.tipo_manejo_venta &&
+          initialData.tipo_manejo_venta === "UNIDAD" ? (
+            <>
+              <option value="UNIDAD">Unidad</option>
+              <option value="PESO_VOLUMEN">Peso/Volumen</option>
+            </>
+          ) : (
+            <>
+              <option value="PESO_VOLUMEN">Peso/Volumen</option>
+              <option value="UNIDAD">Unidad</option>
+            </>
+          )}
         </>
-      )
+      );
     }
-    return <>
-      <option value="">Seleccione un tipo de manejo</option>
-      <option value="UNIDAD">Unidad</option>
-      <option value="PESO_VOLUMEN">Peso/Volumen</option>
-    </>
+    return (
+      <>
+        <option value="">Seleccione un tipo de manejo</option>
+        <option value="UNIDAD">Unidad</option>
+        <option value="PESO_VOLUMEN">Peso/Volumen</option>
+      </>
+    );
   }
 
   const handleCancelButtonClick = () => {
@@ -182,19 +198,21 @@ export default function ProductosFinalesFormShared({
 
   const onSubmit = async (data: TProductoFinalSchema) => {
     if (isUpdate) {
-      await updateProductosFinales({id: productoId!, producto: data});
+      await updateProductosFinales({ id: productoId!, producto: data });
     } else {
       await createProductosFinales(data);
     }
     onSubmitSuccess();
   };
 
-
-  const recetaRelacionadaValidatedData = initialData?.receta_relacionada ? initialData.receta_relacionada : false;
+  const recetaRelacionadaValidatedData = initialData?.receta_relacionada
+    ? initialData.receta_relacionada
+    : false;
   return (
     <form onSubmit={handleSubmit(onSubmit)} id="productos-finales-form">
       <div className="flex flex-col mx-8 mt-4 rounded-md border border-gray-200 shadow-md relative">
-        {(isPendingUpdateProductosFinales || isPendingCreateProductosFinales) && (
+        {(isPendingUpdateProductosFinales ||
+          isPendingCreateProductosFinales) && (
           <PendingTubeSpinner
             size={28}
             extraClass="absolute bg-white opacity-50 w-full h-full"
@@ -249,7 +267,7 @@ export default function ProductosFinalesFormShared({
               register={register}
               errors={errors}
             >
-              {renderUnidadesMedida('unidad_venta_producto')}
+              {renderUnidadesMedida("unidad_venta_producto")}
             </PFFormSelectContainer>
 
             <PFFormSelectContainer
@@ -267,9 +285,9 @@ export default function ProductosFinalesFormShared({
               register={register}
               errors={errors}
             >
-              {renderUnidadesMedida('unidad_medida_nominal_producto')}
+              {renderUnidadesMedida("unidad_medida_nominal_producto")}
             </PFFormSelectContainer>
-            
+
             <PFFormSelectContainer
               title="Categoria del Producto"
               name="categoria"
@@ -287,7 +305,6 @@ export default function ProductosFinalesFormShared({
               errors={errors}
               optional
             />
-
           </div>
         </div>
         <div className="flex gap-2 justify-end py-4 px-5 bg-white">

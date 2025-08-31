@@ -11,13 +11,11 @@ import {
   useUpdateRecetaMutation,
 } from "../hooks/mutations/recetasMutations";
 
-
 import RecetesComponentesListados from "./RecetesComponentesListados";
 import { PendingTubeSpinner } from "./PendingTubeSpinner";
 import RecetaComponentsContainer from "./RecetaComponentsContainer";
 import RecetaListContainer from "./RecetaListContainer";
 import RecetasListadasForm from "./RecetasListadasForm";
-
 
 export default function RecetasFormShared({
   title,
@@ -26,11 +24,8 @@ export default function RecetasFormShared({
   onClose,
   onSubmitSuccess,
 }: RecetasFormSharedProps) {
-  const {
-    recetaId,
-    setComponentesListadosReceta,
-    setRecetasListadas,
-  } = useRecetasContext();
+  const { recetaId, setComponentesListadosReceta, setRecetasListadas } =
+    useRecetasContext();
 
   const {
     mutateAsync: registerRecetaMutation,
@@ -41,7 +36,6 @@ export default function RecetasFormShared({
     mutateAsync: updateRecetaMutation,
     isPending: isUpdateRecetaPending,
   } = useUpdateRecetaMutation();
-
 
   const {
     register,
@@ -67,16 +61,13 @@ export default function RecetasFormShared({
           },
   });
 
-
   const handleCancelButtonClick = () => {
     onClose();
     setComponentesListadosReceta([]);
     setRecetasListadas([]);
   };
 
-
   const onSubmit = async (data: TRecetasFormSchema) => {
-
     if (isUpdate) {
       await updateRecetaMutation({ recetaId: recetaId!, data });
     } else {
@@ -136,7 +127,9 @@ export default function RecetasFormShared({
           </div>
 
           <div className="flex flex-col border border-gray-300  rounded-md font-[Roboto]">
-            <div className="px-5 py-2 text-lg font-semibold border-b border-gray-300">Recetas Listadas</div>
+            <div className="px-5 py-2 text-lg font-semibold border-b border-gray-300">
+              Recetas Listadas
+            </div>
             <RecetasListadasForm watch={watch} setValue={setValue} />
           </div>
         </div>

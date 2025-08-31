@@ -14,7 +14,6 @@ export default function RecetaListSearchInput({
   } = useRecetasContext();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    
     if (onChange) {
       if (e.target.value === "") {
         setSearchListRecetaList([]);

@@ -1,9 +1,6 @@
 import { XRedIcon } from "@/assets/DashboardAssets/";
 import { useRecetasContext } from "@/context/RecetasContext";
-import type {
-  recetaListItemProps,
-  watchSetValueProps,
-} from "../types/types";
+import type { recetaListItemProps, watchSetValueProps } from "../types/types";
 
 export default function RecetaListItem({
   nombre,
@@ -12,15 +9,12 @@ export default function RecetaListItem({
   watch,
   setValue,
 }: recetaListItemProps & watchSetValueProps) {
-  const { setRecetasListadas, recetasListadas } =
-    useRecetasContext();
+  const { setRecetasListadas, recetasListadas } = useRecetasContext();
 
   const handleDelete = () => {
     if (recetasListadas.length < 1) return;
 
-    const listaFiltrada = recetasListadas.filter(
-      (receta) => receta.id !== id,
-    );
+    const listaFiltrada = recetasListadas.filter((receta) => receta.id !== id);
     setRecetasListadas(listaFiltrada);
 
     const listaFiltradaValidacion = watch("receta_relacionada")?.filter(

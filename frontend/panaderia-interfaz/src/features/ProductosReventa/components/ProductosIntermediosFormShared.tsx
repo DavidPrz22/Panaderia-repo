@@ -9,7 +9,10 @@ import {
 import { PIFormInputContainer } from "./PIFormInputContainer";
 import { PIFormSelectContainer } from "./PIFormSelectContainer";
 import { useProductosIntermediosContext } from "@/context/ProductosIntermediosContext";
-import { useCreateProductosIntermediosMutation, useUpdateProductosIntermediosMutation } from "../hooks/mutations/productosIntermediosMutations";
+import {
+  useCreateProductosIntermediosMutation,
+  useUpdateProductosIntermediosMutation,
+} from "../hooks/mutations/productosIntermediosMutations";
 import { PendingTubeSpinner } from "./PendingTubeSpinner";
 
 export default function ProductosIntermediosFormShared({
@@ -26,14 +29,19 @@ export default function ProductosIntermediosFormShared({
     setValue,
   } = useForm<TProductosIntermediosSchema>({
     resolver: zodResolver(productosIntermediosSchema),
-    defaultValues: isUpdate && initialData ? {
+    defaultValues:
+      isUpdate && initialData
+        ? {
             nombre_producto: initialData.nombre_producto,
             SKU: initialData.SKU,
             descripcion: initialData.descripcion || "",
             punto_reorden: initialData.punto_reorden,
             categoria: initialData.categoria_producto.id,
-            unidad_medida_nominal: initialData.unidad_medida_nominal_producto.id,
-            receta_relacionada: initialData.receta_relacionada ? initialData.receta_relacionada.id : undefined,
+            unidad_medida_nominal:
+              initialData.unidad_medida_nominal_producto.id,
+            receta_relacionada: initialData.receta_relacionada
+              ? initialData.receta_relacionada.id
+              : undefined,
           }
         : {
             nombre_producto: "",
@@ -45,8 +53,14 @@ export default function ProductosIntermediosFormShared({
   const { unidadesMedida, categoriasProductoIntermedio, productoIntermedioId } =
     useProductosIntermediosContext();
 
-  const { mutateAsync: createProductosIntermedios, isPending: isPendingCreateProductosIntermedios } = useCreateProductosIntermediosMutation();
-  const { mutateAsync: updateProductosIntermedios, isPending: isPendingUpdateProductosIntermedios } = useUpdateProductosIntermediosMutation();
+  const {
+    mutateAsync: createProductosIntermedios,
+    isPending: isPendingCreateProductosIntermedios,
+  } = useCreateProductosIntermediosMutation();
+  const {
+    mutateAsync: updateProductosIntermedios,
+    isPending: isPendingUpdateProductosIntermedios,
+  } = useUpdateProductosIntermediosMutation();
 
   function renderCategoriasProductoIntermedio() {
     if (isUpdate && initialData) {
@@ -55,7 +69,8 @@ export default function ProductosIntermediosFormShared({
           <option value={initialData.categoria_producto.id}>
             {
               categoriasProductoIntermedio.find(
-                (categoria) => categoria.id === initialData.categoria_producto.id,
+                (categoria) =>
+                  categoria.id === initialData.categoria_producto.id,
               )?.nombre_categoria
             }
           </option>
@@ -104,7 +119,8 @@ export default function ProductosIntermediosFormShared({
           <option value={initialData.unidad_medida_nominal_producto.id}>
             {
               unidadesMedida.find(
-                (unidad) => unidad.id === initialData.unidad_medida_nominal_producto.id,
+                (unidad) =>
+                  unidad.id === initialData.unidad_medida_nominal_producto.id,
               )?.nombre_completo
             }
           </option>
@@ -152,19 +168,21 @@ export default function ProductosIntermediosFormShared({
 
   const onSubmit = async (data: TProductosIntermediosSchema) => {
     if (isUpdate) {
-      await updateProductosIntermedios({id: productoIntermedioId!, data});
+      await updateProductosIntermedios({ id: productoIntermedioId!, data });
     } else {
       await createProductosIntermedios(data);
     }
     onSubmitSuccess();
   };
 
-
-  const recetaRelacionadaValidatedData = initialData?.receta_relacionada ? initialData.receta_relacionada : false;
+  const recetaRelacionadaValidatedData = initialData?.receta_relacionada
+    ? initialData.receta_relacionada
+    : false;
   return (
     <form onSubmit={handleSubmit(onSubmit)} id="productos-intermedios-form">
       <div className="flex flex-col mx-8 mt-4 rounded-md border border-gray-200 shadow-md relative">
-        {(isPendingCreateProductosIntermedios || isPendingUpdateProductosIntermedios) && (
+        {(isPendingCreateProductosIntermedios ||
+          isPendingUpdateProductosIntermedios) && (
           <PendingTubeSpinner
             size={28}
             extraClass="absolute bg-white opacity-50 w-full h-full"

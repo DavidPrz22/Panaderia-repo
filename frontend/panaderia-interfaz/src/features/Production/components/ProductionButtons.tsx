@@ -6,7 +6,11 @@ export default function ProductionButtons() {
       <Button type="cancel" onClick={() => console.log("Producción cancelada")}>
         Cancelar
       </Button>
-      <Button disabled={true} type="submit" onClick={() => console.log("Producción registrada")}>
+      <Button
+        disabled={true}
+        type="submit"
+        onClick={() => console.log("Producción registrada")}
+      >
         Registrar Producción
       </Button>
     </div>

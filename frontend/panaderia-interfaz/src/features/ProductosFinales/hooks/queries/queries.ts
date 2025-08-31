@@ -6,7 +6,6 @@ import {
   categoriasProductoFinalQueryOptions,
 } from "./productosFinalesQueryOptions";
 
-
 export const useGetProductosFinales = () => {
   return useQuery(productosFinalesQueryOptions());
 };
@@ -20,9 +19,6 @@ export const useProductoFinalDetalles = (id: number) => {
 
 export const useGetParametros = () => {
   return useQueries({
-    queries: [
-      unidadesMedidaQueryOptions,
-      categoriasProductoFinalQueryOptions,
-    ],
+    queries: [unidadesMedidaQueryOptions, categoriasProductoFinalQueryOptions],
   });
 };

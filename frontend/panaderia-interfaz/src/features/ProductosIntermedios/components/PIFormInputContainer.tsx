@@ -13,7 +13,6 @@ export const PIFormInputContainer = ({
   setValue,
   initialData,
 }: PIFormInputContainerProps & setValueProps) => {
-
   return (
     <div className="flex flex-col gap-1">
       <div className="flex items-center gap-2">

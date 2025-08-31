@@ -6,7 +6,9 @@ export default function ProductionHeader() {
       <img src={FactoryIcon} alt="Factory Icon" />
       <div className="flex flex-col">
         <h1 className="text-2xl font-bold">Producción desde Componentes</h1>
-        <span className="text-gray-500 italic">Gestiona y registra la producción de productos</span>
+        <span className="text-gray-500 italic">
+          Gestiona y registra la producción de productos
+        </span>
       </div>
     </div>
   );

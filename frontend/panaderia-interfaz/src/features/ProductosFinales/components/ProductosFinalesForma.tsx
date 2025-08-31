@@ -2,7 +2,8 @@ import ProductosFinalesFormShared from "@/features/ProductosFinales/components/P
 import { useProductosFinalesContext } from "@/context/ProductosFinalesContext";
 
 export default function ProductosFinalesForma() {
-  const { showProductoForm, setShowProductoForm } = useProductosFinalesContext();
+  const { showProductoForm, setShowProductoForm } =
+    useProductosFinalesContext();
 
   const handleSuccessClose = () => {
     setShowProductoForm(false);

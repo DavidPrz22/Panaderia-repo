@@ -11,14 +11,11 @@ export const componentesRecetaSearch = async (
   search: string,
 ): Promise<recetasSearchList[]> => {
   try {
-    const response = await apiClient.get(
-      '/api/componentes-search/',
-      {
-        params: {
-          search
-        }
-      }
-    );
+    const response = await apiClient.get("/api/componentes-search/", {
+      params: {
+        search,
+      },
+    });
     return response.data;
   } catch (error) {
     console.error("Error fetching componentes receta search:", error);

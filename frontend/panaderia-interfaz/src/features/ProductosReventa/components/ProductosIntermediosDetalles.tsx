@@ -65,7 +65,6 @@ export default function ProductosIntermediosDetalles() {
   };
 
   if (updateRegistro) {
-
     return (
       <ProductosIntermediosFormShared
         title="Editar Producto Intermedio"

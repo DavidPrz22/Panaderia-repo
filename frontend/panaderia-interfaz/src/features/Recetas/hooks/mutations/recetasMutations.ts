@@ -27,7 +27,8 @@ export const useComponentesRecetaSearchMutation = () => {
 };
 
 export const useRegisterRecetaMutation = () => {
-  const { setComponentesListadosReceta, setRecetasListadas } = useRecetasContext();
+  const { setComponentesListadosReceta, setRecetasListadas } =
+    useRecetasContext();
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (data: TRecetasFormSchema) => registerReceta(data),
@@ -42,7 +43,8 @@ export const useRegisterRecetaMutation = () => {
 };
 
 export const useUpdateRecetaMutation = () => {
-  const { setRecetasListadas, setComponentesListadosReceta } = useRecetasContext();
+  const { setRecetasListadas, setComponentesListadosReceta } =
+    useRecetasContext();
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: ({
@@ -59,7 +61,7 @@ export const useUpdateRecetaMutation = () => {
       await queryClient.invalidateQueries({
         queryKey: recetasDetallesQueryOptions(recetaId).queryKey,
       });
-      
+
       setRecetasListadas([]);
       setComponentesListadosReceta([]);
     },

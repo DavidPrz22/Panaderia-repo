@@ -72,48 +72,47 @@ export const DetailsTable = ({
       </div>
       <div className="grid grid-rows-9 grid-cols-1 gap-2">
         <DetailFieldValue extraClass="min-h-[25px] ">
-          {productoFinalDetalles.nombre_producto || '-'}
+          {productoFinalDetalles.nombre_producto || "-"}
         </DetailFieldValue>
         <DetailFieldValue extraClass="min-h-[25px] ">
-          {productoFinalDetalles.id || '-'}
+          {productoFinalDetalles.id || "-"}
         </DetailFieldValue>
         <DetailFieldValue extraClass="min-h-[25px] ">
-          {productoFinalDetalles.SKU || '-'}
+          {productoFinalDetalles.SKU || "-"}
         </DetailFieldValue>
         <DetailFieldValue extraClass="min-h-[25px] ">
-          {productoFinalDetalles.punto_reorden || '-'}
+          {productoFinalDetalles.punto_reorden || "-"}
         </DetailFieldValue>
         <DetailFieldValue extraClass="min-h-[25px] ">
-          {productoFinalDetalles.precio_venta_usd || '-'}
+          {productoFinalDetalles.precio_venta_usd || "-"}
         </DetailFieldValue>
         <DetailFieldValue extraClass="min-h-[25px] ">
-          {productoFinalDetalles.unidad_venta_producto.nombre_completo || '-'}
+          {productoFinalDetalles.unidad_venta_producto.nombre_completo || "-"}
         </DetailFieldValue>
         <DetailFieldValue extraClass="min-h-[25px] ">
-          {productoFinalDetalles.stock_actual || '-'}
+          {productoFinalDetalles.stock_actual || "-"}
         </DetailFieldValue>
         <DetailFieldValue extraClass="min-h-[25px] ">
-          {productoFinalDetalles.unidad_medida_nominal_producto.nombre_completo || '-'}
+          {productoFinalDetalles.unidad_medida_nominal_producto
+            .nombre_completo || "-"}
         </DetailFieldValue>
         <DetailFieldValue extraClass="min-h-[25px] ">
-          {productoFinalDetalles.categoria_producto.nombre_categoria || '-'}
+          {productoFinalDetalles.categoria_producto.nombre_categoria || "-"}
         </DetailFieldValue>
         <DetailFieldValue extraClass="min-h-[25px] ">
-          {productoFinalDetalles.tipo_manejo_venta || '-'}
+          {productoFinalDetalles.tipo_manejo_venta || "-"}
         </DetailFieldValue>
         <DetailFieldValue extraClass="min-h-[25px] ">
-          {productoFinalDetalles.fecha_creacion_registro || '-'}
+          {productoFinalDetalles.fecha_creacion_registro || "-"}
         </DetailFieldValue>
         <DetailFieldValue extraClass="min-h-[25px] ">
-          {productoFinalDetalles.fecha_modificacion_registro || '-'}
+          {productoFinalDetalles.fecha_modificacion_registro || "-"}
         </DetailFieldValue>
         <DetailFieldValue extraClass="min-h-[25px] ">
           {productoFinalDetalles.descripcion || "No hay descripción"}
         </DetailFieldValue>
         <RecetaFieldValue
-          recetaRelacionada={
-            productoFinalDetalles.receta_relacionada || false
-          }
+          recetaRelacionada={productoFinalDetalles.receta_relacionada || false}
         />
       </div>
       {deleteRecetaRelacionada && (

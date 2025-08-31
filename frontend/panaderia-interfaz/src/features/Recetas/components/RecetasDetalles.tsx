@@ -80,7 +80,11 @@ export default function RecetasDetalles() {
   }, [updateRegistro, recetaDetalles, setComponentesListadosReceta]);
 
   useEffect(() => {
-    if (recetaDetalles && recetaDetalles.relaciones_recetas.length > 0 && updateRegistro) {
+    if (
+      recetaDetalles &&
+      recetaDetalles.relaciones_recetas.length > 0 &&
+      updateRegistro
+    ) {
       setRecetasListadas(recetaDetalles.relaciones_recetas);
     }
   }, [recetaDetalles, setRecetasListadas, updateRegistro]);
@@ -117,7 +121,7 @@ export default function RecetasDetalles() {
     const formatData: TRecetasFormSchema = {
       nombre: recetaDetalles!.receta.nombre,
       componente_receta:
-      componentesReceta as TRecetasFormSchema["componente_receta"],
+        componentesReceta as TRecetasFormSchema["componente_receta"],
       notas: recetaDetalles!.receta.notas || "",
       receta_relacionada: recetaDetalles!.relaciones_recetas.map(
         ({ id }) => id,
@@ -181,9 +185,10 @@ export default function RecetasDetalles() {
         <DetailsTable />
         <DetailsComponentsTable />
 
-        {recetaDetalles?.relaciones_recetas && recetaDetalles?.relaciones_recetas.length > 0 && (
-          <DetailsRecetasRelacionadas />
-        )}
+        {recetaDetalles?.relaciones_recetas &&
+          recetaDetalles?.relaciones_recetas.length > 0 && (
+            <DetailsRecetasRelacionadas />
+          )}
       </div>
     </div>
   );

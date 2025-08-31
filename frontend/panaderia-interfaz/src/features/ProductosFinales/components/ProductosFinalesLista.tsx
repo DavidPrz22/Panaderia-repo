@@ -21,11 +21,11 @@ export default function ProductosFinalesLista() {
             "Precio (USD)",
             "Punto de reorden",
             "Stock",
-            "Categoria"
+            "Categoria",
           ]}
         />
         <PFTableBody />
-        {(isLoadingDetalles && !isFetching) ? (
+        {isLoadingDetalles && !isFetching ? (
           <div className="absolute top-0 left-0 w-full h-full flex justify-center items-center bg-white opacity-50">
             <img src={TubeSpinner} alt="Cargando..." className="size-28" />
           </div>

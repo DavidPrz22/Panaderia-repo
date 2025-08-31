@@ -19,7 +19,9 @@ const componentesRecetasSchema = z.union([
   productoIntermedioComponenteSchema,
 ]);
 
-const recetaRelacionadaSchema = z.coerce.number().min(0, { message: "La receta relacionada debe ser valida" })
+const recetaRelacionadaSchema = z.coerce
+  .number()
+  .min(0, { message: "La receta relacionada debe ser valida" });
 
 export const recetasFormSchema = z.object({
   nombre: z
@@ -34,15 +36,13 @@ export const recetasFormSchema = z.object({
   notas: z
     .string()
     .refine((val) => !val || val.length >= 3, {
-      message: "Las notas no pueden tener menos de 3 caracteres"
+      message: "Las notas no pueden tener menos de 3 caracteres",
     })
     .refine((val) => !val || val.length <= 250, {
-      message: "Las notas no pueden tener más de 250 caracteres"
+      message: "Las notas no pueden tener más de 250 caracteres",
     })
     .optional(),
-  receta_relacionada: z
-    .array(recetaRelacionadaSchema)
-    .default([]),
+  receta_relacionada: z.array(recetaRelacionadaSchema).default([]),
 });
 
 export type TRecetasFormSchema = z.infer<typeof recetasFormSchema>;
