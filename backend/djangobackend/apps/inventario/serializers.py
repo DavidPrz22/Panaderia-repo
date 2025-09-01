@@ -503,3 +503,15 @@ class ProductosElaboradosSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProductosElaborados
         fields = "__all__"
+
+
+class ProductosFinalesSearchSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProductosFinales
+        fields = ['id', 'nombre_producto']
+
+
+class ProductosIntermediosSearchSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProductosIntermedios
+        fields = ['id', 'nombre_producto']
