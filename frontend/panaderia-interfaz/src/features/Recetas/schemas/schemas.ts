@@ -5,6 +5,9 @@ const materiaPrimaComponenteSchema = z.object({
     .number()
     .min(1, { message: "El componente debe ser valido" }),
   materia_prima: z.boolean(),
+  cantidad: z.coerce
+    .number()
+    .min(1, { message: "La cantidad debe ser mayor que 0" }),
 });
 
 const productoIntermedioComponenteSchema = z.object({
@@ -12,6 +15,9 @@ const productoIntermedioComponenteSchema = z.object({
     .number()
     .min(1, { message: "El componente debe ser valido" }),
   producto_intermedio: z.boolean(),
+  cantidad: z.coerce
+    .number()
+    .min(1, { message: "La cantidad debe ser mayor que 0" }),
 });
 
 const componentesRecetasSchema = z.union([

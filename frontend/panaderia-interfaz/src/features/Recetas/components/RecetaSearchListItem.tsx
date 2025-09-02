@@ -9,8 +9,9 @@ export default function RecetaSearchListItem({
   nombre,
   id,
   tipo,
+  unidad_medida,
   watch,
-  setValue,
+  setValue
 }: itemRecetasSearchList & watchSetValueProps) {
   const { setComponentesListadosReceta, componentesListadosReceta } =
     useRecetasContext();
@@ -20,6 +21,8 @@ export default function RecetaSearchListItem({
       id_componente: id,
       componente_tipo: tipo,
       nombre: nombre,
+      unidad_medida: unidad_medida,
+      cantidad: 0,
     };
 
     // Create the component data for the form
@@ -28,11 +31,13 @@ export default function RecetaSearchListItem({
       componenteReceta = {
         componente_id: id,
         materia_prima: true,
+        cantidad: 0
       };
     } else {
       componenteReceta = {
         componente_id: id,
         producto_intermedio: true,
+        cantidad: 0
       };
     }
 

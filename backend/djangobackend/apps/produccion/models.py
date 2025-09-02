@@ -21,6 +21,7 @@ class RecetasDetalles(models.Model):
     receta = models.ForeignKey(Recetas, on_delete=models.CASCADE, null=True, blank=True, related_name='componentes')
     componente_materia_prima = models.ForeignKey(MateriasPrimas, on_delete=models.CASCADE, null=True, blank=True)
     componente_producto_intermedio = models.ForeignKey(ProductosElaborados, on_delete=models.CASCADE, related_name='receta_componente_producto_intermedio', null=True, blank=True)
+    cantidad = models.DecimalField(max_digits=10, decimal_places=3, default=0.00)
 
     def __str__(self):
         if self.componente_materia_prima:
@@ -29,6 +30,10 @@ class RecetasDetalles(models.Model):
             return f"{self.receta.nombre} - {self.componente_producto_intermedio.nombre} - {self.componente_producto_intermedio.id}"
 
     class Meta:
+        unique_together = [
+            ('receta', 'componente_materia_prima'), 
+            ('receta', 'componente_producto_intermedio')
+        ]
         constraints = [
             models.CheckConstraint(
                 check=(

@@ -22,6 +22,7 @@ export const RecetasSearchListContent = ({
             nombre={item.nombre}
             id={item.id}
             tipo={item.tipo}
+            unidad_medida={item.unidad_medida}
             watch={watch}
             setValue={setValue}
           />

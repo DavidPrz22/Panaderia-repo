@@ -11,6 +11,7 @@ export type RecetaComponenteProduccion = {
     nombre: string;
     unidad_medida: string;
     stock: number;
+    cantidad: number;
 }
 
 export type ComponentesLista = RecetaComponenteProduccion[];

@@ -29,7 +29,9 @@ export const useComponentesRecetaSearchMutation = () => {
 export const useRegisterRecetaMutation = () => {
   const { setComponentesListadosReceta, setRecetasListadas } =
     useRecetasContext();
+  
   const queryClient = useQueryClient();
+
   return useMutation({
     mutationFn: (data: TRecetasFormSchema) => registerReceta(data),
     onSuccess: async () => {

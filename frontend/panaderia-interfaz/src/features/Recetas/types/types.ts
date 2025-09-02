@@ -50,6 +50,7 @@ export type itemRecetasSearchList = {
   id: number;
   nombre: string;
   tipo: "MateriaPrima" | "ProductoIntermedio";
+  unidad_medida: string;
 };
 
 export type RecetasSearchListContentProps = {
@@ -65,6 +66,8 @@ export type componenteListadosReceta = {
   id_componente: number;
   componente_tipo: "MateriaPrima" | "ProductoIntermedio";
   nombre: string;
+  unidad_medida: string;
+  cantidad: number;
 };
 
 export type componenteListadosRecetaProps = {
@@ -76,7 +79,9 @@ export type componenteListadosRecetaProps = {
 export type recetasComponentListProps = {
   nombre: string;
   type: "MateriaPrima" | "ProductoIntermedio";
+  unidad_medida: string;
   id: number;
+  cantidad: number;
   last?: boolean;
 };
 
@@ -97,6 +102,8 @@ export type recetaDetallesItemComponente = {
   id: number;
   nombre: string;
   tipo: "Materia Prima" | "Producto Intermedio";
+  cantidad: number;
+  unidad_medida: string;
 };
 
 export type recetaDetallesItem = {

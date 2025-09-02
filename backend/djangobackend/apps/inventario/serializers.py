@@ -48,6 +48,7 @@ class ComponentesSearchSerializer(serializers.Serializer):
     id = serializers.IntegerField()
     nombre = serializers.CharField()
     tipo = serializers.CharField()
+    unidad_medida = serializers.CharField()
 
 
 class LotesMateriaPrimaSerializer(serializers.ModelSerializer):

@@ -2,7 +2,7 @@ import { useRecetasContext } from "@/context/RecetasContext";
 import RecetasComponentList from "./RecetasComponentList";
 import type { watchSetValueProps } from "../types/types";
 
-export default function RecetesComponentesListados({
+export default function RecetasComponentesListados({
   watch,
   setValue,
 }: watchSetValueProps) {
@@ -15,7 +15,9 @@ export default function RecetesComponentesListados({
             key={index}
             nombre={componente.nombre}
             type={componente.componente_tipo}
+            unidad_medida={componente.unidad_medida}
             id={componente.id_componente}
+            cantidad={componente.cantidad}
             last={index === componentesListadosReceta.length - 1}
             watch={watch}
             setValue={setValue}

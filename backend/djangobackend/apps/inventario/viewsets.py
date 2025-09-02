@@ -36,7 +36,8 @@ class ComponenteSearchViewSet(viewsets.ReadOnlyModelViewSet):
             categorias_dict[categoria].append({
                 'id': materia_prima.id, 
                 'nombre': materia_prima.nombre,
-                'tipo': 'MateriaPrima'
+                'tipo': 'MateriaPrima',
+                'unidad_medida': materia_prima.unidad_medida_base.abreviatura
             })
 
         for intermedio in productos_intermedios:
@@ -44,7 +45,8 @@ class ComponenteSearchViewSet(viewsets.ReadOnlyModelViewSet):
             categorias_dict[categoria].append({
                 'id': intermedio.id,
                 'nombre': intermedio.nombre_producto,
-                'tipo': 'ProductoIntermedio'
+                'tipo': 'ProductoIntermedio',
+                'unidad_medida': intermedio.unidad_medida_nominal.abreviatura
             })
 
         # Use the serializer to format the data
@@ -149,21 +151,25 @@ class ProductosElaboradosViewSet(viewsets.ModelViewSet):
         """Helper function to extract component data from a RecetasDetalles instance."""
         if detalle.componente_materia_prima:
             component = detalle.componente_materia_prima
+            cantidad = detalle.cantidad
             unit = component.unidad_medida_base
             return {
                 "id": component.id,
                 "nombre": component.nombre,
                 "unidad_medida": unit.abreviatura,
                 "stock": component.stock_actual,
+                "cantidad": cantidad,
             }
         elif detalle.componente_producto_intermedio:
             component = detalle.componente_producto_intermedio
+            cantidad = detalle.cantidad
             unit = component.unidad_medida_nominal
             return {
                 "id": component.id,
                 "nombre": component.nombre_producto,
                 "unidad_medida": unit.abreviatura,
                 "stock": component.stock_actual,
+                "cantidad": cantidad,
             }
         return None
 

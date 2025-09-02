@@ -33,4 +33,5 @@ class RecetasDetallesSerializer(serializers.ModelSerializer):
             'receta',
             'componente_materia_prima',
             'componente_producto_intermedio',
+            'cantidad'
         ]

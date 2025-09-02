@@ -48,15 +48,17 @@ class RecetasViewSet(viewsets.ModelViewSet):
                     'receta': receta.id,
                     'componente_materia_prima': componente['componente_id'],        
                     'componente_producto_intermedio': None,
+                    'cantidad': componente.get('cantidad', 0)
                 }
-                
+
             elif componente.get('producto_intermedio') == True:
                 objecto_componente = {
                     'receta': receta.id,
                     'componente_materia_prima': None,
                     'componente_producto_intermedio': componente['componente_id'],
+                    'cantidad': componente.get('cantidad', 0)
                 }
-            
+
             # Use RecetasDetallesSerializer for components
             detail_serializer = RecetasDetallesSerializer(data=objecto_componente)
             if detail_serializer.is_valid():
@@ -112,13 +114,17 @@ class RecetasViewSet(viewsets.ModelViewSet):
                     lista_componentes.append({
                         'id': receta_componente.componente_materia_prima.id,
                         'nombre': receta_componente.componente_materia_prima.nombre,
-                        'tipo': 'Materia Prima'
+                        'tipo': 'Materia Prima',
+                        'cantidad': receta_componente.cantidad ,
+                        'unidad_medida': receta_componente.componente_materia_prima.unidad_medida_base.abreviatura
                         })
                 elif receta_componente.componente_producto_intermedio:
                     lista_componentes.append({
                         'id': receta_componente.componente_producto_intermedio.id,
                         'nombre': receta_componente.componente_producto_intermedio.nombre_producto,
-                        'tipo': 'Producto Intermedio'
+                        'tipo': 'Producto Intermedio',
+                        'cantidad': receta_componente.cantidad,
+                        'unidad_medida': receta_componente.componente_producto_intermedio.unidad_medida_nominal.abreviatura
                         })
 
             relaciones_recetas = RelacionesRecetas.objects.filter(receta_principal=receta_id)
@@ -153,63 +159,78 @@ class RecetasViewSet(viewsets.ModelViewSet):
                     serializer.save()
                 else:
                     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+                # --- Componentes Update Logic ---
+                componentes_data = request.data.get('componente_receta', [])
+
+                # 1. Fetch all existing components for this recipe in one query
+                existing_details = RecetasDetalles.objects.filter(receta=receta_instance)
+                
+                # 2. Create maps for efficient lookup of existing components
+                existing_mp_map = {det.componente_materia_prima_id: det for det in existing_details if det.componente_materia_prima_id}
+                existing_pi_map = {det.componente_producto_intermedio_id: det for det in existing_details if det.componente_producto_intermedio_id}
+
+                # 3. Process incoming components to determine what to create, update, or delete
+                incoming_mp_ids = set()
+                incoming_pi_ids = set()
+                details_to_update = []
+                details_to_create = []
+
+                for comp_data in componentes_data:
+                    cantidad = comp_data.get('cantidad', 0)
+                    componente_id = comp_data.get('componente_id')
+
+                    if comp_data.get('materia_prima'):
+                        incoming_mp_ids.add(componente_id)
+                        if componente_id in existing_mp_map:
+                            # This component exists, check if quantity needs an update
+                            detail = existing_mp_map[componente_id]
+                            if detail.cantidad != cantidad:
+                                detail.cantidad = cantidad
+                                details_to_update.append(detail)
+                        else:
+                            # This is a new component to be created
+                            details_to_create.append(RecetasDetalles(
+                                receta=receta_instance,
+                                componente_materia_prima_id=componente_id,
+                                cantidad=cantidad
+                            ))
                     
-                componentes = request.data.get('componente_receta', [])
+                    elif comp_data.get('producto_intermedio'):
+                        incoming_pi_ids.add(componente_id)
+                        if componente_id in existing_pi_map:
+                            # This component exists, check if quantity needs an update
+                            detail = existing_pi_map[componente_id]
+                            if detail.cantidad != cantidad:
+                                detail.cantidad = cantidad
+                                details_to_update.append(detail)
+                        else:
+                            # This is a new component to be created
+                            details_to_create.append(RecetasDetalles(
+                                receta=receta_instance,
+                                componente_producto_intermedio_id=componente_id,
+                                cantidad=cantidad
+                            ))
+
+                # 4. Delete components that are no longer in the recipe
+                mp_ids_to_delete = set(existing_mp_map.keys()) - incoming_mp_ids
+                if mp_ids_to_delete:
+                    RecetasDetalles.objects.filter(receta=receta_instance, componente_materia_prima_id__in=mp_ids_to_delete).delete()
                 
-                # Get existing components
-                componentes_registrados_materia_prima = RecetasDetalles.objects.filter(
-                    receta=receta_instance, 
-                    componente_materia_prima__isnull=False
-                )
-                componentes_registrados_producto_intermedio = RecetasDetalles.objects.filter(
-                    receta=receta_instance, 
-                    componente_producto_intermedio__isnull=False
-                )
+                pi_ids_to_delete = set(existing_pi_map.keys()) - incoming_pi_ids
+                if pi_ids_to_delete:
+                    RecetasDetalles.objects.filter(receta=receta_instance, componente_producto_intermedio_id__in=pi_ids_to_delete).delete()
 
-                # Get new components from request
-                componentes_update_materia_prima = [
-                    MateriasPrimas.objects.get(id=componente.get('componente_id')) 
-                    for componente in componentes 
-                    if componente.get('materia_prima') == True
-                ]
+                # 5. Perform bulk updates and creates for maximum efficiency
+                if details_to_update:
+                    RecetasDetalles.objects.bulk_update(details_to_update, ['cantidad'])
                 
-                componentes_update_producto_intermedio = [
-                    ProductosIntermedios.objects.get(id=componente.get('componente_id')) 
-                    for componente in componentes 
-                    if componente.get('producto_intermedio') == True
-                ]
+                if details_to_create:
+                    RecetasDetalles.objects.bulk_create(details_to_create)
 
-                # Delete components that are no longer in the update
-                for componente in componentes_registrados_materia_prima:
-                    if componente.componente_materia_prima not in componentes_update_materia_prima:
-                        componente.delete()
-                
-                for componente in componentes_registrados_producto_intermedio:
-                    if componente.componente_producto_intermedio not in componentes_update_producto_intermedio:
-                        componente.delete()
+                # --- End Componentes Update Logic ---
 
-                # Get existing component values for comparison
-                existing_materia_prima_ids = set(
-                    comp.componente_materia_prima.id for comp in componentes_registrados_materia_prima
-                )
-                existing_producto_intermedio_ids = set(
-                    comp.componente_producto_intermedio.id for comp in componentes_registrados_producto_intermedio
-                )
-
-                # Create new components that don't exist yet
-                for componente in componentes_update_materia_prima:
-                    if componente.id not in existing_materia_prima_ids:
-                        RecetasDetalles.objects.create(
-                            receta=receta_instance, 
-                            componente_materia_prima=componente
-                        )
-
-                for componente in componentes_update_producto_intermedio:
-                    if componente.id not in existing_producto_intermedio_ids:
-                        RecetasDetalles.objects.create(
-                            receta=receta_instance, 
-                            componente_producto_intermedio=componente
-                        )
+                # Receta Relacionada
                 receta_relacionada_data = request.data.get('receta_relacionada', [])
                 receta_relacionadas_registradas = RelacionesRecetas.objects.filter(receta_principal=receta_instance)
 

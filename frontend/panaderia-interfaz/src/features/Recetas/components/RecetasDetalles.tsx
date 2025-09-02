@@ -67,11 +67,13 @@ export default function RecetasDetalles() {
   useEffect(() => {
     if (updateRegistro && recetaDetalles?.componentes) {
       const ListedComponentes: componenteListadosReceta[] =
-        recetaDetalles.componentes.map(({ id, nombre, tipo }) => {
+        recetaDetalles.componentes.map(({ id, nombre, tipo, unidad_medida, cantidad }) => {
           return {
             id_componente: id,
             componente_tipo:
               tipo === "Materia Prima" ? "MateriaPrima" : "ProductoIntermedio",
+            cantidad: cantidad || 0,
+            unidad_medida: unidad_medida || "",
             nombre,
           };
         });
@@ -102,17 +104,19 @@ export default function RecetasDetalles() {
 
   if (updateRegistro) {
     const componentesReceta = recetaDetalles?.componentes.map(
-      ({ tipo, id }) => {
+      ({ tipo, id, cantidad }) => {
         if (tipo === "Materia Prima") {
           return {
             componente_id: id,
             materia_prima: true,
+            cantidad: cantidad || 0
           };
         }
         if (tipo === "Producto Intermedio") {
           return {
             componente_id: id,
             producto_intermedio: true,
+            cantidad: cantidad || 0
           };
         }
       },

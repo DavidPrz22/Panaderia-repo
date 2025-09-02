@@ -19,9 +19,10 @@ export const ProductionComponents = () => {
             {productionComponentes.map((componente) => (
             <ProductionComponentItem
               key={componente.id}
-              title={componente.nombre}
+              titulo={componente.nombre}
               stock={componente.stock}
-              unit={componente.unidad_medida}
+              unidad={componente.unidad_medida}
+              cantidad={componente.cantidad}
             />
           ))}
         </div>

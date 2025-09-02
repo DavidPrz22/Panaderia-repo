@@ -2,7 +2,14 @@
 @port = 8000
 
 @base_url = http://{{hostname}}:{{port}}/api
-@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzU2Nzc1MzgwLCJpYXQiOjE3NTY3NzAzMTMsImp0aSI6IjBjNTY5ZWYxZjk3YTQwNjY4NjY3YWYyOTQ0YWNlMzI1IiwidXNlcl9pZCI6Mn0.SK528e-KTBm6o6aLxImb23evi0dTs1qUhwD71a6DJFM
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzU2ODQ0MDUyLCJpYXQiOjE3NTY4NDE5MjEsImp0aSI6ImU4NDk0MWE3YzExNzRhODM4ZTc5MTI2ZTYzMWY1YTI2IiwidXNlcl9pZCI6Mn0.j5SZY-6P4rk0AknFL0KxRfmtX1xLnU_zO3jCm2EiDLQ
+
 POST {{base_url}}/productoselaborados/40/get-receta-producto/
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+###
+
+GET {{base_url}}/recetas/15/get_receta_detalles/
 Content-Type: application/json
 Authorization: Bearer {{token}}

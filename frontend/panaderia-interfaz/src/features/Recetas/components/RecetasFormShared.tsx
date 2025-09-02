@@ -11,7 +11,7 @@ import {
   useUpdateRecetaMutation,
 } from "../hooks/mutations/recetasMutations";
 
-import RecetesComponentesListados from "./RecetesComponentesListados";
+import RecetasComponentesListados from "./RecetesComponentesListados";
 import { PendingTubeSpinner } from "./PendingTubeSpinner";
 import RecetaComponentsContainer from "./RecetaComponentsContainer";
 import RecetaListContainer from "./RecetaListContainer";
@@ -123,7 +123,7 @@ export default function RecetasFormShared({
 
           <div className="flex flex-col gap-2 border border-gray-300 py-5 px-7 rounded-md font-[Roboto]">
             <div className=" text-lg font-semibold ">Componentes Listados</div>
-            <RecetesComponentesListados watch={watch} setValue={setValue} />
+            <RecetasComponentesListados watch={watch} setValue={setValue} />
           </div>
 
           <div className="flex flex-col border border-gray-300  rounded-md font-[Roboto]">

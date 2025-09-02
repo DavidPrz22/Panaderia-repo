@@ -21,7 +21,6 @@ export default function RecetaSearchInput({
         onChange(e.target.value);
       }
     }
-
     setSearchListActiveComponentes(true);
   };
 
@@ -41,7 +40,7 @@ export default function RecetaSearchInput({
         ref={searchListComponentesRef as React.RefObject<HTMLInputElement>}
         placeholder={placeholder}
         className="block w-full px-3 py-4 border border-gray-300 rounded-md shadow-xs font-[Roboto]
-                            focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                  focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
       />
       {searchListComponentes.length > 0 && (
         <div
