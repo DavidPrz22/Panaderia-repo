@@ -1,4 +1,4 @@
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useRef, useState } from "react";
 import { type childrenProp } from "../features/MateriaPrima/types/types";
 
 type AppContextType = {
@@ -14,6 +14,12 @@ type AppContextType = {
   // Selected module
   selectedModule: string | null;
   setSelectedModule: (value: string | null) => void;
+  // Dropdown card
+  isOpenDropdownCard: boolean;
+  setIsOpenDropdownCard: (value: boolean) => void;
+  // Ref card
+  refCard: React.RefObject<HTMLDivElement | null>;
+  refDropdownCard: React.RefObject<HTMLDivElement | null>;
 };
 
 const AppContextProvider = createContext<AppContextType | null>(null);
@@ -23,6 +29,10 @@ export function AppProvider({ children }: childrenProp) {
   const [isGlobalLoading, setIsGlobalLoading] = useState(false);
   const [globalError, setGlobalError] = useState<string | null>(null);
   const [selectedModule, setSelectedModule] = useState<string | null>(null);
+
+  const [isOpenDropdownCard, setIsOpenDropdownCard] = useState(false);
+  const refCard = useRef<HTMLDivElement | null>(null);
+  const refDropdownCard = useRef<HTMLDivElement | null>(null);
   return (
     <AppContextProvider.Provider
       value={{
@@ -34,6 +44,10 @@ export function AppProvider({ children }: childrenProp) {
         setGlobalError,
         selectedModule,
         setSelectedModule,
+        isOpenDropdownCard,
+        setIsOpenDropdownCard,
+        refCard,
+        refDropdownCard,
       }}
     >
       {children}

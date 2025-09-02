@@ -23,6 +23,7 @@ class CategoriasMateriaPrima(models.Model):
 class CategoriasProductosElaborados(models.Model):
     nombre_categoria = models.CharField(max_length=100, null=False, blank=False)
     descripcion = models.TextField(max_length=255, null=True, blank=True)
+    es_intermediario = models.BooleanField(default=False)
 
     def __str__(self):
         return self.nombre_categoria

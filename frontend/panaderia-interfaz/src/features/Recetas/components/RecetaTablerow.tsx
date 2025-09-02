@@ -1,32 +1,31 @@
 import { useRecetasContext } from "@/context/RecetasContext";
+import type { recetaItem } from "../types/types";
 
 export const RecetaTablerow = ({
   item,
   index,
+  last,
 }: {
-  item: any;
+  item: recetaItem;
   index: number;
+  last?: boolean;
 }) => {
+  const { setRecetaId, setEnabledRecetaDetalles } = useRecetasContext();
 
-  const { setShowRecetasDetalles, setRecetaId } = useRecetasContext();
-  const setDetails = () => {
-    setShowRecetasDetalles(true);
-    setRecetaId(item.id || null);
-  }
+  const activateRecetaDetalles = () => {
+    setRecetaId(item.id);
+    setEnabledRecetaDetalles(true);
+  };
+
   return (
     <div
-      onClick={setDetails}
+      onClick={activateRecetaDetalles}
       key={item.id}
-      className={`cursor-pointer hover:bg-gray-100 grid grid-cols-[0.5fr_1.5fr_1fr_1fr_1fr_1fr_1fr_1fr] justify-between items-center px-8 py-4 border-b border-gray-300 ${index % 2 == 0 ? "bg-white" : "bg-gray-50"} font-[Roboto] text-sm`}
+      className={`cursor-pointer hover:bg-gray-100 grid grid-cols-[1fr_1fr_1fr] justify-between items-center px-8 py-4 ${last ? "border-b-0 rounded-b-md" : "border-b border-gray-300"} ${index % 2 == 0 ? "bg-white" : "bg-gray-50"} font-[Roboto] text-sm`}
     >
       <div>{item.id || "-"}</div>
-      <div>{item.name || "-"}</div>
-      <div>{item.unit || "-"}</div>
-      <div>{item.category || "-"}</div>
-      <div>{item.quantity || "-"}</div>
-      <div>{item.reorderPoint || "-"}</div>
-      <div>{item.creationDate || "-"}</div>
-      <div>{item.description || "-"}</div>
+      <div>{item.nombre || "-"}</div>
+      <div>{item.fecha_creacion.split("T")[0] || "-"}</div>
     </div>
   );
 };

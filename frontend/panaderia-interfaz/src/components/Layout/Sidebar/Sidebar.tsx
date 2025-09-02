@@ -1,6 +1,5 @@
 import SidbarTitle from "./SidbarTitle";
 import SidebarCard from "./SidebarCard";
-import { useRef } from "react";
 import SidebarDropdownCard from "./SidebarDropdownCard";
 import { useAppContext } from "@/context/AppContext";
 import {
@@ -17,18 +16,35 @@ import {
   ProductionIcon,
   ComprasIcon,
   ReportesIcon,
+  FinalesIcon,
 } from "@/assets/DashboardAssets";
 
 export default function Sidebar() {
-  const ref = useRef<HTMLDivElement | null>(null);
-  const { setSelectedModule } = useAppContext();
+  const {
+    setSelectedModule,
+    refCard,
+    setIsOpenDropdownCard,
+    isOpenDropdownCard,
+  } = useAppContext();
+
   function handleClick(e: React.MouseEvent<HTMLDivElement>) {
-    if (ref.current) {
-      ref.current.classList.toggle("bg-white/20");
+    if (refCard.current) {
+      refCard.current.classList.remove("bg-white/20");
     }
-    ref.current = e.currentTarget;
-    ref.current.classList.toggle("bg-white/20");
-    setSelectedModule(e.currentTarget.id);
+
+    const currentTarget = e.currentTarget;
+    const currentId = currentTarget.id;
+
+    refCard.current = currentTarget;
+    refCard.current.classList.add("bg-white/20");
+    setSelectedModule(currentId);
+
+    if (
+      isOpenDropdownCard &&
+      !currentTarget.closest('[data-id="DropdownContainer"]')
+    ) {
+      setIsOpenDropdownCard(false);
+    }
   }
 
   return (
@@ -60,18 +76,25 @@ export default function Sidebar() {
               icon={ProductosIcon}
               elements={[
                 {
-                  url: IntermediosIcon,
+                  icon: FinalesIcon,
+                  title: "Finales",
+                  id: "finales",
+                  link: "/dashboard/productos-finales",
+                },
+                {
+                  icon: IntermediosIcon,
                   title: "Intermedios",
                   id: "intermedios",
                   link: "/dashboard/productos-intermedios",
                 },
                 {
-                  url: ReventaIcon,
+                  icon: ReventaIcon,
                   title: "Reventa",
                   id: "reventa",
                 },
               ]}
               onclick={handleClick}
+              id="productos"
             >
               Productos
             </SidebarDropdownCard>
@@ -80,31 +103,32 @@ export default function Sidebar() {
               icon={VentaIcon}
               elements={[
                 {
-                  url: ClientesIcon,
+                  icon: ClientesIcon,
                   title: "Clientes",
                   id: "clientes",
                 },
                 {
-                  url: PedidosIcon,
+                  icon: PedidosIcon,
                   title: "Pedidos",
                   id: "pedidos",
                 },
                 {
-                  url: PuntoVentaIcon,
+                  icon: PuntoVentaIcon,
                   title: "Punto de Venta",
                   id: "punto-venta",
                 },
               ]}
               onclick={handleClick}
+              id="ventas"
             >
               Ventas
             </SidebarDropdownCard>
 
-            <SidebarCard 
-            icon={RecetasIcon} 
-            onclick={handleClick} 
-            id="recetas"
-            link="/dashboard/recetas"
+            <SidebarCard
+              icon={RecetasIcon}
+              onclick={handleClick}
+              id="recetas"
+              link="/dashboard/recetas"
             >
               Recetas
             </SidebarCard>
@@ -112,6 +136,7 @@ export default function Sidebar() {
               icon={ProductionIcon}
               onclick={handleClick}
               id="produccion"
+              link="/dashboard/produccion"
             >
               Producción
             </SidebarCard>

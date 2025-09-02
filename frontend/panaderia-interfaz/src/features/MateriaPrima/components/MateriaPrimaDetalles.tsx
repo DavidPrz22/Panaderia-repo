@@ -135,13 +135,10 @@ export const MaterialPrimaDetalles = () => {
         />
       )}
       <div className="flex flex-col gap-6">
-        <TitleDetails>
-          Detalles
-        </TitleDetails>
+        <TitleDetails>Detalles</TitleDetails>
         {materiaprimaDetalles && (
           <DetailsTable materiaprimaDetalles={materiaprimaDetalles} />
         )}
-    
       </div>
 
       <div className="flex flex-col gap-4 mt-5 h-full">

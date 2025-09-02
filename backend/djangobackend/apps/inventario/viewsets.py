@@ -1,7 +1,8 @@
 from rest_framework import viewsets, status
-from apps.inventario.models import MateriasPrimas, LotesMateriasPrimas
-from apps.inventario.serializers import MateriaPrimaSerializer, LotesMateriaPrimaSerializer, MateriaPrimaSearchSerializer
-from django.db.models import Min, Sum
+from apps.inventario.models import MateriasPrimas, LotesMateriasPrimas, ProductosIntermedios, ProductosFinales, ProductosElaborados
+from apps.produccion.models import Recetas, RecetasDetalles, RelacionesRecetas    
+from apps.inventario.serializers import ComponentesSearchSerializer, MateriaPrimaSerializer, LotesMateriaPrimaSerializer, ProductosIntermediosSerializer, ProductosFinalesSerializer, ProductosIntermediosDetallesSerializer, ProductosElaboradosSerializer, ProductosFinalesDetallesSerializer, ProductosFinalesSearchSerializer, ProductosIntermediosSearchSerializer
+from django.db.models import Min
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from datetime import datetime
@@ -12,12 +13,11 @@ class MateriaPrimaViewSet(viewsets.ModelViewSet):
     serializer_class = MateriaPrimaSerializer
 
 
-class MateriaPrimaSearchViewSet(viewsets.ModelViewSet):
-    queryset = MateriasPrimas.objects.all()
-    serializer_class = MateriaPrimaSearchSerializer
+class ComponenteSearchViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = MateriasPrimas.objects.none()
+    serializer_class = ComponentesSearchSerializer
 
-    @action(methods=['get'], detail=False, url_path='search-materia-prima')
-    def search_materia_prima(self, request):
+    def list(self, request, *args, **kwargs):
         search_query = request.query_params.get('search')
         if not search_query:
             return Response(status=status.HTTP_400_BAD_REQUEST, data={"error": "El parámetro 'search' es requerido"})
@@ -26,20 +26,36 @@ class MateriaPrimaSearchViewSet(viewsets.ModelViewSet):
             nombre__icontains=search_query
         ).select_related('categoria')
 
+        productos_intermedios = ProductosIntermedios.objects.filter(
+            nombre_producto__icontains=search_query
+        ).select_related('categoria')
+
         categorias_dict = defaultdict(list)
         for materia_prima in materia_primas:
             categoria = materia_prima.categoria.nombre_categoria
             categorias_dict[categoria].append({
                 'id': materia_prima.id, 
                 'nombre': materia_prima.nombre,
-                'tipo': 'MateriaPrima'
+                'tipo': 'MateriaPrima',
+                'unidad_medida': materia_prima.unidad_medida_base.abreviatura
             })
-        
-        materia_primas_por_categoria = [
-            {categoria: items} for categoria, items in categorias_dict.items()
-        ]
-        
-        return Response(materia_primas_por_categoria)
+
+        for intermedio in productos_intermedios:
+            categoria = intermedio.categoria.nombre_categoria
+            categorias_dict[categoria].append({
+                'id': intermedio.id,
+                'nombre': intermedio.nombre_producto,
+                'tipo': 'ProductoIntermedio',
+                'unidad_medida': intermedio.unidad_medida_nominal.abreviatura
+            })
+
+        # Use the serializer to format the data
+        componentes_por_categoria = []
+        for categoria, items in categorias_dict.items():
+            serializer = self.get_serializer(items, many=True)
+            componentes_por_categoria.append({categoria: serializer.data})
+
+        return Response(componentes_por_categoria)
 
 
 class LotesMateriaPrimaViewSet(viewsets.ModelViewSet):
@@ -117,3 +133,98 @@ class LotesMateriaPrimaViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_404_NOT_FOUND, 
                 data={"error": "Lote no encontrado"}
             )
+
+
+class ProductosElaboradosViewSet(viewsets.ModelViewSet):
+    queryset = ProductosElaborados.objects.all()
+    serializer_class = ProductosElaboradosSerializer
+
+    @action(detail=True, methods=['post'], url_path='clear-receta-relacionada')
+    def clear_receta_relacionada(self, request, *args, **kwargs):
+        producto_id = kwargs.get('pk')
+        receta = Recetas.objects.filter(producto_elaborado=producto_id)
+        if receta.exists():
+            receta.update(producto_elaborado=None)
+        return Response(status=status.HTTP_200_OK)
+
+    def _get_component_data(self, detalle):
+        """Helper function to extract component data from a RecetasDetalles instance."""
+        if detalle.componente_materia_prima:
+            component = detalle.componente_materia_prima
+            cantidad = detalle.cantidad
+            unit = component.unidad_medida_base
+            return {
+                "id": component.id,
+                "nombre": component.nombre,
+                "unidad_medida": unit.abreviatura,
+                "stock": component.stock_actual,
+                "cantidad": cantidad,
+            }
+        elif detalle.componente_producto_intermedio:
+            component = detalle.componente_producto_intermedio
+            cantidad = detalle.cantidad
+            unit = component.unidad_medida_nominal
+            return {
+                "id": component.id,
+                "nombre": component.nombre_producto,
+                "unidad_medida": unit.abreviatura,
+                "stock": component.stock_actual,
+                "cantidad": cantidad,
+            }
+        return None
+
+    @action(detail=True, methods=['post'], url_path='get-receta-producto')
+    def get_receta_producto(self, request, *args, **kwargs):
+        producto_id = kwargs.get('pk')
+        try:
+            receta_principal = Recetas.objects.get(producto_elaborado=producto_id)
+        except Recetas.DoesNotExist:
+            return Response({"error": "No se encontró la receta asociada"}, status=status.HTTP_404_NOT_FOUND)
+
+        subreceta_ids = list(RelacionesRecetas.objects.filter(
+            receta_principal=receta_principal
+        ).values_list('subreceta_id', flat=True))
+
+        all_recipe_ids = [receta_principal.id] + subreceta_ids
+
+        detalles = RecetasDetalles.objects.filter(
+            receta_id__in=all_recipe_ids
+        ).select_related(
+            'componente_materia_prima__unidad_medida_base',
+            'componente_producto_intermedio__unidad_medida_nominal'
+        )
+        data_receta = [self._get_component_data(d) for d in detalles if self._get_component_data(d) is not None]
+
+        return Response(data_receta, status=status.HTTP_200_OK)
+
+
+class ProductosIntermediosViewSet(viewsets.ModelViewSet):
+    queryset = ProductosIntermedios.objects.all()
+    serializer_class = ProductosIntermediosSerializer
+
+
+class ProductosFinalesViewSet(viewsets.ModelViewSet):
+    queryset = ProductosFinales.objects.all()
+    serializer_class = ProductosFinalesSerializer
+
+
+class ProductosIntermediosDetallesViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = ProductosIntermedios.objects.all()
+    serializer_class = ProductosIntermediosDetallesSerializer
+
+
+class ProductosFinalesDetallesViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = ProductosFinales.objects.all()
+    serializer_class = ProductosFinalesDetallesSerializer
+
+
+class ProductosFinalesSearchViewset(viewsets.ReadOnlyModelViewSet):
+    queryset = ProductosFinales.objects.all()
+    serializer_class = ProductosFinalesSearchSerializer
+
+
+
+class ProductosIntermediosSearchViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = ProductosIntermedios.objects.all()
+    serializer_class = ProductosIntermediosSearchSerializer
+
