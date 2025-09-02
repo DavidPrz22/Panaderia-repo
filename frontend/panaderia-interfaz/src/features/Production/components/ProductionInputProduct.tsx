@@ -8,7 +8,7 @@ import ProductionXicon from "./ProductionXicon";
 export const ProductionInputProduct = ({ title }: { title: string }) => {
   const [{data: finales}, {data: intermedios}] = useProductSearchQuery();
 
-  const { productSearchRef, productType, isFocused, setIsFocused, setSearchQuery } = useProductionContext();
+  const { productSearchRef, productType, isFocused, setIsFocused, setSearchQuery, setShowSearch } = useProductionContext();
 
   const showFinalesSearch = finales && productType === "producto-final" && isFocused
   const showIntermediosSearch = intermedios && productType === "producto-intermedio" && isFocused;
@@ -20,6 +20,12 @@ export const ProductionInputProduct = ({ title }: { title: string }) => {
     setSelected(false);
     setSearchQuery('');
   }
+
+  const handleFocus = () => {
+    if (productType) {
+      setIsFocused(true);
+    }
+  };
 
   return (
     <div className="flex flex-1 flex-col gap-2 w-full relative">
@@ -34,8 +40,11 @@ export const ProductionInputProduct = ({ title }: { title: string }) => {
             className="pl-11 pr-2 py-[0.95rem] w-full outline-none border border-gray-300 rounded-md focus:ring-4 focus:ring-blue-100 focus:border-blue-300 transition-[box-shadow] duration-300"
             placeholder="Busca un producto..."
             ref={productSearchRef}
-            onFocus={() => setIsFocused(true)}
-            onBlur={() => setTimeout(() => setIsFocused(false), 150)}
+            onFocus={handleFocus}
+            onBlur={() => {
+              setTimeout(() => setShowSearch(false), 100); // hacer que el click se detecte
+              setTimeout(() => setIsFocused(false), 300); // hacer que el click se detecte y mostrar animacion 
+            }}
             onChange={(e) => setSearchQuery(e.target.value)}
             disabled={selected}
           />

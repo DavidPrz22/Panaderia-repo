@@ -1,13 +1,21 @@
-import { searchProductosFinales, searchProductosIntermedios } from "../../api/api"
+import { getRecetaComponentes, searchProductosFinales, searchProductosIntermedios } from "../../api/api"
 
 export const finalesSearchOptions = {
-    queryKey: ["productosFinales"],
+    queryKey: ["productosFinalesSearch"],
     queryFn: searchProductosFinales,
     staleTime: Infinity
 }
 
 export const intermediosSearchOptions = {
-    queryKey: ["productosIntermedios"],
+    queryKey: ["productosIntermediosSearch"],
     queryFn: searchProductosIntermedios,
     staleTime: Infinity
+}
+
+export const componentsProductionOptions = (id: number) => {
+    return {
+        queryKey: ["componentesProduccion", id],
+        queryFn: () => getRecetaComponentes(id),
+        staleTime: Infinity
+    }
 }

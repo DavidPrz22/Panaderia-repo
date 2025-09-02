@@ -28,7 +28,7 @@ export const ProductionComponentItem = ({
             type="number"
             min={1}
             max={stock}
-            className="border border-gray-300 rounded-md px-4 py-2 outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-300 transition-[box-shadow] duration-300"
+            className="w-20 border border-gray-300 rounded-md px-2 py-2 outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-300 transition-[box-shadow] duration-300"
           />
         </div>
         <span className=" bg-gray-200 text-sm px-2 py-0.5 rounded-sm font-semibold">

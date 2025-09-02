@@ -1,5 +1,5 @@
 import apiClient from "@/api/client";
-import type { searchItem } from "../types/types";
+import type { ComponentesLista, searchItem } from "../types/types";
 
 export const searchProductosIntermedios = async () : Promise<searchItem[]> => {
     try {
@@ -17,6 +17,17 @@ export const searchProductosFinales = async() : Promise<searchItem[]> => {
         return response.data;
     } catch (error) {
         console.error("Error searching Productos Finales:", error);
+        throw error;
+    }
+};
+
+
+export const getRecetaComponentes = async (producto_id: number): Promise<ComponentesLista> => {
+    try {
+        const response = await apiClient.post(`/api/productoselaborados/${producto_id}/get-receta-producto/`);
+        return response.data;
+    } catch (error) {
+        console.error("Error fetching receta componentes:", error);
         throw error;
     }
 };

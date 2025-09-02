@@ -1,6 +1,6 @@
 from rest_framework import viewsets, status
 from apps.inventario.models import MateriasPrimas, LotesMateriasPrimas, ProductosIntermedios, ProductosFinales, ProductosElaborados
-from apps.produccion.models import Recetas    
+from apps.produccion.models import Recetas, RecetasDetalles, RelacionesRecetas    
 from apps.inventario.serializers import ComponentesSearchSerializer, MateriaPrimaSerializer, LotesMateriaPrimaSerializer, ProductosIntermediosSerializer, ProductosFinalesSerializer, ProductosIntermediosDetallesSerializer, ProductosElaboradosSerializer, ProductosFinalesDetallesSerializer, ProductosFinalesSearchSerializer, ProductosIntermediosSearchSerializer
 from django.db.models import Min
 from rest_framework.response import Response
@@ -144,6 +144,52 @@ class ProductosElaboradosViewSet(viewsets.ModelViewSet):
         if receta.exists():
             receta.update(producto_elaborado=None)
         return Response(status=status.HTTP_200_OK)
+
+    def _get_component_data(self, detalle):
+        """Helper function to extract component data from a RecetasDetalles instance."""
+        if detalle.componente_materia_prima:
+            component = detalle.componente_materia_prima
+            unit = component.unidad_medida_base
+            return {
+                "id": component.id,
+                "nombre": component.nombre,
+                "unidad_medida": unit.abreviatura,
+                "stock": component.stock_actual,
+            }
+        elif detalle.componente_producto_intermedio:
+            component = detalle.componente_producto_intermedio
+            unit = component.unidad_medida_nominal
+            return {
+                "id": component.id,
+                "nombre": component.nombre_producto,
+                "unidad_medida": unit.abreviatura,
+                "stock": component.stock_actual,
+            }
+        return None
+
+    @action(detail=True, methods=['post'], url_path='get-receta-producto')
+    def get_receta_producto(self, request, *args, **kwargs):
+        producto_id = kwargs.get('pk')
+        try:
+            receta_principal = Recetas.objects.get(producto_elaborado=producto_id)
+        except Recetas.DoesNotExist:
+            return Response({"error": "No se encontró la receta asociada"}, status=status.HTTP_404_NOT_FOUND)
+
+        subreceta_ids = list(RelacionesRecetas.objects.filter(
+            receta_principal=receta_principal
+        ).values_list('subreceta_id', flat=True))
+
+        all_recipe_ids = [receta_principal.id] + subreceta_ids
+
+        detalles = RecetasDetalles.objects.filter(
+            receta_id__in=all_recipe_ids
+        ).select_related(
+            'componente_materia_prima__unidad_medida_base',
+            'componente_producto_intermedio__unidad_medida_nominal'
+        )
+        data_receta = [self._get_component_data(d) for d in detalles if self._get_component_data(d) is not None]
+
+        return Response(data_receta, status=status.HTTP_200_OK)
 
 
 class ProductosIntermediosViewSet(viewsets.ModelViewSet):
