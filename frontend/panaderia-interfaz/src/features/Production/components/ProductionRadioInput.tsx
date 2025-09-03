@@ -9,23 +9,22 @@ export const ProductionRadioInput = ({
   id: string;
   label: string;
 }) => {
+  const { productType, setProductType } = useProductionContext();
 
-    const { productType, setProductType } = useProductionContext();
-
-    return (
+  return (
     <label
-        className="flex lg:w-fit w-full items-center gap-2 cursor-pointer"
-        htmlFor={id}
+      className="flex lg:w-fit w-full items-center gap-2 cursor-pointer"
+      htmlFor={id}
     >
-        <input
-            type="radio"
-            name={name}
-            id={id}
-            className="size-4"
-            checked={productType === name}
-            onChange={() => setProductType(name)}   
-        />
-        {label}
+      <input
+        type="radio"
+        name={name}
+        id={id}
+        className="size-4"
+        checked={productType === name}
+        onChange={() => setProductType(name)}
+      />
+      {label}
     </label>
   );
 };

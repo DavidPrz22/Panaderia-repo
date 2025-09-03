@@ -5,8 +5,10 @@ import { ProductionProvider } from "@/context/ProductionContext";
 import ProductionHeader from "@/features/Production/components/ProductionHeader";
 import ProductionButtons from "@/features/Production/components/ProductionButtons";
 import { ProductionComponents } from "@/features/Production/components/ProductionComponents";
+import { ProductionRegistrosModal } from "@/features/Production/components/ProductionRegistrosModal";
 
-export default function MateriaPrimaPage() {
+export default function ProductionPage() {
+
   return (
     <ProductionProvider>
       <Sidebar />
@@ -19,6 +21,7 @@ export default function MateriaPrimaPage() {
                 <ProductionRegisterCard />
                 <ProductionComponents />
                 <ProductionButtons />
+                <ProductionRegistrosModal />
             </div>
           </main>
         </div>

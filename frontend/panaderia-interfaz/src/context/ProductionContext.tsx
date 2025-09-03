@@ -15,6 +15,10 @@ type ProductionContextType = {
     setProductoId: (value: number | null) => void;
     showSearch: boolean;
     setShowSearch: (value: boolean) => void;
+    showProductionRegistros: boolean;
+    setShowProductionRegistros: (value: boolean) => void;
+    isClosingModal: boolean;
+    setIsClosingModal: (value: boolean) => void;
 };
 
 const ProductionContextProvider = createContext<ProductionContextType | null>(null);
@@ -28,7 +32,10 @@ export function ProductionProvider({ children }: { children: React.ReactNode }) 
   const [productoId, setProductoId] = useState<number | null>(null);
   const [showSearch, setShowSearch] = useState(false);
   const productSearchRef = useRef<HTMLInputElement | null>(null);
-  
+
+  const [showProductionRegistros, setShowProductionRegistros] = useState(false);
+  const [isClosingModal, setIsClosingModal] = useState(false);
+
   return (
     <ProductionContextProvider.Provider value={{
       productType,
@@ -43,7 +50,11 @@ export function ProductionProvider({ children }: { children: React.ReactNode }) 
       productoId,
       setProductoId,
       showSearch,
-      setShowSearch
+      setShowSearch,
+      showProductionRegistros,
+      setShowProductionRegistros,
+      isClosingModal,
+      setIsClosingModal,
     }}>
         {children}
     </ProductionContextProvider.Provider>

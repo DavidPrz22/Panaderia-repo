@@ -20,7 +20,7 @@ export default function Button({
         ${type === "delete" ? "bg-red-500 text-white hover:bg-red-600 border-none rounded-md px-4 py-2" : ""}
         ${type === "edit" ? "bg-blue-500 text-white hover:bg-blue-600 border-none rounded-md px-4 py-2" : ""}
         ${type == "add" ? "bg-green-600 text-white hover:bg-green-700 border-none rounded-md px-4 py-2" : ""} 
-        ${type === "close" ? "border rounded-full p-2 border-gray-300" : ""}
+        ${type === "close" ? "border rounded-full p-2 border-gray-300 hover:bg-gray-100" : ""}
 
         font-semibold cursor-pointer w-fit`}
     >

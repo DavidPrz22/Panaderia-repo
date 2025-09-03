@@ -30,7 +30,7 @@ export const ProductionComponentItem = ({
             type="number"
             min={1}
             max={stock}
-            defaultValue={cantidad > 0 ? cantidad : ''}
+            defaultValue={cantidad > 0 ? cantidad : ""}
             className="w-20 border border-gray-300 rounded-md px-2 py-2 outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-300 transition-[box-shadow] duration-300"
           />
         </div>

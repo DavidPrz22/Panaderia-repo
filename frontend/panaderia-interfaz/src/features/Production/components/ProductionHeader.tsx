@@ -3,7 +3,7 @@ import { ProductionRegistrosBtn } from "./ProductionRegistrosBtn";
 
 export default function ProductionHeader() {
   return (
-    <div className="flex items-center p-4 justify-between mb-2">
+    <div className="flex items-center justify-between mb-8">
       <div className="flex items-center gap-4">
         <img src={FactoryIcon} alt="Factory Icon" />
         <div className="flex flex-col">
