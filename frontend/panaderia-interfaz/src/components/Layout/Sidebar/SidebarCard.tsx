@@ -7,7 +7,7 @@ export default function SidebarCard({
   onclick,
   link,
   id,
-  dropdown,
+  dropdownContained,
 }: SidebarCardProps) {
   const navigate = useNavigate();
   const {
@@ -16,8 +16,11 @@ export default function SidebarCard({
     isOpenDropdownCard,
     refDropdownCard,
   } = useAppContext();
+
   function handleClick(e: React.MouseEvent<HTMLDivElement>) {
-    if (dropdown) {
+    onclick(e);
+
+    if (dropdownContained) {
       setIsOpenDropdownCard(true);
       const dropdownContainer = e.currentTarget.closest(
         '[data-id="DropdownContainer"]',
@@ -25,12 +28,11 @@ export default function SidebarCard({
       if (dropdownContainer) {
         refDropdownCard.current = dropdownContainer as HTMLDivElement;
       }
-    } else if (dropdown === false && isOpenDropdownCard) {
+    } else if (dropdownContained === false && isOpenDropdownCard) {
       setIsOpenDropdownCard(false);
     }
 
     if (link) navigate(link);
-    onclick(e);
   }
 
   return (

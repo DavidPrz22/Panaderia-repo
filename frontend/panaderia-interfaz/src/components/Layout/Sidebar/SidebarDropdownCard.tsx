@@ -8,29 +8,30 @@ export default function SidebarDropdownCard({
   icon,
   onclick,
   elements,
-  id,
+  id
 }: {
   children: React.ReactNode;
   icon: string;
   onclick: (e: React.MouseEvent<HTMLDivElement>) => void;
   elements: { icon: string; title: string; id: string; link?: string }[];
   id: string;
+  dropdown?: boolean;
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const {
-    setSelectedModule,
     setIsOpenDropdownCard,
     isOpenDropdownCard,
     refDropdownCard,
   } = useAppContext();
+
   const handleClick = (e: React.MouseEvent<HTMLDivElement>) => {
+
     if (isOpenDropdownCard) {
       setIsOpenDropdownCard(false);
       setIsOpen(false);
     } else {
       setIsOpen((prev) => !prev);
     }
-    setSelectedModule(e.currentTarget.id);
     onclick(e);
   };
 
@@ -62,7 +63,7 @@ export default function SidebarDropdownCard({
                 onclick={handleClick}
                 id={el.id}
                 link={el.link}
-                dropdown={true}
+                dropdownContained={true}
               >
                 {el.title}
               </SidebarCard>
