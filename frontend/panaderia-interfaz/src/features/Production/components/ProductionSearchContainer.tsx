@@ -4,7 +4,7 @@ import { useEffect } from "react";
 
 type searchContainerProp = {
   data: { id: number; nombre_producto: string }[];
-  onSelection: () => void;
+  onSelection: (id: number) => void;
 };
 
 type producto = { id: number; nombre_producto: string };
@@ -34,7 +34,7 @@ export const ProductSearchContainer = ({
   const handleClick = (producto: producto) => {
     if (productSearchRef.current) {
       productSearchRef.current.value = producto.nombre_producto;
-      onSelection();
+      onSelection(producto.id);
       setProductoId(producto.id);
     }
   };
@@ -44,16 +44,18 @@ export const ProductSearchContainer = ({
       className={`absolute top-[107%] left-0 max-h-[400px] cursor-pointer w-full overflow-auto bg-white border border-gray-300 border-b-0 rounded-md shadow-md z-10 transition-[opacity, transform] origin-top duration-200 ${showSearch ? "opacity-100 scale-100" : "opacity-0 scale-80"}`}
     >
       {filteredData.length > 0 ? (
-        filteredData.map((producto, index) => (
+        filteredData.map((producto) => (
           <ProductSearchItem
-            key={index}
+            key={producto.id}
             product={producto.nombre_producto}
             id={producto.id}
             onClick={() => handleClick(producto)}
           />
         ))
       ) : (
-        <div className="p-4 text-gray-800">Ningun Resultado</div>
+        <div className="p-4 text-gray-800">
+          Ningun Resultado
+        </div>
       )}
     </div>
   );

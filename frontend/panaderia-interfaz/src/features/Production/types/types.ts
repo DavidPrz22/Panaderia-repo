@@ -1,3 +1,7 @@
+import type { UseFormWatch } from "react-hook-form";
+import type { UseFormSetValue } from "react-hook-form";
+import type { TProductionFormData } from "../schemas/schemas";
+
 export type childrenProp = {
   children: React.ReactNode;
 };
@@ -15,3 +19,9 @@ export type RecetaComponenteProduccion = {
 };
 
 export type ComponentesLista = RecetaComponenteProduccion[];
+
+
+export type watchSetvalueTypeProduction = {
+  watch?:  UseFormWatch<TProductionFormData>;
+  setValue?: UseFormSetValue<TProductionFormData>;
+}

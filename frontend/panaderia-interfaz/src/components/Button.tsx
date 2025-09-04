@@ -2,7 +2,7 @@ export default function Button({
   children,
   type,
   onClick,
-  disabled
+  disabled,
 }: {
   children: React.ReactNode;
   type: "submit" | "cancel" | "delete" | "edit" | "close" | "add";

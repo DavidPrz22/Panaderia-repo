@@ -38,6 +38,7 @@ export const ProductionComponentItem = ({
           {unidad}
         </span>
       </div>
+
     </div>
   );
 };

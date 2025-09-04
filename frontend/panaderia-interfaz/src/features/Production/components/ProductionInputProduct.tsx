@@ -4,8 +4,11 @@ import { useProductSearchQuery } from "../hooks/queries/ProductionQueries";
 import { useProductionContext } from "@/context/ProductionContext";
 import { useState } from "react";
 import ProductionXicon from "./ProductionXicon";
+import type { watchSetvalueTypeProduction } from "../types/types";
 
-export const ProductionInputProduct = ({ title }: { title: string }) => {
+export const ProductionInputProduct = ({ title, setValue }: { title: string } & watchSetvalueTypeProduction
+) => {
+
   const [{ data: finales }, { data: intermedios }] = useProductSearchQuery();
 
   const {
@@ -36,6 +39,11 @@ export const ProductionInputProduct = ({ title }: { title: string }) => {
     }
   };
 
+  const handleOnSelection = (id: number) => {
+    if (setValue) setValue("productoId", id);
+    setSelected(true);
+  };
+
   return (
     <div className="flex flex-1 flex-col gap-2 w-full relative">
       <div className="font-semibold font-[Roboto]">{title}</div>
@@ -54,7 +62,9 @@ export const ProductionInputProduct = ({ title }: { title: string }) => {
               setTimeout(() => setShowSearch(false), 100); // hacer que el click se detecte
               setTimeout(() => setIsFocused(false), 300); // hacer que el click se detecte y mostrar animacion
             }}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={
+              (e) => setSearchQuery(e.target.value)
+            }
             disabled={selected}
           />
           {selected && <ProductionXicon onClick={handleClear} />}
@@ -64,13 +74,13 @@ export const ProductionInputProduct = ({ title }: { title: string }) => {
       {showFinalesSearch && (
         <ProductSearchContainer
           data={finales}
-          onSelection={() => setSelected(true)}
+          onSelection={handleOnSelection}
         />
       )}
       {showIntermediosSearch && (
         <ProductSearchContainer
           data={intermedios}
-          onSelection={() => setSelected(true)}
+          onSelection={handleOnSelection}
         />
       )}
     </div>

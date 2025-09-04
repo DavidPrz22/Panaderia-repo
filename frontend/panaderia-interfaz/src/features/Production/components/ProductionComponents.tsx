@@ -2,8 +2,9 @@ import { ProductionComponentItem } from "./ProductionComponentItem";
 import { ProductionComponentTitle } from "./ProductionCompenentTitle";
 import { DoubleSpinnerLoading } from "@/components/DoubleSpinnerLoading";
 import { useComponentsProductionQuery } from "../hooks/queries/ProductionQueries";
+import type { watchSetvalueTypeProduction } from "../types/types";
 
-export const ProductionComponents = () => {
+export const ProductionComponents = ({ setValue, watch }: watchSetvalueTypeProduction) => {
   const {
     data: productionComponentes = [],
     isFetching,

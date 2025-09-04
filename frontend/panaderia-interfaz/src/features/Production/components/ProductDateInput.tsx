@@ -1,10 +1,11 @@
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import type { watchSetvalueTypeProduction } from "../types/types";
 import dayjs from "dayjs";
 import "dayjs/locale/es";
 
-export const ProductDateInput = () => {
+export const ProductDateInput = ({ setValue }: watchSetvalueTypeProduction) => {
   dayjs.locale("es");
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="es">
@@ -21,6 +22,14 @@ export const ProductDateInput = () => {
               transition: "box-shadow 300ms ease-in-out",
             },
           },
+        }}
+        onChange={(date) => {
+            if (!date) return;
+            const value = date.startOf("day").toDate();
+            if (setValue) {
+              setValue("fechaExpiracion", value);
+            }
+
         }}
       />
     </LocalizationProvider>
