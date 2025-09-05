@@ -56,6 +56,7 @@ class Produccion(models.Model):
     producto_elaborado = models.ForeignKey(ProductosElaborados, on_delete=models.CASCADE, null=False, blank=False)
     cantidad_producida = models.DecimalField(max_digits=10, decimal_places=3, null=False, blank=False)
     fecha_produccion = models.DateField(null=False, blank=False)
+    fecha_expiracion = models.DateField(null=True, blank=True)
     costo_total_componentes_usd = models.DecimalField(max_digits=10, decimal_places=3)
     notas = models.TextField(null=True, blank=True)
     usuario_creacion = models.ForeignKey(User, on_delete=models.CASCADE)

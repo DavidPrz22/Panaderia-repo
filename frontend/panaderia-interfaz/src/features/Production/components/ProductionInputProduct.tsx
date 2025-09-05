@@ -4,27 +4,44 @@ import { useProductSearchQuery } from "../hooks/queries/ProductionQueries";
 import { useProductionContext } from "@/context/ProductionContext";
 import { useState } from "react";
 import ProductionXicon from "./ProductionXicon";
+import type { watchSetvalueTypeProduction } from "../types/types";
 
-export const ProductionInputProduct = ({ title }: { title: string }) => {
-  const [{data: finales}, {data: intermedios}] = useProductSearchQuery();
+export const ProductionInputProduct = ({ title, setValue }: { title: string } & watchSetvalueTypeProduction
+) => {
 
-  const { productSearchRef, productType, isFocused, setIsFocused, setSearchQuery, setShowSearch } = useProductionContext();
+  const [{ data: finales }, { data: intermedios }] = useProductSearchQuery();
 
-  const showFinalesSearch = finales && productType === "producto-final" && isFocused
-  const showIntermediosSearch = intermedios && productType === "producto-intermedio" && isFocused;
+  const {
+    productSearchRef,
+    productType,
+    isFocused,
+    setIsFocused,
+    setSearchQuery,
+    setShowSearch,
+  } = useProductionContext();
+
+  const showFinalesSearch =
+    finales && productType === "producto-final" && isFocused;
+  const showIntermediosSearch =
+    intermedios && productType === "producto-intermedio" && isFocused;
 
   const [selected, setSelected] = useState<boolean>(false);
 
   const handleClear = () => {
-    productSearchRef.current!.value = '';
+    productSearchRef.current!.value = "";
     setSelected(false);
-    setSearchQuery('');
-  }
+    setSearchQuery("");
+  };
 
   const handleFocus = () => {
     if (productType) {
       setIsFocused(true);
     }
+  };
+
+  const handleOnSelection = (id: number) => {
+    if (setValue) setValue("productoId", id);
+    setSelected(true);
   };
 
   return (
@@ -43,19 +60,29 @@ export const ProductionInputProduct = ({ title }: { title: string }) => {
             onFocus={handleFocus}
             onBlur={() => {
               setTimeout(() => setShowSearch(false), 100); // hacer que el click se detecte
-              setTimeout(() => setIsFocused(false), 300); // hacer que el click se detecte y mostrar animacion 
+              setTimeout(() => setIsFocused(false), 300); // hacer que el click se detecte y mostrar animacion
             }}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={
+              (e) => setSearchQuery(e.target.value)
+            }
             disabled={selected}
           />
-          {selected && (
-            <ProductionXicon onClick={handleClear} />
-          )}
+          {selected && <ProductionXicon onClick={handleClear} />}
         </div>
       </div>
 
-      {showFinalesSearch && (<ProductSearchContainer data={finales} onSelection={() => setSelected(true)} />)}
-      {showIntermediosSearch && (<ProductSearchContainer data={intermedios}  onSelection={() => setSelected(true)} />)}
+      {showFinalesSearch && (
+        <ProductSearchContainer
+          data={finales}
+          onSelection={handleOnSelection}
+        />
+      )}
+      {showIntermediosSearch && (
+        <ProductSearchContainer
+          data={intermedios}
+          onSelection={handleOnSelection}
+        />
+      )}
     </div>
   );
 };

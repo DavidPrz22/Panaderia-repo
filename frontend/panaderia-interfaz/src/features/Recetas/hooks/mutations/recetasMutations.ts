@@ -88,7 +88,7 @@ export const useDeleteRecetaMutation = () => {
 export const useRecetasSearchMutation = () => {
   const { setSearchListRecetaList } = useRecetasContext();
   return useMutation({
-    mutationFn: (search: string) => getRecetasSearch(search),
+    mutationFn: ({search, recetaId}: {search: string, recetaId?: number}) => getRecetasSearch(search, recetaId),
     onSuccess: (data) => {
       setSearchListRecetaList(data);
     },

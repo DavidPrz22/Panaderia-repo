@@ -17,6 +17,7 @@ import {
   ComprasIcon,
   ReportesIcon,
   FinalesIcon,
+  TransformacionIcon,
 } from "@/assets/DashboardAssets";
 
 export default function Sidebar() {
@@ -139,6 +140,9 @@ export default function Sidebar() {
               link="/dashboard/produccion"
             >
               Producción
+            </SidebarCard>
+            <SidebarCard icon={TransformacionIcon} onclick={handleClick} id="transformacion">
+              Transformación
             </SidebarCard>
             <SidebarCard icon={ComprasIcon} onclick={handleClick} id="compras">
               Compras

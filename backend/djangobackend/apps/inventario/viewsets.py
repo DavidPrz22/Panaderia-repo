@@ -173,7 +173,43 @@ class ProductosElaboradosViewSet(viewsets.ModelViewSet):
             }
         return None
 
-    @action(detail=True, methods=['post'], url_path='get-receta-producto')
+    def _get_all_sub_recetas(self, receta_principal_id, subrecetas_lista: list):
+        """Recursively fetches all sub-recipes and their components."""
+
+        sub_relaciones = RelacionesRecetas.objects.filter(receta_principal_id=receta_principal_id).select_related('subreceta')
+        
+        if not sub_relaciones.exists():
+            return []
+
+        sub_recetas_ids = [rel.subreceta_id for rel in sub_relaciones]
+        
+        # Fetch all details for all sub-recipes in one go to avoid N+1 queries
+        all_detalles = RecetasDetalles.objects.filter(
+            receta_id__in=sub_recetas_ids
+        ).select_related(
+            'componente_materia_prima__unidad_medida_base',
+            'componente_producto_intermedio__unidad_medida_nominal'
+        )
+
+        # Group details by recipe id for efficient lookup
+        detalles_map = defaultdict(list)
+        for detalle in all_detalles:
+            detalles_map[detalle.receta_id].append(detalle)
+
+        for relacion in sub_relaciones:
+            subreceta = relacion.subreceta
+            componentes = [self._get_component_data(d) for d in detalles_map.get(subreceta.id, []) if d is not None]
+            
+            # Recursively find children of the current sub-recipe
+
+            subrecetas_lista.append({
+                'nombre': subreceta.nombre,
+                'componentes': componentes,
+            })
+
+            self._get_all_sub_recetas(subreceta.id, subrecetas_lista)
+
+    @action(detail=True, methods=['get'], url_path='get-receta-producto')
     def get_receta_producto(self, request, *args, **kwargs):
         producto_id = kwargs.get('pk')
         try:
@@ -181,21 +217,20 @@ class ProductosElaboradosViewSet(viewsets.ModelViewSet):
         except Recetas.DoesNotExist:
             return Response({"error": "No se encontró la receta asociada"}, status=status.HTTP_404_NOT_FOUND)
 
-        subreceta_ids = list(RelacionesRecetas.objects.filter(
-            receta_principal=receta_principal
-        ).values_list('subreceta_id', flat=True))
-
-        all_recipe_ids = [receta_principal.id] + subreceta_ids
-
-        detalles = RecetasDetalles.objects.filter(
-            receta_id__in=all_recipe_ids
+        detalles_receta_principal = RecetasDetalles.objects.filter(
+            receta_id=receta_principal.id
         ).select_related(
             'componente_materia_prima__unidad_medida_base',
             'componente_producto_intermedio__unidad_medida_nominal'
         )
-        data_receta = [self._get_component_data(d) for d in detalles if self._get_component_data(d) is not None]
+        subrecetas = []
+        self._get_all_sub_recetas(receta_principal.id, subrecetas)
+        producto_data = {
+            'componentes': [self._get_component_data(d) for d in detalles_receta_principal if d is not None],
+            'subrecetas': subrecetas
+        }
 
-        return Response(data_receta, status=status.HTTP_200_OK)
+        return Response(producto_data, status=status.HTTP_200_OK)
 
 
 class ProductosIntermediosViewSet(viewsets.ModelViewSet):

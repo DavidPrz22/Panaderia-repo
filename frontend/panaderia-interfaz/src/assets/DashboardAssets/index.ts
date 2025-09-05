@@ -35,3 +35,8 @@ export { default as FinalesIcon } from "./Finales.svg";
 export { default as SearchIconDark } from "./SearchDark.svg";
 export { default as FactoryIcon } from "./Factory.svg";
 export { default as DotMenuIcon } from "./DotMenu.svg";
+export { default as BoxIcon } from './Caja.svg'
+export { default as TrashIcon } from './Trash.svg'
+export { default as CalendarFilled } from './CalendarioLleno.svg'
+export { default as CalendarEmpty } from './CalendarioVacio.svg'
+export { default as TransformacionIcon } from './Transformacion.svg'

@@ -25,6 +25,7 @@ export default function RecetaListContainer({
     searchListActiveRecetaList,
     searchListRecetaList,
     timer,
+    recetaId,
     setTimer,
     setSearchListActiveRecetaList,
     setSearchListRecetaList,
@@ -64,11 +65,15 @@ export default function RecetaListContainer({
       clearTimeout(timer);
     }
     const interval = setTimeout(() => {
-      recetasSearchMutation(search);
+      recetasSearchMutation({
+        search,
+        recetaId: recetaId ? recetaId : undefined,
+      });
       setTimer(null);
     }, 1000);
     setTimer(interval as NodeJS.Timeout);
   };
+
   return (
     <div className="flex flex-col relative" id="receta-relacionada-container">
       <RecetasFormInputContainer

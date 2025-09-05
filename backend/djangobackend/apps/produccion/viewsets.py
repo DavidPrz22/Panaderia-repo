@@ -271,12 +271,14 @@ class RecetasSearchViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['get'])
     def list_recetas(self, request):
         search_query = request.query_params.get('search')
+        recetaId = request.query_params.get('recetaId', None)
         if not search_query:
             return Response(status=status.HTTP_400_BAD_REQUEST, data={"error": "El parámetro 'search' es requerido"})
-        recetas = Recetas.objects.filter(
-            Q(nombre__icontains=search_query) &
-            Q(producto_elaborado__isnull=True)
-        )
+        
+        filters = Q(nombre__icontains=search_query) & Q(producto_elaborado__isnull=True)
+        if recetaId:
+            filters &= ~Q(id=recetaId)
+        recetas = Recetas.objects.filter(filters)
         
         serializer = self.get_serializer(recetas, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)

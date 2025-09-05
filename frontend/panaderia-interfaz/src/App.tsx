@@ -9,8 +9,6 @@ import RecetasPage from "./pages/RecetasPage";
 import ProductosFinalesPage from "./pages/ProductosFinalesPage";
 import ProductionPage from "./pages/ProductionPage";
 
-// Create protected versions of your components
-
 const ProtectedLandingPage = withAuth(LandingPage);
 const ProtectedMateriaPrimaPage = withAuth(MateriaPrimaPage);
 const ProtectedProductosIntermediosPage = withAuth(ProductosIntermediosPage);
@@ -19,7 +17,6 @@ const ProtectedProductionPage = withAuth(ProductionPage);
 const ProtectedRecetasPage = withAuth(RecetasPage);
 
 function Logout() {
-  // This will be handled by the AuthProvider's logout method
   const { logout } = useAuth();
   logout();
   return <Navigate to="/login" />;
