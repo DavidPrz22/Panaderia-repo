@@ -87,10 +87,12 @@ export const deleteReceta = async (id: number) => {
 
 export const getRecetasSearch = async (
   search: string,
+  recetaId?: number,
 ): Promise<recetaRelacionada[]> => {
   try {
     const response = await apiClient.get(
-      `/api/recetas-search/list_recetas/?search=${search}`,
+      `/api/recetas-search/list_recetas/`,
+      { params: { search, recetaId } }
     );
     return response.data;
   } catch (error) {

@@ -25,7 +25,7 @@ export const getRecetaComponentes = async (
   producto_id: number,
 ): Promise<ComponentesLista> => {
   try {
-    const response = await apiClient.post(
+    const response = await apiClient.get(
       `/api/productoselaborados/${producto_id}/get-receta-producto/`,
     );
     return response.data;
