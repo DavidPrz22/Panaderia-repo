@@ -10,7 +10,7 @@ export type ProductionType = "producto-final" | "producto-intermedio";
 
 export type searchItem = { id: number; nombre_producto: string };
 
-export type RecetaComponenteProduccion = {
+type RecetaComponenteProduccion = {
   id: number;
   nombre: string;
   unidad_medida: string;
@@ -19,6 +19,19 @@ export type RecetaComponenteProduccion = {
 };
 
 export type ComponentesLista = RecetaComponenteProduccion[];
+
+export type subreceta = {
+  nombre: string;
+  componentes: ComponentesLista;
+};
+
+export type subrecetasLista = subreceta[];
+
+
+export type componentesRecetaProducto = {
+  componentes: ComponentesLista;
+  subrecetas: subrecetasLista;
+};
 
 
 export type watchSetvalueTypeProduction = {

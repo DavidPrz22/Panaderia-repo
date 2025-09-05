@@ -1,5 +1,5 @@
 import apiClient from "@/api/client";
-import type { ComponentesLista, searchItem } from "../types/types";
+import type { componentesRecetaProducto, searchItem } from "../types/types";
 
 export const searchProductosIntermedios = async (): Promise<searchItem[]> => {
   try {
@@ -23,7 +23,7 @@ export const searchProductosFinales = async (): Promise<searchItem[]> => {
 
 export const getRecetaComponentes = async (
   producto_id: number,
-): Promise<ComponentesLista> => {
+): Promise<componentesRecetaProducto> => {
   try {
     const response = await apiClient.get(
       `/api/productoselaborados/${producto_id}/get-receta-producto/`,
