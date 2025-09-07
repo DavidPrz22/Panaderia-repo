@@ -1,5 +1,6 @@
-import { useEffect, useRef, useState } from "react"
+import { useRef } from "react"
 import type { watchSetvalueTypeProduction } from "../types/types";
+import '@/styles/validationStyles.css'
 
 type itemProps = {
     id: number;
@@ -13,7 +14,6 @@ export const ProductionComponentItemCantidad = (
 ) => {
 
     const inputRef = useRef<HTMLInputElement>(null);
-    const [noStock, setNoStock] = useState<boolean>(false);
     const prevValueRef = useRef<number>(cantidad);
 
 
@@ -27,8 +27,6 @@ export const ProductionComponentItemCantidad = (
         }
 
         console.log(watch('componentes'));
-
-        if (value > stock) setNoStock(true); else setNoStock(false);
 
         const componentIndex = watch('componentes')?.findIndex((c) => c.id === id);
         if (componentIndex === -1) return;
@@ -47,7 +45,10 @@ export const ProductionComponentItemCantidad = (
                 prevValueRef.current = 0;
                 return;
             }
-            allInputValues.forEach(input => input.classList.remove("border-red-500"));
+            allInputValues.forEach(input => {
+                input.classList.remove("invalidInput")
+                input.classList.add("validInput")
+            });
             setValue(`componentes.${componentIndex}.cantidad`, valuesTotal, { shouldValidate: true });
             prevValueRef.current = value;
             return;
@@ -62,7 +63,10 @@ export const ProductionComponentItemCantidad = (
         if (nuevaCantidad > stock || nuevaCantidad < 0) {
             setValue(`componentes.${componentIndex}.cantidad`, 0, { shouldValidate: true });
             const allInputValues = document.querySelectorAll(`#componente-cantidad-${id}`)
-            allInputValues.forEach(input => input.classList.add("border-red-500"));
+            allInputValues.forEach(input => {
+                input.classList.remove("validInput")
+                input.classList.add("invalidInput")
+            });
         } else {
             setValue(`componentes.${componentIndex}.cantidad`, nuevaCantidad, { shouldValidate: true });
         }
@@ -93,17 +97,13 @@ export const ProductionComponentItemCantidad = (
 
     const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
         if (e.target.value === "" || parseFloat(e.target.value) < 0 || isNaN(parseFloat(e.target.value))) {
-            setNoStock(true);
+            document.querySelectorAll(`#componente-cantidad-${id}`).forEach(input => {
+                input.classList.remove("validInput");
+                input.classList.add("invalidInput");
+            });
         }
     }
 
-    useEffect(() => {
-        if (cantidad > stock) { 
-            setNoStock(true);
-        } else {
-            setNoStock(false);
-        }
-    }, [cantidad, stock]);
 
 
     return (
@@ -122,9 +122,10 @@ export const ProductionComponentItemCantidad = (
             step={0.1}
             ref={inputRef}
             className={`w-20 rounded-md px-2 py-2 outline-none focus:ring-4 transition-[box-shadow] duration-300
-
-                ${noStock ? "border border-red-500 focus:border-red-500 focus:ring-red-100" : "border border-gray-300 focus:ring-blue-100 focus:border-blue-300"}`}
+                ${ cantidad > stock ? "invalidInput" : "validInput"}
+            `}
           />
+          {/* ${noStock ? "border border-red-500 focus:border-red-500 focus:ring-red-100" : "border border-gray-300 focus:ring-blue-100 focus:border-blue-300"} */}
         </div>
         <span className=" bg-gray-200 text-sm px-2 py-0.5 rounded-sm font-semibold">
           {unidad}
