@@ -38,6 +38,7 @@ export const ProductionComponentItem = ({
         stock={stock}
         unidad={unidad}
         cantidad={cantidad}
+        nombre={titulo}
         setValue={setValue}
         watch={watch}
       />

@@ -1,24 +1,76 @@
 import { useRef } from "react"
-import type { watchSetvalueTypeProduction } from "../types/types";
+import type { watchSetvalueTypeProduction, ComponentesLista } from "../types/types";
 import '@/styles/validationStyles.css'
+import { useProductionContext } from "@/context/ProductionContext";
 
 type itemProps = {
     id: number;
     stock: number;
     unidad: string;
     cantidad: number;
+    nombre: string;
 }
 
 export const ProductionComponentItemCantidad = (
-    { id, stock, unidad, cantidad, setValue, watch }: itemProps & watchSetvalueTypeProduction
+    { id, stock, unidad, cantidad, nombre, setValue, watch }: itemProps & watchSetvalueTypeProduction
 ) => {
 
     const inputRef = useRef<HTMLInputElement>(null);
     const prevValueRef = useRef<number>(cantidad);
+    const { insufficientStock, setInsufficientStock } = useProductionContext();
+
+    // Helpers
+    const getAllInputsForComponent = () =>
+        document.querySelectorAll<HTMLInputElement>(`#componente-cantidad-${id}`);
+
+    const toggleInputsValidityClass = (isValid: boolean) => {
+        getAllInputsForComponent().forEach((input) => {
+            input.classList.toggle("validInput", isValid);
+            input.classList.toggle("invalidInput", !isValid);
+        });
+    };
+
+    const sumAllInputsForComponent = () => {
+        let total = 0;
+        getAllInputsForComponent().forEach((input) => {
+            const v = parseFloat(input.value);
+            total += isNaN(v) ? 0 : v;
+        });
+        return total;
+    };
+
+    const updateFormCantidad = (componentIndex: number, value: number) => {
+        setValue?.(`componentes.${componentIndex}.cantidad`, value, { shouldValidate: true });
+    };
+
+    type Componente = ComponentesLista[number];
+
+    const addToInsufficient = (componentIndex: number) => {
+        if (!setInsufficientStock || !watch) return;
+        const currentCantidad = watch(`componentes.${componentIndex}.cantidad`) as number | undefined;
+        const current: Componente = {
+            id,
+            nombre,
+            unidad_medida: unidad,
+            stock,
+            cantidad: typeof currentCantidad === 'number' ? currentCantidad : 0,
+        };
+        const list = insufficientStock ?? [];
+        if (list.some((c) => c.id === current.id)) return;
+        setInsufficientStock([...list, current]);
+    };
+
+    const removeFromInsufficient = (componentId: number) => {
+        if (!setInsufficientStock) return;
+        const list = insufficientStock ?? [];
+        if (list.length === 0) return;
+        const next = list.filter((c) => c.id !== componentId);
+        setInsufficientStock(next);
+    };
 
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {  
-        if (watch === undefined || setValue === undefined) return;
+        if (!watch || !setValue) return;
 
         const value = parseFloat(e.target.value);
         if (e.target.value === "" || value <= 0 || isNaN(value)) {
@@ -26,53 +78,44 @@ export const ProductionComponentItemCantidad = (
             return;
         }
 
-        console.log(watch('componentes'));
-
-        const componentIndex = watch('componentes')?.findIndex((c) => c.id === id);
+        const componentIndex = watch('componentes')?.findIndex((c) => c.id === id) ?? -1;
         if (componentIndex === -1) return;
 
-        // Reset previous value
-        const cantidadActual = watch(`componentes.${componentIndex}.cantidad`);
+        // Total actual almacenado en el formulario para este componente
+        const cantidadActual = watch(`componentes.${componentIndex}.cantidad`) as number;
+
+        // Si el total es 0, recalcular sumando todos los inputs duplicados (receta base + subrecetas)
         if (cantidadActual === 0) {
-            let valuesTotal = 0;
-            
-            const allInputValues = document.querySelectorAll(`#componente-cantidad-${id}`);
-            allInputValues.forEach((input) => {
-                valuesTotal += parseFloat((input as HTMLInputElement).value) || 0;
-            });
+            const valuesTotal = sumAllInputsForComponent();
             if (valuesTotal > stock) {
-                setValue(`componentes.${componentIndex}.cantidad`, 0, { shouldValidate: true });
+                updateFormCantidad(componentIndex, 0);
+                toggleInputsValidityClass(false);
+                addToInsufficient(componentIndex);
                 prevValueRef.current = 0;
                 return;
             }
-            allInputValues.forEach(input => {
-                input.classList.remove("invalidInput")
-                input.classList.add("validInput")
-            });
-            setValue(`componentes.${componentIndex}.cantidad`, valuesTotal, { shouldValidate: true });
+            toggleInputsValidityClass(true);
+            updateFormCantidad(componentIndex, valuesTotal);
+            removeFromInsufficient(id);
             prevValueRef.current = value;
             return;
-
         }
 
+        // Recalcular nuevo total restando el valor previo de este input y sumando el nuevo
         const cantidadRestante = cantidadActual - prevValueRef.current;
-        setValue(`componentes.${componentIndex}.cantidad`, cantidadRestante, { shouldValidate: true });
-
         const nuevaCantidad = cantidadRestante + value;
 
         if (nuevaCantidad > stock || nuevaCantidad < 0) {
-            setValue(`componentes.${componentIndex}.cantidad`, 0, { shouldValidate: true });
-            const allInputValues = document.querySelectorAll(`#componente-cantidad-${id}`)
-            allInputValues.forEach(input => {
-                input.classList.remove("validInput")
-                input.classList.add("invalidInput")
-            });
+            updateFormCantidad(componentIndex, 0);
+            toggleInputsValidityClass(false);
+            addToInsufficient(componentIndex);
         } else {
-            setValue(`componentes.${componentIndex}.cantidad`, nuevaCantidad, { shouldValidate: true });
+            updateFormCantidad(componentIndex, nuevaCantidad);
+            toggleInputsValidityClass(true);
+            removeFromInsufficient(id);
         }
-        prevValueRef.current = value;
-        console.log(watch(`componentes.${componentIndex}`));
 
+        prevValueRef.current = value;
     }
 
     const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -96,11 +139,9 @@ export const ProductionComponentItemCantidad = (
     };
 
     const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
-        if (e.target.value === "" || parseFloat(e.target.value) < 0 || isNaN(parseFloat(e.target.value))) {
-            document.querySelectorAll(`#componente-cantidad-${id}`).forEach(input => {
-                input.classList.remove("validInput");
-                input.classList.add("invalidInput");
-            });
+        const v = parseFloat(e.target.value);
+        if (e.target.value === "" || v < 0 || isNaN(v)) {
+            toggleInputsValidityClass(false);
         }
     }
 
@@ -110,7 +151,7 @@ export const ProductionComponentItemCantidad = (
         <div className="flex items-center gap-4 min-w-[250px]">
         <span className="text-lg font-semibold">Cantidad:</span>
         <div className="rounded-md shadow-sm">
-          <input
+            <input
             type="number"
             id = {`componente-cantidad-${id}`}
             min={1}
