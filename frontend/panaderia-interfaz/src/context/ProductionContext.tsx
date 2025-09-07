@@ -1,5 +1,5 @@
 import React, { createContext, useContext  } from "react";
-import type { ProductionType, componentesRecetaProducto } from "@/features/Production/types/types";
+import type { ComponentesLista, ProductionType, componentesRecetaProducto } from "@/features/Production/types/types";
 import { useState, useRef } from "react";
 type ProductionContextType = {
     productType: ProductionType | null;
@@ -19,6 +19,8 @@ type ProductionContextType = {
     setShowProductionRegistros: (value: boolean) => void;
     isClosingModal: boolean;
     setIsClosingModal: (value: boolean) => void;
+    insufficientStock: ComponentesLista | null;
+    setInsufficientStock: (value: ComponentesLista | null) => void;
 };
 
 const ProductionContextProvider = createContext<ProductionContextType | null>(null);
@@ -32,7 +34,7 @@ export function ProductionProvider({ children }: { children: React.ReactNode }) 
   const [productoId, setProductoId] = useState<number | null>(null);
   const [showSearch, setShowSearch] = useState(false);
   const productSearchRef = useRef<HTMLInputElement | null>(null);
-
+  const [insufficientStock, setInsufficientStock] = useState<ComponentesLista | null>(null);
   const [showProductionRegistros, setShowProductionRegistros] = useState(false);
   const [isClosingModal, setIsClosingModal] = useState(false);
 
@@ -55,6 +57,8 @@ export function ProductionProvider({ children }: { children: React.ReactNode }) 
       setShowProductionRegistros,
       isClosingModal,
       setIsClosingModal,
+      insufficientStock,
+      setInsufficientStock,
     }}>
         {children}
     </ProductionContextProvider.Provider>

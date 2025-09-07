@@ -2,35 +2,86 @@ import { ProductionComponentItem } from "./ProductionComponentItem";
 import { ProductionComponentTitle } from "./ProductionCompenentTitle";
 import { DoubleSpinnerLoading } from "@/components/DoubleSpinnerLoading";
 import { useComponentsProductionQuery } from "../hooks/queries/ProductionQueries";
-import type { watchSetvalueTypeProduction } from "../types/types";
+import type { ComponentesLista, componentesRecetaProducto, subreceta, watchSetvalueTypeProduction } from "../types/types";
 import { ProductionSubComponents } from "./ProductionSubComponents";
 import { ChefHatIcon } from "@/assets/DashboardAssets";
+import { ProductionWarning } from "./ProductionWarning";
+import { useProductionContext } from "@/context/ProductionContext";
+import { useEffect, useMemo, memo } from "react";
 
-export const ProductionComponents = ({ setValue, watch }: watchSetvalueTypeProduction) => {
+type Componente = ComponentesLista[number];
+
+const ProductionComponentsBase = ({ setValue, watch }: watchSetvalueTypeProduction) => {
   const {
-    data: productionComponentes = [],
+  data,
     isFetching,
     isFetched,
   } = useComponentsProductionQuery();
 
-  const componentesProducts = "componentes" in productionComponentes ? productionComponentes.componentes : [];
-  const subrecetasProducts = "subrecetas" in productionComponentes ? productionComponentes.subrecetas : [];
+  const { setInsufficientStock } = useProductionContext();
+
+  const productionComponentes: componentesRecetaProducto | undefined = data as componentesRecetaProducto | undefined;
+
+  const componentesPrincipalesProducts: Componente[] = useMemo(() => {
+    return productionComponentes?.componentes ?? [];
+  }, [productionComponentes]);
+
+  const subrecetasProducts: subreceta[] = useMemo(() => {
+    return productionComponentes?.subrecetas ?? [];
+  }, [productionComponentes]);
+
+  const componentesEnProducto: ComponentesLista = useMemo(() => {
+
+    const all = [...componentesPrincipalesProducts];
+    subrecetasProducts.forEach(({ componentes }) => {
+        componentes.forEach((componente) => {
+            const index = all.findIndex(c => c.id === componente.id);
+            if (componente.id && index === -1) {
+                all.push(componente);
+            } else if (index !== -1) {
+                const newComponent = { ...all[index] };
+                newComponent.cantidad += componente.cantidad;
+                all[index] = newComponent;
+            }
+        });
+    });
+    return all;
+  }, [componentesPrincipalesProducts, subrecetasProducts]);
+
+  const insufficientStock: ComponentesLista = useMemo(() => {
+    return componentesEnProducto.filter((c) => c.stock < c.cantidad);
+  }, [componentesEnProducto]);
+
+  useEffect(() => {
+    if (!isFetched) return;
+    setValue?.("componentes", componentesEnProducto);
+  }, [isFetched, componentesEnProducto, setValue]);
+
+  useEffect(() => {
+    if (!isFetched) return;
+    setInsufficientStock?.(insufficientStock);
+  }, [isFetched, insufficientStock, setInsufficientStock]);
 
   return (
     <>
       {isFetching && <DoubleSpinnerLoading extraClassName="size-30 mt-4" />}
 
-      {isFetched && componentesProducts.length > 0 && (
+      {isFetched && componentesPrincipalesProducts.length > 0 && (
         <div className="p-6 border border-gray-200 rounded-lg bg-white mt-6 shadow-md">
           <ProductionComponentTitle />
+          <ProductionWarning/>
           <div className="flex flex-col gap-2 mt-8">
-            {componentesProducts.map((componente) => (
+  
+            {componentesPrincipalesProducts.map((componente) => (
               <ProductionComponentItem
                 key={componente.id}
+                id={componente.id}
                 titulo={componente.nombre}
                 stock={componente.stock}
                 unidad={componente.unidad_medida}
                 cantidad={componente.cantidad}
+                setValue={setValue}
+                watch={watch}
               />
             ))}
 
@@ -42,8 +93,8 @@ export const ProductionComponents = ({ setValue, watch }: watchSetvalueTypeProdu
                     Recetas Relacionadas:
                   </div>
                   {
-                    subrecetasProducts.map((subreceta, index) => (
-                      <ProductionSubComponents key={index} subreceta={subreceta} />
+                    subrecetasProducts.map((sr, index) => (
+                      <ProductionSubComponents key={`${sr.nombre}-${index}`} subreceta={sr} setValue={setValue} watch={watch} />
                     ))
                   }
                 </div>
@@ -53,7 +104,7 @@ export const ProductionComponents = ({ setValue, watch }: watchSetvalueTypeProdu
         </div>
       )}
 
-      {isFetched && componentesProducts.length === 0 && (
+      {isFetched && componentesPrincipalesProducts.length === 0 && (
         <div className="p-4 border border-gray-200 rounded-lg bg-white mt-6 shadow-md">
           <div className="p-4 text-gray-800 font-bold">
             No hay componentes disponibles
@@ -63,3 +114,6 @@ export const ProductionComponents = ({ setValue, watch }: watchSetvalueTypeProdu
     </>
   );
 };
+
+export const ProductionComponents = memo(ProductionComponentsBase);
+ProductionComponents.displayName = "ProductionComponents";

@@ -1,9 +1,10 @@
 import { ProductionComponentItem } from "./ProductionComponentItem";
 import type { subreceta } from "../types/types";
+import type { watchSetvalueTypeProduction } from "../types/types";
 // import { useComponentsProductionQuery } from "../hooks/queries/ProductionQueries";
 
 
-export const ProductionSubComponents = ({subreceta}: {subreceta: subreceta}) => {
+export const ProductionSubComponents = ({subreceta, setValue, watch}: {subreceta: subreceta} & watchSetvalueTypeProduction) => {
 
     // const {
     //     data: productionComponentes = [],
@@ -12,7 +13,7 @@ export const ProductionSubComponents = ({subreceta}: {subreceta: subreceta}) => 
 
     // const recetasProduct = "subrecetas" in productionComponentes ? productionComponentes.subrecetas : [];
 
-  return (
+    return (
     <div className="bg-blue-50/30">
         <div className="p-4 border border-gray-200 rounded-t-lg bg-blue-50/50 ">
             <div className="font-[Roboto]">
@@ -31,16 +32,19 @@ export const ProductionSubComponents = ({subreceta}: {subreceta: subreceta}) => 
         </div>
         <div className="p-4 border border-gray-200 border-t-0 rounded-b-lg">
             <div className="font-semibold text-lg text-gray-700">
-                Componentes de la receta:
+                Componentes:
             </div>
             <div className="space-y-2 mt-4">
                 {subreceta.componentes.map((componente) => (
                     <ProductionComponentItem
                         key={componente.id}
+                        id={componente.id}
                         titulo={componente.nombre}
                         stock={componente.stock}
                         unidad={componente.unidad_medida}
                         cantidad={componente.cantidad}
+                        setValue={setValue}
+                        watch={watch}
                     />
                 ))}
             </div>
