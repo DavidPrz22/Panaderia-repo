@@ -264,7 +264,7 @@ class RecetasViewSet(viewsets.ModelViewSet):
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-class RecetasSearchViewSet(viewsets.ModelViewSet):
+class RecetasSearchViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Recetas.objects.all()
     serializer_class = RecetasSearchSerializer
 
@@ -272,10 +272,16 @@ class RecetasSearchViewSet(viewsets.ModelViewSet):
     def list_recetas(self, request):
         search_query = request.query_params.get('search')
         recetaId = request.query_params.get('recetaId', None)
+        search_on_receta = request.query_params.get('searchOnReceta', None)
+
         if not search_query:
             return Response(status=status.HTTP_400_BAD_REQUEST, data={"error": "El parámetro 'search' es requerido"})
-        
-        filters = Q(nombre__icontains=search_query) & Q(producto_elaborado__isnull=True)
+
+        filters = Q(nombre__icontains=search_query)
+
+        if not search_on_receta:
+            filters &= Q(producto_elaborado__isnull=True)
+
         if recetaId:
             filters &= ~Q(id=recetaId)
         recetas = Recetas.objects.filter(filters)
