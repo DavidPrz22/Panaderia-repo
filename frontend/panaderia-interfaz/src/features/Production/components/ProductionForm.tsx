@@ -11,7 +11,6 @@ export const ProductionForm = () => {
         watch,
         setValue,
         handleSubmit,
-        formState: { errors }
     } = useForm<TProductionFormData>({
         resolver: zodResolver(productionSchema)
     });

@@ -1,13 +1,17 @@
 import Button from "@/components/Button";
 import type { TProductionFormData } from "../schemas/schemas";
 import type { UseFormHandleSubmit } from "react-hook-form";
+import { useCreateProductionMutation } from "../hooks/mutations/mutations";
 
 export default function ProductionButtons({ onSubmit }: { onSubmit: UseFormHandleSubmit<TProductionFormData> }) {
 
+  const { mutate: createProduction } = useCreateProductionMutation();
+
   const handleSubmit = (data: TProductionFormData) => {
     
-      console.log('uwuwuw')
       console.log(data);
+      return;
+      createProduction(data);
   }
 
   return (

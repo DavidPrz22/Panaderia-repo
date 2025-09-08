@@ -1,5 +1,6 @@
 import apiClient from "@/api/client";
 import type { componentesRecetaProducto, searchItem } from "../types/types";
+import type { TProductionFormData } from "../schemas/schemas";
 
 export const searchProductosIntermedios = async (): Promise<searchItem[]> => {
   try {
@@ -31,6 +32,16 @@ export const getRecetaComponentes = async (
     return response.data;
   } catch (error) {
     console.error("Error fetching receta componentes:", error);
+    throw error;
+  }
+};
+
+export const createProduction = async (data: TProductionFormData) => {
+  try {
+    const response = await apiClient.post(`/api/production/`, data);
+    return response.data;
+  } catch (error) {
+    console.error("Error creating production:", error);
     throw error;
   }
 };
