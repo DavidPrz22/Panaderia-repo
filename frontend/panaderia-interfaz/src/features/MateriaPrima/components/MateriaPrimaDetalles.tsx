@@ -168,7 +168,7 @@ export const MaterialPrimaDetalles = () => {
           <LotesTable lotes={lotesForm} />
         ) : (
           <div className="flex justify-center items-center h-full rounded-md border border-gray-300">
-            <p className="text-lg text-gray-500 font-bold font-[Roboto]">
+            <p className="text-lg text-gray-500 font-bold font-[Roboto] p-3">
               No hay lotes registrados
             </p>
           </div>

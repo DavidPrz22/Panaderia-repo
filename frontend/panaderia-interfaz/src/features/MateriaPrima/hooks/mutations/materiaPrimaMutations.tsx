@@ -167,6 +167,9 @@ export const useCreateUpdateLoteMateriaPrimaMutation = (
       await queryClient.invalidateQueries({
         queryKey: createLotesMateriaPrimaQueryOptions(materiaprimaId!).queryKey,
       });
+      await queryClient.invalidateQueries({
+        queryKey: createMateriaPrimaListQueryOptions().queryKey,
+      });
     },
   });
 };

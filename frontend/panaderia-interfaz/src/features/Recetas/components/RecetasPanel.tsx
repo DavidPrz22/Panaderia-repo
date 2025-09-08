@@ -5,7 +5,6 @@ import FilterSearch from "./FilterSearch";
 export default function RecetasPanel() {
   const { showRecetasForm, showRecetasDetalles, recetaDetallesLoading } =
     useRecetasContext();
-
   if (showRecetasForm || showRecetasDetalles) return <></>;
 
   return (

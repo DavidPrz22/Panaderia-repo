@@ -32,7 +32,7 @@ export const ProductionComponentItem = ({
           Stock disponible: {stock} {unidad}
         </p>
       </div>
-    
+
       <ProductionComponentItemCantidad
         id={id}
         stock={stock}
@@ -42,7 +42,7 @@ export const ProductionComponentItem = ({
         setValue={setValue}
         watch={watch}
       />
-  
+
     </div>
   );
 };
