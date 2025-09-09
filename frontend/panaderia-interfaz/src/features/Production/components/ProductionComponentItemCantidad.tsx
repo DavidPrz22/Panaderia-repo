@@ -1,4 +1,4 @@
-import { useRef } from "react"
+import { useEffect, useRef, useState } from "react"
 import type { watchSetvalueTypeProduction, ComponentesLista } from "../types/types";
 import '@/styles/validationStyles.css'
 import { useProductionContext } from "@/context/ProductionContext";
@@ -16,8 +16,15 @@ export const ProductionComponentItemCantidad = (
 ) => {
 
     const inputRef = useRef<HTMLInputElement>(null);
-    const prevValueRef = useRef<number>(cantidad);
+    const [inputValue, setInputValue] = useState<number>(cantidad > 0 ? cantidad : 0);
     const { insufficientStock, setInsufficientStock } = useProductionContext();
+    const roundTo3 = (n: number) => Math.round(n * 1000) / 1000;
+
+    // Cuando cambie la cantidad proveniente del producto (re-cálculo), sincronizar el input
+    useEffect(() => {
+        const next = cantidad > 0 ? cantidad : 0;
+        setInputValue(next);
+    }, [cantidad]);
 
     // Helpers
     const getAllInputsForComponent = () =>
@@ -72,38 +79,30 @@ export const ProductionComponentItemCantidad = (
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {  
         if (!watch || !setValue) return;
 
-        const value = parseFloat(e.target.value);
-        if (e.target.value === "" || value <= 0 || isNaN(value)) {
-            if (inputRef.current) inputRef.current.value = "";
+        const raw = e.target.value.replace(",", ".");
+        const parsed = parseFloat(raw);
+        const value = roundTo3(parsed);
+        // Cero o vacío: inválido, reflejar 0 y marcar inválido y poner form en 0
+        if (raw === "" || isNaN(parsed) || parsed <= 0) {
+            setInputValue(0);
+            const componentIndex = watch('componentes')?.findIndex((c) => c.id === id) ?? -1;
+            if (componentIndex !== -1) {
+                updateFormCantidad(componentIndex, 0);
+            }
+            toggleInputsValidityClass(false);
+            // No es un caso de insuficiencia de stock; asegurarse que no esté listado
+            removeFromInsufficient(id);
             return;
         }
+
+        // Asignar inmediatamente el valor al input local
+        setInputValue(value);
 
         const componentIndex = watch('componentes')?.findIndex((c) => c.id === id) ?? -1;
         if (componentIndex === -1) return;
 
-        // Total actual almacenado en el formulario para este componente
-        const cantidadActual = watch(`componentes.${componentIndex}.cantidad`) as number;
-
-        // Si el total es 0, recalcular sumando todos los inputs duplicados (receta base + subrecetas)
-        if (cantidadActual === 0) {
-            const valuesTotal = sumAllInputsForComponent();
-            if (valuesTotal > stock) {
-                updateFormCantidad(componentIndex, 0);
-                toggleInputsValidityClass(false);
-                addToInsufficient(componentIndex);
-                prevValueRef.current = 0;
-                return;
-            }
-            toggleInputsValidityClass(true);
-            updateFormCantidad(componentIndex, valuesTotal);
-            removeFromInsufficient(id);
-            prevValueRef.current = value;
-            return;
-        }
-
-        // Recalcular nuevo total restando el valor previo de este input y sumando el nuevo
-        const cantidadRestante = cantidadActual - prevValueRef.current;
-        const nuevaCantidad = cantidadRestante + value;
+        // Recalcular sumando todos los inputs duplicados (receta base + subrecetas)
+        const nuevaCantidad = roundTo3(sumAllInputsForComponent());
 
         if (nuevaCantidad > stock || nuevaCantidad < 0) {
             updateFormCantidad(componentIndex, 0);
@@ -114,28 +113,20 @@ export const ProductionComponentItemCantidad = (
             toggleInputsValidityClass(true);
             removeFromInsufficient(id);
         }
-
-        prevValueRef.current = value;
     }
 
     const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-        if (
-          [
-            "Backspace",
-            "Delete",
-            "Tab",
-            "ArrowLeft",
-            "ArrowRight",
-            "Home",
-            "End",
-          ].includes(e.key)
-        ) {
-          return;
-        }
-    
-        if (!/^\d$/.test(e.key)) {
-          e.preventDefault(); // Previene que el char aparezca en el input
-        }
+                const controls = ["Backspace","Delete","Tab","ArrowLeft","ArrowRight","Home","End"];
+                if (controls.includes(e.key)) return;
+                // Allow one decimal separator
+                if (e.key === "." || e.key === ",") {
+                    const v = (e.currentTarget as HTMLInputElement).value;
+                    if (v.includes(".") || v.includes(",")) e.preventDefault();
+                    return;
+                }
+                if (!/^\d$/.test(e.key)) {
+                    e.preventDefault();
+                }
     };
 
     const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
@@ -156,14 +147,14 @@ export const ProductionComponentItemCantidad = (
             id = {`componente-cantidad-${id}`}
             min={1}
             max={stock}
-            defaultValue={cantidad > 0 ? cantidad : ""}
+            value={inputValue}
             onKeyDown={handleKeyDown}
             onBlur={handleBlur}
             onChange={handleChange}
-            step={0.1}
+            step={0.001}
             ref={inputRef}
             className={`w-20 rounded-md px-2 py-2 outline-none focus:ring-4 transition-[box-shadow] duration-300
-                ${ cantidad > stock ? "invalidInput" : "validInput"}
+                ${ inputValue > stock || inputValue <= 0 ? "invalidInput" : "validInput"}
             `}
           />
           {/* ${noStock ? "border border-red-500 focus:border-red-500 focus:ring-red-100" : "border border-gray-300 focus:ring-blue-100 focus:border-blue-300"} */}

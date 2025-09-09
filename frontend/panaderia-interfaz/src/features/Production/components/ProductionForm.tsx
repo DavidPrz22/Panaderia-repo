@@ -18,7 +18,7 @@ export const ProductionForm = () => {
     return (
         <>
             <ProductionRegisterCard setValue={setValue} watch={watch}/>
-            <ProductionComponents setValue={setValue} watch={watch} />
+            <ProductionComponents setValue={setValue} watch={watch} cantidadProduction={watch("cantidadProduction")} />
             <ProductionButtons onSubmit={handleSubmit}/>
         </>
     )

@@ -13,9 +13,7 @@ export const ProductionRegisterCard = ({ watch, setValue }: watchSetvalueTypePro
       <div className="flex lg:flex-row flex-col items-center gap-2 ">
 
         <ProductionInputProduct title="Producto a Producir" setValue={setValue} />
-
-        <ProductionCantidad setValue={setValue}/>
-
+        <ProductionCantidad setValue={setValue} watch={watch} />
         <div className="flex flex-1 flex-col gap-2 w-full">
           <div className="font-semibold font-[Roboto]">
             Fecha de Vencimiento
