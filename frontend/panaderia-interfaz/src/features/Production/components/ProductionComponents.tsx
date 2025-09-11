@@ -4,7 +4,6 @@ import { DoubleSpinnerLoading } from "@/components/DoubleSpinnerLoading";
 import { useComponentsProductionQuery } from "../hooks/queries/ProductionQueries";
 import type {
   ComponentesLista,
-  componentesRecetaProducto,
   subreceta,
   watchSetvalueTypeProduction,
 } from "../types/types";
@@ -21,27 +20,36 @@ const ProductionComponentsBase = ({
   watch,
   cantidadProduction,
 }: watchSetvalueTypeProduction & { cantidadProduction?: number }) => {
-  const { data, isFetching, isFetched } = useComponentsProductionQuery();
+  const { data : productionComponentes , isFetching, isFetched } = useComponentsProductionQuery();
 
-  const { setInsufficientStock } = useProductionContext();
-
-  const productionComponentes: componentesRecetaProducto | undefined = data as
-    | componentesRecetaProducto
-    | undefined;
+  const { setInsufficientStock, componentesBaseProduccion, setComponentesBaseProduccion } = useProductionContext();
 
   // Cantidad a producir desde el formulario (0 por defecto)
   const cantidad = cantidadProduction ?? 0;
 
   // Escalar cantidades de componentes base por la cantidad a producir
   const roundTo3 = (n: number) => Math.round(n * 1000) / 1000;
-  const componentesPrincipalesProducts: Componente[] = useMemo(() => {
+
+  useEffect(() => {
     const base = productionComponentes?.componentes ?? [];
+    const q = Number(cantidad) || 0;
+    const componentes = base.map((c) => ({
+      ...c,
+      cantidad: roundTo3((c.cantidad ?? 0) * q),
+    }));
+
+    setComponentesBaseProduccion(componentes)
+  }, [isFetched, productionComponentes, setComponentesBaseProduccion]);
+
+
+  const componentesPrincipalesProducts: Componente[] = useMemo(() => {
+    const base = componentesBaseProduccion ?? [];
     const q = Number(cantidad) || 0;
     return base.map((c) => ({
       ...c,
       cantidad: roundTo3((c.cantidad ?? 0) * q),
     }));
-  }, [productionComponentes, cantidad]);
+  }, [componentesBaseProduccion, cantidad]);
 
   // Escalar cantidades de subrecetas por la cantidad a producir
   const subrecetasProducts: subreceta[] = useMemo(() => {

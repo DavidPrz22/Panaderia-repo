@@ -4,6 +4,7 @@ import { useForm } from "react-hook-form";
 import { productionSchema, type TProductionFormData } from "../schemas/schemas";
 import { zodResolver } from "@hookform/resolvers/zod";
 import ProductionButtons from "./ProductionButtons";
+import { ProductionNewComponentModal } from "@/features/Production/components/ProductionNewComponentModal";
 
 export const ProductionForm = () => {
   const { watch, setValue, handleSubmit } = useForm<TProductionFormData>({
@@ -19,6 +20,7 @@ export const ProductionForm = () => {
         cantidadProduction={watch("cantidadProduction")}
       />
       <ProductionButtons onSubmit={handleSubmit} />
+      <ProductionNewComponentModal setValue={setValue} watch={watch} />
     </>
   );
 };

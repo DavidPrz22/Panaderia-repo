@@ -10,7 +10,7 @@ export type ProductionType = "producto-final" | "producto-intermedio";
 
 export type searchItem = { id: number; nombre_producto: string };
 
-type RecetaComponenteProduccion = {
+export type RecetaComponenteProduccion = {
   id: number;
   nombre: string;
   unidad_medida: string;
@@ -52,6 +52,7 @@ export type newComponentItem = {
   cantidad: number;
   stock: number;
   unidad_medida: string;
+  invalid?: boolean;
 }; 
 
 export type componentesSearchList = {

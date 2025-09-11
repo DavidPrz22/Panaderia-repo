@@ -1,11 +1,9 @@
-import { useState } from "react";
 import { useProductionContext } from "@/context/ProductionContext";
 import '@/styles/validationStyles.css';
 
 export const ProductionNewComponentDetails = () => {
   const { newComponentSelected, invalidCantidadError, setInvalidCantidadError } = useProductionContext();
 
-  const [cantidad, setCantidad] = useState<string>("");
 
   if (!newComponentSelected) return null;
 
@@ -13,7 +11,6 @@ export const ProductionNewComponentDetails = () => {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const raw = e.target.value;
-    setCantidad(raw);
     const parsed = parseFloat(raw.replace(",", "."));
     if (raw === "" || isNaN(parsed) || parsed <= 0) {
       setInvalidCantidadError(true);
@@ -53,9 +50,16 @@ export const ProductionNewComponentDetails = () => {
           type="number"
           step={0.01}
           className={`border ${invalidCantidadError ? "invalidInput" : "validInput"} p-2 rounded-md w-full outline-none transition-[box-shadow] duration-250`}
-          value={cantidad}
           onChange={handleChange}
+          disabled={newComponentSelected.invalid ? true : false}
         />
+
+        {newComponentSelected.invalid && (
+          <div className="text-red-500 text-sm mt-1">
+            Este Componente ya se encuentra registrado en la receta
+          </div>
+        )}
+  
         {invalidCantidadError && (
           <div className="text-red-500 text-sm mt-1">
             Cantidad debe ser mayor a 0 y no exceder{" "}

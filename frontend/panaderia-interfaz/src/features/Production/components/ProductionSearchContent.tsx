@@ -10,14 +10,22 @@ export const ProductionSearchListContent = ({
   items: componentesSearchItem[];
 }) => {
   const {
+    componentesBaseProduccion,
     setNewComponentSelected,
     setComponentSearchList,
     setShowComponentSearch,
   } = useProductionContext();
+
   const handleClick = (item: componentesSearchItem) => {
-    setNewComponentSelected({...item, cantidad: 0});
     setShowComponentSearch(false);
     setComponentSearchList([]);
+
+    const componente = componentesBaseProduccion.findIndex((c) => c.id === item.id);
+    if (componente !== -1) {
+      setNewComponentSelected({...item, cantidad: 0, invalid: true});
+    } else {
+      setNewComponentSelected({...item, cantidad: 0});
+    }
   };
   return (
     <div className="flex flex-col">

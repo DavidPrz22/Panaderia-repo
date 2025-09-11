@@ -4,16 +4,26 @@ import Button from "@/components/Button";
 import { useEffect } from "react";
 import { ProductionNewComponentDetails } from "./ProductionNewComponentDetails.tsx";
 import { ProductionNewComponentSearch } from "./ProductionNewComponentSearch.tsx";
+import type { RecetaComponenteProduccion, watchSetvalueTypeProduction } from "../types/types";
+
 import "@/styles/animations.css";
 
-export const ProductionNewComponentModal = () => {
+export const ProductionNewComponentModal = ({setValue, watch}: watchSetvalueTypeProduction) => {
   const {
     showNewComponentModal,
     setShowNewComponentModal,
     isClosingModal,
     setIsClosingModal,
-    invalidCantidadError
+    invalidCantidadError,
+    newComponentSelected,
+    setComponentesBaseProduccion,
+    componentesBaseProduccion,
+    setNewComponentSelected,
   } = useProductionContext();
+
+  const handleClose = () => {
+    setIsClosingModal(true);
+  }
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -27,9 +37,7 @@ export const ProductionNewComponentModal = () => {
 
   if (!showNewComponentModal) return <></>;
 
-  const handleClose = () => {
-    setIsClosingModal(true);
-  };
+  // handleClose defined above with useCallback
 
   const handleAnimationEnd = () => {
     if (isClosingModal) {
@@ -41,6 +49,36 @@ export const ProductionNewComponentModal = () => {
   const handleBackdropClick = (element: React.MouseEvent<HTMLDivElement>) => {
     if (element.target === element.currentTarget) handleClose();
   };
+
+  const handleAddComponent = () => {
+    // Logic to add the component
+    if (!newComponentSelected) return;
+
+    const componente: RecetaComponenteProduccion = {
+      id: newComponentSelected.id,
+      nombre: newComponentSelected.nombre,
+      unidad_medida: newComponentSelected.unidad_medida,
+      stock: newComponentSelected.stock,
+      cantidad: newComponentSelected.cantidad,
+    };
+    setComponentesBaseProduccion([...componentesBaseProduccion, componente]);
+
+    const componenteForma = {
+      id: newComponentSelected.id,
+      cantidad: newComponentSelected.cantidad,
+    };
+
+    const currentComponentes = watch && watch("componentes") || [] ;
+    const registered = currentComponentes.findIndex(c => c.id === componenteForma.id)
+    if (registered !== -1) {
+      currentComponentes[registered].cantidad += componenteForma.cantidad
+    } else {
+      setValue?.("componentes", [...currentComponentes, componenteForma], {
+      shouldValidate: true,
+    });
+    }
+    setNewComponentSelected(null);
+  }
 
   return (
     <div
@@ -71,7 +109,7 @@ export const ProductionNewComponentModal = () => {
           <Button type="cancel" onClick={() => setShowNewComponentModal(false)}>
             Cancelar
           </Button>
-          <Button disabled={invalidCantidadError === null ? true : invalidCantidadError} type="submit" onClick={() => {}}>
+          <Button disabled={(invalidCantidadError === null || newComponentSelected?.invalid) ? true : invalidCantidadError} type="submit" onClick={handleAddComponent}>
             Agregar a Producción
           </Button>
         </div>

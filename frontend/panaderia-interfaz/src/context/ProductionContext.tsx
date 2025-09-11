@@ -32,8 +32,8 @@ type ProductionContextType = {
     setShowComponentSearch: (value: boolean) => void;
     invalidCantidadError: boolean | null;
     setInvalidCantidadError: (value: boolean | null) => void;
-    productosBaseProduccion: ComponentesLista;
-    setProductosBaseProduccion: (value: ComponentesLista) => void;
+    componentesBaseProduccion: ComponentesLista;
+    setComponentesBaseProduccion: (value: ComponentesLista) => void;
 };
 
 const ProductionContextProvider = createContext<ProductionContextType | null>(null);
@@ -55,7 +55,7 @@ export function ProductionProvider({ children }: { children: React.ReactNode }) 
   const [newComponentSelected, setNewComponentSelected] = useState<newComponentItem | null>(null);
   const [showComponentSearch, setShowComponentSearch] = useState<boolean>(false);
   const [invalidCantidadError, setInvalidCantidadError] = useState<boolean | null>(null);
-  const [productosBaseProduccion, setProductosBaseProduccion] = useState<ComponentesLista>([]); // For future use
+  const [componentesBaseProduccion, setComponentesBaseProduccion] = useState<ComponentesLista>([]); // For future use
 
   return (
     <ProductionContextProvider.Provider value={{
@@ -88,8 +88,8 @@ export function ProductionProvider({ children }: { children: React.ReactNode }) 
       setShowComponentSearch,
       invalidCantidadError,
       setInvalidCantidadError,
-      productosBaseProduccion,
-      setProductosBaseProduccion,
+      componentesBaseProduccion,
+      setComponentesBaseProduccion,
     }}>
         {children}
     </ProductionContextProvider.Provider>
