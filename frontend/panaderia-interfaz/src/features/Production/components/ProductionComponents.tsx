@@ -1,5 +1,5 @@
 import { ProductionComponentItem } from "./ProductionComponentItem";
-import { ProductionComponentTitle } from "./ProductionCompenentTitle";
+import { ProductionComponentsHeader } from "./ProductionComponentsHeader";
 import { DoubleSpinnerLoading } from "@/components/DoubleSpinnerLoading";
 import { useComponentsProductionQuery } from "../hooks/queries/ProductionQueries";
 import type { ComponentesLista, componentesRecetaProducto, subreceta, watchSetvalueTypeProduction } from "../types/types";
@@ -79,6 +79,9 @@ const ProductionComponentsBase = ({ setValue, watch, cantidadProduction }: watch
     if (!isFetched) return;
     const current = cantidad;
     if (!current || current <= 0) {
+      const input = document.getElementById('cantidadProduction');
+      console.log(input)
+      if (input) (input as HTMLInputElement).value = "1";
       setValue?.("cantidadProduction", 1, { shouldValidate: true });
     }
   }, [isFetched, setValue, watch, productionComponentes, cantidad]);
@@ -94,8 +97,8 @@ const ProductionComponentsBase = ({ setValue, watch, cantidadProduction }: watch
 
       {isFetched && componentesPrincipalesProducts.length > 0 && (
         <div className="p-6 border border-gray-200 rounded-lg bg-white mt-6 shadow-md">
-          <ProductionComponentTitle />
-          <ProductionWarning/>
+          <ProductionComponentsHeader />
+          <ProductionWarning />
           <div className="flex flex-col gap-2 mt-8">
   
             {componentesPrincipalesProducts.map((componente) => (

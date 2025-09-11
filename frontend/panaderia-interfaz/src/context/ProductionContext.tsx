@@ -1,5 +1,5 @@
 import React, { createContext, useContext  } from "react";
-import type { ComponentesLista, ProductionType, componentesRecetaProducto } from "@/features/Production/types/types";
+import type { ComponentesLista, ProductionType, componentesRecetaProducto, componentesSearchItem, componentesSearchList } from "@/features/Production/types/types";
 import { useState, useRef } from "react";
 
 type ProductionContextType = {
@@ -22,6 +22,14 @@ type ProductionContextType = {
     setIsClosingModal: (value: boolean) => void;
     insufficientStock: ComponentesLista | null;
     setInsufficientStock: (value: ComponentesLista | null) => void;
+    showNewComponentModal: boolean;
+    setShowNewComponentModal: (value: boolean) => void;
+    componentSearchList: componentesSearchList[];
+    setComponentSearchList: (value: componentesSearchList[]) => void;
+    newComponentSelected: componentesSearchItem | null;
+    setNewComponentSelected: (value: componentesSearchItem | null) => void;
+    showComponentSearch: boolean;
+    setShowComponentSearch: (value: boolean) => void;
 };
 
 const ProductionContextProvider = createContext<ProductionContextType | null>(null);
@@ -38,6 +46,10 @@ export function ProductionProvider({ children }: { children: React.ReactNode }) 
   const [insufficientStock, setInsufficientStock] = useState<ComponentesLista | null>(null);
   const [showProductionRegistros, setShowProductionRegistros] = useState(false);
   const [isClosingModal, setIsClosingModal] = useState(false);
+  const [showNewComponentModal, setShowNewComponentModal] = useState<boolean>(false);
+  const [componentSearchList, setComponentSearchList] = useState<componentesSearchList[]>([]);
+  const [newComponentSelected, setNewComponentSelected] = useState<componentesSearchItem | null>(null);
+  const [showComponentSearch, setShowComponentSearch] = useState<boolean>(false);
 
   return (
     <ProductionContextProvider.Provider value={{
@@ -60,6 +72,14 @@ export function ProductionProvider({ children }: { children: React.ReactNode }) 
       setIsClosingModal,
       insufficientStock,
       setInsufficientStock,
+      showNewComponentModal,
+      setShowNewComponentModal,
+      componentSearchList,
+      setComponentSearchList,
+      newComponentSelected,
+      setNewComponentSelected,
+      showComponentSearch,
+      setShowComponentSearch,
     }}>
         {children}
     </ProductionContextProvider.Provider>

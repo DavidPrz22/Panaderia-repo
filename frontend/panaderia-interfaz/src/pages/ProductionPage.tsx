@@ -4,9 +4,9 @@ import { ProductionProvider } from "@/context/ProductionContext";
 import ProductionHeader from "@/features/Production/components/ProductionHeader";
 import { ProductionRegistrosModal } from "@/features/Production/components/ProductionRegistrosModal";
 import { ProductionForm } from "@/features/Production/components/ProductionForm";
+import { ProductionNewComponentModal } from "@/features/Production/components/ProductionNewComponentModal";
 
 export default function ProductionPage() {
-
   return (
     <ProductionProvider>
       <Sidebar />
@@ -18,6 +18,7 @@ export default function ProductionPage() {
                 <ProductionHeader />
                 <ProductionForm />
                 <ProductionRegistrosModal />
+                <ProductionNewComponentModal />
             </div>
           </main>
         </div>

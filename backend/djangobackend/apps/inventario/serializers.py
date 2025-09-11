@@ -48,6 +48,7 @@ class ComponentesSearchSerializer(serializers.Serializer):
     id = serializers.IntegerField()
     nombre = serializers.CharField()
     tipo = serializers.CharField()
+    stock = serializers.DecimalField(required=False, max_digits=10, decimal_places=2)
     unidad_medida = serializers.CharField()
 
 

@@ -48,6 +48,7 @@ export const ProductionCantidad = ({ setValue, watch }: watchSetvalueTypeProduct
           <div className="flex gap-2">
             <div className="w-full">
               <input
+                id="cantidadProduction"
                 type="number"
                 className="px-2 py-[0.95rem] w-full outline-none border border-gray-300 rounded-md focus:ring-4 transition-[box-shadow] duration-300 validInput"
                 min={0}

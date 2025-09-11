@@ -19,6 +19,8 @@ class ComponenteSearchViewSet(viewsets.ReadOnlyModelViewSet):
 
     def list(self, request, *args, **kwargs):
         search_query = request.query_params.get('search')
+        stock_requested = request.query_params.get('stock')
+
         if not search_query:
             return Response(status=status.HTTP_400_BAD_REQUEST, data={"error": "El parámetro 'search' es requerido"})
 
@@ -33,21 +35,29 @@ class ComponenteSearchViewSet(viewsets.ReadOnlyModelViewSet):
         categorias_dict = defaultdict(list)
         for materia_prima in materia_primas:
             categoria = materia_prima.categoria.nombre_categoria
-            categorias_dict[categoria].append({
+            componente_data = {
                 'id': materia_prima.id, 
                 'nombre': materia_prima.nombre,
                 'tipo': 'MateriaPrima',
                 'unidad_medida': materia_prima.unidad_medida_base.abreviatura
-            })
+            }
+            if stock_requested: 
+                componente_data['stock'] = materia_prima.stock_actual
+
+            categorias_dict[categoria].append(componente_data)
 
         for intermedio in productos_intermedios:
             categoria = intermedio.categoria.nombre_categoria
-            categorias_dict[categoria].append({
+            componente_data = {
                 'id': intermedio.id,
                 'nombre': intermedio.nombre_producto,
                 'tipo': 'ProductoIntermedio',
                 'unidad_medida': intermedio.unidad_medida_nominal.abreviatura
-            })
+            }
+            if stock_requested:
+                componente_data['stock'] = intermedio.stock_actual
+
+            categorias_dict[categoria].append(componente_data)
 
         # Use the serializer to format the data
         componentes_por_categoria = []

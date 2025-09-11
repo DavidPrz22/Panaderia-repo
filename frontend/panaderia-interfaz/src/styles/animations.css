@@ -31,19 +31,19 @@
 }
 
 .animate-fadeInModal {
-    animation: fadeInModal 180ms ease-out both; /* both = backwards+forwards */
+    animation: fadeInModal 150ms ease-out both; /* both = backwards+forwards */
     will-change: opacity;
 }
 
 .animate-fadeOutModal {
-    animation: fadeOutModal 160ms ease-in forwards; /* keep opacity:0 after end */
+    animation: fadeOutModal 150ms ease-in forwards; /* keep opacity:0 after end */
     will-change: opacity;
 }
 
 .animate-fadeIn {
-    animation: fadeIn 150ms ease-in;
+    animation: fadeIn 150ms ease-in both;
 }
 
 .animate-fadeOut {
-    animation: fadeOut 150ms ease-out;
+    animation: fadeOut 150ms ease-out forwards;
 }

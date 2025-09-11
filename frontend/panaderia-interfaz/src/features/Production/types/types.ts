@@ -34,7 +34,19 @@ export type componentesRecetaProducto = {
 };
 
 
+
 export type watchSetvalueTypeProduction = {
   watch?:  UseFormWatch<TProductionFormData>;
   setValue?: UseFormSetValue<TProductionFormData>;
 }
+export type componentesSearchItem = {
+  id: number;
+  nombre: string;
+  tipo: "MateriaPrima" | "ProductoIntermedio";
+  stock: number;
+  unidad_medida: string;
+};
+
+export type componentesSearchList = {
+  [categoria: string]: componentesSearchItem[];
+};
