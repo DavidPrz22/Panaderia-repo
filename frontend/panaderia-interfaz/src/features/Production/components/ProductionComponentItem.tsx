@@ -16,9 +16,8 @@ export const ProductionComponentItem = ({
   unidad,
   cantidad,
   watch,
-  setValue
+  setValue,
 }: itemProps & watchSetvalueTypeProduction) => {
-
   return (
     <div className="flex lg:flex-row flex-col lg:items-center justify-between px-10 py-3 border border-gray-200 rounded-lg gap-2 bg-white font-[Roboto]">
       <div className="space-y-1">
@@ -42,7 +41,6 @@ export const ProductionComponentItem = ({
         setValue={setValue}
         watch={watch}
       />
-
     </div>
   );
 };

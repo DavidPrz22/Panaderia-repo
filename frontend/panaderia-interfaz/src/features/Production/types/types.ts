@@ -27,18 +27,16 @@ export type subreceta = {
 
 export type subrecetasLista = subreceta[];
 
-
 export type componentesRecetaProducto = {
   componentes: ComponentesLista;
   subrecetas: subrecetasLista;
 };
 
-
-
 export type watchSetvalueTypeProduction = {
-  watch?:  UseFormWatch<TProductionFormData>;
+  watch?: UseFormWatch<TProductionFormData>;
   setValue?: UseFormSetValue<TProductionFormData>;
-}
+};
+
 export type componentesSearchItem = {
   id: number;
   nombre: string;
@@ -46,6 +44,15 @@ export type componentesSearchItem = {
   stock: number;
   unidad_medida: string;
 };
+
+export type newComponentItem = {
+  id: number;
+  nombre: string;
+  tipo: "MateriaPrima" | "ProductoIntermedio";
+  cantidad: number;
+  stock: number;
+  unidad_medida: string;
+}; 
 
 export type componentesSearchList = {
   [categoria: string]: componentesSearchItem[];

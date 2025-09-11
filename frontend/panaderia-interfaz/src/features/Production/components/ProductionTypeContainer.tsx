@@ -2,11 +2,12 @@ import type { watchSetvalueTypeProduction } from "../types/types";
 import { ProductionRadioInput } from "./ProductionRadioInput";
 import type { ProductionType } from "../types/types";
 
-export const ProductionTypeContainer = ({setValue}: watchSetvalueTypeProduction) => {
-
+export const ProductionTypeContainer = ({
+  setValue,
+}: watchSetvalueTypeProduction) => {
   const handleOnChange = (value: ProductionType) => {
     if (setValue) setValue("tipoProducto", value);
-  }
+  };
 
   return (
     <>

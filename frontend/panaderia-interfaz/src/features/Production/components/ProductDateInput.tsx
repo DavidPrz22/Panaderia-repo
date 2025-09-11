@@ -24,12 +24,11 @@ export const ProductDateInput = ({ setValue }: watchSetvalueTypeProduction) => {
           },
         }}
         onChange={(date) => {
-            if (!date) return;
-            const value = date.startOf("day").toDate();
-            if (setValue) {
-              setValue("fechaExpiracion", value);
-            }
-
+          if (!date) return;
+          const value = date.startOf("day").toDate();
+          if (setValue) {
+            setValue("fechaExpiracion", value);
+          }
         }}
       />
     </LocalizationProvider>

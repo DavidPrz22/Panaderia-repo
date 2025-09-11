@@ -53,9 +53,7 @@ export const ProductSearchContainer = ({
           />
         ))
       ) : (
-        <div className="p-4 text-gray-800">
-          Ningun Resultado
-        </div>
+        <div className="p-4 text-gray-800">Ningun Resultado</div>
       )}
     </div>
   );

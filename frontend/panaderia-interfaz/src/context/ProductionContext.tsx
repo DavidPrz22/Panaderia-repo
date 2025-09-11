@@ -1,5 +1,5 @@
 import React, { createContext, useContext  } from "react";
-import type { ComponentesLista, ProductionType, componentesRecetaProducto, componentesSearchItem, componentesSearchList } from "@/features/Production/types/types";
+import type { ComponentesLista, ProductionType, componentesRecetaProducto, componentesSearchList, newComponentItem } from "@/features/Production/types/types";
 import { useState, useRef } from "react";
 
 type ProductionContextType = {
@@ -26,10 +26,14 @@ type ProductionContextType = {
     setShowNewComponentModal: (value: boolean) => void;
     componentSearchList: componentesSearchList[];
     setComponentSearchList: (value: componentesSearchList[]) => void;
-    newComponentSelected: componentesSearchItem | null;
-    setNewComponentSelected: (value: componentesSearchItem | null) => void;
+    newComponentSelected: newComponentItem | null;
+    setNewComponentSelected: (value: newComponentItem | null) => void;
     showComponentSearch: boolean;
     setShowComponentSearch: (value: boolean) => void;
+    invalidCantidadError: boolean | null;
+    setInvalidCantidadError: (value: boolean | null) => void;
+    productosBaseProduccion: ComponentesLista;
+    setProductosBaseProduccion: (value: ComponentesLista) => void;
 };
 
 const ProductionContextProvider = createContext<ProductionContextType | null>(null);
@@ -48,8 +52,10 @@ export function ProductionProvider({ children }: { children: React.ReactNode }) 
   const [isClosingModal, setIsClosingModal] = useState(false);
   const [showNewComponentModal, setShowNewComponentModal] = useState<boolean>(false);
   const [componentSearchList, setComponentSearchList] = useState<componentesSearchList[]>([]);
-  const [newComponentSelected, setNewComponentSelected] = useState<componentesSearchItem | null>(null);
+  const [newComponentSelected, setNewComponentSelected] = useState<newComponentItem | null>(null);
   const [showComponentSearch, setShowComponentSearch] = useState<boolean>(false);
+  const [invalidCantidadError, setInvalidCantidadError] = useState<boolean | null>(null);
+  const [productosBaseProduccion, setProductosBaseProduccion] = useState<ComponentesLista>([]); // For future use
 
   return (
     <ProductionContextProvider.Provider value={{
@@ -80,6 +86,10 @@ export function ProductionProvider({ children }: { children: React.ReactNode }) 
       setNewComponentSelected,
       showComponentSearch,
       setShowComponentSearch,
+      invalidCantidadError,
+      setInvalidCantidadError,
+      productosBaseProduccion,
+      setProductosBaseProduccion,
     }}>
         {children}
     </ProductionContextProvider.Provider>
