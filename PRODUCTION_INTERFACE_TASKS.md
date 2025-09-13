@@ -69,3 +69,38 @@ This interface handles the transformation of one product into another, correspon
     -   The backend will receive the `DefinicionTransformacion` ID and the `cantidad_producto_entrada_efectiva`.
     -   It must perform the stock check again.
     -   It will then decrease the stock of the input product and increase the stock of the output product, creating a `LogTransformacion` record with all the calculated costs.
+
+    Consideraciones para implementación de producción en el backend:
+
+    Validar el formato del request del cliente
+
+    Verificar que las cantidades de cada componente en el request esten disponibles en base a la fecha de expiracion FEFO
+        Cuando se solicita informacion de materias primas, productos intermedios o finales
+        cuando se realiza una producción
+
+    Buscar informacion de lotes con fecha de expiracion mas cercana de cada componente
+    
+    Si existe suficiente stock pero entre diferentes lotes:
+        1. Si la cantidad un lote es insuficiente, calculo la diferencia y determino si el siguiente lote con fecha de expiracion mas cercana es capaz de suplir la diferencia. Posteriormente se registra el lote con mas cantidad.
+        2. Si el lote contiene suficiente volumen para suplir la cantidad, se utiliza ese lote.
+
+    Registrar los datos de producción
+        registrar el componente y el lote utilizado
+        registrar cantidad consumida
+
+    Crear un objeto de produccion para registrar datos
+        Registrar el producto
+        Registrar cantidad producida
+        Registrar fecha de producción (fecha del momento de producir)
+        Registrar fecha de expiración
+        Registrar el usuario de creacion
+
+    Calcular el costo total de los componentes
+        Buscar el lote del componente
+        Calcular el precio del componente en base a la cantidad del componente y el precio unitario del lote
+        Calcular el costo total
+
+    Actualizar el stock de producto elaborado de la produccion
+        Agregar lote a dicho producto con su fecha de expiracion 
+        Seguir el FEFO
+
