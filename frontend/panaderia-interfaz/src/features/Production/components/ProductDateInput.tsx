@@ -7,10 +7,15 @@ import "dayjs/locale/es";
 
 export const ProductDateInput = ({ setValue }: watchSetvalueTypeProduction) => {
   dayjs.locale("es");
+  
+  // Get today's date at start of day for comparison
+  const today = dayjs().startOf("day");
+  
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="es">
       <DatePicker
         className="w-full"
+        minDate={today}
         slotProps={{
           textField: {
             sx: {
@@ -20,12 +25,17 @@ export const ProductDateInput = ({ setValue }: watchSetvalueTypeProduction) => {
                 boxShadow: "0 0 0 3px #dbeafe",
               },
               transition: "box-shadow 300ms ease-in-out",
-            },
+            }
           },
         }}
         onChange={(date) => {
           if (!date) return;
-          const value = date.startOf("day").toDate();
+          
+          if (date.isBefore(today)) {
+            return; 
+          }
+
+          const value = date.format("YYYY-MM-DD");
           if (setValue) {
             setValue("fechaExpiracion", value);
           }

@@ -26,9 +26,20 @@ export const productionSchema = z.object({
     invalid_type_error:
       "El tipo de producto debe ser 'producto-final' o 'producto-intermedio'",
   }),
-  fechaExpiracion: z.date({
+  fechaExpiracion: z.string({
     required_error: "La fecha de expiración es requerida",
-    invalid_type_error: "La fecha de expiración debe ser una fecha válida",
+  }).refine((date) => {
+    // Validate that the date is in YYYY-MM-DD format and not before today
+    const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+    if (!dateRegex.test(date)) return false;
+    
+    const selectedDate = new Date(date);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // Reset time to start of day
+    
+    return selectedDate >= today;
+  }, {
+    message: "La fecha de expiración debe ser válida y no puede ser anterior a hoy",
   }),
 });
 
