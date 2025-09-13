@@ -19,6 +19,8 @@ export const ProductionNewComponentModal = ({setValue, watch}: watchSetvalueType
     setComponentesBaseProduccion,
     componentesBaseProduccion,
     setNewComponentSelected,
+    setShowToast,
+    setToastMessage,
   } = useProductionContext();
 
   const handleClose = () => {
@@ -60,12 +62,15 @@ export const ProductionNewComponentModal = ({setValue, watch}: watchSetvalueType
       unidad_medida: newComponentSelected.unidad_medida,
       stock: newComponentSelected.stock,
       cantidad: newComponentSelected.cantidad,
+      tipo: newComponentSelected.tipo,
+      isAdditional: true, // Mark as additional component
     };
     setComponentesBaseProduccion([...componentesBaseProduccion, componente]);
 
     const componenteForma = {
       id: newComponentSelected.id,
       cantidad: newComponentSelected.cantidad,
+      tipo: newComponentSelected.tipo,
     };
 
     const currentComponentes = watch && watch("componentes") || [] ;
@@ -77,7 +82,15 @@ export const ProductionNewComponentModal = ({setValue, watch}: watchSetvalueType
       shouldValidate: true,
     });
     }
+    
+    // Show success toast
+    setToastMessage(`${newComponentSelected.nombre} agregado exitosamente a la producción`);
+    setShowToast(true);
+    
     setNewComponentSelected(null);
+    
+    // Use the smooth animation system to close the modal
+    handleClose();
   }
 
   return (

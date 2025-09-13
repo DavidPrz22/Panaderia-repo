@@ -5,6 +5,10 @@ const componenteSchema = z.object({
     .number()
     .min(0, { message: "El ID del componente debe ser un número positivo" }),
   cantidad: z.number().min(1, { message: "La cantidad debe ser al menos 1" }),
+  tipo: z.enum(["MateriaPrima", "ProductoIntermedio"], {
+    required_error: "El tipo de componente es requerido",
+    invalid_type_error: "El tipo de componente debe ser 'MateriaPrima' o 'ProductoIntermedio'",
+  }),
 });
 
 export const productionSchema = z.object({

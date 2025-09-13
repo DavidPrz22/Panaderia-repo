@@ -16,6 +16,8 @@ export type RecetaComponenteProduccion = {
   unidad_medida: string;
   stock: number;
   cantidad: number;
+  tipo?: "MateriaPrima" | "ProductoIntermedio";
+  isAdditional?: boolean; // Flag to identify additional components
 };
 
 export type ComponentesLista = RecetaComponenteProduccion[];

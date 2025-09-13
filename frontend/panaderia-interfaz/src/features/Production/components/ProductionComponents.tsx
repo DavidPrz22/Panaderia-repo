@@ -92,10 +92,11 @@ const ProductionComponentsBase = ({
 
   useEffect(() => {
     if (!isFetched) return;
-    // Guardar en el formulario solo lo necesario para el backend/zod: id y cantidad
-    const formComponentes = componentesEnProducto.map(({ id, cantidad }) => ({
+    // Guardar en el formulario solo lo necesario para el backend/zod: id, cantidad y tipo
+    const formComponentes = componentesEnProducto.map(({ id, cantidad, tipo }) => ({
       id,
       cantidad: roundTo3(cantidad),
+      tipo: tipo || "MateriaPrima", // Default to MateriaPrima if not specified
     }));
     setValue?.("componentes", formComponentes, { shouldValidate: true });
   }, [isFetched, componentesEnProducto, setValue]);
@@ -135,6 +136,8 @@ const ProductionComponentsBase = ({
                 stock={componente.stock}
                 unidad={componente.unidad_medida}
                 cantidad={componente.cantidad}
+                tipo={componente.tipo}
+                isAdditional={componente.isAdditional}
                 setValue={setValue}
                 watch={watch}
               />
