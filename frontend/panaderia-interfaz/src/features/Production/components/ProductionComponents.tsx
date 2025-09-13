@@ -25,7 +25,7 @@ const ProductionComponentsBase = ({
   const { setInsufficientStock, componentesBaseProduccion, setComponentesBaseProduccion } = useProductionContext();
 
   // Cantidad a producir desde el formulario (0 por defecto)
-  const cantidad = cantidadProduction ?? 0;
+  const cantidad = cantidadProduction ?? 1;
 
   // Escalar cantidades de componentes base por la cantidad a producir
   const roundTo3 = (n: number) => Math.round(n * 1000) / 1000;
@@ -105,13 +105,13 @@ const ProductionComponentsBase = ({
   useEffect(() => {
     if (!isFetched) return;
     const current = cantidad;
-    if (!current || current <= 0) {
+    if (!current || current - 1 <= 0) {
       const input = document.getElementById("cantidadProduction");
       console.log(input);
       if (input) (input as HTMLInputElement).value = "1";
       setValue?.("cantidadProduction", 1, { shouldValidate: true });
     }
-  }, [isFetched, setValue, watch, productionComponentes, cantidad]);
+  }, [isFetched, setValue, watch, productionComponentes]);
 
   useEffect(() => {
     if (!isFetched) return;
