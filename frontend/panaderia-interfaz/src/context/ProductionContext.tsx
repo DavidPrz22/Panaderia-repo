@@ -38,6 +38,7 @@ type ProductionContextType = {
     setShowToast: (value: boolean) => void;
     toastMessage: string;
     setToastMessage: (value: string) => void;
+    productUnitRef: React.RefObject<HTMLDivElement | null>;
 };
 
 const ProductionContextProvider = createContext<ProductionContextType | null>(null);
@@ -62,6 +63,7 @@ export function ProductionProvider({ children }: { children: React.ReactNode }) 
   const [componentesBaseProduccion, setComponentesBaseProduccion] = useState<ComponentesLista>([]); // For future use
   const [showToast, setShowToast] = useState<boolean>(false);
   const [toastMessage, setToastMessage] = useState<string>("");
+  const productUnitRef = useRef<HTMLDivElement | null>(null);
 
   return (
     <ProductionContextProvider.Provider value={{
@@ -100,6 +102,7 @@ export function ProductionProvider({ children }: { children: React.ReactNode }) 
       setShowToast,
       toastMessage,
       setToastMessage,
+      productUnitRef,
     }}>
         {children}
     </ProductionContextProvider.Provider>

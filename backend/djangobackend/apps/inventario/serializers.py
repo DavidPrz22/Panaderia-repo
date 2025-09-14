@@ -508,12 +508,14 @@ class ProductosElaboradosSerializer(serializers.ModelSerializer):
 
 
 class ProductosFinalesSearchSerializer(serializers.ModelSerializer):
+    unidad_medida = serializers.CharField(source='unidad_venta.abreviatura', read_only=True)
     class Meta:
         model = ProductosFinales
-        fields = ['id', 'nombre_producto']
+        fields = ['id', 'nombre_producto', 'unidad_medida']
 
 
 class ProductosIntermediosSearchSerializer(serializers.ModelSerializer):
+    unidad_medida = serializers.CharField(source='unidad_medida_nominal.abreviatura', read_only=True)
     class Meta:
         model = ProductosIntermedios
-        fields = ['id', 'nombre_producto']
+        fields = ['id', 'nombre_producto', 'unidad_medida']

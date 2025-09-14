@@ -9,6 +9,7 @@ import type { TProductionFormData } from "../schemas/schemas";
 export const searchProductosIntermedios = async (): Promise<searchItem[]> => {
   try {
     const response = await apiClient.get(`/api/productosintermedios-search/`);
+    console.log(response.data);
     return response.data;
   } catch (error) {
     console.error("Error searching Productos Intermedios:", error);

@@ -1,10 +1,13 @@
 import type { watchSetvalueTypeProduction } from "../types/types";
+import { useProductionContext } from "@/context/ProductionContext";
 import "@/styles/validationStyles.css";
 
 export const ProductionCantidad = ({
   setValue,
   watch,
 }: watchSetvalueTypeProduction) => {
+
+  const { productUnitRef } = useProductionContext();
   const roundTo3 = (n: number) => Math.round(n * 1000) / 1000;
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -59,11 +62,12 @@ export const ProductionCantidad = ({
     }
   };
 
+  console.log("productUnitRef", productUnitRef.current?.textContent === '');
   return (
     <div className="flex flex-1 flex-col gap-2 w-full">
       <div className="font-semibold font-[Roboto]">Cantidad a Producir</div>
       <div className="flex gap-2">
-        <div className="w-full">
+        <div className="w-full relative">
           <input
             id="cantidadProduction"
             type="number"
@@ -76,6 +80,18 @@ export const ProductionCantidad = ({
             onKeyDown={handleKeyDown}
             onBlur={handleBlur}
           />
+          <div
+            className="absolute top-1/2 right-9 -translate-y-1/2 text-sm font-medium font-[Roboto] pointer-events-none"
+          >
+            <div
+              ref={productUnitRef}
+              className={`flex items-center justify-center bg-gray-200 rounded-md ${
+                productUnitRef.current?.textContent === "" ? "" : "size-7"
+              }`}
+            >
+              {productUnitRef.current?.textContent}          
+              </div>
+          </div>
         </div>
       </div>
     </div>

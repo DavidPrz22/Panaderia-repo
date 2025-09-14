@@ -108,7 +108,6 @@ const ProductionComponentsBase = ({
     const current = cantidad;
     if (!current || current - 1 <= 0) {
       const input = document.getElementById("cantidadProduction");
-      console.log(input);
       if (input) (input as HTMLInputElement).value = "1";
       setValue?.("cantidadProduction", 1, { shouldValidate: true });
     }
