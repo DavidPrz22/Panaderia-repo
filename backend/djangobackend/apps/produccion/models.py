@@ -58,7 +58,6 @@ class Produccion(models.Model):
     fecha_produccion = models.DateField(null=False, blank=False)
     fecha_expiracion = models.DateField(null=True, blank=True)
     costo_total_componentes_usd = models.DecimalField(max_digits=10, decimal_places=3)
-    notas = models.TextField(null=True, blank=True)
     usuario_creacion = models.ForeignKey(User, on_delete=models.CASCADE)
     
     def __str__(self):
@@ -67,10 +66,10 @@ class Produccion(models.Model):
 
 class DetalleProduccionCosumos(models.Model):
     produccion = models.ForeignKey(Produccion, on_delete=models.CASCADE, null=False, blank=False)
-    materia_prima_consumida = models.ForeignKey(MateriasPrimas, on_delete=models.CASCADE)
-    producto_intermedio_consumido = models.ForeignKey(ProductosElaborados, on_delete=models.CASCADE)
-    lote_materia_prima_consumida = models.ForeignKey(LotesMateriasPrimas, on_delete=models.CASCADE)
-    lote_producto_intermedio_consumido = models.ForeignKey(LotesProductosElaborados, on_delete=models.CASCADE)
+    materia_prima_consumida = models.ForeignKey(MateriasPrimas, on_delete=models.CASCADE, null=True, blank=True)
+    producto_intermedio_consumido = models.ForeignKey(ProductosElaborados, on_delete=models.CASCADE, null=True, blank=True)
+    lote_materia_prima_consumida = models.ForeignKey(LotesMateriasPrimas, on_delete=models.CASCADE, null=True, blank=True)
+    lote_producto_intermedio_consumido = models.ForeignKey(LotesProductosElaborados, on_delete=models.CASCADE, null=True, blank=True)
     cantidad_consumida = models.DecimalField(max_digits=10, decimal_places=3, null=False, blank=False)
     unidad_medida = models.ForeignKey(UnidadesDeMedida, on_delete=models.CASCADE)
     

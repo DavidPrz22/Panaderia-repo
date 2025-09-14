@@ -1,5 +1,6 @@
 from django.db import models
 from apps.core.models import UnidadesDeMedida, CategoriasMateriaPrima, CategoriasProductosReventa, CategoriasProductosElaborados
+from django.core.cache import cache
 from django.db.models import Q, Sum
 from django.db.models.signals import post_save, post_delete
 from django.dispatch import receiver
@@ -22,6 +23,75 @@ class MateriasPrimas(models.Model):
     categoria = models.ForeignKey(CategoriasMateriaPrima, on_delete=models.CASCADE)
     descripcion = models.TextField(max_length=255, null=True, blank=True)
 
+    @classmethod
+    def expirar_todos_lotes_viejos(cls, force=False):
+        hoy = timezone.now().date()
+        cache_key = f"expirar_todos_lotes_viejos_{hoy}"
+
+        if not force and cache.get(cache_key):
+            return {"resumen": [], "count": 0, "cached": True}
+
+        cache.set(cache_key, True, 86400)  # Cache for 24 hours
+
+        expired = LotesMateriasPrimas.objects.filter(
+            fecha_caducidad__lte=timezone.now().date(),
+            activo=True
+        )
+
+        resumen = []
+        for lote in expired:
+            resumen.append({
+                'lote_id': lote.id,
+                'materia_prima': lote.materia_prima.nombre,
+                'fecha_caducidad': lote.fecha_caducidad,
+                'stock_expirado': lote.stock_actual_lote
+            })
+
+        count = expired.update(activo=False)
+        
+        affected_materials = cls.objects.filter(
+            lotesmateriasprimas__fecha_caducidad__lte=timezone.now().date()
+        ).distinct()
+        
+        for material in affected_materials:
+            material.actualizar_stock()
+
+        return {"resumen": resumen, "count": count}
+
+    def expirar_lotes_viejos(self, force=False):
+        ahora = timezone.now().date()
+        cache_key = f"expirar_lotes_viejos_{ahora}"
+
+        if not force and cache.get(cache_key):
+            return {"resumen": [], "cached": True}
+
+        cache.set(cache_key, True, 86400)  # Cache for 24 hours
+        lotes_expirados = LotesMateriasPrimas.objects.filter(materia_prima=self, fecha_caducidad__lte=ahora, activo=True)
+
+        resumen = []
+        lotes_actualizar = []
+
+        for lote in lotes_expirados:
+            if lote.stock_actual_lote > 0:
+                resumen.append({
+                    'lote_id': lote.id,
+                    'materia_prima': self.nombre,
+                    'stock_expirado': lote.stock_actual_lote,
+                    'fecha_caducidad': lote.fecha_caducidad
+                })
+                lote.activo = False
+                lotes_actualizar.append(lote)
+        LotesMateriasPrimas.objects.bulk_update(lotes_actualizar, ['activo',])
+
+        return {"resumen": resumen}
+
+    def actualizar_stock(self):
+
+        lote_total = LotesMateriasPrimas.objects.filter(materia_prima=self, fecha_caducidad__gt=timezone.now().date(), activo=True).aggregate(total=Sum('stock_actual_lote'))
+        stock_total = lote_total.get('total', 0)
+        MateriasPrimas.objects.filter(id=self.id).update(stock_actual=stock_total)
+        return stock_total
+
     def __str__(self):
         return self.nombre
 
@@ -36,7 +106,7 @@ class LotesMateriasPrimas(models.Model):
     costo_unitario_usd = models.DecimalField(max_digits=10, decimal_places=2, default=0, null=False, blank=False)
     detalle_oc = models.ForeignKey('compras.DetalleOrdenesCompra', on_delete=models.CASCADE, null=True, blank=True)
     activo = models.BooleanField(default=False)
-    
+
     def __str__(self):
         return f"Lote {self.id} - {self.materia_prima.nombre} - {self.stock_actual_lote}"
 
@@ -137,7 +207,7 @@ class ProductosReventa(models.Model):
     activo = models.BooleanField(default=False, null=False)
     fecha_creacion_registro = models.DateField(auto_now_add=True)
     fecha_modificacion_registro = models.DateField(auto_now=True)
-    
+
     def __str__(self):
         return f"Producto {self.id} - {self.nombre_producto} {self.stock_actual}"
 
@@ -161,10 +231,19 @@ class LotesProductosReventa(models.Model):
 @receiver([post_save, post_delete], sender=LotesMateriasPrimas)
 def update_materia_prima_stock(sender, instance, **kwargs):
     materia_prima = instance.materia_prima
+
+    if getattr(instance, "id", None) and instance.fecha_caducidad <= timezone.now().date() and instance.activo:
+        expired_lots = LotesMateriasPrimas.objects.filter(
+            materia_prima=materia_prima,
+            fecha_caducidad__lte=timezone.now().date(),
+            activo=True
+        )
+        expired_lots.update(activo=False)
+
     total_stock = LotesMateriasPrimas.objects.filter(
         materia_prima=materia_prima,
-        fecha_caducidad__gt=timezone.now().date()
+        fecha_caducidad__gt=timezone.now().date(),
+        activo=True
     ).aggregate(total=Sum('stock_actual_lote'))['total'] or 0
-    
-    materia_prima.stock_actual = total_stock
-    materia_prima.save()
+
+    MateriasPrimas.objects.filter(id=materia_prima.id).update(stock_actual=total_stock)
