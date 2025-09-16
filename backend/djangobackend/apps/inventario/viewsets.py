@@ -7,6 +7,8 @@ from rest_framework.response import Response
 from rest_framework.decorators import action
 from datetime import datetime
 from collections import defaultdict
+from apps.inventario.models import LotesStatus
+
 
 class MateriaPrimaViewSet(viewsets.ModelViewSet):
     queryset = MateriasPrimas.objects.all()
@@ -78,59 +80,30 @@ class LotesMateriaPrimaViewSet(viewsets.ModelViewSet):
         if materia_prima:
             queryset = queryset.filter(materia_prima=materia_prima)
         return queryset
-    
+
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        materia_prima_id = serializer.validated_data['materia_prima']
-        lotes_materia_prima = LotesMateriasPrimas.objects.filter(materia_prima=materia_prima_id)
-
-        # Get the closest expiration date from existing lots
-        aggregation = lotes_materia_prima.aggregate(closest_date=Min('fecha_caducidad'))
-        closest_date = aggregation['closest_date']
-
-        new_fecha_caducidad = serializer.validated_data['fecha_caducidad']
-
-        if closest_date is None:
-            # If there are no existing lots, this is the first one and should be active
-            serializer.validated_data['activo'] = True
-            serializer.validated_data['stock_actual_lote'] = serializer.validated_data['cantidad_recibida']
-        elif new_fecha_caducidad < closest_date:
-            # If the new lot expires sooner than any existing lot
-            # Set this one as active and deactivate all others
-            serializer.validated_data['activo'] = True
-            serializer.validated_data['stock_actual_lote'] = serializer.validated_data['cantidad_recibida']
-            lotes_materia_prima.update(activo=False)
-        else:
-            # If the new lot expires later than or equal to the closest existing lot
-            # Keep it inactive
-            serializer.validated_data['activo'] = False
-            serializer.validated_data['stock_actual_lote'] = serializer.validated_data['cantidad_recibida']
+        serializer.validated_data['stock_actual_lote'] = serializer.validated_data['cantidad_recibida']
 
         # Save only once through perform_create
         self.perform_create(serializer)
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
-    
 
-    @action(detail=True, methods=['put'], url_path='activate')
-    def activate(self, request, pk=None):
+
+    @action(detail=True, methods=['put'], url_path='inactivar')
+    def inactivar(self, request, pk=None):
         try:
-            lote_por_activar = LotesMateriasPrimas.objects.get(id=pk)
-            
-            # Convert to datetime.date for comparison since fecha_caducidad is a DateField
-            if datetime.now().date() < lote_por_activar.fecha_caducidad:
-                # First deactivate current active lote of the same materia prima
-                LotesMateriasPrimas.objects.filter(
-                    materia_prima=lote_por_activar.materia_prima, 
-                    activo=True
-                ).update(activo=False)
-                
-                # Activate the new lote
-                lote_por_activar.activo = True
-                lote_por_activar.save()
-                
+            # Inactivar
+            lote_inactivar = LotesMateriasPrimas.objects.get(id=pk)
+
+            if lote_inactivar.fecha_caducidad > datetime.now().date():
+                lote_inactivar.estado = LotesStatus.INACTIVO
+                materia_prima = lote_inactivar.materia_prima
+                lote_inactivar.save(update_fields=['estado'])
+                materia_prima.actualizar_stock()
                 return Response(status=status.HTTP_200_OK)
             else:
                 return Response(
@@ -144,6 +117,29 @@ class LotesMateriaPrimaViewSet(viewsets.ModelViewSet):
                 data={"error": "Lote no encontrado"}
             )
 
+    @action(detail=True, methods=['put'], url_path='activar')
+    def activar(self, request, pk=None):
+        try:
+            # Activar
+            lote_activar = LotesMateriasPrimas.objects.get(id=pk)
+
+            if lote_activar.fecha_caducidad > datetime.now().date():
+                lote_activar.estado = LotesStatus.DISPONIBLE
+                materia_prima = lote_activar.materia_prima
+                lote_activar.save(update_fields=['estado'])
+                materia_prima.actualizar_stock()
+                return Response(status=status.HTTP_200_OK)
+            else:
+                return Response(
+                    status=status.HTTP_400_BAD_REQUEST, 
+                    data={"error": "Este Lote ya caducó"}
+                )
+                
+        except LotesMateriasPrimas.DoesNotExist:
+            return Response(
+                status=status.HTTP_404_NOT_FOUND, 
+                data={"error": "Lote no encontrado"}
+            )
 
 class ProductosElaboradosViewSet(viewsets.ModelViewSet):
     queryset = ProductosElaborados.objects.all()
@@ -226,6 +222,8 @@ class ProductosElaboradosViewSet(viewsets.ModelViewSet):
             receta_principal = Recetas.objects.get(producto_elaborado=producto_id)
         except Recetas.DoesNotExist:
             return Response({"error": "No se encontró la receta asociada"}, status=status.HTTP_404_NOT_FOUND)
+
+        MateriasPrimas.expirar_todos_lotes_viejos()
 
         detalles_receta_principal = RecetasDetalles.objects.filter(
             receta_id=receta_principal.id

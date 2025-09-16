@@ -8,6 +8,13 @@ from django.utils import timezone
 from django.core.exceptions import ValidationError
 
 # Create your models here.
+class LotesStatus(models.TextChoices):
+    DISPONIBLE = 'DISPONIBLE', 'Disponible para uso'
+    EXPIRADO = 'EXPIRADO', 'Expirado'
+    AGOTADO = 'AGOTADO', 'Agotado'
+    INACTIVO = 'INACTIVO', 'Inactivo'
+
+
 class MateriasPrimas(models.Model):
     nombre = models.CharField(max_length=100, null=False, blank=False, unique=True)
     unidad_medida_base = models.ForeignKey(UnidadesDeMedida, on_delete=models.CASCADE, null=False, blank=False, related_name='materias_primas_unidad_base')
@@ -35,7 +42,7 @@ class MateriasPrimas(models.Model):
 
         expired = LotesMateriasPrimas.objects.filter(
             fecha_caducidad__lte=timezone.now().date(),
-            activo=True
+            estado=LotesStatus.DISPONIBLE,
         )
 
         resumen = []
@@ -47,12 +54,12 @@ class MateriasPrimas(models.Model):
                 'stock_expirado': lote.stock_actual_lote
             })
 
-        count = expired.update(activo=False)
-        
+        count = expired.update(estado=LotesStatus.EXPIRADO)
+
         affected_materials = cls.objects.filter(
             lotesmateriasprimas__fecha_caducidad__lte=timezone.now().date()
         ).distinct()
-        
+
         for material in affected_materials:
             material.actualizar_stock()
 
@@ -66,7 +73,7 @@ class MateriasPrimas(models.Model):
             return {"resumen": [], "cached": True}
 
         cache.set(cache_key, True, 86400)  # Cache for 24 hours
-        lotes_expirados = LotesMateriasPrimas.objects.filter(materia_prima=self, fecha_caducidad__lte=ahora, activo=True)
+        lotes_expirados = LotesMateriasPrimas.objects.filter(materia_prima=self, fecha_caducidad__lte=ahora, estado=LotesStatus.DISPONIBLE)
 
         resumen = []
         lotes_actualizar = []
@@ -87,8 +94,8 @@ class MateriasPrimas(models.Model):
 
     def actualizar_stock(self):
 
-        lote_total = LotesMateriasPrimas.objects.filter(materia_prima=self, fecha_caducidad__gt=timezone.now().date(), activo=True).aggregate(total=Sum('stock_actual_lote'))
-        stock_total = lote_total.get('total', 0)
+        lote_total = LotesMateriasPrimas.objects.filter(materia_prima=self, fecha_caducidad__gt=timezone.now().date(), estado=LotesStatus.DISPONIBLE).aggregate(total=Sum('stock_actual_lote'))
+        stock_total = lote_total.get('total') or 0
         MateriasPrimas.objects.filter(id=self.id).update(stock_actual=stock_total)
         return stock_total
 
@@ -97,6 +104,7 @@ class MateriasPrimas(models.Model):
 
 
 class LotesMateriasPrimas(models.Model):
+
     materia_prima = models.ForeignKey(MateriasPrimas, on_delete=models.CASCADE, null=False, blank=False)
     proveedor = models.ForeignKey('compras.Proveedores', on_delete=models.CASCADE, null=True, blank=True)
     fecha_recepcion = models.DateField(null=False, blank=False)
@@ -105,10 +113,47 @@ class LotesMateriasPrimas(models.Model):
     stock_actual_lote = models.DecimalField(max_digits=10, decimal_places=2, default=0, null=False, blank=False)
     costo_unitario_usd = models.DecimalField(max_digits=10, decimal_places=2, default=0, null=False, blank=False)
     detalle_oc = models.ForeignKey('compras.DetalleOrdenesCompra', on_delete=models.CASCADE, null=True, blank=True)
-    activo = models.BooleanField(default=False)
+    estado = models.CharField(
+        max_length=10, 
+        choices=LotesStatus.choices, 
+        default=LotesStatus.DISPONIBLE
+    )
+    activo = models.BooleanField(default=True) ## ELIMINAR DESPUES SIN USAR
 
     def __str__(self):
         return f"Lote {self.id} - {self.materia_prima.nombre} - {self.stock_actual_lote}"
+
+    def determinar_estado(self):
+        """Determine lot status based on expiration and FEFO rules"""
+        hoy = timezone.now().date()
+        
+        if self.fecha_caducidad <= hoy:
+            return LotesStatus.EXPIRADO
+        elif self.stock_actual_lote <= 0:
+            return LotesStatus.AGOTADO
+        else:
+            # Check if this is the earliest expiring lot
+            lotes_activos = LotesMateriasPrimas.objects.filter(
+                materia_prima=self.materia_prima,
+                fecha_caducidad__gt=hoy,
+                stock_actual_lote__gt=0
+            ).order_by('fecha_caducidad')
+
+            if lotes_activos.first() == self:
+                return LotesStatus.DISPONIBLE
+            else:
+                return LotesStatus.INACTIVO # Este lote no es el más antiguo, por lo que no está disponible para uso inmediato
+
+    @classmethod
+    def actualizar_estados(cls, materia_prima_id):
+        """Update FEFO status for all lots of a material"""
+        lotes = cls.objects.filter(materia_prima_id=materia_prima_id)
+
+        for lote in lotes:
+            nuevo_estado = lote.determinar_estado()
+            if lote.estado != nuevo_estado:
+                lote.estado = nuevo_estado
+                lote.save(update_fields=['estado'])
 
 
 class ProductosElaborados(models.Model):
@@ -232,18 +277,18 @@ class LotesProductosReventa(models.Model):
 def update_materia_prima_stock(sender, instance, **kwargs):
     materia_prima = instance.materia_prima
 
-    if getattr(instance, "id", None) and instance.fecha_caducidad <= timezone.now().date() and instance.activo:
+    if getattr(instance, "id", None) and instance.fecha_caducidad <= timezone.now().date() and instance.estado == LotesStatus.DISPONIBLE:
         expired_lots = LotesMateriasPrimas.objects.filter(
             materia_prima=materia_prima,
             fecha_caducidad__lte=timezone.now().date(),
-            activo=True
+            estado=LotesStatus.DISPONIBLE
         )
-        expired_lots.update(activo=False)
+        expired_lots.update(estado=LotesStatus.EXPIRADO)
 
     total_stock = LotesMateriasPrimas.objects.filter(
         materia_prima=materia_prima,
         fecha_caducidad__gt=timezone.now().date(),
-        activo=True
+        estado=LotesStatus.DISPONIBLE
     ).aggregate(total=Sum('stock_actual_lote'))['total'] or 0
 
     MateriasPrimas.objects.filter(id=materia_prima.id).update(stock_actual=total_stock)

@@ -65,7 +65,7 @@ class LotesMateriaPrimaSerializer(serializers.ModelSerializer):
     class Meta:
         model = LotesMateriasPrimas
         fields = [
-            'id', 
+            'id',
             'materia_prima', 
             'proveedor',
             'proveedor_id',
@@ -75,7 +75,7 @@ class LotesMateriaPrimaSerializer(serializers.ModelSerializer):
             'stock_actual_lote', 
             'costo_unitario_usd', 
             'detalle_oc', 
-            'activo'
+            'estado',
         ]
 
 

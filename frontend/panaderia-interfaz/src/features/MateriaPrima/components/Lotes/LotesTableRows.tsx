@@ -15,12 +15,6 @@ export const LotesTableRows = ({
       const dateB = new Date(b.fecha_caducidad);
       return dateA.getTime() - dateB.getTime();
     });
-
-    const activeLote = data.find((item) => item.activo);
-    if (activeLote) {
-      data.splice(data.indexOf(activeLote), 1);
-      data.unshift(activeLote);
-    }
   }
 
   return (
@@ -37,13 +31,7 @@ export const LotesTableRows = ({
           <div>{item.stock_actual_lote}</div>
           <div>{item.costo_unitario_usd}</div>
           <div>{item.proveedor}</div>
-          <div>
-            {item.activo ? (
-              <div className="font-bold pl-3 text-green-700">SI</div>
-            ) : (
-              <div className="font-bold pl-3 text-red-600">NO</div>
-            )}
-          </div>
+          <div className="font-medium">{item.estado}</div>
         </div>
       ))}
     </>
