@@ -55,10 +55,11 @@ class RelacionesRecetas(models.Model):
 class Produccion(models.Model):
     producto_elaborado = models.ForeignKey(ProductosElaborados, on_delete=models.CASCADE, null=False, blank=False)
     cantidad_producida = models.DecimalField(max_digits=10, decimal_places=3, null=False, blank=False)
-    fecha_produccion = models.DateField(null=False, blank=False)
+    fecha_produccion = models.DateField(null=False, blank=False, auto_now_add=True)
     fecha_expiracion = models.DateField(null=True, blank=True)
     costo_total_componentes_usd = models.DecimalField(max_digits=10, decimal_places=3)
     usuario_creacion = models.ForeignKey(User, on_delete=models.CASCADE)
+    unidad_medida = models.ForeignKey(UnidadesDeMedida, on_delete=models.CASCADE, null=True, blank=True)
     
     def __str__(self):
         return f"{self.producto_elaborado.nombre} - {self.fecha_produccion}"
@@ -71,7 +72,7 @@ class DetalleProduccionCosumos(models.Model):
     lote_materia_prima_consumida = models.ForeignKey(LotesMateriasPrimas, on_delete=models.CASCADE, null=True, blank=True)
     lote_producto_intermedio_consumido = models.ForeignKey(LotesProductosElaborados, on_delete=models.CASCADE, null=True, blank=True)
     cantidad_consumida = models.DecimalField(max_digits=10, decimal_places=3, null=False, blank=False)
-    unidad_medida = models.ForeignKey(UnidadesDeMedida, on_delete=models.CASCADE)
+    costo_consumo_usd = models.DecimalField(max_digits=10, decimal_places=3, null=False, blank=False, default=0)
     
     def __str__(self):
         return f"{self.produccion.producto_elaborado.nombre} - {self.materia_prima_consumida.nombre or self.producto_intermedio_consumido.nombre} - {self.cantidad_consumida}"

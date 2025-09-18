@@ -81,8 +81,8 @@ This interface handles the transformation of one product into another, correspon
     Buscar informacion de lotes con fecha de expiracion mas cercana de cada componente
     
     Si existe suficiente stock pero entre diferentes lotes:
-        1. Si la cantidad un lote es insuficiente, calculo la diferencia y determino si el siguiente lote con fecha de expiracion mas cercana es capaz de suplir la diferencia. Posteriormente se registra el lote con mas cantidad.
-        2. Si el lote contiene suficiente volumen para suplir la cantidad, se utiliza ese lote.
+        1. Si la cantidad de un lote es insuficiente, calculo la diferencia y determino si el siguiente lote con fecha de expiracion mas cercana es capaz de suplir la diferencia. Posteriormente se registra el lote consumido.
+        2. Si el loteso contiene suficiente volumen para suplir la cantidad, se utiliza ese lote.
 
     Registrar los datos de producción
         registrar el componente y el lote utilizado

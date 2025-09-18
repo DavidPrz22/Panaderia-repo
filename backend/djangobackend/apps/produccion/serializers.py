@@ -42,10 +42,10 @@ class componentsSerializer(serializers.Serializer):
     tipoComponente = serializers.CharField()
 
 
-class ProductionRegistrationSerializer(serializers.Serializer):
+class ProduccionSerializer(serializers.Serializer):
     productoId = serializers.IntegerField()
     cantidadProduction = serializers.IntegerField()
+    peso = serializers.FloatField(required=False)
     componentes = serializers.ListField(child=componentsSerializer())
-    fechaProduccion = serializers.DateField()
     fechaExpiracion = serializers.DateField()
     tipoProducto = serializers.CharField()

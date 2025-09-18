@@ -141,6 +141,7 @@ class LotesMateriaPrimaViewSet(viewsets.ModelViewSet):
                 data={"error": "Lote no encontrado"}
             )
 
+
 class ProductosElaboradosViewSet(viewsets.ModelViewSet):
     queryset = ProductosElaborados.objects.all()
     serializer_class = ProductosElaboradosSerializer
@@ -266,8 +267,6 @@ class ProductosFinalesSearchViewset(viewsets.ReadOnlyModelViewSet):
     serializer_class = ProductosFinalesSearchSerializer
 
 
-
 class ProductosIntermediosSearchViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = ProductosIntermedios.objects.all()
     serializer_class = ProductosIntermediosSearchSerializer
-

@@ -99,6 +99,60 @@ class MateriasPrimas(models.Model):
         MateriasPrimas.objects.filter(id=self.id).update(stock_actual=stock_total)
         return stock_total
 
+    def checkAvailability(self, cantidad):
+        return self.stock_actual >= cantidad
+
+    def get_closest_expire_lot(self, exclude_id=None):
+        return LotesMateriasPrimas.objects.filter( id != exclude_id, materia_prima=self, estado=LotesStatus.DISPONIBLE).order_by('fecha_caducidad').first()
+    
+    def validate_stock_lot(self, lote, cantidad):
+
+        if cantidad > lote.stock_actual_lote:
+            cantidad_restante = cantidad - lote.stock_actual_lote
+            lote.stock_actual_lote = 0
+            lote.estado = LotesStatus.AGOTADO
+            lote.save()
+
+            return {"cantidad_restante": cantidad_restante, "cantidad_consumida": lote.stock_actual_lote}
+        else:
+            lote.stock_actual_lote -= cantidad
+            lote.save()
+            return {
+                "cantidad_restante": -1,
+                "cantidad_consumida": cantidad
+            }
+
+    def calculate_price(self, precio, cantidad):
+        return precio * cantidad
+
+
+    def consumeStock(self, cantidad):
+        lote_cosume = self.get_closest_expire_lot()
+        cantidad_restante = cantidad
+        precio_consumo = 0
+
+        if not lote_cosume:
+            raise ValidationError(f"No hay lotes disponibles para la materia prima {self.nombre}")
+
+        while True:
+
+            cantidades = self.validate_stock_lot(lote_cosume, cantidad_restante)
+            cantidad_restante = cantidades["cantidad_restante"]
+            cantidad_consumida = cantidades["cantidad_consumida"]
+    
+            precio_consumo += self.calculate_price(lote_cosume.costo_unitario_usd, cantidad_consumida)
+            
+            if cantidad_restante <= 0: break
+            lote_cosume = self.get_closest_expire_lot(exclude_id=lote_cosume.id)
+
+        self.stock_actual -= cantidad
+        self.save()
+
+        return {
+            "lote_consumido": lote_cosume.id,
+            "costo_total_consumo": precio_consumo
+        }
+    
     def __str__(self):
         return self.nombre
 
@@ -173,6 +227,10 @@ class ProductosElaborados(models.Model):
     fecha_modificacion_registro = models.DateField(auto_now=True)
     es_intermediario = models.BooleanField(default=False, null=False)
 
+    def checkAvailability(self, cantidad):
+        return self.stock_actual >= cantidad
+
+
     def __str__(self):
         return f"Producto {self.id} - {self.nombre_producto}"
     
@@ -191,12 +249,15 @@ class LotesProductosElaborados(models.Model):
     producto_elaborado = models.ForeignKey(ProductosElaborados, on_delete=models.CASCADE, null=False, blank=False)
     cantidad_inicial_lote = models.DecimalField(max_digits=10, decimal_places=2, default=0) # Cantidad original producida en este lote (copiado de Produccion.cantidad_producida)
     stock_actual_lote = models.DecimalField(max_digits=10, decimal_places=2, default=0)
-    fecha_produccion = models.DateField(null=False, blank=False)
+    fecha_produccion = models.DateField(null=False, blank=False, auto_now_add=True)
     fecha_caducidad = models.DateField(null=False, blank=False)
+    estado = models.CharField(
+        max_length=10,
+        choices=LotesStatus.choices,
+        default=LotesStatus.DISPONIBLE
+    )
     coste_unitario_lote_usd = models.DecimalField(max_digits=10, decimal_places=2, default=0)
-    activo = models.BooleanField(default=False)
     peso_nominal = models.DecimalField(max_digits=10, decimal_places=2, default=0, null=True, blank=True)
-    notas = models.TextField(max_length=255, null=True, blank=True)
 
     def __str__(self):
         return f"Lote {self.id} - {self.producto_elaborado.nombre_producto} - {self.stock_actual_lote}"
