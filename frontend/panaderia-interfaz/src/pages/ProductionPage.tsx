@@ -6,7 +6,6 @@ import { ProductionRegistrosModal } from "@/features/Production/components/Produ
 import { ProductionForm } from "@/features/Production/components/ProductionForm";
 
 export default function ProductionPage() {
-
   return (
     <ProductionProvider>
       <Sidebar />

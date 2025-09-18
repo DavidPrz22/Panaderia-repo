@@ -6,7 +6,7 @@ export const TableRows = ({ data }: { data: MateriaPrimaList[] }) => {
   return (
     <>
       {data.map((item, index) => (
-        <TableRow item={item} index={index} key={item.id} />
+        <TableRow item={item} index={index} key={item.id} last={index === data.length - 1}/>
       ))}
     </>
   );

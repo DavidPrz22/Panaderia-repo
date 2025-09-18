@@ -35,3 +35,17 @@ class RecetasDetallesSerializer(serializers.ModelSerializer):
             'componente_producto_intermedio',
             'cantidad'
         ]
+
+class componentsSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+    cantidad = serializers.FloatField()
+    tipoComponente = serializers.CharField()
+
+
+class ProduccionSerializer(serializers.Serializer):
+    productoId = serializers.IntegerField()
+    cantidadProduction = serializers.IntegerField()
+    peso = serializers.FloatField(required=False)
+    componentes = serializers.ListField(child=componentsSerializer())
+    fechaExpiracion = serializers.DateField()
+    tipoProducto = serializers.CharField()

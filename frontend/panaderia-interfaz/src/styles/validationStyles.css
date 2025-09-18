@@ -1,0 +1,26 @@
+:root {
+    --mycolor-red-500: #fb2c36;
+    --mycolor-gray-300: #D1D5DB;
+    --mycolor-blue-300: #93C5FD;
+    --mycolor-blue-100: #DBEAFE;
+    --mycolor-red-100: #FEE2E2;
+}
+
+.invalidInput {
+    border: 1px solid;
+    border-color: var(--mycolor-red-500);
+    &:focus {
+        border-color: var(--mycolor-red-500);
+        box-shadow: 0 0 0 4px var(--mycolor-red-100);
+    }
+}
+
+.validInput {   
+    border: 1px solid;           
+    border: 1px solid var(--mycolor-gray-300);
+    background: #fff;
+    &:focus {
+        border-color: var(--mycolor-blue-300);
+        box-shadow: 0 0 0 4px var(--mycolor-blue-100);
+    }
+}

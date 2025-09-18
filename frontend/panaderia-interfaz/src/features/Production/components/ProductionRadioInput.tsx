@@ -16,7 +16,7 @@ export const ProductionRadioInput = ({
   const handleOnChange = (value: ProductionType) => {
     setProductType(value);
     onSelect(value);
-  }
+  };
 
   return (
     <label

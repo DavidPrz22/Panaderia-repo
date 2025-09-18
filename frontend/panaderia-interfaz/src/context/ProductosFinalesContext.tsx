@@ -35,6 +35,15 @@ type ProductosFinalesContextType = {
   setProductoDetalles: (detalles: ProductoFinalDetalles | null) => void;
   deleteRecetaRelacionada: boolean;
   setDeleteRecetaRelacionada: (deleteReceta: boolean) => void;
+  // Search & filter state for productos finales list
+  productosFinalesSearchTerm: string;
+  setProductosFinalesSearchTerm: React.Dispatch<React.SetStateAction<string>>;
+  selectedUnidadesVenta: string[]; // store unidad_venta strings
+  setSelectedUnidadesVenta: React.Dispatch<React.SetStateAction<string[]>>;
+  selectedCategoriasProductoFinal: string[]; // store categoria strings
+  setSelectedCategoriasProductoFinal: React.Dispatch<React.SetStateAction<string[]>>;
+  showFiltersPanel: boolean;
+  setShowFiltersPanel: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
 const ProductosFinalesContextProvider = createContext<ProductosFinalesContextType | null>(null);
@@ -82,6 +91,12 @@ export const ProductosFinalesProvider = ({
 
   const [deleteRecetaRelacionada, setDeleteRecetaRelacionada] =
     useState<boolean>(false);
+
+  // Search & filters state
+  const [productosFinalesSearchTerm, setProductosFinalesSearchTerm] = useState<string>("");
+  const [selectedUnidadesVenta, setSelectedUnidadesVenta] = useState<string[]>([]);
+  const [selectedCategoriasProductoFinal, setSelectedCategoriasProductoFinal] = useState<string[]>([]);
+  const [showFiltersPanel, setShowFiltersPanel] = useState<boolean>(false);
   return (
     <ProductosFinalesContextProvider.Provider
       value={{
@@ -115,6 +130,14 @@ export const ProductosFinalesProvider = ({
         setProductoDetalles,
         deleteRecetaRelacionada,
         setDeleteRecetaRelacionada,
+        productosFinalesSearchTerm,
+        setProductosFinalesSearchTerm,
+        selectedUnidadesVenta,
+        setSelectedUnidadesVenta,
+        selectedCategoriasProductoFinal,
+        setSelectedCategoriasProductoFinal,
+        showFiltersPanel,
+        setShowFiltersPanel,
       }}
     >
       {children}

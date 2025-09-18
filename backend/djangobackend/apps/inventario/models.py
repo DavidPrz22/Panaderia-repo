@@ -1,5 +1,6 @@
 from django.db import models
 from apps.core.models import UnidadesDeMedida, CategoriasMateriaPrima, CategoriasProductosReventa, CategoriasProductosElaborados
+from django.core.cache import cache
 from django.db.models import Q, Sum
 from django.db.models.signals import post_save, post_delete
 from django.dispatch import receiver
@@ -7,6 +8,17 @@ from django.utils import timezone
 from django.core.exceptions import ValidationError
 
 # Create your models here.
+class LotesStatus(models.TextChoices):
+    DISPONIBLE = 'DISPONIBLE', 'Disponible para uso'
+    EXPIRADO = 'EXPIRADO', 'Expirado'
+    AGOTADO = 'AGOTADO', 'Agotado'
+    INACTIVO = 'INACTIVO', 'Inactivo'
+
+class MedidasFisicas(models.TextChoices):
+    UNIDAD = 'UNIDAD', 'Unidad'
+    PESO = 'PESO', 'Peso'
+    VOLUMEN = 'VOLUMEN', 'Volumen'
+
 class MateriasPrimas(models.Model):
     nombre = models.CharField(max_length=100, null=False, blank=False, unique=True)
     unidad_medida_base = models.ForeignKey(UnidadesDeMedida, on_delete=models.CASCADE, null=False, blank=False, related_name='materias_primas_unidad_base')
@@ -22,11 +34,134 @@ class MateriasPrimas(models.Model):
     categoria = models.ForeignKey(CategoriasMateriaPrima, on_delete=models.CASCADE)
     descripcion = models.TextField(max_length=255, null=True, blank=True)
 
+    @classmethod
+    def expirar_todos_lotes_viejos(cls, force=False):
+        hoy = timezone.now().date()
+        cache_key = f"expirar_todos_lotes_viejos_{hoy}"
+
+        if not force and cache.get(cache_key):
+            return {"resumen": [], "count": 0, "cached": True}
+
+        cache.set(cache_key, True, 86400)  # Cache for 24 hours
+
+        expired = LotesMateriasPrimas.objects.filter(
+            fecha_caducidad__lte=timezone.now().date(),
+            estado=LotesStatus.DISPONIBLE,
+        )
+
+        resumen = []
+        for lote in expired:
+            resumen.append({
+                'lote_id': lote.id,
+                'materia_prima': lote.materia_prima.nombre,
+                'fecha_caducidad': lote.fecha_caducidad,
+                'stock_expirado': lote.stock_actual_lote
+            })
+
+        count = expired.update(estado=LotesStatus.EXPIRADO)
+
+        affected_materials = cls.objects.filter(
+            lotesmateriasprimas__fecha_caducidad__lte=timezone.now().date()
+        ).distinct()
+
+        for material in affected_materials:
+            material.actualizar_stock()
+
+        return {"resumen": resumen, "count": count}
+
+    def expirar_lotes_viejos(self, force=False):
+        ahora = timezone.now().date()
+        cache_key = f"expirar_lotes_viejos_{ahora}"
+
+        if not force and cache.get(cache_key):
+            return {"resumen": [], "cached": True}
+
+        cache.set(cache_key, True, 86400)  # Cache for 24 hours
+        lotes_expirados = LotesMateriasPrimas.objects.filter(materia_prima=self, fecha_caducidad__lte=ahora, estado=LotesStatus.DISPONIBLE)
+
+        resumen = []
+        lotes_actualizar = []
+
+        for lote in lotes_expirados:
+            if lote.stock_actual_lote > 0:
+                resumen.append({
+                    'lote_id': lote.id,
+                    'materia_prima': self.nombre,
+                    'stock_expirado': lote.stock_actual_lote,
+                    'fecha_caducidad': lote.fecha_caducidad
+                })
+                lote.activo = False
+                lotes_actualizar.append(lote)
+        LotesMateriasPrimas.objects.bulk_update(lotes_actualizar, ['activo',])
+
+        return {"resumen": resumen}
+
+    def actualizar_stock(self):
+
+        lote_total = LotesMateriasPrimas.objects.filter(materia_prima=self, fecha_caducidad__gt=timezone.now().date(), estado=LotesStatus.DISPONIBLE).aggregate(total=Sum('stock_actual_lote'))
+        stock_total = lote_total.get('total') or 0
+        MateriasPrimas.objects.filter(id=self.id).update(stock_actual=stock_total)
+        return stock_total
+
+    def checkAvailability(self, cantidad):
+        return self.stock_actual >= cantidad
+
+    def get_closest_expire_lot(self, exclude_id=None):
+        return LotesMateriasPrimas.objects.filter( id != exclude_id, materia_prima=self, estado=LotesStatus.DISPONIBLE).order_by('fecha_caducidad').first()
+    
+    def validate_stock_lot(self, lote, cantidad):
+
+        if cantidad > lote.stock_actual_lote:
+            cantidad_restante = cantidad - lote.stock_actual_lote
+            lote.stock_actual_lote = 0
+            lote.estado = LotesStatus.AGOTADO
+            lote.save()
+
+            return {"cantidad_restante": cantidad_restante, "cantidad_consumida": lote.stock_actual_lote}
+        else:
+            lote.stock_actual_lote -= cantidad
+            lote.save()
+            return {
+                "cantidad_restante": -1,
+                "cantidad_consumida": cantidad
+            }
+
+    def calculate_price(self, precio, cantidad):
+        return precio * cantidad
+
+    def consumeStock(self, cantidad):
+        lote_cosume = self.get_closest_expire_lot()
+        cantidad_restante = cantidad
+        precio_consumo = 0
+
+        if not lote_cosume:
+            raise ValidationError(f"No hay lotes disponibles para la materia prima {self.nombre}")
+
+        while True:
+
+            cantidades = self.validate_stock_lot(lote_cosume, cantidad_restante)
+            cantidad_restante = cantidades["cantidad_restante"]
+            cantidad_consumida = cantidades["cantidad_consumida"]
+    
+            precio_consumo += self.calculate_price(lote_cosume.costo_unitario_usd, cantidad_consumida)
+            
+            if cantidad_restante <= 0: break
+            lote_cosume = self.get_closest_expire_lot(exclude_id=lote_cosume.id)
+
+        self.stock_actual -= cantidad
+        self.save()
+
+        return {
+            "lote_consumido": lote_cosume.id,
+            "costo_total_consumo": precio_consumo
+        }
+    
     def __str__(self):
         return self.nombre
 
 
 class LotesMateriasPrimas(models.Model):
+
     materia_prima = models.ForeignKey(MateriasPrimas, on_delete=models.CASCADE, null=False, blank=False)
     proveedor = models.ForeignKey('compras.Proveedores', on_delete=models.CASCADE, null=True, blank=True)
     fecha_recepcion = models.DateField(null=False, blank=False)
@@ -35,28 +170,108 @@ class LotesMateriasPrimas(models.Model):
     stock_actual_lote = models.DecimalField(max_digits=10, decimal_places=2, default=0, null=False, blank=False)
     costo_unitario_usd = models.DecimalField(max_digits=10, decimal_places=2, default=0, null=False, blank=False)
     detalle_oc = models.ForeignKey('compras.DetalleOrdenesCompra', on_delete=models.CASCADE, null=True, blank=True)
-    activo = models.BooleanField(default=False)
-    
+    estado = models.CharField(
+        max_length=10, 
+        choices=LotesStatus.choices, 
+        default=LotesStatus.DISPONIBLE
+    )
+    activo = models.BooleanField(default=True) ## ELIMINAR DESPUES SIN USAR
+
     def __str__(self):
         return f"Lote {self.id} - {self.materia_prima.nombre} - {self.stock_actual_lote}"
+
+    def determinar_estado(self):
+        """Determine lot status based on expiration and FEFO rules"""
+        hoy = timezone.now().date()
+        
+        if self.fecha_caducidad <= hoy:
+            return LotesStatus.EXPIRADO
+        elif self.stock_actual_lote <= 0:
+            return LotesStatus.AGOTADO
+        else:
+            # Check if this is the earliest expiring lot
+            lotes_activos = LotesMateriasPrimas.objects.filter(
+                materia_prima=self.materia_prima,
+                fecha_caducidad__gt=hoy,
+                stock_actual_lote__gt=0
+            ).order_by('fecha_caducidad')
+
+            if lotes_activos.first() == self:
+                return LotesStatus.DISPONIBLE
+            else:
+                return LotesStatus.INACTIVO # Este lote no es el más antiguo, por lo que no está disponible para uso inmediato
+
+    @classmethod
+    def actualizar_estados(cls, materia_prima_id):
+        """Update FEFO status for all lots of a material"""
+        lotes = cls.objects.filter(materia_prima_id=materia_prima_id)
+
+        for lote in lotes:
+            nuevo_estado = lote.determinar_estado()
+            if lote.estado != nuevo_estado:
+                lote.estado = nuevo_estado
+                lote.save(update_fields=['estado'])
 
 
 class ProductosElaborados(models.Model):
     nombre_producto = models.CharField(max_length=100, null=False, blank=False, unique=True)
     SKU = models.CharField(max_length=50, null=True, blank=True, unique=True)
     descripcion = models.TextField(max_length=255, null=True, blank=True)
-    tipo_manejo_venta = models.CharField(choices=[('UNIDAD', 'Unidad'), ('PESO_VOLUMEN', 'Peso_Volumen')], max_length=15, null=True, blank=True)
-    unidad_medida_nominal = models.ForeignKey(UnidadesDeMedida, on_delete=models.CASCADE, null=True, blank=True, related_name='productos_elaborados_unidad_nominal')
-    #   Peso nominal o estándar del producto si se vende como una unidad contable.
-    #   Por ejemplo, una "Torta Entera" (vendida por 'Unidad') puede tener un peso_nominal de 1.5 (kg).
-    unidad_venta = models.ForeignKey(UnidadesDeMedida, on_delete=models.CASCADE, null=True, blank=True, related_name='productos_elaborados_unidad_venta') ## Si es por unidad, precio total. Si es por peso_volumen, sera el precio por unidad de volumen
+
+    unidad_produccion = models.ForeignKey(
+        UnidadesDeMedida, on_delete=models.CASCADE, 
+        null=True, 
+        blank=True, 
+        related_name='productos_elaborados_unidad_produccion',
+        help_text="Unidad en la que se produce y se gestiona el stock (e.g., Unidades, Gramos).")
+
+    unidad_venta = models.ForeignKey(
+        UnidadesDeMedida, 
+        on_delete=models.CASCADE, 
+        null=True, 
+        blank=True, 
+        related_name='productos_elaborados_unidad_venta', 
+        help_text="Unidad en la que se vende el producto (e.g., Unidades, Kilogramos, Litros).")
+
     precio_venta_usd = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+
     punto_reorden = models.DecimalField(max_digits=10, decimal_places=2, default=0, null=False, blank=False)
     stock_actual = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     categoria = models.ForeignKey(CategoriasProductosElaborados, on_delete=models.CASCADE)
     fecha_creacion_registro = models.DateField(auto_now_add=True)
     fecha_modificacion_registro = models.DateField(auto_now=True)
+
+    vendible_por_medida_real  = models.BooleanField(
+        null=True,
+        blank=True,
+        help_text="Si es True, el precio final se calcula midiendo peso/volumen en la venta."
+    )
+
+    tipo_medida_fisica = models.CharField(
+        choices=MedidasFisicas.choices,
+        max_length=10, null=False, blank=False, default=MedidasFisicas.PESO
+    )
+
     es_intermediario = models.BooleanField(default=False, null=False)
+
+    def checkAvailability(self, cantidad):
+        return self.stock_actual >= cantidad
+
+    def clean(self):
+        """
+        Custom validation to enforce business logic for products.
+        """
+        super().clean()
+
+        if self.vendible_por_medida_real  and self.unidad_venta.nombre_completo == 'Unidad':
+            raise ValidationError(
+                "Si el precio se calcula en la venta, la unidad de venta no puede ser 'Unidad'. Debe ser KG, GR, LT, etc."
+            )
+
+        if not self.vendible_por_medida_real  and self.unidad_venta.nombre_completo != 'Unidad':
+            raise ValidationError(
+                "Si el precio es fijo (no calculado en venta), la unidad de venta debe ser 'Unidad'."
+            )
 
     def __str__(self):
         return f"Producto {self.id} - {self.nombre_producto}"
@@ -64,8 +279,8 @@ class ProductosElaborados(models.Model):
     class Meta:
         constraints = [
             models.CheckConstraint(
-                check=(Q(es_intermediario=True) & Q(precio_venta_usd__isnull=True) & Q(unidad_venta__isnull=True) & Q(tipo_manejo_venta__isnull=True))|
-                    (Q(es_intermediario=False) & Q(precio_venta_usd__isnull=False) & Q(unidad_venta__isnull=False) & Q(tipo_manejo_venta__isnull=False)),
+                check=(Q(es_intermediario=True) & Q(precio_venta_usd__isnull=True) & Q(unidad_venta__isnull=True) & Q(vendible_por_medida_real__isnull=True))|
+                    (Q(es_intermediario=False) & Q(precio_venta_usd__isnull=False) & Q(unidad_venta__isnull=False) & Q(vendible_por_medida_real__isnull=False)),
                 name='intermedio_o_producto'
             )
         ]
@@ -76,16 +291,50 @@ class LotesProductosElaborados(models.Model):
     producto_elaborado = models.ForeignKey(ProductosElaborados, on_delete=models.CASCADE, null=False, blank=False)
     cantidad_inicial_lote = models.DecimalField(max_digits=10, decimal_places=2, default=0) # Cantidad original producida en este lote (copiado de Produccion.cantidad_producida)
     stock_actual_lote = models.DecimalField(max_digits=10, decimal_places=2, default=0)
-    fecha_produccion = models.DateField(null=False, blank=False)
+    fecha_produccion = models.DateField(null=False, blank=False, auto_now_add=True)
     fecha_caducidad = models.DateField(null=False, blank=False)
-    coste_unitario_lote_usd = models.DecimalField(max_digits=10, decimal_places=2, default=0)
-    activo = models.BooleanField(default=False)
-    peso_nominal = models.DecimalField(max_digits=10, decimal_places=2, default=0, null=True, blank=True)
-    notas = models.TextField(max_length=255, null=True, blank=True)
+
+    estado = models.CharField(
+        max_length=10,
+        choices=LotesStatus.choices,
+        default=LotesStatus.DISPONIBLE
+    )
+    coste_total_lote_usd = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+
+    peso_total_lote_gramos = models.DecimalField(
+        max_digits=10, decimal_places=2, null=True, blank=True,
+        help_text="Actual measured weight of entire batch in grams"
+    )
+
+    volumen_total_lote_ml = models.DecimalField(
+        max_digits=10, decimal_places=2, null=True, blank=True,
+        help_text="Actual measured volume of entire batch in milliliters"
+    )
+
+    @property
+    def peso_promedio_por_unidad(self):
+        if self.cantidad_inicial_lote > 0 and self.peso_total_lote_gramos:
+            return self.peso_total_lote_gramos / self.cantidad_inicial_lote
+        return 0
+
+    @property
+    def volumen_promedio_por_unidad(self):
+        if self.cantidad_inicial_lote > 0 and self.volumen_total_lote_ml:
+            return self.volumen_total_lote_ml / self.cantidad_inicial_lote
+        return 0
 
     def __str__(self):
         return f"Lote {self.id} - {self.producto_elaborado.nombre_producto} - {self.stock_actual_lote}"
 
+
+    def clean(self):
+        super().clean()
+
+        if self.producto_elaborado.tipo_medida_fisica == MedidasFisicas.PESO and self.volumen_total_lote_ml:
+            raise ValidationError("No puede especificar volumen para un producto medido por peso.")
+        
+        if self.producto_elaborado.tipo_medida_fisica == MedidasFisicas.VOLUMEN and self.peso_total_lote_gramos:
+            raise ValidationError("No puede especificar peso para un producto medido por volumen.")
 
 class ProductosIntermediosManager(models.Manager):
     def get_queryset(self):
@@ -137,7 +386,7 @@ class ProductosReventa(models.Model):
     activo = models.BooleanField(default=False, null=False)
     fecha_creacion_registro = models.DateField(auto_now_add=True)
     fecha_modificacion_registro = models.DateField(auto_now=True)
-    
+
     def __str__(self):
         return f"Producto {self.id} - {self.nombre_producto} {self.stock_actual}"
 
@@ -161,10 +410,19 @@ class LotesProductosReventa(models.Model):
 @receiver([post_save, post_delete], sender=LotesMateriasPrimas)
 def update_materia_prima_stock(sender, instance, **kwargs):
     materia_prima = instance.materia_prima
+
+    if getattr(instance, "id", None) and instance.fecha_caducidad <= timezone.now().date() and instance.estado == LotesStatus.DISPONIBLE:
+        expired_lots = LotesMateriasPrimas.objects.filter(
+            materia_prima=materia_prima,
+            fecha_caducidad__lte=timezone.now().date(),
+            estado=LotesStatus.DISPONIBLE
+        )
+        expired_lots.update(estado=LotesStatus.EXPIRADO)
+
     total_stock = LotesMateriasPrimas.objects.filter(
         materia_prima=materia_prima,
-        fecha_caducidad__gt=timezone.now().date()
+        fecha_caducidad__gt=timezone.now().date(),
+        estado=LotesStatus.DISPONIBLE
     ).aggregate(total=Sum('stock_actual_lote'))['total'] or 0
-    
-    materia_prima.stock_actual = total_stock
-    materia_prima.save()
+
+    MateriasPrimas.objects.filter(id=materia_prima.id).update(stock_actual=total_stock)

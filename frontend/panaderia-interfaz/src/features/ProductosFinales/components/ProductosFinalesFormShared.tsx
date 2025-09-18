@@ -35,9 +35,10 @@ export default function ProductosFinalesFormShared({
         ? {
             nombre_producto: initialData.nombre_producto,
             SKU: initialData.SKU,
-            tipo_manejo_venta: initialData.tipo_manejo_venta.toUpperCase() as
+            tipo_medida_fisica: initialData.tipo_medida_fisica.toUpperCase() as
               | "UNIDAD"
-              | "PESO_VOLUMEN",
+              | "PESO"
+              | "VOLUMEN",
             categoria: initialData.categoria_producto.id,
             receta_relacionada: initialData.receta_relacionada
               ? initialData.receta_relacionada.id
@@ -45,9 +46,10 @@ export default function ProductosFinalesFormShared({
             precio_venta_usd: initialData.precio_venta_usd ?? undefined,
             unidad_venta: initialData.unidad_venta_producto.id,
             punto_reorden: initialData.punto_reorden,
-            unidad_medida_nominal:
-              initialData.unidad_medida_nominal_producto.id,
+            unidad_produccion:
+              initialData.unidad_produccion_producto.id,
             descripcion: initialData.descripcion,
+            vendible_por_medida_real: initialData.vendible_por_medida_real,
           }
         : undefined,
   });
@@ -115,7 +117,7 @@ export default function ProductosFinalesFormShared({
   }
 
   function renderUnidadesMedida(
-    unidadType: "unidad_venta_producto" | "unidad_medida_nominal_producto",
+    unidadType: "unidad_venta_producto" | "unidad_produccion_producto",
   ) {
     if (isUpdate && initialData) {
       return (
@@ -164,33 +166,35 @@ export default function ProductosFinalesFormShared({
     );
   }
 
-  function renderTipoManejo() {
-    if (isUpdate && initialData) {
-      return (
-        <>
-          {initialData.tipo_manejo_venta &&
-          initialData.tipo_manejo_venta === "UNIDAD" ? (
-            <>
-              <option value="UNIDAD">Unidad</option>
-              <option value="PESO_VOLUMEN">Peso/Volumen</option>
-            </>
-          ) : (
-            <>
-              <option value="PESO_VOLUMEN">Peso/Volumen</option>
-              <option value="UNIDAD">Unidad</option>
-            </>
-          )}
-        </>
-      );
-    }
-    return (
-      <>
-        <option value="">Seleccione un tipo de manejo</option>
-        <option value="UNIDAD">Unidad</option>
-        <option value="PESO_VOLUMEN">Peso/Volumen</option>
-      </>
-    );
-  }
+  // function renderTipoManejo() {
+  //   if (isUpdate && initialData) {
+  //     return (
+  //       <>
+  //         {initialData.tipo_medida_fisica &&
+  //         initialData.tipo_medida_fisica === "UNIDAD" ? (
+  //           <>
+  //             <option value="UNIDAD">Unidad</option>
+  //             <option value="PESO">Peso</option>
+  //             <option value="VOLUMEN">Volumen</option>
+  //           </>
+  //         ) : (
+  //           <>
+  //             <option value="PESO_VOLUMEN">Peso/Volumen</option>
+  //             <option value="UNIDAD">Unidad</option>
+  //           </>
+  //         )}
+  //       </>
+  //     );
+  //   }
+  //   return (
+  //     <>
+  //       <option value="">Seleccione un tipo de manejo</option>
+  //       <option value="UNIDAD">Unidad</option>
+  //       <option value="PESO">Peso</option>
+  //       <option value="VOLUMEN">Volumen</option>
+  //     </>
+  //   );
+  // }
 
   const handleCancelButtonClick = () => {
     onClose();
@@ -230,6 +234,7 @@ export default function ProductosFinalesFormShared({
               register={register}
               errors={errors}
             />
+
             <PFFormInputContainer
               inputType="text"
               title="SKU"
@@ -237,6 +242,7 @@ export default function ProductosFinalesFormShared({
               register={register}
               errors={errors}
             />
+
             <PFFormInputContainer
               title="Receta Relacionada"
               inputType="text"
@@ -247,6 +253,7 @@ export default function ProductosFinalesFormShared({
               setValue={setValue}
               initialData={recetaRelacionadaValidatedData}
             />
+
             <PFFormInputContainer
               inputType="number"
               title="Precio de Venta (USD)"
@@ -254,6 +261,7 @@ export default function ProductosFinalesFormShared({
               register={register}
               errors={errors}
             />
+
             <PFFormInputContainer
               inputType="number"
               title="Punto de Reorden"
@@ -261,31 +269,33 @@ export default function ProductosFinalesFormShared({
               register={register}
               errors={errors}
             />
+
             <PFFormSelectContainer
               title="Unidad de Venta"
               name="unidad_venta"
               register={register}
               errors={errors}
+              setValue={setValue}
             >
               {renderUnidadesMedida("unidad_venta_producto")}
             </PFFormSelectContainer>
 
-            <PFFormSelectContainer
-              title="Tipo de Venta"
-              name="tipo_manejo_venta"
+            {/* <PFFormSelectContainer
+              title="Tipo de Manejo"
+              name="tipo_medida_fisica"
               register={register}
               errors={errors}
             >
               {renderTipoManejo()}
-            </PFFormSelectContainer>
+            </PFFormSelectContainer> */}
 
             <PFFormSelectContainer
-              title="Unidad Nominal"
-              name="unidad_medida_nominal"
+              title="Unidad de Producción"
+              name="unidad_produccion"
               register={register}
               errors={errors}
             >
-              {renderUnidadesMedida("unidad_medida_nominal_producto")}
+              {renderUnidadesMedida("unidad_produccion_producto")}
             </PFFormSelectContainer>
 
             <PFFormSelectContainer

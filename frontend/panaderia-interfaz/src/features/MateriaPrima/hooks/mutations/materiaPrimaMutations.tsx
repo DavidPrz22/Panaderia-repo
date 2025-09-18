@@ -2,6 +2,7 @@ import { useMutation } from "@tanstack/react-query";
 
 import {
   handleActivateLoteMateriaPrima,
+  handleInactivateLoteMateriaPrima,
   handleDeleteLoteMateriaPrima,
   handleDeleteMateriaPrima,
   handleCreateUpdateLoteMateriaPrima,
@@ -121,6 +122,7 @@ export const useDeleteLoteMateriaPrimaMutation = (
           queryKey:
             createLotesMateriaPrimaQueryOptions(materiaprimaId).queryKey,
         });
+        await queryClient.invalidateQueries({ queryKey: createMateriaPrimaListQueryOptions().queryKey });
         handleClose();
       }
     },
@@ -142,6 +144,28 @@ export const useActivateLoteMateriaPrimaMutation = (
           queryKey:
             createLotesMateriaPrimaQueryOptions(materiaPrimaId).queryKey,
         });
+      }
+      queryClient.invalidateQueries({ queryKey: createMateriaPrimaListQueryOptions().queryKey });
+    },
+  });
+};
+
+export const useInactivateLoteMateriaPrimaMutation = (
+  materiaPrimaId: number | undefined,
+  handleClose: () => void,
+) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: number) => handleInactivateLoteMateriaPrima(id),
+    onSuccess: () => {
+      handleClose();
+      if (materiaPrimaId) {
+        queryClient.invalidateQueries({
+          queryKey:
+            createLotesMateriaPrimaQueryOptions(materiaPrimaId).queryKey,
+        });
+        queryClient.invalidateQueries({ queryKey: createMateriaPrimaListQueryOptions().queryKey });
       }
     },
   });
@@ -166,6 +190,9 @@ export const useCreateUpdateLoteMateriaPrimaMutation = (
       onSubmitSuccess();
       await queryClient.invalidateQueries({
         queryKey: createLotesMateriaPrimaQueryOptions(materiaprimaId!).queryKey,
+      });
+      await queryClient.invalidateQueries({
+        queryKey: createMateriaPrimaListQueryOptions().queryKey,
       });
     },
   });

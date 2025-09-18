@@ -41,7 +41,7 @@ export const ProductionRegistrosModal = () => {
     <div
       onClick={handleClickOutside}
       onAnimationEnd={handleAnimationEnd}
-      className={`absolute top-0 left-0 w-full h-full bg-[rgba(0,0,0,0.5)] flex items-center justify-center z-(--z-index-over-header-bar) ${isClosingModal ? "animate-fadeOutModal" : "animate-fadeInModal"}`}
+      className={`fixed top-0 left-0 w-full h-full bg-[rgba(0,0,0,0.5)] flex items-center justify-center z-(--z-index-over-header-bar) ${isClosingModal ? "animate-fadeOutModal" : "animate-fadeInModal"}`}
     >
       <ProductionRegistrosContainer />
     </div>

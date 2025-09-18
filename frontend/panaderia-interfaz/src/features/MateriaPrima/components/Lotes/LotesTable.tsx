@@ -28,7 +28,7 @@ export const LotesTable = ({
     stock_actual_lote: lote.stock_actual_lote,
     costo_unitario_usd: lote.costo_unitario_usd,
     proveedor: lote.proveedor?.nombre_comercial || "-",
-    activo: lote.activo || false,
+    estado: lote.estado || "INACTIVO",
   }));
 
   const handleClick = (id: number) => {
@@ -50,7 +50,7 @@ export const LotesTable = ({
           "Stock actual",
           "Costo unitario USD",
           "Proveedor",
-          "Activo",
+          "Estado",
         ]}
       />
       <LotesTableRows data={formatedLotes} onClick={handleClick} />

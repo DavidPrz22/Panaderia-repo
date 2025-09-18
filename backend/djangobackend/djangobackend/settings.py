@@ -52,7 +52,7 @@ REST_FRAMEWORK = {
 from datetime import timedelta
 
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=30),
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=100),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=10),   # Default is 1 day
 
     # You can add custom claims to your tokens if needed:
@@ -202,3 +202,15 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # settings.py
 AUTH_USER_MODEL = 'users.User'
+
+
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
+        'LOCATION': 'panaderia_cache_table',
+        'TIMEOUT': 86400,  # 24 hours default
+        'OPTIONS': {
+            'MAX_ENTRIES': 5000,
+        }
+    }
+}

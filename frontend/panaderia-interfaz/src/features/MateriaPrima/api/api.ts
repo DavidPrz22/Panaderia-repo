@@ -132,7 +132,7 @@ export const handleLotesMateriaPrimaLotes = async (
       `/api/lotesmateriaprima/?materia_prima=${pk}`,
     );
     const dataResponse = response.data;
-
+    console.log("Lotes fetched:", dataResponse);
     if (dataResponse.length > 0) {
       return { lotes: dataResponse, success: true };
     }
@@ -213,12 +213,31 @@ export const handleActivateLoteMateriaPrima = async (
   }
 
   try {
-    await apiClient.put(`/api/lotesmateriaprima/${pk}/activate/`);
+    await apiClient.put(`/api/lotesmateriaprima/${pk}/activar/`);
     return { success: true };
   } catch (error) {
     const axiosError = error as AxiosError<{ detail?: string }>;
     throw new Error(
       axiosError.response?.data?.detail || "Failed to activate lote",
+    );
+  }
+};
+
+
+export const handleInactivateLoteMateriaPrima = async (
+  pk: number | undefined,
+) => {
+  if (!pk) {
+    return { success: false };
+  }
+
+  try {
+    await apiClient.put(`/api/lotesmateriaprima/${pk}/inactivar/`);
+    return { success: true };
+  } catch (error) {
+    const axiosError = error as AxiosError<{ detail?: string }>;
+    throw new Error(
+      axiosError.response?.data?.detail || "Failed to inactivate lote",
     );
   }
 };

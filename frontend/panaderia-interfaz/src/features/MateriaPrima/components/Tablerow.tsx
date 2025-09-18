@@ -6,9 +6,11 @@ import { useQueryClient } from "@tanstack/react-query";
 export const TableRow = ({
   item,
   index,
+  last
 }: {
   item: MateriaPrimaList;
   index: number;
+  last: boolean;
 }) => {
   const queryClient = useQueryClient();
   const {
@@ -35,7 +37,7 @@ export const TableRow = ({
     <div
       onClick={() => setDetails(item.id)}
       key={item.id}
-      className={`cursor-pointer hover:bg-gray-100 grid grid-cols-[0.5fr_1.5fr_1fr_1fr_1fr_1fr_1fr] justify-between items-center px-8 py-4 border-b border-gray-300 ${index % 2 == 0 ? "bg-white" : "bg-gray-50"} font-[Roboto] text-sm`}
+      className={`cursor-pointer hover:bg-gray-100 grid grid-cols-[0.5fr_1.5fr_1fr_1fr_1fr_1fr_1fr] justify-between items-center px-8 py-4 ${last ? "rounded-b-md":"border-b"} border-gray-300 ${index % 2 == 0 ? "bg-white" : "bg-gray-50"} font-[Roboto] text-sm`}
     >
       <div>{item.id}</div>
       <div>{item.name}</div>

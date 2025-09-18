@@ -37,11 +37,15 @@ export default function ProductosIntermediosFormShared({
             descripcion: initialData.descripcion || "",
             punto_reorden: initialData.punto_reorden,
             categoria: initialData.categoria_producto.id,
-            unidad_medida_nominal:
-              initialData.unidad_medida_nominal_producto.id,
+            unidad_produccion:
+              initialData.unidad_produccion_producto.id,
             receta_relacionada: initialData.receta_relacionada
               ? initialData.receta_relacionada.id
               : undefined,
+            tipo_medida_fisica: initialData.tipo_medida_fisica.toUpperCase() as
+              | "UNIDAD"
+              | "PESO"
+              | "VOLUMEN",
           }
         : {
             nombre_producto: "",
@@ -116,11 +120,11 @@ export default function ProductosIntermediosFormShared({
     if (isUpdate && initialData) {
       return (
         <>
-          <option value={initialData.unidad_medida_nominal_producto.id}>
+          <option value={initialData.unidad_produccion_producto.id}>
             {
               unidadesMedida.find(
                 (unidad) =>
-                  unidad.id === initialData.unidad_medida_nominal_producto.id,
+                  unidad.id === initialData.unidad_produccion_producto.id,
               )?.nombre_completo
             }
           </option>
@@ -132,7 +136,7 @@ export default function ProductosIntermediosFormShared({
               id: number;
               nombre_completo: string;
             }) =>
-              id !== initialData.unidad_medida_nominal_producto.id && (
+              id !== initialData.unidad_produccion_producto.id && (
                 <option key={id} value={id}>
                   {nombre_completo}
                 </option>
@@ -225,10 +229,11 @@ export default function ProductosIntermediosFormShared({
               errors={errors}
             />
             <PIFormSelectContainer
-              title="Unidad de medida"
-              name="unidad_medida_nominal"
+              title="Unidad de Producción"
+              name="unidad_produccion"
               register={register}
               errors={errors}
+              setValue={setValue}
             >
               {renderUnidadesMedida()}
             </PIFormSelectContainer>

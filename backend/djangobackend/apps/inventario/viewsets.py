@@ -7,6 +7,8 @@ from rest_framework.response import Response
 from rest_framework.decorators import action
 from datetime import datetime
 from collections import defaultdict
+from apps.inventario.models import LotesStatus
+
 
 class MateriaPrimaViewSet(viewsets.ModelViewSet):
     queryset = MateriasPrimas.objects.all()
@@ -19,6 +21,8 @@ class ComponenteSearchViewSet(viewsets.ReadOnlyModelViewSet):
 
     def list(self, request, *args, **kwargs):
         search_query = request.query_params.get('search')
+        stock_requested = request.query_params.get('stock')
+
         if not search_query:
             return Response(status=status.HTTP_400_BAD_REQUEST, data={"error": "El parámetro 'search' es requerido"})
 
@@ -33,21 +37,29 @@ class ComponenteSearchViewSet(viewsets.ReadOnlyModelViewSet):
         categorias_dict = defaultdict(list)
         for materia_prima in materia_primas:
             categoria = materia_prima.categoria.nombre_categoria
-            categorias_dict[categoria].append({
+            componente_data = {
                 'id': materia_prima.id, 
                 'nombre': materia_prima.nombre,
                 'tipo': 'MateriaPrima',
                 'unidad_medida': materia_prima.unidad_medida_base.abreviatura
-            })
+            }
+            if stock_requested: 
+                componente_data['stock'] = materia_prima.stock_actual
+
+            categorias_dict[categoria].append(componente_data)
 
         for intermedio in productos_intermedios:
             categoria = intermedio.categoria.nombre_categoria
-            categorias_dict[categoria].append({
+            componente_data = {
                 'id': intermedio.id,
                 'nombre': intermedio.nombre_producto,
                 'tipo': 'ProductoIntermedio',
-                'unidad_medida': intermedio.unidad_medida_nominal.abreviatura
-            })
+                'unidad_medida': intermedio.unidad_produccion.abreviatura
+            }
+            if stock_requested:
+                componente_data['stock'] = intermedio.stock_actual
+
+            categorias_dict[categoria].append(componente_data)
 
         # Use the serializer to format the data
         componentes_por_categoria = []
@@ -68,59 +80,54 @@ class LotesMateriaPrimaViewSet(viewsets.ModelViewSet):
         if materia_prima:
             queryset = queryset.filter(materia_prima=materia_prima)
         return queryset
-    
+
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        materia_prima_id = serializer.validated_data['materia_prima']
-        lotes_materia_prima = LotesMateriasPrimas.objects.filter(materia_prima=materia_prima_id)
-
-        # Get the closest expiration date from existing lots
-        aggregation = lotes_materia_prima.aggregate(closest_date=Min('fecha_caducidad'))
-        closest_date = aggregation['closest_date']
-
-        new_fecha_caducidad = serializer.validated_data['fecha_caducidad']
-
-        if closest_date is None:
-            # If there are no existing lots, this is the first one and should be active
-            serializer.validated_data['activo'] = True
-            serializer.validated_data['stock_actual_lote'] = serializer.validated_data['cantidad_recibida']
-        elif new_fecha_caducidad < closest_date:
-            # If the new lot expires sooner than any existing lot
-            # Set this one as active and deactivate all others
-            serializer.validated_data['activo'] = True
-            serializer.validated_data['stock_actual_lote'] = serializer.validated_data['cantidad_recibida']
-            lotes_materia_prima.update(activo=False)
-        else:
-            # If the new lot expires later than or equal to the closest existing lot
-            # Keep it inactive
-            serializer.validated_data['activo'] = False
-            serializer.validated_data['stock_actual_lote'] = serializer.validated_data['cantidad_recibida']
+        serializer.validated_data['stock_actual_lote'] = serializer.validated_data['cantidad_recibida']
 
         # Save only once through perform_create
         self.perform_create(serializer)
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
-    
 
-    @action(detail=True, methods=['put'], url_path='activate')
-    def activate(self, request, pk=None):
+
+    @action(detail=True, methods=['put'], url_path='inactivar')
+    def inactivar(self, request, pk=None):
         try:
-            lote_por_activar = LotesMateriasPrimas.objects.get(id=pk)
-            
-            # Convert to datetime.date for comparison since fecha_caducidad is a DateField
-            if datetime.now().date() < lote_por_activar.fecha_caducidad:
-                # First deactivate current active lote of the same materia prima
-                LotesMateriasPrimas.objects.filter(
-                    materia_prima=lote_por_activar.materia_prima, 
-                    activo=True
-                ).update(activo=False)
+            # Inactivar
+            lote_inactivar = LotesMateriasPrimas.objects.get(id=pk)
+
+            if lote_inactivar.fecha_caducidad > datetime.now().date():
+                lote_inactivar.estado = LotesStatus.INACTIVO
+                materia_prima = lote_inactivar.materia_prima
+                lote_inactivar.save(update_fields=['estado'])
+                materia_prima.actualizar_stock()
+                return Response(status=status.HTTP_200_OK)
+            else:
+                return Response(
+                    status=status.HTTP_400_BAD_REQUEST, 
+                    data={"error": "Este Lote ya caducó"}
+                )
                 
-                # Activate the new lote
-                lote_por_activar.activo = True
-                lote_por_activar.save()
-                
+        except LotesMateriasPrimas.DoesNotExist:
+            return Response(
+                status=status.HTTP_404_NOT_FOUND, 
+                data={"error": "Lote no encontrado"}
+            )
+
+    @action(detail=True, methods=['put'], url_path='activar')
+    def activar(self, request, pk=None):
+        try:
+            # Activar
+            lote_activar = LotesMateriasPrimas.objects.get(id=pk)
+
+            if lote_activar.fecha_caducidad > datetime.now().date():
+                lote_activar.estado = LotesStatus.DISPONIBLE
+                materia_prima = lote_activar.materia_prima
+                lote_activar.save(update_fields=['estado'])
+                materia_prima.actualizar_stock()
                 return Response(status=status.HTTP_200_OK)
             else:
                 return Response(
@@ -163,7 +170,7 @@ class ProductosElaboradosViewSet(viewsets.ModelViewSet):
         elif detalle.componente_producto_intermedio:
             component = detalle.componente_producto_intermedio
             cantidad = detalle.cantidad
-            unit = component.unidad_medida_nominal
+            unit = component.unidad_produccion
             return {
                 "id": component.id,
                 "nombre": component.nombre_producto,
@@ -188,7 +195,7 @@ class ProductosElaboradosViewSet(viewsets.ModelViewSet):
             receta_id__in=sub_recetas_ids
         ).select_related(
             'componente_materia_prima__unidad_medida_base',
-            'componente_producto_intermedio__unidad_medida_nominal'
+            'componente_producto_intermedio__unidad_produccion'
         )
 
         # Group details by recipe id for efficient lookup
@@ -217,17 +224,32 @@ class ProductosElaboradosViewSet(viewsets.ModelViewSet):
         except Recetas.DoesNotExist:
             return Response({"error": "No se encontró la receta asociada"}, status=status.HTTP_404_NOT_FOUND)
 
+        MateriasPrimas.expirar_todos_lotes_viejos()
+
         detalles_receta_principal = RecetasDetalles.objects.filter(
             receta_id=receta_principal.id
         ).select_related(
             'componente_materia_prima__unidad_medida_base',
-            'componente_producto_intermedio__unidad_medida_nominal'
+            'componente_producto_intermedio__unidad_produccion'
         )
         subrecetas = []
         self._get_all_sub_recetas(receta_principal.id, subrecetas)
+        # Derive unit-based production flags from product's unidad_produccion
+        producto_elaborado = receta_principal.producto_elaborado
+        unidad_prod = getattr(producto_elaborado, 'unidad_produccion', None)
+        medida_produccion = getattr(unidad_prod, 'nombre_completo', None)
+        es_por_unidad = False
+        try:
+            # Normalize and compare
+            es_por_unidad = (str(medida_produccion).strip().lower() == 'unidad') if medida_produccion else False
+        except Exception:
+            es_por_unidad = False
+
         producto_data = {
             'componentes': [self._get_component_data(d) for d in detalles_receta_principal if d is not None],
-            'subrecetas': subrecetas
+            'subrecetas': subrecetas,
+            'medida_produccion': medida_produccion,
+            'es_por_unidad': es_por_unidad,
         }
 
         return Response(producto_data, status=status.HTTP_200_OK)
@@ -258,8 +280,6 @@ class ProductosFinalesSearchViewset(viewsets.ReadOnlyModelViewSet):
     serializer_class = ProductosFinalesSearchSerializer
 
 
-
 class ProductosIntermediosSearchViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = ProductosIntermedios.objects.all()
     serializer_class = ProductosIntermediosSearchSerializer
-
