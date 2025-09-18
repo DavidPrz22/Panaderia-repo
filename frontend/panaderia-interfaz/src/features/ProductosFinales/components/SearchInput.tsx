@@ -18,12 +18,13 @@ export default function SearchInput() {
     [setProductosFinalesSearchTerm],
   );
 
-  // Sync external term changes (if cleared outside)
+  // Sync external term changes ONLY when they differ (prevents wiping while user types)
+
   useEffect(() => {
-    if (productosFinalesSearchTerm === "" && localValue !== "") {
-      setLocalValue("");
+    if (productosFinalesSearchTerm !== localValue) {
+      setLocalValue(productosFinalesSearchTerm);
     }
-  }, [productosFinalesSearchTerm, localValue]);
+  }, [productosFinalesSearchTerm]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;

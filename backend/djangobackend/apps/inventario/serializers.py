@@ -247,7 +247,7 @@ class MateriaPrimaSerializer(serializers.ModelSerializer):
 class ProductosIntermediosSerializer(serializers.ModelSerializer):
     categoria_nombre = serializers.CharField(source='categoria.nombre_categoria', read_only=True)
     receta_relacionada = serializers.CharField(write_only=True, required=True)
-    
+    unidad_produccion_producto = serializers.CharField(source='unidad_produccion.nombre_completo', read_only=True)
     class Meta:
         model = ProductosIntermedios
         fields = [
@@ -258,6 +258,7 @@ class ProductosIntermediosSerializer(serializers.ModelSerializer):
             'punto_reorden', 
             'categoria',
             'unidad_produccion',
+            'unidad_produccion_producto',
             'descripcion',
             'tipo_medida_fisica',
             'categoria_nombre', 

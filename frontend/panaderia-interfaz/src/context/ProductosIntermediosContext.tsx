@@ -34,6 +34,15 @@ type ProductosIntermediosContextType = {
   setEnabledDetalles: (value: boolean) => void;
   deleteRecetaRelacionada: boolean;
   setDeleteRecetaRelacionada: (value: boolean) => void;
+  // Search & filters for productos intermedios list
+  productosIntermediosSearchTerm: string;
+  setProductosIntermediosSearchTerm: React.Dispatch<React.SetStateAction<string>>;
+  selectedUnidadesProduccion: string[];
+  setSelectedUnidadesProduccion: React.Dispatch<React.SetStateAction<string[]>>;
+  selectedCategoriasIntermedio: string[];
+  setSelectedCategoriasIntermedio: React.Dispatch<React.SetStateAction<string[]>>;
+  showPIFiltersPanel: boolean;
+  setShowPIFiltersPanel: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
 const ProductosIntermediosContext =
@@ -67,6 +76,12 @@ export const ProductosIntermediosProvider = ({ children }: childrenProp) => {
   const [deleteRecetaRelacionada, setDeleteRecetaRelacionada] =
     useState<boolean>(false);
 
+  // Search & filters state
+  const [productosIntermediosSearchTerm, setProductosIntermediosSearchTerm] = useState("");
+  const [selectedUnidadesProduccion, setSelectedUnidadesProduccion] = useState<string[]>([]);
+  const [selectedCategoriasIntermedio, setSelectedCategoriasIntermedio] = useState<string[]>([]);
+  const [showPIFiltersPanel, setShowPIFiltersPanel] = useState(false);
+
   return (
     <ProductosIntermediosContext.Provider
       value={{
@@ -95,6 +110,14 @@ export const ProductosIntermediosProvider = ({ children }: childrenProp) => {
         setEnabledDetalles,
         deleteRecetaRelacionada,
         setDeleteRecetaRelacionada,
+        productosIntermediosSearchTerm,
+        setProductosIntermediosSearchTerm,
+        selectedUnidadesProduccion,
+        setSelectedUnidadesProduccion,
+        selectedCategoriasIntermedio,
+        setSelectedCategoriasIntermedio,
+        showPIFiltersPanel,
+        setShowPIFiltersPanel,
       }}
     >
       {children}
