@@ -54,7 +54,7 @@ class ComponenteSearchViewSet(viewsets.ReadOnlyModelViewSet):
                 'id': intermedio.id,
                 'nombre': intermedio.nombre_producto,
                 'tipo': 'ProductoIntermedio',
-                'unidad_medida': intermedio.unidad_medida_nominal.abreviatura
+                'unidad_medida': intermedio.unidad_produccion.abreviatura
             }
             if stock_requested:
                 componente_data['stock'] = intermedio.stock_actual
@@ -234,9 +234,22 @@ class ProductosElaboradosViewSet(viewsets.ModelViewSet):
         )
         subrecetas = []
         self._get_all_sub_recetas(receta_principal.id, subrecetas)
+        # Derive unit-based production flags from product's unidad_produccion
+        producto_elaborado = receta_principal.producto_elaborado
+        unidad_prod = getattr(producto_elaborado, 'unidad_produccion', None)
+        medida_produccion = getattr(unidad_prod, 'nombre_completo', None)
+        es_por_unidad = False
+        try:
+            # Normalize and compare
+            es_por_unidad = (str(medida_produccion).strip().lower() == 'unidad') if medida_produccion else False
+        except Exception:
+            es_por_unidad = False
+
         producto_data = {
             'componentes': [self._get_component_data(d) for d in detalles_receta_principal if d is not None],
-            'subrecetas': subrecetas
+            'subrecetas': subrecetas,
+            'medida_produccion': medida_produccion,
+            'es_por_unidad': es_por_unidad,
         }
 
         return Response(producto_data, status=status.HTTP_200_OK)

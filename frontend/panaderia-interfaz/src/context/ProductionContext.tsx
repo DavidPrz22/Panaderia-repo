@@ -33,7 +33,7 @@ type ProductionContextType = {
     invalidCantidadError: boolean | null;
     setInvalidCantidadError: (value: boolean | null) => void;
     componentesBaseProduccion: ComponentesLista;
-    setComponentesBaseProduccion: (value: ComponentesLista) => void;
+  setComponentesBaseProduccion: React.Dispatch<React.SetStateAction<ComponentesLista>>;
     showToast: boolean;
     setShowToast: (value: boolean) => void;
     toastMessage: string;
@@ -60,7 +60,7 @@ export function ProductionProvider({ children }: { children: React.ReactNode }) 
   const [newComponentSelected, setNewComponentSelected] = useState<newComponentItem | null>(null);
   const [showComponentSearch, setShowComponentSearch] = useState<boolean>(false);
   const [invalidCantidadError, setInvalidCantidadError] = useState<boolean | null>(null);
-  const [componentesBaseProduccion, setComponentesBaseProduccion] = useState<ComponentesLista>([]); // For future use
+  const [componentesBaseProduccion, setComponentesBaseProduccion] = useState<ComponentesLista>([]);
   const [showToast, setShowToast] = useState<boolean>(false);
   const [toastMessage, setToastMessage] = useState<string>("");
   const productUnitRef = useRef<HTMLDivElement | null>(null);

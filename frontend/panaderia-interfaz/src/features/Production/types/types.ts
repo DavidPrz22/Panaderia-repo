@@ -32,6 +32,11 @@ export type subrecetasLista = subreceta[];
 export type componentesRecetaProducto = {
   componentes: ComponentesLista;
   subrecetas: subrecetasLista;
+  // Optional flags from backend to determine how to scale production quantities
+  // If "es_por_unidad" is true OR "medida_produccion" equals "Unidad" (case-insensitive),
+  // the UI will scale component quantities by the production amount. Otherwise, it won't.
+  medida_produccion?: string; // e.g., "Unidad", "Kg", etc.
+  es_por_unidad?: boolean;
 };
 
 export type watchSetvalueTypeProduction = {

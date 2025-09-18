@@ -24,37 +24,66 @@ const ProductionComponentsBase = ({
 
   const { setInsufficientStock, componentesBaseProduccion, setComponentesBaseProduccion } = useProductionContext();
 
-  // Cantidad a producir desde el formulario (0 por defecto)
+  // Cantidad a producir desde el formulario (1 por defecto)
   const cantidad = cantidadProduction ?? 1;
 
   // Escalar cantidades de componentes base por la cantidad a producir
   const roundTo3 = (n: number) => Math.round(n * 1000) / 1000;
 
+  // Store unscaled base componentes from backend in context when fetched
   useEffect(() => {
+    if (!isFetched) return;
     const base = productionComponentes?.componentes ?? [];
-    const q = Number(cantidad) || 0;
-    const componentes = base.map((c) => ({
-      ...c,
-      cantidad: roundTo3((c.cantidad ?? 0) * q),
-    }));
-
-    setComponentesBaseProduccion(componentes)
+    // Preserve previously added additional components
+    setComponentesBaseProduccion((prev: ComponentesLista) => {
+      const additional = (prev || []).filter((c) => c.isAdditional);
+      const baseIds = new Set(base.map((c) => c.id));
+      const additionalFiltered = additional.filter((c) => !baseIds.has(c.id));
+      return [...base, ...additionalFiltered] as ComponentesLista;
+    });
   }, [isFetched, productionComponentes, setComponentesBaseProduccion]);
 
+
+  const esPorUnidad = useMemo(() => {
+    const prod = productionComponentes as unknown as {
+      medida_produccion?: string;
+      // optional fallback field just in case backend sends this typo
+      mededa_produccion?: string;
+      es_por_unidad?: boolean;
+    } | undefined;
+    const medidaRaw = prod?.medida_produccion ?? prod?.mededa_produccion;
+    const m = typeof medidaRaw === "string" ? medidaRaw.toLowerCase() : undefined;
+    return (
+      (prod?.es_por_unidad === true) ||
+      (typeof m === "string" && m === "unidad")
+    );
+  }, [productionComponentes]);
 
   const componentesPrincipalesProducts: Componente[] = useMemo(() => {
     const base = componentesBaseProduccion ?? [];
     const q = Number(cantidad) || 0;
-    return base.map((c) => ({
-      ...c,
-      cantidad: roundTo3((c.cantidad ?? 0) * q),
-    }));
-  }, [componentesBaseProduccion, cantidad]);
+    return base.map((c) => {
+      const original = c.cantidad ?? 0;
+      // Only scale base (non-additional) components when product is unit-based
+      const scaled = esPorUnidad && !c.isAdditional ? original * q : original;
+      return { ...c, cantidad: roundTo3(scaled) };
+    });
+  }, [componentesBaseProduccion, cantidad, esPorUnidad]);
 
   // Escalar cantidades de subrecetas por la cantidad a producir
   const subrecetasProducts: subreceta[] = useMemo(() => {
     const subs = productionComponentes?.subrecetas ?? [];
     const q = Number(cantidad) || 0;
+    if (!esPorUnidad) {
+      // Keep original quantities when not unit-based
+      return subs.map((sr) => ({
+        ...sr,
+        componentes: sr.componentes.map((c) => ({
+          ...c,
+          cantidad: roundTo3(c.cantidad ?? 0),
+        })),
+      }));
+    }
     return subs.map((sr) => ({
       ...sr,
       componentes: sr.componentes.map((c) => ({
@@ -62,7 +91,7 @@ const ProductionComponentsBase = ({
         cantidad: roundTo3((c.cantidad ?? 0) * q),
       })),
     }));
-  }, [productionComponentes, cantidad]);
+  }, [productionComponentes, cantidad, esPorUnidad]);
 
   // Unificar y sumar por componente (base + subrecetas) con cantidades escaladas
   const componentesEnProducto: ComponentesLista = useMemo(() => {
@@ -114,7 +143,7 @@ const ProductionComponentsBase = ({
       }
       setValue?.("cantidadProduction", 1, { shouldValidate: true });
     }
-  }, [isFetched, setValue, watch, productionComponentes]);
+  }, [isFetched, setValue, watch, productionComponentes, cantidad]);
 
   useEffect(() => {
     if (!isFetched) return;
