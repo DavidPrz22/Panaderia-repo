@@ -20,12 +20,12 @@ export const productosIntermediosSchema = z.object({
       invalid_type_error: "La categoría no es válida",
     })
     .min(1, "La categoría es requerida"),
-  unidad_medida_nominal: z.coerce
+  unidad_produccion: z.coerce
     .number({
-      required_error: "La unidad de medida es requerida",
-      invalid_type_error: "La unidad de medida no es válida",
+      required_error: "La unidad de producción es requerida",
+      invalid_type_error: "La unidad de producción no es válida",
     })
-    .min(1, "La unidad de medida es requerida"),
+    .min(1, "La unidad de producción es requerida"),
   receta_relacionada: z.coerce
     .number({
       required_error: "La receta es requerida",
@@ -36,6 +36,7 @@ export const productosIntermediosSchema = z.object({
     .string()
     .min(3, "La descripción debe tener al menos 3 caracteres")
     .optional(),
+  tipo_medida_fisica: z.enum(["UNIDAD", "PESO", "VOLUMEN"]),
 });
 
 export type TProductosIntermediosSchema = z.infer<

@@ -3,6 +3,7 @@ import type {
   Path,
   UseFormRegister,
   UseFormSetValue,
+  UseFormWatch,
 } from "react-hook-form";
 import type { TProductoFinalSchema } from "../schemas/schemas";
 
@@ -34,13 +35,14 @@ export type ProductoFinalDetalles = {
   stock_actual: number;
   punto_reorden: number;
   categoria_producto: { id: number; nombre_categoria: string };
-  unidad_medida_nominal_producto: { id: number; nombre_completo: string };
+  unidad_produccion_producto: { id: number; nombre_completo: string };
   unidad_venta_producto: { id: number; nombre_completo: string };
-  tipo_manejo_venta: "UNIDAD" | "Unidad" | "PESO_VOLUMEN" | "Peso_Volumen";
+  tipo_medida_fisica: "UNIDAD" | "PESO" | "VOLUMEN";
   descripcion: string;
   fecha_creacion_registro: string;
   fecha_modificacion_registro: string;
   receta_relacionada: receta_relacionada | null;
+  vendible_por_medida_real: boolean;
 };
 
 export type PFFormInputContainerProps = {
@@ -95,4 +97,10 @@ export type PFFormInputProps = {
   name: Path<TProductoFinalSchema>;
   placeholder?: string;
   register: UseFormRegister<TProductoFinalSchema>;
+};
+
+
+export type watchSetValueProps = {
+  watch?: UseFormWatch<TProductoFinalSchema>;
+  setValue?: UseFormSetValue<TProductoFinalSchema>;
 };

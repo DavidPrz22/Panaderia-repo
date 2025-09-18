@@ -170,7 +170,7 @@ class ProductosElaboradosViewSet(viewsets.ModelViewSet):
         elif detalle.componente_producto_intermedio:
             component = detalle.componente_producto_intermedio
             cantidad = detalle.cantidad
-            unit = component.unidad_medida_nominal
+            unit = component.unidad_produccion
             return {
                 "id": component.id,
                 "nombre": component.nombre_producto,
@@ -195,7 +195,7 @@ class ProductosElaboradosViewSet(viewsets.ModelViewSet):
             receta_id__in=sub_recetas_ids
         ).select_related(
             'componente_materia_prima__unidad_medida_base',
-            'componente_producto_intermedio__unidad_medida_nominal'
+            'componente_producto_intermedio__unidad_produccion'
         )
 
         # Group details by recipe id for efficient lookup
@@ -230,7 +230,7 @@ class ProductosElaboradosViewSet(viewsets.ModelViewSet):
             receta_id=receta_principal.id
         ).select_related(
             'componente_materia_prima__unidad_medida_base',
-            'componente_producto_intermedio__unidad_medida_nominal'
+            'componente_producto_intermedio__unidad_produccion'
         )
         subrecetas = []
         self._get_all_sub_recetas(receta_principal.id, subrecetas)

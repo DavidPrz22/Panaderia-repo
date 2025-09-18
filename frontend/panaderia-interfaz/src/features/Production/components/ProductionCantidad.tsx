@@ -62,7 +62,6 @@ export const ProductionCantidad = ({
     }
   };
 
-  console.log("productUnitRef", productUnitRef.current?.textContent === '');
   return (
     <div className="flex flex-1 flex-col gap-2 w-full">
       <div className="font-semibold font-[Roboto]">Cantidad a Producir</div>

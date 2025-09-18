@@ -257,8 +257,9 @@ class ProductosIntermediosSerializer(serializers.ModelSerializer):
             'stock_actual', 
             'punto_reorden', 
             'categoria',
-            'unidad_medida_nominal',
+            'unidad_produccion',
             'descripcion',
+            'tipo_medida_fisica',
             'categoria_nombre', 
             'fecha_creacion_registro',
             'receta_relacionada',
@@ -273,8 +274,8 @@ class ProductosIntermediosSerializer(serializers.ModelSerializer):
 
         validated_data['es_intermediario'] = True
         validated_data['precio_venta_usd'] = None
-        validated_data['tipo_manejo_venta'] = None
         validated_data['unidad_venta'] = None
+        validated_data['vendible_por_medida_real'] = None
 
         producto_intermedio = ProductosIntermedios.objects.create(**validated_data)
 
@@ -327,6 +328,7 @@ class ProductosFinalesSerializer(serializers.ModelSerializer):
             'precio_venta_usd',
             'stock_actual',
             'punto_reorden',
+            'vendible_por_medida_real',
             # Read-only fields
             'categoria_nombre',
             'unidad_venta_nombre',
@@ -335,8 +337,8 @@ class ProductosFinalesSerializer(serializers.ModelSerializer):
             'unidad_venta',
             'receta_relacionada',
             # Other fields needed for write
-            'unidad_medida_nominal',
-            'tipo_manejo_venta',
+            'unidad_produccion',
+            'tipo_medida_fisica',
             'descripcion',
         ]
         # Rename read-only fields in the output to match the frontend type
@@ -397,7 +399,7 @@ class ProductosFinalesSerializer(serializers.ModelSerializer):
 class ProductosFinalesDetallesSerializer(serializers.ModelSerializer):
     categoria_producto = serializers.SerializerMethodField()
     receta_relacionada = serializers.SerializerMethodField()
-    unidad_medida_nominal_producto = serializers.SerializerMethodField()
+    unidad_produccion_producto = serializers.SerializerMethodField()
     unidad_venta_producto = serializers.SerializerMethodField()
     
     class Meta:
@@ -409,10 +411,11 @@ class ProductosFinalesDetallesSerializer(serializers.ModelSerializer):
             'stock_actual',
             'punto_reorden',
             'categoria_producto',
-            'unidad_medida_nominal_producto',
+            'unidad_produccion_producto',
             'unidad_venta_producto',
+            'tipo_medida_fisica',
+            'vendible_por_medida_real',
             'precio_venta_usd',
-            'tipo_manejo_venta',
             'fecha_creacion_registro',
             'fecha_modificacion_registro',
             'descripcion',
@@ -426,11 +429,11 @@ class ProductosFinalesDetallesSerializer(serializers.ModelSerializer):
             'nombre_categoria': categoria.nombre_categoria,
         }
 
-    def get_unidad_medida_nominal_producto(self, obj):
-        unidad_medida_nominal = UnidadesDeMedida.objects.get(id=obj.unidad_medida_nominal.id)
+    def get_unidad_produccion_producto(self, obj):
+        unidad_produccion = UnidadesDeMedida.objects.get(id=obj.unidad_produccion.id)
         return {
-            'id': unidad_medida_nominal.id,
-            'nombre_completo': unidad_medida_nominal.nombre_completo,
+            'id': unidad_produccion.id,
+            'nombre_completo': unidad_produccion.nombre_completo,
         }
 
     def get_unidad_venta_producto(self, obj):
@@ -457,7 +460,7 @@ class ProductosFinalesDetallesSerializer(serializers.ModelSerializer):
 class ProductosIntermediosDetallesSerializer(serializers.ModelSerializer):
     categoria_producto = serializers.SerializerMethodField()
     receta_relacionada = serializers.SerializerMethodField()
-    unidad_medida_nominal_producto = serializers.SerializerMethodField()
+    unidad_produccion_producto = serializers.SerializerMethodField()
     class Meta:
         model = ProductosIntermedios
         fields = [
@@ -467,9 +470,10 @@ class ProductosIntermediosDetallesSerializer(serializers.ModelSerializer):
             'stock_actual',
             'punto_reorden',
             'categoria_producto',
-            'unidad_medida_nominal_producto',
+            'unidad_produccion_producto',
             'fecha_creacion_registro',
             'fecha_modificacion_registro',
+            'tipo_medida_fisica',
             'descripcion',
             'receta_relacionada',
         ]
@@ -481,11 +485,11 @@ class ProductosIntermediosDetallesSerializer(serializers.ModelSerializer):
             'nombre_categoria': categoria.nombre_categoria,
         }
 
-    def get_unidad_medida_nominal_producto(self, obj):
-        unidad_medida_nominal = UnidadesDeMedida.objects.get(id=obj.unidad_medida_nominal.id)
+    def get_unidad_produccion_producto(self, obj):
+        unidad_produccion = UnidadesDeMedida.objects.get(id=obj.unidad_produccion.id)
         return {
-            'id': unidad_medida_nominal.id,
-            'nombre_completo': unidad_medida_nominal.nombre_completo,
+            'id': unidad_produccion.id,
+            'nombre_completo': unidad_produccion.nombre_completo,
         }
 
     def get_receta_relacionada(self, obj):
@@ -508,14 +512,14 @@ class ProductosElaboradosSerializer(serializers.ModelSerializer):
 
 
 class ProductosFinalesSearchSerializer(serializers.ModelSerializer):
-    unidad_medida = serializers.CharField(source='unidad_venta.abreviatura', read_only=True)
+    unidad_medida = serializers.CharField(source='unidad_produccion.abreviatura', read_only=True)
     class Meta:
         model = ProductosFinales
         fields = ['id', 'nombre_producto', 'unidad_medida']
 
 
 class ProductosIntermediosSearchSerializer(serializers.ModelSerializer):
-    unidad_medida = serializers.CharField(source='unidad_medida_nominal.abreviatura', read_only=True)
+    unidad_medida = serializers.CharField(source='unidad_produccion.abreviatura', read_only=True)
     class Meta:
         model = ProductosIntermedios
         fields = ['id', 'nombre_producto', 'unidad_medida']

@@ -14,6 +14,10 @@ class LotesStatus(models.TextChoices):
     AGOTADO = 'AGOTADO', 'Agotado'
     INACTIVO = 'INACTIVO', 'Inactivo'
 
+class MedidasFisicas(models.TextChoices):
+    UNIDAD = 'UNIDAD', 'Unidad'
+    PESO = 'PESO', 'Peso'
+    VOLUMEN = 'VOLUMEN', 'Volumen'
 
 class MateriasPrimas(models.Model):
     nombre = models.CharField(max_length=100, null=False, blank=False, unique=True)
@@ -125,7 +129,6 @@ class MateriasPrimas(models.Model):
     def calculate_price(self, precio, cantidad):
         return precio * cantidad
 
-
     def consumeStock(self, cantidad):
         lote_cosume = self.get_closest_expire_lot()
         cantidad_restante = cantidad
@@ -214,22 +217,61 @@ class ProductosElaborados(models.Model):
     nombre_producto = models.CharField(max_length=100, null=False, blank=False, unique=True)
     SKU = models.CharField(max_length=50, null=True, blank=True, unique=True)
     descripcion = models.TextField(max_length=255, null=True, blank=True)
-    tipo_manejo_venta = models.CharField(choices=[('UNIDAD', 'Unidad'), ('PESO_VOLUMEN', 'Peso_Volumen')], max_length=15, null=True, blank=True)
-    unidad_medida_nominal = models.ForeignKey(UnidadesDeMedida, on_delete=models.CASCADE, null=True, blank=True, related_name='productos_elaborados_unidad_nominal')
-    #   Peso nominal o estándar del producto si se vende como una unidad contable.
-    #   Por ejemplo, una "Torta Entera" (vendida por 'Unidad') puede tener un peso_nominal de 1.5 (kg).
-    unidad_venta = models.ForeignKey(UnidadesDeMedida, on_delete=models.CASCADE, null=True, blank=True, related_name='productos_elaborados_unidad_venta') ## Si es por unidad, precio total. Si es por peso_volumen, sera el precio por unidad de volumen
+
+    unidad_produccion = models.ForeignKey(
+        UnidadesDeMedida, on_delete=models.CASCADE, 
+        null=True, 
+        blank=True, 
+        related_name='productos_elaborados_unidad_produccion',
+        help_text="Unidad en la que se produce y se gestiona el stock (e.g., Unidades, Gramos).")
+
+    unidad_venta = models.ForeignKey(
+        UnidadesDeMedida, 
+        on_delete=models.CASCADE, 
+        null=True, 
+        blank=True, 
+        related_name='productos_elaborados_unidad_venta', 
+        help_text="Unidad en la que se vende el producto (e.g., Unidades, Kilogramos, Litros).")
+
     precio_venta_usd = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+
     punto_reorden = models.DecimalField(max_digits=10, decimal_places=2, default=0, null=False, blank=False)
     stock_actual = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     categoria = models.ForeignKey(CategoriasProductosElaborados, on_delete=models.CASCADE)
     fecha_creacion_registro = models.DateField(auto_now_add=True)
     fecha_modificacion_registro = models.DateField(auto_now=True)
+
+    vendible_por_medida_real  = models.BooleanField(
+        null=True,
+        blank=True,
+        help_text="Si es True, el precio final se calcula midiendo peso/volumen en la venta."
+    )
+
+    tipo_medida_fisica = models.CharField(
+        choices=MedidasFisicas.choices,
+        max_length=10, null=False, blank=False, default=MedidasFisicas.PESO
+    )
+
     es_intermediario = models.BooleanField(default=False, null=False)
 
     def checkAvailability(self, cantidad):
         return self.stock_actual >= cantidad
 
+    def clean(self):
+        """
+        Custom validation to enforce business logic for products.
+        """
+        super().clean()
+
+        if self.vendible_por_medida_real  and self.unidad_venta.nombre_completo == 'Unidad':
+            raise ValidationError(
+                "Si el precio se calcula en la venta, la unidad de venta no puede ser 'Unidad'. Debe ser KG, GR, LT, etc."
+            )
+
+        if not self.vendible_por_medida_real  and self.unidad_venta.nombre_completo != 'Unidad':
+            raise ValidationError(
+                "Si el precio es fijo (no calculado en venta), la unidad de venta debe ser 'Unidad'."
+            )
 
     def __str__(self):
         return f"Producto {self.id} - {self.nombre_producto}"
@@ -237,8 +279,8 @@ class ProductosElaborados(models.Model):
     class Meta:
         constraints = [
             models.CheckConstraint(
-                check=(Q(es_intermediario=True) & Q(precio_venta_usd__isnull=True) & Q(unidad_venta__isnull=True) & Q(tipo_manejo_venta__isnull=True))|
-                    (Q(es_intermediario=False) & Q(precio_venta_usd__isnull=False) & Q(unidad_venta__isnull=False) & Q(tipo_manejo_venta__isnull=False)),
+                check=(Q(es_intermediario=True) & Q(precio_venta_usd__isnull=True) & Q(unidad_venta__isnull=True) & Q(vendible_por_medida_real__isnull=True))|
+                    (Q(es_intermediario=False) & Q(precio_venta_usd__isnull=False) & Q(unidad_venta__isnull=False) & Q(vendible_por_medida_real__isnull=False)),
                 name='intermedio_o_producto'
             )
         ]
@@ -251,17 +293,48 @@ class LotesProductosElaborados(models.Model):
     stock_actual_lote = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     fecha_produccion = models.DateField(null=False, blank=False, auto_now_add=True)
     fecha_caducidad = models.DateField(null=False, blank=False)
+
     estado = models.CharField(
         max_length=10,
         choices=LotesStatus.choices,
         default=LotesStatus.DISPONIBLE
     )
-    coste_unitario_lote_usd = models.DecimalField(max_digits=10, decimal_places=2, default=0)
-    peso_nominal = models.DecimalField(max_digits=10, decimal_places=2, default=0, null=True, blank=True)
+    coste_total_lote_usd = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+
+    peso_total_lote_gramos = models.DecimalField(
+        max_digits=10, decimal_places=2, null=True, blank=True,
+        help_text="Actual measured weight of entire batch in grams"
+    )
+
+    volumen_total_lote_ml = models.DecimalField(
+        max_digits=10, decimal_places=2, null=True, blank=True,
+        help_text="Actual measured volume of entire batch in milliliters"
+    )
+
+    @property
+    def peso_promedio_por_unidad(self):
+        if self.cantidad_inicial_lote > 0 and self.peso_total_lote_gramos:
+            return self.peso_total_lote_gramos / self.cantidad_inicial_lote
+        return 0
+
+    @property
+    def volumen_promedio_por_unidad(self):
+        if self.cantidad_inicial_lote > 0 and self.volumen_total_lote_ml:
+            return self.volumen_total_lote_ml / self.cantidad_inicial_lote
+        return 0
 
     def __str__(self):
         return f"Lote {self.id} - {self.producto_elaborado.nombre_producto} - {self.stock_actual_lote}"
 
+
+    def clean(self):
+        super().clean()
+
+        if self.producto_elaborado.tipo_medida_fisica == MedidasFisicas.PESO and self.volumen_total_lote_ml:
+            raise ValidationError("No puede especificar volumen para un producto medido por peso.")
+        
+        if self.producto_elaborado.tipo_medida_fisica == MedidasFisicas.VOLUMEN and self.peso_total_lote_gramos:
+            raise ValidationError("No puede especificar peso para un producto medido por volumen.")
 
 class ProductosIntermediosManager(models.Manager):
     def get_queryset(self):
