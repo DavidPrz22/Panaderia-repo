@@ -457,10 +457,12 @@ class ProductosFinalesDetallesSerializer(serializers.ModelSerializer):
         except Recetas.DoesNotExist:
             return False
 
+
 class ProductosFinalesListaTransformacionSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProductosFinales
-        fields = ['id', 'nombre_producto']
+        fields = ['id', 'nombre_producto', 'stock_actual']
+
 
 class ProductosIntermediosDetallesSerializer(serializers.ModelSerializer):
     categoria_producto = serializers.SerializerMethodField()
