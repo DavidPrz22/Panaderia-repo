@@ -17,20 +17,14 @@ export const PFTableBody = () => {
   let displayData = productosFinales || [];
 
   if (productosFinalesSearchTerm) {
-    const raw = productosFinalesSearchTerm.trim();
-    if (raw.length > 0) {
-      const normalize = (s: string) =>
-        s
-          .toLowerCase()
-          .normalize("NFD")
-          .replace(/\p{Diacritic}/gu, "");
-      const term = normalize(raw);
-      displayData = displayData.filter((p) => {
-        const nombre = normalize(p.nombre_producto);
-        const sku = normalize(p.SKU);
-        return nombre.includes(term) || sku.includes(term);
-      });
-    }
+    const term = productosFinalesSearchTerm.toLowerCase();
+    displayData = displayData.filter(
+      (p) =>
+        p.nombre_producto.toLowerCase().includes(term) ||
+        p.SKU.toLowerCase().includes(term) ||
+        (p.categoria || "").toLowerCase().includes(term) ||
+        (p.unidad_venta || "").toLowerCase().includes(term),
+    );
   }
 
   if (selectedUnidadesVenta.length > 0) {

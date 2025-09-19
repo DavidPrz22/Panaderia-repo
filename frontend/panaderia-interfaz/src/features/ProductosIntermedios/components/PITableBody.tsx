@@ -20,20 +20,14 @@ export const PITableBody = () => {
   let displayData = productosIntermedios || [];
 
   if (productosIntermediosSearchTerm) {
-    const raw = productosIntermediosSearchTerm.trim();
-    if (raw.length > 0) {
-      const normalize = (s: string) =>
-        s
-          .toLowerCase()
-          .normalize("NFD")
-          .replace(/\p{Diacritic}/gu, "");
-      const term = normalize(raw);
-      displayData = displayData.filter((p) => {
-        const nombre = normalize(p.nombre_producto);
-        const sku = normalize(p.SKU);
-        return nombre.includes(term) || sku.includes(term);
-      });
-    }
+    const term = productosIntermediosSearchTerm.toLowerCase();
+    displayData = displayData.filter(
+      (p) =>
+        p.nombre_producto.toLowerCase().includes(term) ||
+        p.SKU.toLowerCase().includes(term) ||
+        (p.categoria_nombre || "").toLowerCase().includes(term) ||
+        (p.unidad_produccion_producto || "").toLowerCase().includes(term),
+    );
   }
   if (selectedUnidadesProduccion.length > 0) {
     displayData = displayData.filter((p) =>
