@@ -14,7 +14,6 @@ export default function ProductosIntermediosPanel() {
     showProductosIntermediosDetalles,
     setUnidadesMedida,
     setCategoriasProductoIntermedio,
-    isLoadingDetalles,
   } = useProductosIntermediosContext();
 
   const [{ data: unidadesMedida }, { data: categoriasProductoIntermedio }] =
@@ -35,7 +34,7 @@ export default function ProductosIntermediosPanel() {
     <>
       <div className="flex flex-col gap-6 h-full">
         <FilterSearch />
-        <ProductosIntermediosLista isLoadingDetalles={isLoadingDetalles} />
+        <ProductosIntermediosLista />
       </div>
     </>
   );

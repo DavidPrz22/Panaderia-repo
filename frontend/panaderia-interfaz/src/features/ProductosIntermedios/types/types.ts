@@ -73,6 +73,7 @@ export type ProductosIntermedios = {
   stock_actual: number;
   punto_reorden: number;
   categoria_nombre: string;
+  unidad_produccion_producto: string;
   fecha_creacion_registro: string;
 };
 
