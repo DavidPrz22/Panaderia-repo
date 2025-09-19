@@ -1,5 +1,5 @@
 from rest_framework.routers import DefaultRouter
-from apps.inventario.viewsets import ComponenteSearchViewSet, MateriaPrimaViewSet, LotesMateriaPrimaViewSet, ProductosFinalesDetallesViewSet, ProductosIntermediosViewSet, ProductosFinalesViewSet, ProductosIntermediosDetallesViewSet, ProductosElaboradosViewSet, ProductosFinalesSearchViewset, ProductosIntermediosSearchViewSet
+from apps.inventario.viewsets import ComponenteSearchViewSet, MateriaPrimaViewSet, LotesMateriaPrimaViewSet, ProductosFinalesDetallesViewSet, ProductosIntermediosViewSet, ProductosFinalesViewSet, ProductosIntermediosDetallesViewSet, ProductosElaboradosViewSet, ProductosFinalesSearchViewset, ProductosIntermediosSearchViewSet, ProductosFinalesListaTransformacionViewSet
 
 router = DefaultRouter()
 router.register('materiaprima', MateriaPrimaViewSet, basename='materiaprima')
@@ -8,6 +8,7 @@ router.register('componentes-search', ComponenteSearchViewSet, basename='compone
 router.register('productosintermedios', ProductosIntermediosViewSet, basename='productosintermedios')
 router.register('productosfinales', ProductosFinalesViewSet, basename='productosfinales')
 router.register('productoselaborados', ProductosElaboradosViewSet, basename='productoselaborados')
+router.register('productosfinales-lista-transformacion', ProductosFinalesListaTransformacionViewSet, basename='productosfinales-lista-transformacion')
 router.register('productosintermedios-detalles', ProductosIntermediosDetallesViewSet, basename='productosintermedios-detalles')
 router.register('productosfinales-detalles', ProductosFinalesDetallesViewSet, basename='productosfinales-detalles')
 router.register('productosfinales-search', ProductosFinalesSearchViewset, basename='productosfinales-search')
