@@ -37,6 +37,7 @@ export type componentesRecetaProducto = {
   // the UI will scale component quantities by the production amount. Otherwise, it won't.
   medida_produccion?: string; // e.g., "Unidad", "Kg", etc.
   es_por_unidad?: boolean;
+  tipo_medida_fisica?: "UNIDAD" | "PESO" | "VOLUMEN";
 };
 
 export type watchSetvalueTypeProduction = {

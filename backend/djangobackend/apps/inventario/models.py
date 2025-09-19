@@ -22,6 +22,8 @@ class MedidasFisicas(models.TextChoices):
 
 
 class ComponentesStockManagement(models.Model):
+    class Meta:
+        abstract = True
 
     def actualizar_stock(self):
         if isinstance(self, MateriasPrimas):
@@ -136,42 +138,73 @@ class ComponentesStockManagement(models.Model):
 
         cache.set(cache_key, True, 86400)  # Cache for 24 hours
 
-        expired = []
-
-        expired.append(LotesMateriasPrimas.objects.filter(
-            fecha_caducidad__lte=timezone.now().date(),
+        # Get expired lots for both types
+        expired_mp_lots = LotesMateriasPrimas.objects.filter(
+            fecha_caducidad__lte=hoy,
             estado=LotesStatus.DISPONIBLE,
-        ))
+        ).select_related('materia_prima')
 
-        expired.append(LotesProductosElaborados.objects.filter(
-            fecha_caducidad__lte=timezone.now().date(),
+        expired_pe_lots = LotesProductosElaborados.objects.filter(
+            fecha_caducidad__lte=hoy,
             estado=LotesStatus.DISPONIBLE,
-        ))
+        ).select_related('producto_elaborado')
 
-        expired.append(LotesProductosElaborados.objects.filter(
-            fecha_caducidad__lte=timezone.now().date(),
-            estado=LotesStatus.DISPONIBLE,
-        ))
-
+        # Build summary before updating
         resumen = []
-        for lote in expired.values():
-            resumen.append({
-                'lote_id': lote['id'],
-                'componente': lote.get('materia_prima')._get_display_name() or lote.get('producto_elaborado')._get_display_name(),
-                'fecha_caducidad': lote['fecha_caducidad'],
-                'stock_expirado': lote['stock_actual_lote']
-            })
+        
+        # Process raw materials lots
+        for lote in expired_mp_lots:
+            if lote.stock_actual_lote > 0:
+                resumen.append({
+                    'lote_id': lote.id,
+                    'tipo': 'Materia Prima',
+                    'componente': lote.materia_prima.nombre,
+                    'fecha_caducidad': lote.fecha_caducidad,
+                    'stock_expirado': lote.stock_actual_lote
+                })
 
-        count = expired.values().update(estado=LotesStatus.EXPIRADO)
+        # Process elaborated products lots
+        for lote in expired_pe_lots:
+            if lote.stock_actual_lote > 0:
+                resumen.append({
+                    'lote_id': lote.id,
+                    'tipo': 'Producto Elaborado',
+                    'componente': lote.producto_elaborado.nombre_producto,
+                    'fecha_caducidad': lote.fecha_caducidad,
+                    'stock_expirado': lote.stock_actual_lote
+                })
 
-        affected_materials = cls.objects.filter(
-            lotesmateriasprimas__fecha_caducidad__lte=timezone.now().date()
-        ).distinct()
+        # Update lot statuses
+        mp_count = expired_mp_lots.update(estado=LotesStatus.EXPIRADO)
+        pe_count = expired_pe_lots.update(estado=LotesStatus.EXPIRADO)
+        total_count = mp_count + pe_count
 
-        for material in affected_materials:
-            material.actualizar_stock()
+        # Update stock for affected materials (get unique materials from expired lots)
+        affected_mp_ids = expired_mp_lots.values_list('materia_prima_id', flat=True)
+        affected_pe_ids = expired_pe_lots.values_list('producto_elaborado_id', flat=True)
 
-        return {"resumen": resumen, "count": count}
+        # Update stock for affected raw materials
+        for mp_id in affected_mp_ids:
+            try:
+                mp = MateriasPrimas.objects.get(id=mp_id)
+                mp.actualizar_stock()
+            except MateriasPrimas.DoesNotExist:
+                continue
+
+        # Update stock for affected elaborated products
+        for pe_id in affected_pe_ids:
+            try:
+                pe = ProductosElaborados.objects.get(id=pe_id)
+                pe.actualizar_stock()
+            except ProductosElaborados.DoesNotExist:
+                continue
+
+        return {
+            "resumen": resumen, 
+            "count": total_count,
+            "materias_primas_afectadas": len(affected_mp_ids),
+            "productos_elaborados_afectados": len(affected_pe_ids)
+        }
 
 
 class MateriasPrimas(ComponentesStockManagement):

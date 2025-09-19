@@ -39,6 +39,10 @@ type ProductionContextType = {
     toastMessage: string;
     setToastMessage: (value: string) => void;
     productUnitRef: React.RefObject<HTMLDivElement | null>;
+    medidaFisica: "UNIDAD" | "PESO" | "VOLUMEN" | null;
+    setMedidaFisica: (value: "UNIDAD" | "PESO" | "VOLUMEN" | null) => void;
+    esPorUnidad: boolean | null;
+    setEsPorUnidad: (value: boolean | null) => void;
 };
 
 const ProductionContextProvider = createContext<ProductionContextType | null>(null);
@@ -64,6 +68,8 @@ export function ProductionProvider({ children }: { children: React.ReactNode }) 
   const [showToast, setShowToast] = useState<boolean>(false);
   const [toastMessage, setToastMessage] = useState<string>("");
   const productUnitRef = useRef<HTMLDivElement | null>(null);
+  const [medidaFisica, setMedidaFisica] = useState<"UNIDAD" | "PESO" | "VOLUMEN" | null>(null);
+  const [esPorUnidad, setEsPorUnidad] = useState<boolean | null>(null);
 
   return (
     <ProductionContextProvider.Provider value={{
@@ -103,6 +109,10 @@ export function ProductionProvider({ children }: { children: React.ReactNode }) 
       toastMessage,
       setToastMessage,
       productUnitRef,
+      medidaFisica,
+      setMedidaFisica,
+      esPorUnidad,
+      setEsPorUnidad,
     }}>
         {children}
     </ProductionContextProvider.Provider>

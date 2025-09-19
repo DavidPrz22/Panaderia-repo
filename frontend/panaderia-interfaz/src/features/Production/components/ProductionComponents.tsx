@@ -22,7 +22,7 @@ const ProductionComponentsBase = ({
 }: watchSetvalueTypeProduction & { cantidadProduction?: number }) => {
   const { data : productionComponentes , isFetching, isFetched } = useComponentsProductionQuery();
 
-  const { setInsufficientStock, componentesBaseProduccion, setComponentesBaseProduccion } = useProductionContext();
+  const { setInsufficientStock, componentesBaseProduccion, setComponentesBaseProduccion, setMedidaFisica, esPorUnidad, setEsPorUnidad } = useProductionContext();
 
   // Cantidad a producir desde el formulario (1 por defecto)
   const cantidad = cantidadProduction ?? 1;
@@ -44,20 +44,23 @@ const ProductionComponentsBase = ({
   }, [isFetched, productionComponentes, setComponentesBaseProduccion]);
 
 
-  const esPorUnidad = useMemo(() => {
-    const prod = productionComponentes as unknown as {
-      medida_produccion?: string;
-      // optional fallback field just in case backend sends this typo
-      mededa_produccion?: string;
-      es_por_unidad?: boolean;
-    } | undefined;
-    const medidaRaw = prod?.medida_produccion ?? prod?.mededa_produccion;
+  useEffect(() => {
+    if (!isFetched || !productionComponentes) return;
+  
+    const medidaRaw = productionComponentes.medida_produccion;
     const m = typeof medidaRaw === "string" ? medidaRaw.toLowerCase() : undefined;
-    return (
-      (prod?.es_por_unidad === true) ||
+
+    setEsPorUnidad((
+      (productionComponentes.es_por_unidad === true) ||
       (typeof m === "string" && m === "unidad")
-    );
-  }, [productionComponentes]);
+    ));
+
+    if (productionComponentes.tipo_medida_fisica) {
+      setMedidaFisica(productionComponentes.tipo_medida_fisica);
+    }
+  
+  }, [isFetched, productionComponentes, setMedidaFisica, setEsPorUnidad]);
+
 
   const componentesPrincipalesProducts: Componente[] = useMemo(() => {
     const base = componentesBaseProduccion ?? [];

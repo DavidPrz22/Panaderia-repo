@@ -304,7 +304,7 @@ class ProduccionViewset(viewsets.ModelViewSet):
         try:
             with transaction.atomic():
                 # Expire old lots before processing
-                ComponentesStockManagement.expirar_todos_lotes_viejos()
+                ComponentesStockManagement.expirar_todos_lotes_viejos(True)
                 producto = ProductionValidationService.validate_production_data(serializer.validated_data)
                 # Extract validated data
                 componentes = serializer.validated_data['componentes']

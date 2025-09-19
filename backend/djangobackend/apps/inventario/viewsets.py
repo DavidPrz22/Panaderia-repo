@@ -250,6 +250,7 @@ class ProductosElaboradosViewSet(viewsets.ModelViewSet):
             'subrecetas': subrecetas,
             'medida_produccion': medida_produccion,
             'es_por_unidad': es_por_unidad,
+            'tipo_medida_fisica': producto_elaborado.tipo_medida_fisica,
         }
 
         return Response(producto_data, status=status.HTTP_200_OK)
