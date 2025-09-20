@@ -70,7 +70,7 @@ export const DetailsTable = ({
         </DetailFieldValue>
         <DetailFieldValue extraClass="min-h-[25px] ">
           {
-            productoIntermediosDetalles.unidad_produccion_producto
+            productoIntermediosDetalles.unidad_medida_nominal_producto
               .nombre_completo
           }
         </DetailFieldValue>

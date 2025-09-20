@@ -19,7 +19,6 @@ export default function ProductosIntermediosLista() {
             "SKU",
             "Stock",
             "Punto de reorden",
-            "Unidad de producción",
             "Categoria",
             "Fecha de creación",
           ]}

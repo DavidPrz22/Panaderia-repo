@@ -12,8 +12,6 @@ import {
   productosIntermediosQueryOptions,
 } from "../queries/queryOptions";
 
-import { intermediosSearchOptions } from "@/features/Production/hooks/queries/ProductionQueryOptions";
-
 export const useGetRecetasSearchMutation = () => {
   return useMutation({
     mutationFn: (search: string) => getRecetasSearch(search),
@@ -29,7 +27,6 @@ export const useCreateProductosIntermediosMutation = () => {
       queryClient.invalidateQueries({
         queryKey: productosIntermediosQueryOptions.queryKey,
       });
-      queryClient.invalidateQueries({ queryKey: intermediosSearchOptions.queryKey })
     },
     onError: (error) => {
       console.log(error);
@@ -64,7 +61,6 @@ export const useDeleteProductoIntermedioMutation = () => {
       queryClient.removeQueries({
         queryKey: productosIntermediosDetallesQueryOptions(id).queryKey,
       });
-      queryClient.invalidateQueries({ queryKey: intermediosSearchOptions.queryKey })
     },
     onError: (error) => {
       console.log(error);
@@ -89,7 +85,6 @@ export const useUpdateProductosIntermediosMutation = () => {
       queryClient.invalidateQueries({
         queryKey: productosIntermediosDetallesQueryOptions(id).queryKey,
       });
-      queryClient.invalidateQueries({ queryKey: intermediosSearchOptions.queryKey })
     },
     onError: (error) => {
       console.log(error);

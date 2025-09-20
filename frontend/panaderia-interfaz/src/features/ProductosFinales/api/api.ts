@@ -26,7 +26,6 @@ export const getProductoFinalDetalles = async (
     const response = await apiClient.get(
       `/api/productosfinales-detalles/${id}/`,
     );
-    console.log(response.data);
     return response.data;
   } catch (error) {
     console.error("Error fetching producto elaborado:", error);

@@ -97,8 +97,6 @@ export type MateriaPrimaFormSelectContainerProps = {
   optional?: boolean;
 };
 
-type LotesStatus = "DISPONIBLE" | "INACTIVO" | "EXPIRADO" | "AGOTADO";
-
 export type LoteMateriaPrima = {
   id: number;
   fecha_recepcion: string;
@@ -107,7 +105,7 @@ export type LoteMateriaPrima = {
   stock_actual_lote: number;
   costo_unitario_usd: number;
   proveedor: string;
-  estado: LotesStatus;
+  activo: boolean;
 };
 
 export type Proveedor = {
@@ -149,7 +147,7 @@ export type LoteMateriaPrimaFormResponse = {
   stock_actual_lote: number;
   costo_unitario_usd: number;
   detalle_oc: number | null;
-  estado: LotesStatus;
+  activo?: boolean;
 };
 
 export type emptyLoteMateriaPrima = {
@@ -167,6 +165,7 @@ export type LoteMateriaPrimaFormSumit = {
   stock_actual_lote: number;
   costo_unitario_usd: number;
   detalle_oc: number | null;
+  activo?: boolean;
 };
 
 export type LotesMateriaPrimaFormSharedProps = {

@@ -49,7 +49,7 @@ export const DetailsTable = ({
           Stock Actual
         </DetailsField>
         <DetailsField extraClass="min-h-[25px] flex items-center">
-          Unidad de Producción
+          Unidad de medida nominal
         </DetailsField>
         <DetailsField extraClass="min-h-[25px] flex items-center">
           Categoría
@@ -93,14 +93,14 @@ export const DetailsTable = ({
           {productoFinalDetalles.stock_actual || "-"}
         </DetailFieldValue>
         <DetailFieldValue extraClass="min-h-[25px] ">
-          {productoFinalDetalles.unidad_produccion_producto
+          {productoFinalDetalles.unidad_medida_nominal_producto
             .nombre_completo || "-"}
         </DetailFieldValue>
         <DetailFieldValue extraClass="min-h-[25px] ">
           {productoFinalDetalles.categoria_producto.nombre_categoria || "-"}
         </DetailFieldValue>
         <DetailFieldValue extraClass="min-h-[25px] ">
-          {productoFinalDetalles.tipo_medida_fisica || "-"}
+          {productoFinalDetalles.tipo_manejo_venta || "-"}
         </DetailFieldValue>
         <DetailFieldValue extraClass="min-h-[25px] ">
           {productoFinalDetalles.fecha_creacion_registro || "-"}

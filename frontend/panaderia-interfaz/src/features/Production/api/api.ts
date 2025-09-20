@@ -1,15 +1,9 @@
 import apiClient from "@/api/client";
-import type {
-  componentesRecetaProducto,
-  componentesSearchList,
-  searchItem,
-} from "../types/types";
-import type { TProductionFormData } from "../schemas/schemas";
+import type { componentesRecetaProducto, searchItem } from "../types/types";
 
 export const searchProductosIntermedios = async (): Promise<searchItem[]> => {
   try {
     const response = await apiClient.get(`/api/productosintermedios-search/`);
-    console.log(response.data);
     return response.data;
   } catch (error) {
     console.error("Error searching Productos Intermedios:", error);
@@ -37,34 +31,6 @@ export const getRecetaComponentes = async (
     return response.data;
   } catch (error) {
     console.error("Error fetching receta componentes:", error);
-    throw error;
-  }
-};
-
-export const createProduction = async (data: TProductionFormData) => {
-  try {
-    const response = await apiClient.post(`/api/production/`, data);
-    return response.data;
-  } catch (error) {
-    console.error("Error creating production:", error);
-    throw error;
-  }
-};
-
-export const componentesRecetaSearch = async (
-  search: string,
-): Promise<componentesSearchList[]> => {
-  const stock = true;
-  try {
-    const response = await apiClient.get("/api/componentes-search/", {
-      params: {
-        search,
-        stock,
-      },
-    });
-    return response.data;
-  } catch (error) {
-    console.error("Error fetching componentes receta search:", error);
     throw error;
   }
 };

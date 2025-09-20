@@ -73,7 +73,6 @@ export type ProductosIntermedios = {
   stock_actual: number;
   punto_reorden: number;
   categoria_nombre: string;
-  unidad_produccion_producto: string;
   fecha_creacion_registro: string;
 };
 
@@ -91,10 +90,9 @@ export type ProductosIntermediosDetalles = {
   stock_actual: number;
   punto_reorden: number;
   categoria_producto: { id: number; nombre_categoria: string };
-  unidad_produccion_producto: { id: number; nombre_completo: string };
+  unidad_medida_nominal_producto: { id: number; nombre_completo: string };
   fecha_creacion_registro: string;
   fecha_modificacion_registro: string;
   descripcion: string;
   receta_relacionada: RecetaRelacionada;
-  tipo_medida_fisica: "UNIDAD" | "PESO" | "VOLUMEN";
 };

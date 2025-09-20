@@ -3,8 +3,8 @@ import HeaderBar from "@/components/Layout/HeaderBar/HeaderBar";
 import MateriaPrimaPanel from "@/features/MateriaPrima/components/MateriaPrimaPanel";
 import MateriasPrimasForma from "@/features/MateriaPrima/components/MateriasPrimasForma";
 import { MaterialPrimaDetalles } from "@/features/MateriaPrima/components/MateriaPrimaDetalles";
-
 import { MateriaPrimaProvider } from "@/context/MateriaPrimaContext";
+
 
 export default function MateriaPrimaPage() {
   return (

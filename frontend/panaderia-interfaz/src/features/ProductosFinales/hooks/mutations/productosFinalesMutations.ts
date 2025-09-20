@@ -13,8 +13,6 @@ import {
   productoFinalDetallesQueryOptions,
 } from "../queries/productosFinalesQueryOptions";
 
-import { finalesSearchOptions } from "@/features/Production/hooks/queries/ProductionQueryOptions";
-
 export const useCreateProductoFinal = () => {
   const queryClient = useQueryClient();
   return useMutation({
@@ -23,9 +21,6 @@ export const useCreateProductoFinal = () => {
       queryClient.invalidateQueries({
         queryKey: productosFinalesQueryOptions().queryKey,
       });
-      queryClient.invalidateQueries({
-        queryKey: finalesSearchOptions.queryKey,
-      })
     },
   });
 };
@@ -47,9 +42,6 @@ export const useUpdateProductoFinal = () => {
       queryClient.invalidateQueries({
         queryKey: productoFinalDetallesQueryOptions(id).queryKey,
       });
-      queryClient.invalidateQueries({
-        queryKey: finalesSearchOptions.queryKey,
-      })
     },
   });
 };

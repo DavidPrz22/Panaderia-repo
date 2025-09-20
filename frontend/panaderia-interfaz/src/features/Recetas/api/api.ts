@@ -89,11 +89,10 @@ export const getRecetasSearch = async (
   search: string,
   recetaId?: number,
 ): Promise<recetaRelacionada[]> => {
-  const searchOnReceta = true
   try {
     const response = await apiClient.get(
       `/api/recetas-search/list_recetas/`,
-      { params: { search, recetaId, searchOnReceta } }
+      { params: { search, recetaId } }
     );
     return response.data;
   } catch (error) {

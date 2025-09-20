@@ -1,22 +1,22 @@
 import FilterButton from "./FilterButton";
 import ImportCSV from "@/components/ImportCSV";
 import NewButton from "@/components/NewButton";
-import SearchInput from "./SearchInput";
+import SearchInput from "@/features/ProductosIntermedios/components/SearchInput";
 import { useProductosFinalesContext } from "@/context/ProductosFinalesContext";
-import FiltersPanel from "./FiltersPanel";
 
 export default function FilterSearch() {
   const { setShowProductoForm } = useProductosFinalesContext();
   return (
-    <div className="flex items-start px-8 justify-between relative">
+    <div className="flex items-center px-8 justify-between">
       <SearchInput />
-      <div className="flex gap-4 relative">
+      <div className="flex gap-4">
         <ImportCSV />
-        <div className="relative">
-          <FilterButton />
-          <FiltersPanel />
-        </div>
-        <NewButton onClick={() => setShowProductoForm(true)} />
+        <FilterButton />
+        <NewButton
+          onClick={() => {
+            setShowProductoForm(true);
+          }}
+        />
       </div>
     </div>
   );

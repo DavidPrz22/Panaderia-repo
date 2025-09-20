@@ -73,7 +73,6 @@ export const getProductosIntermedios = async (): Promise<
 > => {
   try {
     const response = await apiClient.get("/api/productosintermedios/");
-    console.log(response.data);
     return response.data;
   } catch (error) {
     console.error(error);

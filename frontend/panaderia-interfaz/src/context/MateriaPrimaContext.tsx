@@ -84,7 +84,6 @@ export function MateriaPrimaProvider({ children }: childrenProp) {
     listaMateriaPrimaFilteredInputSearch,
     setListaMateriaPrimaFilteredInputSearch,
   ] = useState<MateriaPrimaList[]>([]);
-
   const [MPFilteredInputSearchApplied, setMPFilteredInputSearchApplied] =
     useState<boolean>(false);
 
@@ -102,7 +101,6 @@ export function MateriaPrimaProvider({ children }: childrenProp) {
   const [lotesForm, setLotesForm] = useState<LoteMateriaPrimaFormResponse[]>(
     [],
   );
-
   const [lotesMateriaPrimaDetalles, setLotesMateriaPrimaDetalles] =
     useState<LoteMateriaPrimaFormResponse | null>(null);
 

@@ -16,7 +16,7 @@ export const productoFinalSchema = z.object({
       message: "Las notas no pueden tener más de 250 caracteres",
     })
     .optional(),
-  tipo_medida_fisica: z.enum(["UNIDAD", "PESO", "VOLUMEN"]),
+  tipo_manejo_venta: z.enum(["UNIDAD", "PESO_VOLUMEN"]),
   categoria: z.coerce.number().min(0, "La categoría es requerida"),
   receta_relacionada: z.coerce
     .number()
@@ -28,10 +28,9 @@ export const productoFinalSchema = z.object({
   punto_reorden: z.coerce
     .number()
     .min(0, "El punto de reorden no puede ser negativo"),
-  unidad_produccion: z.coerce
+  unidad_medida_nominal: z.coerce
     .number()
-    .min(1, "La unidad de producción es requerida"),
-  vendible_por_medida_real: z.boolean(),
+    .min(1, "La unidad de medida es requerida"),
 });
 
 export type TProductoFinalSchema = z.infer<typeof productoFinalSchema>;

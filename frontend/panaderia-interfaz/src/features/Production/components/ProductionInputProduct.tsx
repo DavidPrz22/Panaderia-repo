@@ -6,10 +6,9 @@ import { useState } from "react";
 import ProductionXicon from "./ProductionXicon";
 import type { watchSetvalueTypeProduction } from "../types/types";
 
-export const ProductionInputProduct = ({
-  title,
-  setValue,
-}: { title: string } & watchSetvalueTypeProduction) => {
+export const ProductionInputProduct = ({ title, setValue }: { title: string } & watchSetvalueTypeProduction
+) => {
+
   const [{ data: finales }, { data: intermedios }] = useProductSearchQuery();
 
   const {
@@ -63,7 +62,9 @@ export const ProductionInputProduct = ({
               setTimeout(() => setShowSearch(false), 100); // hacer que el click se detecte
               setTimeout(() => setIsFocused(false), 300); // hacer que el click se detecte y mostrar animacion
             }}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={
+              (e) => setSearchQuery(e.target.value)
+            }
             disabled={selected}
           />
           {selected && <ProductionXicon onClick={handleClear} />}

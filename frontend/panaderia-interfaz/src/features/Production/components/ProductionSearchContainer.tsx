@@ -1,29 +1,25 @@
 import { ProductSearchItem } from "./ProductSearchItem";
 import { useProductionContext } from "@/context/ProductionContext";
-import type { searchItem } from "../types/types";
 import { useEffect } from "react";
 
 type searchContainerProp = {
-  data: searchItem[];
+  data: { id: number; nombre_producto: string }[];
   onSelection: (id: number) => void;
 };
 
-type producto = searchItem;
+type producto = { id: number; nombre_producto: string };
 
 export const ProductSearchContainer = ({
   data,
   onSelection,
 }: searchContainerProp) => {
-
   const {
     searchQuery,
     productSearchRef,
-    productUnitRef,
     setProductoId,
     showSearch,
     setShowSearch,
   } = useProductionContext();
-
   useEffect(() => {
     const timer = setTimeout(() => setShowSearch(true), 10);
     return () => clearTimeout(timer);
@@ -38,7 +34,6 @@ export const ProductSearchContainer = ({
   const handleClick = (producto: producto) => {
     if (productSearchRef.current) {
       productSearchRef.current.value = producto.nombre_producto;
-      productUnitRef.current!.textContent = producto.unidad_medida;
       onSelection(producto.id);
       setProductoId(producto.id);
     }
@@ -58,7 +53,9 @@ export const ProductSearchContainer = ({
           />
         ))
       ) : (
-        <div className="p-4 text-gray-800">Ningun Resultado</div>
+        <div className="p-4 text-gray-800">
+          Ningun Resultado
+        </div>
       )}
     </div>
   );

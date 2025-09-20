@@ -1,4 +1,4 @@
-import type { PIFormSelectContainerProps, setValueProps } from "../types/types";
+import type { PIFormSelectContainerProps } from "../types/types";
 import { get } from "react-hook-form";
 
 export const PIFormSelectContainer = ({
@@ -8,36 +8,7 @@ export const PIFormSelectContainer = ({
   errors,
   children,
   optional,
-  setValue
-}: PIFormSelectContainerProps & setValueProps) => {
-    const getMedidaFisicaFromUnidad  = (
-    unidad: string
-  ) : "UNIDAD" | "PESO" | "VOLUMEN" => {
-
-    const nombre = unidad.toUpperCase();
-    if (nombre.includes("GRAMO") || nombre.includes("KILOGRAMO") || nombre.includes("MILIGRAMO")) {
-      return "PESO";
-    }
-    if (nombre.includes("LITRO") || nombre.includes("MILILITRO")) {
-      return "VOLUMEN";
-    }
-    return "UNIDAD";
-};
-  const { onChange, ...rest } = register(name);
-
-  const handleOnChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-
-    onChange(e);
-
-    if (name === "unidad_produccion") {
-      if (setValue === undefined) return;
-      const selectedOption = e.target.selectedOptions[0];
-      const medida =  selectedOption.text
-      const tipo_medida_fisica = getMedidaFisicaFromUnidad(medida);
-      setValue("tipo_medida_fisica", tipo_medida_fisica);
-
-    }
-  };
+}: PIFormSelectContainerProps) => {
   return (
     <div className="flex flex-col gap-1">
       <div className="flex items-center gap-2">
@@ -47,8 +18,7 @@ export const PIFormSelectContainer = ({
           {title}
         </div>
         <select
-          {...rest}
-          onChange={handleOnChange}
+          {...register(name)}
           className="basis-2/4 border border-gray-300 rounded-md p-2 cursor-pointer"
         >
           {children}

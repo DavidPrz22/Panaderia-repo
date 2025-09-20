@@ -29,7 +29,6 @@ export const LotesInputForm = ({
     inputElement = (
       <input
         type={typeInput}
-        step={typeInput === "number" ? 0.01 : undefined}
         {...register(name)}
         name={name}
         placeholder={placeholder}

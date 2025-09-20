@@ -16,7 +16,6 @@ import { useMateriaPrimaContext } from "@/context/MateriaPrimaContext";
 import {
   useActivateLoteMateriaPrimaMutation,
   useDeleteLoteMateriaPrimaMutation,
-  useInactivateLoteMateriaPrimaMutation,
 } from "../../hooks/mutations/materiaPrimaMutations";
 
 export const LotesMateriaPrimaDetalles = () => {
@@ -37,8 +36,6 @@ export const LotesMateriaPrimaDetalles = () => {
   const { mutateAsync: activateLote, isPending: isLoadingActivate } =
     useActivateLoteMateriaPrimaMutation(materiaprimaDetalles?.id, handleClose);
 
-  const { mutateAsync: inactivateLote, isPending: isLoadingInactivate } =
-    useInactivateLoteMateriaPrimaMutation(materiaprimaDetalles?.id, handleClose);
   const handleEdit = () => {
     setUpdateRegistro(true);
   };
@@ -53,12 +50,6 @@ export const LotesMateriaPrimaDetalles = () => {
   const handleActivate = async () => {
     if (lotesMateriaPrimaDetalles?.id) {
       activateLote(lotesMateriaPrimaDetalles.id);
-    }
-  };
-
-  const handleInactivate = async () => {
-    if (lotesMateriaPrimaDetalles?.id) {
-      inactivateLote(lotesMateriaPrimaDetalles.id);
     }
   };
 
@@ -79,36 +70,9 @@ export const LotesMateriaPrimaDetalles = () => {
       />
     );
   }
-
-  const handleActivation = () => {
-    if (lotesMateriaPrimaDetalles?.estado === "INACTIVO") {
-      return (
-        <div className="flex justify-end mt-auto mr-2">
-          <Button type="add" onClick={handleActivate}>
-            <div className="flex items-center gap-2 text-xl font-semibold">
-              Activar Lote
-              <img src={CheckIcon} alt="Activar Lote" className="size-7" />
-            </div>
-          </Button>
-        </div>
-      )
-    } else if (lotesMateriaPrimaDetalles?.estado === "DISPONIBLE") {
-      return (
-      <div className="flex justify-end mt-auto mr-2">
-          <Button type="delete" onClick={handleInactivate}>
-            <div className="flex items-center gap-2 text-xl font-semibold">
-              Inactivar Lote
-              <img src={CheckIcon} alt="Inactivar Lote" className="size-7" />
-            </div>
-          </Button>
-        </div>
-      )
-    }
-  }
-
   return (
     <div className="flex flex-col gap-5 mx-8 border border-gray-200 p-5 rounded-lg shadow-md h-full relative">
-      {(isLoadingActivate || isLoadingInactivate) && (
+      {isLoadingActivate && (
         <div className="absolute top-0 left-0 w-full h-full flex justify-center items-center bg-white opacity-50">
           <img src={TubeSpinner} alt="Cargando..." className="size-28" />
         </div>
@@ -175,7 +139,7 @@ export const LotesMateriaPrimaDetalles = () => {
               <div className="text-lg">Detalles Orden de Compra</div>
             </DetailsField>
             <DetailsField>
-              <div className="text-lg">Estado</div>
+              <div className="text-lg">Activo</div>
             </DetailsField>
           </div>
           <div className="grid grid-rows-9 grid-cols-1 gap-2">
@@ -229,14 +193,24 @@ export const LotesMateriaPrimaDetalles = () => {
             </DetailFieldValue>
             <DetailFieldValue>
               <div className="text-lg">
-                {lotesMateriaPrimaDetalles?.estado || "-"}
+                {lotesMateriaPrimaDetalles?.activo ? "SI" : "NO"}
               </div>
             </DetailFieldValue>
           </div>
-          {handleActivation()}
         </div>
       </div>
-      
+      {lotesMateriaPrimaDetalles?.activo === false ? (
+        <div className="flex justify-end mt-auto mr-2">
+          <Button type="add" onClick={handleActivate}>
+            <div className="flex items-center gap-2 text-xl font-semibold">
+              Activar Lote
+              <img src={CheckIcon} alt="Activar Lote" className="size-7" />
+            </div>
+          </Button>
+        </div>
+      ) : (
+        ""
+      )}
     </div>
   );
 };
