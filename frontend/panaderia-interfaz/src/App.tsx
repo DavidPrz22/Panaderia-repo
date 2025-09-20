@@ -8,6 +8,7 @@ import ProductosIntermediosPage from "./pages/ProductosIntermediosPage";
 import RecetasPage from "./pages/RecetasPage";
 import ProductosFinalesPage from "./pages/ProductosFinalesPage";
 import ProductionPage from "./pages/ProductionPage";
+import TransformacionPage from "./pages/TransformacionPage";
 
 const ProtectedLandingPage = withAuth(LandingPage);
 const ProtectedMateriaPrimaPage = withAuth(MateriaPrimaPage);
@@ -15,6 +16,7 @@ const ProtectedProductosIntermediosPage = withAuth(ProductosIntermediosPage);
 const ProtectedProductosFinalesPage = withAuth(ProductosFinalesPage);
 const ProtectedProductionPage = withAuth(ProductionPage);
 const ProtectedRecetasPage = withAuth(RecetasPage);
+const ProtectedTransformacionPage = withAuth(TransformacionPage);
 
 function Logout() {
   const { logout } = useAuth();
@@ -52,6 +54,10 @@ function App() {
           path="/dashboard/produccion" 
           element={<ProtectedProductionPage />} 
           />
+          <Route
+          path="/dashboard/transformacion"
+          element={<ProtectedTransformacionPage />}
+        />
         </Routes>
       </AuthProvider>
     </BrowserRouter>
