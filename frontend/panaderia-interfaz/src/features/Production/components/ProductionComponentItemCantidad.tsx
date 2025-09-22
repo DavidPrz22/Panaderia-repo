@@ -27,14 +27,16 @@ export const ProductionComponentItemCantidad = ({
   const [inputValue, setInputValue] = useState<number>(
     cantidad > 0 ? cantidad : 0,
   );
-  const { insufficientStock, setInsufficientStock } = useProductionContext();
+  const { insufficientStock, setInsufficientStock, esPorUnidad } = useProductionContext();
   const roundTo3 = (n: number) => Math.round(n * 1000) / 1000;
 
   // Cuando cambie la cantidad proveniente del producto (re-cálculo), sincronizar el input
   useEffect(() => {
-    const next = cantidad > 0 ? cantidad : 0;
-    setInputValue(next);
-  }, [cantidad]);
+    if (esPorUnidad) {
+      const next = cantidad > 0 ? cantidad : 0;
+      setInputValue(next);
+    }
+  }, [cantidad, esPorUnidad]);
 
   // Helpers
   const getAllInputsForComponent = () =>

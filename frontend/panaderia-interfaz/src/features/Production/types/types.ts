@@ -1,4 +1,4 @@
-import type { UseFormWatch } from "react-hook-form";
+import type { UseFormHandleSubmit, UseFormWatch } from "react-hook-form";
 import type { UseFormSetValue } from "react-hook-form";
 import type { TProductionFormData } from "../schemas/schemas";
 
@@ -43,6 +43,11 @@ export type componentesRecetaProducto = {
 export type watchSetvalueTypeProduction = {
   watch?: UseFormWatch<TProductionFormData>;
   setValue?: UseFormSetValue<TProductionFormData>;
+  onSubmit?: UseFormHandleSubmit<TProductionFormData>;
+};
+
+export type watchSetvalueTypeProductionWithSubmit = watchSetvalueTypeProduction & {
+  onSubmit: UseFormHandleSubmit<TProductionFormData>;
 };
 
 export type componentesSearchItem = {

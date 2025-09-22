@@ -6,7 +6,7 @@ from django.db.models.signals import post_save, post_delete
 from django.dispatch import receiver
 from django.utils import timezone
 from django.core.exceptions import ValidationError
-
+from decimal import Decimal
 # Create your models here.
 class LotesStatus(models.TextChoices):
     DISPONIBLE = 'DISPONIBLE', 'Disponible para uso'
@@ -86,10 +86,10 @@ class ComponentesStockManagement(models.Model):
     def consumeStock(self, cantidad):
         if not self.checkAvailability(cantidad):
             raise ValidationError(f"Stock insuficiente. Disponible: {self.stock_actual}, Requerido: {cantidad}")
-    
+
         cantidad_restante = cantidad
-        precio_consumo = 0
-        lotes_consumidos = []
+        precio_consumo = Decimal('0')
+        detalle_lotes_consumidos = []
 
         while cantidad_restante > 0:
             lote_consume = self.get_closest_expire_lot()
@@ -107,15 +107,16 @@ class ComponentesStockManagement(models.Model):
             lote_consume.save()
             
             # Calculate cost
-            precio_consumo += self.calculate_price(lote_consume.costo_unitario_usd, cantidad_del_lote)
-            
-            # Track consumed lot
-            lotes_consumidos.append({
+            precio_calculado = self.calculate_price(lote_consume.costo_unitario_usd, cantidad_del_lote)
+            precio_consumo += precio_calculado
+
+            # Return data instead of model instances
+            detalle_lotes_consumidos.append({
                 'lote_id': lote_consume.id,
                 'cantidad_consumida': cantidad_del_lote,
-                'costo_unitario': lote_consume.costo_unitario_usd
+                'costo_parcial_usd': precio_calculado,
+                'es_materia_prima': isinstance(self, MateriasPrimas)
             })
-            
             cantidad_restante -= cantidad_del_lote
 
         # Update main stock
@@ -123,9 +124,8 @@ class ComponentesStockManagement(models.Model):
         self.save(update_fields=['stock_actual'])
 
         return {
-            "lotes_consumidos": lotes_consumidos,
-            "costo_total_consumo": precio_consumo,
-            "cantidad_total_consumida": cantidad
+            "detalle_lotes_consumidos": detalle_lotes_consumidos,
+            "costo_consumo_lote": precio_consumo,
         }
 
     @classmethod

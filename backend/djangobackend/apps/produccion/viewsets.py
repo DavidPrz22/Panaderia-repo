@@ -9,6 +9,7 @@ from apps.produccion.serializers import RecetasSerializer, RecetasDetallesSerial
 from django.db.models import Q
 from django.core.exceptions import ValidationError
 from apps.produccion.services import ProductionValidationService, StockConsumptionService, ProductionService
+from decimal import Decimal
 
 class RecetasViewSet(viewsets.ModelViewSet):
     queryset = Recetas.objects.all()
@@ -291,7 +292,7 @@ class RecetasSearchViewSet(viewsets.ReadOnlyModelViewSet):
         serializer = self.get_serializer(recetas, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-class ProduccionViewset(viewsets.ModelViewSet):
+class ProduccionesViewSet(viewsets.ModelViewSet):
     queryset = Produccion.objects.all()
     serializer_class = ProduccionSerializer
 
@@ -310,8 +311,8 @@ class ProduccionViewset(viewsets.ModelViewSet):
                 componentes = serializer.validated_data['componentes']
 
                 # Separate components by type
-                mp_componentes = [c for c in componentes if c['tipoComponente'] == 'MateriaPrima']
-                pi_componentes = [c for c in componentes if c['tipoComponente'] == 'ProductoIntermedio']
+                mp_componentes = [c for c in componentes if c['tipo'] == 'MateriaPrima']
+                pi_componentes = [c for c in componentes if c['tipo'] == 'ProductoIntermedio']
 
                 # Get component instances
                 materias_primas_produccion = MateriasPrimas.objects.filter(
@@ -324,8 +325,8 @@ class ProduccionViewset(viewsets.ModelViewSet):
 
 
                 # Create quantity maps
-                map_mp_cantidad = {c['id']: c['cantidad'] for c in mp_componentes}
-                map_pi_cantidad = {c['id']: c['cantidad'] for c in pi_componentes}
+                map_mp_cantidad = {c['id']: Decimal(str(c['cantidad']))for c in mp_componentes}
+                map_pi_cantidad = {c['id']: Decimal(str(c['cantidad'])) for c in pi_componentes}
 
                 ProductionValidationService.validate_component_availability(
                     materias_primas_produccion, 
@@ -343,7 +344,7 @@ class ProduccionViewset(viewsets.ModelViewSet):
                     unidad_medida=producto.unidad_produccion
                 )
 
-                production_details, costo_total = StockConsumptionService.consume_materials_and_intermediates(
+                costo_total = StockConsumptionService.consume_materials_and_intermediates(
                     materias_primas_produccion, 
                     productos_intermedios_produccion, 
                     map_mp_cantidad, 
@@ -351,9 +352,6 @@ class ProduccionViewset(viewsets.ModelViewSet):
                     produccion
                 )
 
-                # Bulk create consumption details
-                DetalleProduccionCosumos.objects.bulk_create(production_details)
-                
                 # Update total cost
                 produccion.costo_total_componentes_usd = costo_total
                 produccion.save(update_fields=['costo_total_componentes_usd'])
@@ -367,6 +365,14 @@ class ProduccionViewset(viewsets.ModelViewSet):
                     costo_total=costo_total,
                     peso=serializer.validated_data.get('peso', None),
                     volumen=serializer.validated_data.get('volumen', None)
+                )
+
+                # update components stock
+                product_id = serializer.validated_data['productoId']
+                product_type = serializer.validated_data['tipoProducto']
+                
+                StockConsumptionService.update_components_stock(
+                    product_id, product_type
                 )
 
                 return Response({

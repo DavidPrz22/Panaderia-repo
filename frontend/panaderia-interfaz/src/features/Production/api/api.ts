@@ -43,7 +43,8 @@ export const getRecetaComponentes = async (
 
 export const createProduction = async (data: TProductionFormData) => {
   try {
-    const response = await apiClient.post(`/api/production/`, data);
+    const response = await apiClient.post(`/api/produccion/`, data);
+    console.log(response.data);
     return response.data;
   } catch (error) {
     console.error("Error creating production:", error);

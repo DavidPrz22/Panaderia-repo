@@ -15,9 +15,9 @@ class ProductionValidationService:
             raise ValidationError("La cantidad de producción debe ser mayor a 0")
         
         # Get and validate product
-        if product_type == 'ProductoIntermedio':
+        if product_type == 'producto-intermedio':
             producto = ProductosIntermedios.objects.filter(id=product_id).first()
-        elif product_type == 'ProductoFinal':
+        elif product_type == 'producto-final':
             producto = ProductosFinales.objects.filter(id=product_id).first()
         else:
             raise ValidationError("Tipo de producto inválido")

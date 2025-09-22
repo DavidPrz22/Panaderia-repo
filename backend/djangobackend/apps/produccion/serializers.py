@@ -38,14 +38,14 @@ class RecetasDetallesSerializer(serializers.ModelSerializer):
 
 class componentsSerializer(serializers.Serializer):
     id = serializers.IntegerField()
-    cantidad = serializers.FloatField()
-    tipoComponente = serializers.CharField()
+    cantidad = serializers.DecimalField(max_digits=10, decimal_places=3)
+    tipo = serializers.CharField()
 
 
 class ProduccionSerializer(serializers.Serializer):
     productoId = serializers.IntegerField()
     cantidadProduction = serializers.IntegerField()
-    peso = serializers.FloatField(required=False)
+    peso = serializers.DecimalField(max_digits=10, decimal_places=3, required=False)
     componentes = serializers.ListField(child=componentsSerializer())
     fechaExpiracion = serializers.DateField()
     tipoProducto = serializers.CharField()
