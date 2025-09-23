@@ -122,8 +122,14 @@ const ProductionComponentsBase = ({
   }, [componentesPrincipalesProducts, subrecetasProducts]);
 
   const insufficientStock: ComponentesLista = useMemo(() => {
-    return componentesEnProducto.filter((c) => c.stock < c.cantidad);
-  }, [componentesEnProducto]);
+    const formComponentes = (watch?.("componentes") as { id: number; cantidad: number }[] | undefined) ?? [];
+    const byFormId = new Map(formComponentes.map((c) => [c.id, c.cantidad]));
+    
+    return componentesEnProducto.filter((c) => {
+      const formQuantity = byFormId.get(c.id) ?? c.cantidad;
+      return c.stock < formQuantity;
+    });
+  }, [componentesEnProducto, watch]);
 
   useEffect(() => {
     if (!isFetched) return;

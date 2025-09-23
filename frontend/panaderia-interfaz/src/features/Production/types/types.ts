@@ -71,3 +71,23 @@ export type newComponentItem = {
 export type componentesSearchList = {
   [categoria: string]: componentesSearchItem[];
 };
+
+
+export type ProductionComponentDetail = {
+  materia_prima_consumida: string | null;
+  producto_intermedio_consumido: string | null;
+  cantidad_consumida: string; 
+  unidad_medida: string;
+};
+
+export type ProductionDetails = {
+  id: number;
+  producto_produccion: string;
+  cantidad_producida: string; 
+  unidad_medida_produccion: string;
+  fecha_produccion: string; 
+  fecha_expiracion: string; 
+  costo_total_componentes_usd: string; 
+  componentes_produccion: ProductionComponentDetail[];
+  usuario_produccion: string; 
+};

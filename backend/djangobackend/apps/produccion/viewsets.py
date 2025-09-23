@@ -5,7 +5,7 @@ from django.db import transaction
 from apps.produccion.models import Produccion, DetalleProduccionCosumos
 from apps.produccion.models import Recetas, RecetasDetalles, RelacionesRecetas
 from apps.inventario.models import MateriasPrimas, ProductosElaborados, ProductosIntermedios, ProductosFinales, LotesProductosElaborados, LotesStatus, ComponentesStockManagement
-from apps.produccion.serializers import RecetasSerializer, RecetasDetallesSerializer, RecetasSearchSerializer, ProduccionSerializer
+from apps.produccion.serializers import RecetasSerializer, RecetasDetallesSerializer, RecetasSearchSerializer, ProduccionSerializer, ProduccionDetallesSerializer
 from django.db.models import Q
 from django.core.exceptions import ValidationError
 from apps.produccion.services import ProductionValidationService, StockConsumptionService, ProductionService
@@ -301,7 +301,7 @@ class ProduccionesViewSet(viewsets.ModelViewSet):
 
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-
+        print(serializer.validated_data)
         try:
             with transaction.atomic():
                 # Expire old lots before processing
@@ -386,3 +386,8 @@ class ProduccionesViewSet(viewsets.ModelViewSet):
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             return Response({"error": f"Error interno: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class ProduccionDetallesViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = Produccion.objects.all()
+    serializer_class = ProduccionDetallesSerializer

@@ -2,6 +2,7 @@ import { useQueries, useQuery } from "@tanstack/react-query";
 import {
   finalesSearchOptions,
   intermediosSearchOptions,
+  productionDetailsOptions,
 } from "./ProductionQueryOptions";
 import { componentsProductionOptions } from "./ProductionQueryOptions";
 import { useProductionContext } from "@/context/ProductionContext";
@@ -18,5 +19,11 @@ export const useComponentsProductionQuery = () => {
   return useQuery({
     ...componentsProductionOptions(productoId!),
     enabled: !!productoId,
+  });
+};
+
+export const useProductionDetailsQuery = () => {
+  return useQuery({
+    ...productionDetailsOptions(),
   });
 };

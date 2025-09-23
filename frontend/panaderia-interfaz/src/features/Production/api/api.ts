@@ -2,6 +2,7 @@ import apiClient from "@/api/client";
 import type {
   componentesRecetaProducto,
   componentesSearchList,
+  ProductionDetails,
   searchItem,
 } from "../types/types";
 import type { TProductionFormData } from "../schemas/schemas";
@@ -66,6 +67,16 @@ export const componentesRecetaSearch = async (
     return response.data;
   } catch (error) {
     console.error("Error fetching componentes receta search:", error);
+    throw error;
+  }
+};
+
+export const getProductionDetails = async (): Promise<ProductionDetails[]> => {
+  try {
+    const response = await apiClient.get(`/api/produccion-detalles/`);
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching production details:", error);
     throw error;
   }
 };

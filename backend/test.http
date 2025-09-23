@@ -2,7 +2,7 @@
 @port = 8000
 
 @base_url = http://{{hostname}}:{{port}}/api
-@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzU4MzA4NTgyLCJpYXQiOjE3NTgyMTIwNjMsImp0aSI6IjY3NTA1ZWRkNTYzMTQ1ZWVhMjUxMmU4NmZkMzU1YWFhIiwidXNlcl9pZCI6Mn0.up3iZw7pIrD_MkrwgCzvQt3tV3I7BasJk2OJHKxZyYA
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzU4NjUzMDAyLCJpYXQiOjE3NTg1NzYxNjYsImp0aSI6IjVjOWE4YWQwODc5ZDRiZGE5ZWZkMGZjMWNmODk2NTU3IiwidXNlcl9pZCI6Mn0.OKrgylQjLwuNmxNIq7mqoEoYDpOmoRnEOudTSh6vRo4
 Content-Type: application/json
 Authorization: Bearer {{token}}
 
@@ -17,3 +17,12 @@ Authorization: Bearer {{token}}
 GET {{base_url}}/productosfinales-lista-transformacion/
 Content-Type: application/json
 Authorization: Bearer {{token}}
+
+
+###
+
+GET {{base_url}}/produccion-detalles/24
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+###

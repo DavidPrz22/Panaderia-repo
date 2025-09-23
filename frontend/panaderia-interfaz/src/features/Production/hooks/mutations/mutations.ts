@@ -9,7 +9,7 @@ import { productosIntermediosQueryOptions } from "@/features/ProductosIntermedio
 
 export const useCreateProductionMutation = () => {
   const queryClient = useQueryClient();
-  const { setShowToast, setToastMessage } = useProductionContext();
+  const { setShowToast, setToastMessage, setComponentesBaseProduccion, setInsufficientStock } = useProductionContext();
   const handleToast = (message: string) => {
     setShowToast(true);
     setToastMessage(message);
@@ -18,6 +18,11 @@ export const useCreateProductionMutation = () => {
   return useMutation({
     mutationFn: (data: TProductionFormData) => createProduction(data),
     onSuccess: (_, data) => {
+      // Clear production state first to prevent insufficient stock warnings with old quantities
+      setComponentesBaseProduccion([]);
+      setInsufficientStock(null);
+
+      // Then invalidate queries to fetch fresh data
       queryClient.invalidateQueries({
         queryKey: componentsProductionOptions(data.productoId).queryKey,
       })
@@ -41,7 +46,7 @@ export const useCreateProductionMutation = () => {
 
 export const useComponentesProductionSearchMutation = () => {
   const { setComponentSearchList } = useProductionContext();
-  
+
   return useMutation({
     mutationFn: (search: string) => componentesRecetaSearch(search),
     onSuccess: (data) => {

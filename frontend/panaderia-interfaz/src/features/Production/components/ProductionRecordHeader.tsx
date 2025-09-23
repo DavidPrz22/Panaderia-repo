@@ -3,10 +3,8 @@ import Button from "@/components/Button";
 
 export const ProductionRecordHeader = ({
   nombre,
-  descripcion,
 }: {
   nombre: string;
-  descripcion: string;
 }) => {
   return (
     <div className="flex items-start justify-between mb-4">
@@ -18,7 +16,6 @@ export const ProductionRecordHeader = ({
         </div>
         <div>
           <h3 className="text-xl font-bold">{nombre}</h3>
-          <p className="text-sm text-gray-600">{descripcion}</p>
         </div>
       </div>
       <div className="flex items-center gap-2">

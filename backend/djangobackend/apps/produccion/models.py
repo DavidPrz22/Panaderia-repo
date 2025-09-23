@@ -60,7 +60,7 @@ class Produccion(models.Model):
     costo_total_componentes_usd = models.DecimalField(max_digits=10, decimal_places=3)
     usuario_creacion = models.ForeignKey(User, on_delete=models.CASCADE)
     unidad_medida = models.ForeignKey(UnidadesDeMedida, on_delete=models.CASCADE, null=True, blank=True)
-    
+
     def __str__(self):
         return f"{self.producto_elaborado.nombre_producto} - {self.fecha_produccion}"
 
@@ -116,7 +116,7 @@ class DefinicionTransformacion(models.Model):
     usuario_creacion = models.ForeignKey(User, on_delete=models.CASCADE)
     fecha_creacion = models.DateTimeField(auto_now_add=True)
     activo = models.BooleanField(default=False)
-    
+
     def __str__(self):
         return f"{self.nombre} - {self.producto_elaborado_entrada.nombre_producto} - {self.producto_elaborado_salida.nombre_producto}"
 
