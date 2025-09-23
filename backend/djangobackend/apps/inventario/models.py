@@ -408,13 +408,13 @@ class LotesProductosElaborados(models.Model):
     def peso_promedio_por_unidad(self):
         if self.cantidad_inicial_lote > 0 and self.peso_total_lote_gramos:
             return self.peso_total_lote_gramos / self.cantidad_inicial_lote
-        return 0
+        return None
 
     @property
     def volumen_promedio_por_unidad(self):
         if self.cantidad_inicial_lote > 0 and self.volumen_total_lote_ml:
             return self.volumen_total_lote_ml / self.cantidad_inicial_lote
-        return 0
+        return None
 
     @property
     def costo_unitario_usd(self):

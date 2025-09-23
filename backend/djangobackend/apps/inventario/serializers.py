@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import MateriasPrimas, LotesMateriasPrimas, ProductosIntermedios, ProductosFinales, ProductosElaborados
+from .models import MateriasPrimas, LotesMateriasPrimas, ProductosIntermedios, ProductosFinales, ProductosElaborados, LotesProductosElaborados
 from apps.core.models import UnidadesDeMedida, CategoriasMateriaPrima, CategoriasProductosElaborados
 from apps.compras.serializers import ProveedoresSerializer
 from apps.compras.models import Proveedores
@@ -306,6 +306,7 @@ class ProductosIntermediosSerializer(serializers.ModelSerializer):
                 
         return instance
 
+
 class ProductosFinalesSerializer(serializers.ModelSerializer):
     # Read-only fields for displaying related object names
     categoria_nombre = serializers.CharField(source='categoria.nombre_categoria', read_only=True)
@@ -510,6 +511,39 @@ class ProductosIntermediosDetallesSerializer(serializers.ModelSerializer):
         }
         except Recetas.DoesNotExist:
             return False
+
+
+class LotesProductosElaboradosSerializer(serializers.ModelSerializer):
+    peso_promedio_por_unidad = serializers.SerializerMethodField()
+    volumen_promedio_por_unidad = serializers.SerializerMethodField()
+    costo_unitario_usd = serializers.SerializerMethodField()
+
+    class Meta: 
+        model = LotesProductosElaborados
+        fields = [
+            "id",
+            "cantidad_inicial_lote",
+            "stock_actual_lote",
+            "fecha_produccion",
+            "fecha_caducidad",
+            "estado",
+            "coste_total_lote_usd",
+            "peso_total_lote_gramos",
+            "volumen_total_lote_ml",
+            "produccion_origen",
+            "peso_promedio_por_unidad",
+            "volumen_promedio_por_unidad",
+            "costo_unitario_usd",
+        ]
+
+    def get_peso_promedio_por_unidad(self, obj):
+        return obj.peso_promedio_por_unidad
+
+    def get_volumen_promedio_por_unidad(self, obj):
+        return obj.volumen_promedio_por_unidad
+
+    def get_costo_unitario_usd(self, obj):
+        return obj.costo_unitario_usd
 
 
 class ProductosElaboradosSerializer(serializers.ModelSerializer):

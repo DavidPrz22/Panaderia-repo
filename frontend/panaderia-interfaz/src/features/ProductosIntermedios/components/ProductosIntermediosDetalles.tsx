@@ -8,6 +8,8 @@ import { useEffect } from "react";
 import { useDeleteProductoIntermedioMutation } from "../hooks/mutations/productosIntermediosMutations";
 import { PendingTubeSpinner } from "./PendingTubeSpinner";
 import { DetallesHeader } from "@/components/DetallesHeader";
+import { LotesProductosIntermediosTable } from "./LotesProductosIntermediosTable";
+import Title from "@/components/Title";
 
 export default function ProductosIntermediosDetalles() {
   const {
@@ -111,7 +113,14 @@ export default function ProductosIntermediosDetalles() {
         <DetailsTable
           productoIntermediosDetalles={productoIntermediosDetalles!}
         />
+        <div className="space-y-4 mt-4">
+
+          <Title extraClass="text-blue-600">Lotes de producto intermedio</Title>  
+          <LotesProductosIntermediosTable />
+        </div>
       </div>
+
+
     </div>
   );
 }

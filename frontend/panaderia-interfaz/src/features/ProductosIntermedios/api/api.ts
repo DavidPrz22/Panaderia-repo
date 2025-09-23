@@ -5,6 +5,7 @@ import type {
   ProductosIntermedios,
   ProductosIntermediosDetalles,
   recetasSearchItem,
+  LotesProductosIntermedios,
   UnidadesDeMedida,
 } from "../types/types";
 
@@ -130,5 +131,15 @@ export const removeRecetaRelacionada = async (id: number) => {
   } catch (error) {
     console.error(error);
     return null;
+  }
+};
+
+export const getLotesProductosIntermedios = async (id: number): Promise<LotesProductosIntermedios[]> => {
+  try {
+    const response = await apiClient.get(`/api/productosintermedios/${id}/lotes/`);
+    return response.data;
+  } catch (error) {
+    console.error(error);
+    return [];
   }
 };

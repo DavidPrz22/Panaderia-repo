@@ -28,7 +28,6 @@ export default function ProductionButtons({
     if (medidaFisica === "VOLUMEN" && !esPorUnidad) {
       data.volumen = data.cantidadProduction;
     }
-    console.log(data);
     createProduction(data);
   };
 
