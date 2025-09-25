@@ -1,16 +1,15 @@
-import type { LotesProductosIntermedios } from "../types/types";
+import type { LotesProductosFinales } from "../types/types";
 import { PendingTubeSpinner } from "./PendingTubeSpinner";
-import { useProductosIntermediosContext } from "@/context/ProductosIntermediosContext";
+import { useProductosFinalesContext } from "@/context/ProductosFinalesContext";
 
-export const PILotesBody = ({ data, isLoading }: { data: LotesProductosIntermedios[], isLoading: boolean }) => {
-    const { setShowLotesDetalles, setShowProductosIntermediosDetalles, setLotesProductosIntermediosDetalles } = useProductosIntermediosContext();
-
-    const handleOnClick = (item: LotesProductosIntermedios) => {
-        setShowLotesDetalles(true);
-        setShowProductosIntermediosDetalles(false);
-        setLotesProductosIntermediosDetalles(item);
-    }
+export const PFLotesBody = ({ data, isLoading }: { data: LotesProductosFinales[], isLoading: boolean }) => {
     
+    const { setShowLotesDetalles, setLotesProductosFinalesDetalles } = useProductosFinalesContext();
+
+    const handleOnClick = (item: LotesProductosFinales) => {
+        setShowLotesDetalles(true);
+        setLotesProductosFinalesDetalles(item);
+    }
     if (isLoading) {
         return (
             <div className="rounded-b-lg">

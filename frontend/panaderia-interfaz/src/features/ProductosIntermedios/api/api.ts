@@ -136,7 +136,7 @@ export const removeRecetaRelacionada = async (id: number) => {
 
 export const getLotesProductosIntermedios = async (id: number): Promise<LotesProductosIntermedios[]> => {
   try {
-    const response = await apiClient.get(`/api/productosintermedios/${id}/lotes/`);
+    const response = await apiClient.get(`/api/productoselaborados/${id}/lotes/`);
     return response.data;
   } catch (error) {
     console.error(error);

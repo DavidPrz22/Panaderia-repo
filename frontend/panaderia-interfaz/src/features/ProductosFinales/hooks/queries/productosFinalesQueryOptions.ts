@@ -4,6 +4,7 @@ import {
   getProductosFinales,
   getUnidadesMedida,
   getCategoriasProductoFinal,
+  getLotesProductosFinales,
 } from "../../api/api";
 
 export const productoFinalDetallesQueryOptions = (id: number) =>
@@ -31,3 +32,9 @@ export const categoriasProductoFinalQueryOptions = {
   queryFn: getCategoriasProductoFinal,
   staleTime: Infinity,
 };
+
+export const lotesProductosFinalesQueryOptions = (id: number) => ({
+  queryKey: ["lotes-productos-finales", id],
+  queryFn: () => getLotesProductosFinales(id),
+  staleTime: Infinity,
+});

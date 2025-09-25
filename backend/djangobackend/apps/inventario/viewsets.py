@@ -254,17 +254,17 @@ class ProductosElaboradosViewSet(viewsets.ModelViewSet):
 
         return Response(producto_data, status=status.HTTP_200_OK)
 
-
-class ProductosIntermediosViewSet(viewsets.ModelViewSet):
-    queryset = ProductosIntermedios.objects.all()
-    serializer_class = ProductosIntermediosSerializer
-
     @action(detail=True, methods=['get'], url_path='lotes')
     def lotes(self, request, *args, **kwargs):
         producto_id = kwargs.get('pk')
         lotes = LotesProductosElaborados.objects.filter(producto_elaborado=producto_id)
         serializer = LotesProductosElaboradosSerializer(lotes, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+class ProductosIntermediosViewSet(viewsets.ModelViewSet):
+    queryset = ProductosIntermedios.objects.all()
+    serializer_class = ProductosIntermediosSerializer
+
 
 
 class ProductosFinalesViewSet(viewsets.ModelViewSet):

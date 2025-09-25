@@ -2,6 +2,7 @@ import { createContext, useContext, useRef, useState } from "react";
 import type {
   CategoriaProductoIntermedio,
   childrenProp,
+  LotesProductosIntermedios,
   recetasSearchItem,
   UnidadesDeMedida,
 } from "@/features/ProductosIntermedios/types/types";
@@ -43,6 +44,10 @@ type ProductosIntermediosContextType = {
   setSelectedCategoriasIntermedio: React.Dispatch<React.SetStateAction<string[]>>;
   showPIFiltersPanel: boolean;
   setShowPIFiltersPanel: React.Dispatch<React.SetStateAction<boolean>>;
+  showLotesDetalles: boolean;
+  setShowLotesDetalles: (value: boolean) => void;
+  lotesProductosIntermediosDetalles: LotesProductosIntermedios | null;
+  setLotesProductosIntermediosDetalles: (value: LotesProductosIntermedios | null) => void;
 };
 
 const ProductosIntermediosContext =
@@ -82,6 +87,8 @@ export const ProductosIntermediosProvider = ({ children }: childrenProp) => {
   const [selectedCategoriasIntermedio, setSelectedCategoriasIntermedio] = useState<string[]>([]);
   const [showPIFiltersPanel, setShowPIFiltersPanel] = useState(false);
 
+  const [showLotesDetalles, setShowLotesDetalles] = useState(false);
+  const [lotesProductosIntermediosDetalles, setLotesProductosIntermediosDetalles] = useState<LotesProductosIntermedios | null>(null);
   return (
     <ProductosIntermediosContext.Provider
       value={{
@@ -118,6 +125,10 @@ export const ProductosIntermediosProvider = ({ children }: childrenProp) => {
         setSelectedCategoriasIntermedio,
         showPIFiltersPanel,
         setShowPIFiltersPanel,
+        showLotesDetalles,
+        setShowLotesDetalles,
+        lotesProductosIntermediosDetalles,
+        setLotesProductosIntermediosDetalles,
       }}
     >
       {children}
