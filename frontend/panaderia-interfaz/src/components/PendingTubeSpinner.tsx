@@ -1,17 +1,23 @@
-import { TubeSpinner } from "@/assets";
+import { TubeSpinner, TubeSpinnerWhite } from "@/assets";
 
 export const PendingTubeSpinner = ({
   size,
   extraClass,
+  white,
 }: {
   size: number;
   extraClass?: string;
+  white?: boolean;
 }) => {
   return (
     <div
-      className={`flex justify-center items-center text-gray-700 ${extraClass}`}
+      className={`flex justify-center items-center ${white ? "text-white" : "text-gray-700"} ${extraClass}`}
     >
-      <img src={TubeSpinner} alt="Cargando..." className={`size-${size}`} />
+      {white ? (
+        <img src={TubeSpinnerWhite} alt="Cargando..." className={`size-${size}`} />
+      ) : (
+        <img src={TubeSpinner} alt="Cargando..." className={`size-${size}`} />
+      )}
     </div>
   );
 };

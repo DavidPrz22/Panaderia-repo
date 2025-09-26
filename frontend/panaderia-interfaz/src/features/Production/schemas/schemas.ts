@@ -41,6 +41,8 @@ export const productionSchema = z.object({
   }, {
     message: "La fecha de expiración debe ser válida y no puede ser anterior a hoy",
   }),
+  peso: z.number().optional(),
+  volumen: z.number().optional(),
 });
 
 export type TProductionFormData = z.infer<typeof productionSchema>;

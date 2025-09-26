@@ -1,8 +1,7 @@
 from rest_framework import viewsets, status
-from apps.inventario.models import MateriasPrimas, LotesMateriasPrimas, ProductosIntermedios, ProductosFinales, ProductosElaborados
+from apps.inventario.models import MateriasPrimas, LotesMateriasPrimas, ProductosIntermedios, ProductosFinales, ProductosElaborados, LotesProductosElaborados
 from apps.produccion.models import Recetas, RecetasDetalles, RelacionesRecetas    
-from apps.inventario.serializers import ComponentesSearchSerializer, MateriaPrimaSerializer, LotesMateriaPrimaSerializer, ProductosIntermediosSerializer, ProductosFinalesSerializer, ProductosIntermediosDetallesSerializer, ProductosElaboradosSerializer, ProductosFinalesDetallesSerializer, ProductosFinalesSearchSerializer, ProductosIntermediosSearchSerializer, ProductosFinalesListaTransformacionSerializer
-from django.db.models import Min
+from apps.inventario.serializers import ComponentesSearchSerializer, MateriaPrimaSerializer, LotesMateriaPrimaSerializer, ProductosIntermediosSerializer, ProductosFinalesSerializer, ProductosIntermediosDetallesSerializer, ProductosElaboradosSerializer, ProductosFinalesDetallesSerializer, ProductosFinalesSearchSerializer, ProductosIntermediosSearchSerializer, ProductosFinalesListaTransformacionSerializer, LotesProductosElaboradosSerializer
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from datetime import datetime
@@ -250,10 +249,22 @@ class ProductosElaboradosViewSet(viewsets.ModelViewSet):
             'subrecetas': subrecetas,
             'medida_produccion': medida_produccion,
             'es_por_unidad': es_por_unidad,
+            'tipo_medida_fisica': producto_elaborado.tipo_medida_fisica,
         }
 
         return Response(producto_data, status=status.HTTP_200_OK)
 
+    @action(detail=True, methods=['get'], url_path='lotes')
+    def lotes(self, request, *args, **kwargs):
+        producto_id = kwargs.get('pk')
+        lotes = LotesProductosElaborados.objects.filter(producto_elaborado=producto_id)
+        serializer = LotesProductosElaboradosSerializer(lotes, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class LotesProductosElaboradosSerializer(viewsets.ModelViewSet):
+    queryset = LotesProductosElaborados.objects.all()
+    
 
 class ProductosIntermediosViewSet(viewsets.ModelViewSet):
     queryset = ProductosIntermedios.objects.all()
@@ -288,3 +299,4 @@ class ProductosFinalesListaTransformacionViewSet(viewsets.ReadOnlyModelViewSet):
 class ProductosIntermediosSearchViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = ProductosIntermedios.objects.all()
     serializer_class = ProductosIntermediosSearchSerializer
+

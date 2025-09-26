@@ -5,6 +5,7 @@ import {
   unidadesMedidaQueryOptions,
 } from "./queryOptions";
 import { categoriasProductoIntermedioQueryOptions } from "./queryOptions";
+import { lotesProductosIntermediosQueryOptions } from "./queryOptions";
 
 export const useGetParametros = () => {
   return useQueries({
@@ -24,4 +25,8 @@ export const useGetProductosIntermediosDetalles = (id: number) => {
     ...productosIntermediosDetallesQueryOptions(id),
     enabled: !!id,
   });
+};
+
+export const useGetLotesProductosIntermedios = (id: number) => {
+  return useQuery(lotesProductosIntermediosQueryOptions(id));
 };
