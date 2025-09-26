@@ -9,6 +9,7 @@ import { useDeleteProductoIntermedioMutation } from "../hooks/mutations/producto
 import { PendingTubeSpinner } from "./PendingTubeSpinner";
 import { DetallesHeader } from "@/components/DetallesHeader";
 import { LotesProductosIntermediosTable } from "./LotesProductosIntermediosTable";
+import { PILotesDetailsContainer } from "./PILotesDetailsContainer";
 import Title from "@/components/Title";
 
 export default function ProductosIntermediosDetalles() {
@@ -23,6 +24,7 @@ export default function ProductosIntermediosDetalles() {
     setIsLoadingDetalles,
     enabledDetalles,
     setEnabledDetalles,
+    showLotesDetalles,
   } = useProductosIntermediosContext();
 
   const {
@@ -83,6 +85,9 @@ export default function ProductosIntermediosDetalles() {
     setShowProductosIntermediosDetalles(false);
     setRegistroDelete(false);
   };
+  if (showLotesDetalles) {
+    return <PILotesDetailsContainer />;
+  }
   return (
     <div className="flex flex-col gap-5 mx-8 border border-gray-200 p-5 rounded-lg shadow-md h-full relative">
       <DetallesHeader

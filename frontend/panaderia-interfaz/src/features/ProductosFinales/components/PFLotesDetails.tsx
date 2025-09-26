@@ -20,7 +20,6 @@ export const PFLotesDetails = () => {
     const isWeightBased = hasWeightMetrics && !hasVolumeMetrics ? true : hasWeightMetrics && hasVolumeMetrics ? true : false;
     const isVolumeBased = !isWeightBased && hasVolumeMetrics;
 
-    
 
   return (
     <div className="flex items-center gap-20">
@@ -61,7 +60,6 @@ export const PFLotesDetails = () => {
             </DetailsField>
           </>
         )}
-
 
         {/* Volumen */}
         {isVolumeBased && (

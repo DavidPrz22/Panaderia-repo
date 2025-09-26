@@ -261,10 +261,14 @@ class ProductosElaboradosViewSet(viewsets.ModelViewSet):
         serializer = LotesProductosElaboradosSerializer(lotes, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+
+class LotesProductosElaboradosSerializer(viewsets.ModelViewSet):
+    queryset = LotesProductosElaborados.objects.all()
+    
+
 class ProductosIntermediosViewSet(viewsets.ModelViewSet):
     queryset = ProductosIntermedios.objects.all()
     serializer_class = ProductosIntermediosSerializer
-
 
 
 class ProductosFinalesViewSet(viewsets.ModelViewSet):

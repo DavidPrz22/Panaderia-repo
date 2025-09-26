@@ -3,11 +3,10 @@ import { PendingTubeSpinner } from "./PendingTubeSpinner";
 import { useProductosIntermediosContext } from "@/context/ProductosIntermediosContext";
 
 export const PILotesBody = ({ data, isLoading }: { data: LotesProductosIntermedios[], isLoading: boolean }) => {
-    const { setShowLotesDetalles, setShowProductosIntermediosDetalles, setLotesProductosIntermediosDetalles } = useProductosIntermediosContext();
+    const { setShowLotesDetalles, setLotesProductosIntermediosDetalles } = useProductosIntermediosContext();
 
     const handleOnClick = (item: LotesProductosIntermedios) => {
         setShowLotesDetalles(true);
-        setShowProductosIntermediosDetalles(false);
         setLotesProductosIntermediosDetalles(item);
     }
     
