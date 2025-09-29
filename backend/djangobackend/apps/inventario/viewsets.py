@@ -231,6 +231,7 @@ class ProductosElaboradosViewSet(viewsets.ModelViewSet):
             'componente_materia_prima__unidad_medida_base',
             'componente_producto_intermedio__unidad_produccion'
         )
+
         subrecetas = []
         self._get_all_sub_recetas(receta_principal.id, subrecetas)
         # Derive unit-based production flags from product's unidad_produccion
@@ -262,9 +263,44 @@ class ProductosElaboradosViewSet(viewsets.ModelViewSet):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-class LotesProductosElaboradosSerializer(viewsets.ModelViewSet):
+class LotesProductosElaboradosViewSet(viewsets.ModelViewSet):
     queryset = LotesProductosElaborados.objects.all()
+    serializer = LotesProductosElaboradosSerializer
     
+    @action(detail=True, methods=['get'], url_path='change-estado-lote')
+    def change_estado_lote(self, request, *args, **kwargs):
+        try:
+            lote_id = kwargs.get('pk')
+            lote = LotesProductosElaborados.objects.get(id=lote_id)
+            producto = lote.producto_elaborado
+            if lote.estado == 'DISPONIBLE':
+
+                if lote.fecha_caducidad > datetime.now().date():
+                    lote.estado = LotesStatus.INACTIVO
+                    lote.save(update_fields=['estado'])
+                    producto.actualizar_stock()
+                else:
+                    return Response(
+                        status=status.HTTP_400_BAD_REQUEST, 
+                        data={"error": "Este Lote ya caducó"}
+                    )
+            elif lote.estado == 'INACTIVO':
+                if lote.fecha_caducidad > datetime.now().date():
+                    lote.estado = LotesStatus.DISPONIBLE
+                    lote.save(update_fields=['estado'])
+                    producto.actualizar_stock()
+                else:
+                    return Response(
+                        status=status.HTTP_400_BAD_REQUEST, 
+                        data={"error": "Este Lote ya caducó"}
+                    )
+        
+            return Response({"message": "Estado del lote cambiado correctamente"}, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+
+
 
 class ProductosIntermediosViewSet(viewsets.ModelViewSet):
     queryset = ProductosIntermedios.objects.all()

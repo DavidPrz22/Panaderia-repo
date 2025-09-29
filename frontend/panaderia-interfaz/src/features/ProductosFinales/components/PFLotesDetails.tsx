@@ -2,7 +2,15 @@ import { DetailsField } from "@/components/DetailsField";
 import { DetailFieldValue } from "@/components/DetailFieldValue";
 import { BorrarIcon, CheckIcon } from "@/assets/DashboardAssets";
 import { useProductosFinalesContext } from "@/context/ProductosFinalesContext";
+import { useChangeEstadoLoteProductosFinales } from "../hooks/mutations/productosFinalesMutations";
+import { PendingTubeSpinner } from "./PendingTubeSpinner";
+
 export const PFLotesDetails = () => {
+    const { mutateAsync: changeEstadoLoteProductosFinales, isPending: isPendingChangeEstadoLoteProductosFinales } = useChangeEstadoLoteProductosFinales();
+
+    const handleChangeEstadoLote = async () => {
+        await changeEstadoLoteProductosFinales(lotesProductosFinalesDetalles!.id);
+    }
 
     const { lotesProductosFinalesDetalles } = useProductosFinalesContext();
     if (!lotesProductosFinalesDetalles) return null;
@@ -23,6 +31,11 @@ export const PFLotesDetails = () => {
 
   return (
     <div className="flex items-center gap-20">
+    
+      {isPendingChangeEstadoLoteProductosFinales && (
+        <PendingTubeSpinner size={28} extraClass="bg-white absolute top-0 left-0 translate-x-1/2 -translate-y-1/2 opacity-50 w-full h-full" />
+      )}
+
       <div className="grid grid-rows-9 grid-cols-1 gap-2">
         <DetailsField extraClass="min-h-[20px] flex items-center">
           Id del lote
@@ -143,7 +156,7 @@ export const PFLotesDetails = () => {
         { lotesProductosFinalesDetalles.estado === "DISPONIBLE" && (
             <DetailFieldValue extraClass="min-h-[40px]">
             <button
-                onClick={()=>{}}
+                onClick={handleChangeEstadoLote}
                 className="bg-red-500 text-white p-1.5 rounded-md hover:bg-red-600 cursor-pointer ml-auto"
             >
                 <img src={BorrarIcon} alt="Inactivar lote" className="size-6" />
@@ -153,7 +166,7 @@ export const PFLotesDetails = () => {
         { lotesProductosFinalesDetalles.estado === "INACTIVO" && (
             <DetailFieldValue extraClass="min-h-[40px]">
             <button
-                onClick={()=>{}}
+                onClick={handleChangeEstadoLote}
                 className="bg-green-500 text-white p-1.5 rounded-md hover:bg-green-600 cursor-pointer ml-auto"
             >
                 <img src={CheckIcon} alt="Activar lote" className="size-6" />

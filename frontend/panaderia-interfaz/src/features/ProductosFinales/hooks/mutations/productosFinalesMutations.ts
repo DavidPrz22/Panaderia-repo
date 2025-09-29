@@ -5,12 +5,14 @@ import {
   updateProductoFinal,
   getRecetasSearch,
   removeRecetaRelacionada,
+  changeEstadoLoteProductosFinales,
 } from "../../api/api";
 import type { TProductoFinalSchema } from "../../schemas/schemas";
 
 import {
   productosFinalesQueryOptions,
   productoFinalDetallesQueryOptions,
+  lotesProductosFinalesQueryOptions,
 } from "../queries/productosFinalesQueryOptions";
 
 import { finalesSearchOptions } from "@/features/Production/hooks/queries/ProductionQueryOptions";
@@ -86,6 +88,21 @@ export const useRemoveRecetaRelacionadaMutation = () => {
     },
     onError: (error) => {
       console.log(error);
+    },
+  });
+};
+
+export const useChangeEstadoLoteProductosFinales = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: number) => changeEstadoLoteProductosFinales(id),
+    onSuccess: async (_, id) => {
+      await queryClient.invalidateQueries({
+        queryKey: lotesProductosFinalesQueryOptions(id).queryKey,
+      });
+      await queryClient.invalidateQueries({
+        queryKey: productosFinalesQueryOptions().queryKey,
+      });
     },
   });
 };

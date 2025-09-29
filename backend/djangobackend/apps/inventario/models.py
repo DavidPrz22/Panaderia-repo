@@ -37,7 +37,7 @@ class ComponentesStockManagement(models.Model):
             self.__class__.objects.filter(id=self.id).update(stock_actual=stock_total)
             return stock_total
     
-        elif hasattr(self, 'lotesproductoselaborados_set'):
+        elif isinstance(self, ProductosElaborados):
 
             lote_total = LotesProductosElaborados.objects.filter(
                 producto_elaborado=self, 
@@ -70,7 +70,7 @@ class ComponentesStockManagement(models.Model):
                 queryset = queryset.exclude(id=exclude_id)
             return queryset.order_by('fecha_caducidad').first()
 
-        elif hasattr(self, 'lotesproductoselaborados_set'):
+        elif isinstance(self, ProductosElaborados):
             queryset = LotesProductosElaborados.objects.filter(
                 producto_elaborado=self, 
                 estado=LotesStatus.DISPONIBLE
@@ -174,30 +174,24 @@ class ComponentesStockManagement(models.Model):
                     'stock_expirado': lote.stock_actual_lote
                 })
 
+        # Update stock for affected materials (get unique materials from expired lots)
+        affected_mp_ids = list(expired_mp_lots.values_list('materia_prima_id', flat=True).distinct())
+        affected_pe_ids = list(expired_pe_lots.values_list('producto_elaborado_id', flat=True).distinct())
+
         # Update lot statuses
         mp_count = expired_mp_lots.update(estado=LotesStatus.EXPIRADO)
         pe_count = expired_pe_lots.update(estado=LotesStatus.EXPIRADO)
         total_count = mp_count + pe_count
 
-        # Update stock for affected materials (get unique materials from expired lots)
-        affected_mp_ids = expired_mp_lots.values_list('materia_prima_id', flat=True)
-        affected_pe_ids = expired_pe_lots.values_list('producto_elaborado_id', flat=True)
-
         # Update stock for affected raw materials
         for mp_id in affected_mp_ids:
-            try:
-                mp = MateriasPrimas.objects.get(id=mp_id)
-                mp.actualizar_stock()
-            except MateriasPrimas.DoesNotExist:
-                continue
+            mp = MateriasPrimas.objects.get(id=mp_id)
+            mp.actualizar_stock()
 
         # Update stock for affected elaborated products
         for pe_id in affected_pe_ids:
-            try:
-                pe = ProductosElaborados.objects.get(id=pe_id)
-                pe.actualizar_stock()
-            except ProductosElaborados.DoesNotExist:
-                continue
+            pe = ProductosElaborados.objects.get(id=pe_id)
+            pe.actualizar_stock()
 
         return {
             "resumen": resumen, 
