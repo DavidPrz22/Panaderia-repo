@@ -31,9 +31,21 @@ export const PILotesBody = ({ data, isLoading }: { data: LotesProductosIntermedi
         );
     }
 
+    // Sort data: DISPONIBLE first, then by fecha_caducidad ascending (closest to expire first)
+    const sortedData = [...data].sort((a, b) => {
+        // First, prioritize DISPONIBLE estado
+        if (a.estado === "DISPONIBLE" && b.estado !== "DISPONIBLE") return -1;
+        if (a.estado !== "DISPONIBLE" && b.estado === "DISPONIBLE") return 1;
+
+        // If both have same estado priority, sort by fecha_caducidad ascending
+        const dateA = new Date(a.fecha_caducidad);
+        const dateB = new Date(b.fecha_caducidad);
+        return dateA.getTime() - dateB.getTime();
+    });
+
     return (
         <div className="rounded-b-lg">
-            {data.map((item) => (
+            {sortedData.map((item) => (
                 <div 
                     key={`${item.fecha_produccion}-${item.fecha_caducidad}`}
                     className="p-4 grid grid-cols-6 border-t border-gray-300 hover:bg-gray-100 cursor-pointer font-[Roboto] text-sm"

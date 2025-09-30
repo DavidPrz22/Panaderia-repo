@@ -2,9 +2,17 @@ import { DetailsField } from "@/components/DetailsField";
 import { DetailFieldValue } from "@/components/DetailFieldValue";
 import { BorrarIcon, CheckIcon } from "@/assets/DashboardAssets";
 import { useProductosIntermediosContext } from "@/context/ProductosIntermediosContext";
+import { useChangeEstadoLoteProductosIntermedios } from "../hooks/mutations/productosIntermediosMutations";
+import { PendingTubeSpinner } from "./PendingTubeSpinner";
 export const PILotesDetails = () => {
+    const { mutateAsync: changeEstadoLoteProductosIntermedios, isPending: isPendingChangeEstadoLoteProductosIntermedios } = useChangeEstadoLoteProductosIntermedios();
 
-    const { lotesProductosIntermediosDetalles } = useProductosIntermediosContext();
+    const handleChangeEstadoLote = async () => {
+        await changeEstadoLoteProductosIntermedios(lotesProductosIntermediosDetalles!.id);
+        setShowLotesDetalles(false);
+    }
+
+    const { lotesProductosIntermediosDetalles, setShowLotesDetalles} = useProductosIntermediosContext();
     if (!lotesProductosIntermediosDetalles) return null;
 
     const hasWeightMetrics = (
@@ -23,6 +31,11 @@ export const PILotesDetails = () => {
 
   return (
     <div className="flex items-center gap-20">
+
+      {isPendingChangeEstadoLoteProductosIntermedios && (
+        <PendingTubeSpinner size={28} extraClass="bg-white absolute opacity-50 w-full h-full" />
+      )}
+
       <div className="grid grid-rows-9 grid-cols-1 gap-2">
         <DetailsField extraClass="min-h-[20px] flex items-center">
           Id del lote
@@ -104,7 +117,7 @@ export const PILotesDetails = () => {
           {lotesProductosIntermediosDetalles.stock_actual_lote || "-"}
         </DetailFieldValue>
         <DetailFieldValue extraClass="min-h-[20px] ">
-          {lotesProductosIntermediosDetalles.coste_total_lote_usd || "-"}
+          {Number(lotesProductosIntermediosDetalles.coste_total_lote_usd).toFixed(2) || "-"}
         </DetailFieldValue>
         <DetailFieldValue extraClass="min-h-[20px] ">
           {lotesProductosIntermediosDetalles.estado || "-"}
@@ -137,13 +150,13 @@ export const PILotesDetails = () => {
           </>
         )}
             <DetailFieldValue extraClass="min-h-[20px] ">
-          {lotesProductosIntermediosDetalles.costo_unitario_usd || "-"}
+          {lotesProductosIntermediosDetalles.costo_unitario_usd.toFixed(2) || "-"}
         </DetailFieldValue>
 
         { lotesProductosIntermediosDetalles.estado === "DISPONIBLE" && (
             <DetailFieldValue extraClass="min-h-[40px]">
             <button
-                onClick={()=>{}}
+                onClick={handleChangeEstadoLote}
                 className="bg-red-500 text-white p-1.5 rounded-md hover:bg-red-600 cursor-pointer ml-auto"
             >
                 <img src={BorrarIcon} alt="Inactivar lote" className="size-6" />
@@ -153,7 +166,7 @@ export const PILotesDetails = () => {
         { lotesProductosIntermediosDetalles.estado === "INACTIVO" && (
             <DetailFieldValue extraClass="min-h-[40px]">
             <button
-                onClick={()=>{}}
+                onClick={handleChangeEstadoLote}
                 className="bg-green-500 text-white p-1.5 rounded-md hover:bg-green-600 cursor-pointer ml-auto"
             >
                 <img src={CheckIcon} alt="Activar lote" className="size-6" />
