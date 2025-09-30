@@ -274,7 +274,6 @@ class LotesProductosElaboradosViewSet(viewsets.ModelViewSet):
             lote = LotesProductosElaborados.objects.get(id=lote_id)
             producto = lote.producto_elaborado
             if lote.estado == 'DISPONIBLE':
-
                 if lote.fecha_caducidad > datetime.now().date():
                     lote.estado = LotesStatus.INACTIVO
                     lote.save(update_fields=['estado'])
@@ -285,6 +284,7 @@ class LotesProductosElaboradosViewSet(viewsets.ModelViewSet):
                         data={"error": "Este Lote ya caducó"}
                     )
             elif lote.estado == 'INACTIVO':
+
                 if lote.fecha_caducidad > datetime.now().date():
                     lote.estado = LotesStatus.DISPONIBLE
                     lote.save(update_fields=['estado'])
