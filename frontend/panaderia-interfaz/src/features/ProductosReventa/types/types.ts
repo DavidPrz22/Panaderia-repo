@@ -5,50 +5,43 @@ import type {
   UseFormRegister,
   UseFormSetValue,
 } from "react-hook-form";
-import type { TProductosIntermediosSchema } from "../schemas/schema";
+import type { TProductosReventaSchema } from "../schemas/schema";
 
 export type childrenProp = {
   children: ReactNode;
 };
 
-export type ProductosIntermediosFormSharedProps = {
+export type ProductosReventaFormSharedProps = {
   title: string;
   isUpdate?: boolean;
-  initialData?: ProductosIntermediosDetalles;
+  initialData?: ProductosReventaDetalles;
   onClose: () => void;
   onSubmitSuccess: () => void;
 };
 
-export type PIFormInputContainerProps = {
+export type PRFormInputContainerProps = {
   inputType: string;
   title: string;
-  name: Path<TProductosIntermediosSchema>;
-  register: UseFormRegister<TProductosIntermediosSchema>;
-  errors: FieldErrors<TProductosIntermediosSchema>;
+  name: Path<TProductosReventaSchema>;
+  register: UseFormRegister<TProductosReventaSchema>;
+  errors: FieldErrors<TProductosReventaSchema>;
   optional?: boolean;
-  search?: boolean;
-  initialData?: RecetaRelacionada | false;
 };
 
-export type PIFormInputProps = {
-  register: UseFormRegister<TProductosIntermediosSchema>;
-  name: Path<TProductosIntermediosSchema>;
+export type PRFormInputProps = {
+  register: UseFormRegister<TProductosReventaSchema>;
+  name: Path<TProductosReventaSchema>;
   typeInput: string;
   placeholder?: string;
 };
 
-export type PIFormSelectContainerProps = {
+export type PRFormSelectContainerProps = {
   title: string;
-  name: Path<TProductosIntermediosSchema>;
-  register: UseFormRegister<TProductosIntermediosSchema>;
-  errors: FieldErrors<TProductosIntermediosSchema>;
+  name: Path<TProductosReventaSchema>;
+  register: UseFormRegister<TProductosReventaSchema>;
+  errors: FieldErrors<TProductosReventaSchema>;
   children: ReactNode;
   optional?: boolean;
-};
-
-export type recetasSearchItem = {
-  id: number;
-  nombre: string;
 };
 
 export type UnidadesDeMedida = {
@@ -57,42 +50,46 @@ export type UnidadesDeMedida = {
   abreviatura: string;
 };
 
-export type CategoriaProductoIntermedio = {
+export type CategoriaProductosReventa = {
   id: number;
   nombre_categoria: string;
 };
 
-export type setValueProps = {
-  setValue?: UseFormSetValue<TProductosIntermediosSchema>;
+export type Proveedor = {
+  id: number;
+  nombre_proveedor: string;
 };
 
-export type ProductosIntermedios = {
+export type setValueProps = {
+  setValue?: UseFormSetValue<TProductosReventaSchema>;
+};
+
+export type ProductosReventa = {
   id: number;
   nombre_producto: string;
-  SKU: string;
+  SKU: string | null;
   stock_actual: number;
-  punto_reorden: number;
+  precio_venta_usd: number;
   categoria_nombre: string;
+  marca: string | null;
   fecha_creacion_registro: string;
 };
 
-export type RecetaRelacionada =
-  | {
-      id: number;
-      nombre: string;
-    }
-  | false;
-
-export type ProductosIntermediosDetalles = {
+export type ProductosReventaDetalles = {
   id: number;
   nombre_producto: string;
-  SKU: string;
+  descripcion: string | null;
+  SKU: string | null;
+  categoria: { id: number; nombre_categoria: string };
+  marca: string | null;
+  proveedor_preferido: { id: number; nombre_proveedor: string } | null;
+  unidad_base_inventario: { id: number; nombre_completo: string; abreviatura: string };
+  unidad_venta: { id: number; nombre_completo: string; abreviatura: string };
+  factor_conversion: number;
   stock_actual: number;
-  punto_reorden: number;
-  categoria_producto: { id: number; nombre_categoria: string };
-  unidad_medida_nominal_producto: { id: number; nombre_completo: string };
+  precio_venta_usd: number;
+  costo_ultima_compra_usd: number;
+  pecedero: boolean;
   fecha_creacion_registro: string;
   fecha_modificacion_registro: string;
-  descripcion: string;
-  receta_relacionada: RecetaRelacionada;
 };

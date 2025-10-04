@@ -1,11 +1,11 @@
-import type { PIFormInputProps } from "../types/types";
+import type { PRFormInputProps } from "../types/types";
 
-export default function PIInputForm({
+export default function PRInputForm({
   typeInput,
   name,
   placeholder = "",
   register,
-}: PIFormInputProps) {
+}: PRFormInputProps) {
   let inputElement: React.ReactNode = <></>;
   if (typeInput === "textarea") {
     inputElement = (
@@ -33,7 +33,7 @@ export default function PIInputForm({
                         ? `/* Tailwind's way to hide WebKit arrows */
                     [&::-webkit-outer-spin-button]:appearance-none
                     [&::-webkit-inner-spin-button]:appearance-none
-                    
+
                     /* Tailwind's way to hide Firefox arrows */
                     [appearance:textfield]`
                         : ""

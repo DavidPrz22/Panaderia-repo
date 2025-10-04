@@ -1,27 +1,29 @@
 import { useQueries, useQuery } from "@tanstack/react-query";
 import {
-  productosIntermediosDetallesQueryOptions,
-  productosIntermediosQueryOptions,
+  productosReventaDetallesQueryOptions,
+  productosReventaQueryOptions,
   unidadesMedidaQueryOptions,
+  categoriasProductosReventaQueryOptions,
+  proveedoresQueryOptions,
 } from "./queryOptions";
-import { categoriasProductoIntermedioQueryOptions } from "./queryOptions";
 
 export const useGetParametros = () => {
   return useQueries({
     queries: [
       unidadesMedidaQueryOptions,
-      categoriasProductoIntermedioQueryOptions,
+      categoriasProductosReventaQueryOptions,
+      proveedoresQueryOptions,
     ],
   });
 };
 
-export const useGetProductosIntermedios = () => {
-  return useQuery(productosIntermediosQueryOptions);
+export const useGetProductosReventa = () => {
+  return useQuery(productosReventaQueryOptions);
 };
 
-export const useGetProductosIntermediosDetalles = (id: number) => {
+export const useGetProductosReventaDetalles = (id: number) => {
   return useQuery({
-    ...productosIntermediosDetallesQueryOptions(id),
+    ...productosReventaDetallesQueryOptions(id),
     enabled: !!id,
   });
 };

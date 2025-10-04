@@ -1,14 +1,14 @@
-import type { PIFormSelectContainerProps } from "../types/types";
+import type { PRFormSelectContainerProps } from "../types/types";
 import { get } from "react-hook-form";
 
-export const PIFormSelectContainer = ({
+export const PRFormSelectContainer = ({
   title,
   name,
   register,
   errors,
   children,
   optional,
-}: PIFormSelectContainerProps) => {
+}: PRFormSelectContainerProps) => {
   return (
     <div className="flex flex-col gap-1">
       <div className="flex items-center gap-2">

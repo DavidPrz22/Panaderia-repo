@@ -1,14 +1,10 @@
-// import { useEffect } from "react";
-// import { DoubleSpinner } from "@/assets";
-
-import { useGetProductosIntermedios } from "../hooks/queries/queries";
-import { PITableRows } from "./PITableRows";
+import { useGetProductosReventa } from "../hooks/queries/queries";
+import { PRTableRows } from "./PRTableRows";
 import { PendingTubeSpinner } from "./PendingTubeSpinner";
 
-export const PITableBody = () => {
-  const { data: productosIntermedios, isFetching } =
-    useGetProductosIntermedios();
-  const displayData = productosIntermedios || [];
+export const PRTableBody = () => {
+  const { data: productosReventa, isFetching } = useGetProductosReventa();
+  const displayData = productosReventa || [];
 
   const NoDataMessage = () => (
     <div className="flex justify-center h-full items-center font-bold text-2xl text-gray-700">
@@ -24,7 +20,7 @@ export const PITableBody = () => {
           extraClass="absolute bg-white opacity-50 w-full h-full"
         />
       ) : displayData.length > 0 ? (
-        <PITableRows data={displayData} />
+        <PRTableRows data={displayData} />
       ) : (
         <NoDataMessage />
       )}

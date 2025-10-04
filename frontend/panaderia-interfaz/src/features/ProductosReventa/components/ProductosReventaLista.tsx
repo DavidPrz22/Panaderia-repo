@@ -1,9 +1,9 @@
 import { TubeSpinner } from "@/assets";
 
-import { PITableBody } from "./PITableBody";
-import { PITableHeader } from "./PITableHeader";
+import { PRTableBody } from "./PRTableBody";
+import { PRTableHeader } from "./PRTableHeader";
 
-export default function ProductosIntermediosLista({
+export default function ProductosReventaLista({
   isLoadingDetalles,
 }: {
   isLoadingDetalles: boolean;
@@ -11,18 +11,19 @@ export default function ProductosIntermediosLista({
   return (
     <>
       <div className="relative mx-8 border border-gray-200 rounded-md min-h-[80%]">
-        <PITableHeader
+        <PRTableHeader
           headers={[
             "ID",
             "Nombre",
             "SKU",
             "Stock",
-            "Punto de reorden",
-            "Categoria",
+            "Precio Venta",
+            "Categoría",
+            "Marca",
             "Fecha de creación",
           ]}
         />
-        <PITableBody />
+        <PRTableBody />
         {isLoadingDetalles ? (
           <div className="absolute top-0 left-0 w-full h-full flex justify-center items-center bg-white opacity-50">
             <img src={TubeSpinner} alt="Cargando..." className="size-28" />

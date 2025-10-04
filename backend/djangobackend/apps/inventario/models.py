@@ -465,21 +465,63 @@ class ProductosFinales(ProductosElaborados):
 
 
 class ProductosReventa(models.Model):
-    nombre_producto = models.CharField(max_length=100, null=False, blank=False, unique=True) # -- Ej: "Refresco de Cola Lata 355ml", "Jamón Cocido Superior", "Queso Gouda Pieza".
+    nombre_producto = models.CharField(max_length=100, null=False, blank=False, unique=True)
     descripcion = models.TextField(max_length=255, null=True, blank=True)
-    SKU = models.CharField(max_length=50, null=True, blank=True, unique=True) # -- Ej: "RC355", "JCS", "QG".
+    SKU = models.CharField(max_length=50, null=True, blank=True, unique=True)
     categoria = models.ForeignKey(CategoriasProductosReventa, on_delete=models.CASCADE)
     marca = models.CharField(max_length=100, null=True, blank=True)
     proveedor_preferido = models.ForeignKey('compras.Proveedores', on_delete=models.CASCADE, null=True, blank=True)
-    tipo_manejo_venta = models.CharField(choices=[('UNIDAD', 'Unidad'), ('PESO_VOLUMEN', 'Peso_Volumen')], max_length=15, null=False, blank=False) # -- Indica si se vende por unidad fija o por peso/volumen.
-    unidad_base_inventario = models.ForeignKey(UnidadesDeMedida, on_delete=models.CASCADE, null=False, blank=False) # Unidad en la que se gestiona el stock (ej: "Unidad" para latas, "Gramos" para jamón).
+    
+    # Replace tipo_manejo_venta with separate units
+    unidad_base_inventario = models.ForeignKey(
+        UnidadesDeMedida, 
+        on_delete=models.CASCADE, 
+        null=False, 
+        blank=False,
+        related_name='productos_reventa_inventario',
+        help_text="Unidad en la que se gestiona el stock (ej: Unidad para latas, Gramos para jamón)"
+    )
+    
+    unidad_venta = models.ForeignKey(
+        UnidadesDeMedida,
+        on_delete=models.CASCADE,
+        null=False,
+        blank=False,
+        related_name='productos_reventa_venta',
+        help_text="Unidad en la que se vende el producto (ej: Unidad para bolsa de 1kg)"
+    )
+    
+    # Conversion factor: how many inventory units = 1 sale unit
+    # Example: 1 bag (sale unit) = 1000 grams (inventory unit), factor = 1000
+    factor_conversion = models.DecimalField(
+        max_digits=10, 
+        decimal_places=4, 
+        default=1,
+        help_text="Cuántas unidades de inventario equivalen a 1 unidad de venta"
+    )
+    
     stock_actual = models.DecimalField(max_digits=10, decimal_places=2, default=0)
-    precio_venta_usd = models.DecimalField(max_digits=10, decimal_places=2, default=0) #  Si tipo_manejo_venta es 'UNIDAD', es precio/unidad. Si es 'PESO_VOLUMEN', es precio/id_unidad_base_inventario (ej. precio por gramo).
+    
+    # Price is always per sale unit
+    precio_venta_usd = models.DecimalField(
+        max_digits=10, 
+        decimal_places=2, 
+        default=0,
+        help_text="Precio por unidad de venta"
+    )
+    
     costo_ultima_compra_usd = models.DecimalField(max_digits=10, decimal_places=2, default=0)
-    pecedero = models.BooleanField(default=False, null=False) # - Indica si requiere gestión de lotes por caducidad.
-    activo = models.BooleanField(default=False, null=False)
+    pecedero = models.BooleanField(default=False, null=False)
     fecha_creacion_registro = models.DateField(auto_now_add=True)
     fecha_modificacion_registro = models.DateField(auto_now=True)
+
+    def convert_inventory_to_sale_units(self, cantidad_inventario):
+        """Convert inventory units to sale units"""
+        return cantidad_inventario / self.factor_conversion
+    
+    def convert_sale_to_inventory_units(self, cantidad_venta):
+        """Convert sale units to inventory units"""
+        return cantidad_venta * self.factor_conversion
 
     def __str__(self):
         return f"Producto {self.id} - {self.nombre_producto} {self.stock_actual}"
@@ -494,7 +536,11 @@ class LotesProductosReventa(models.Model):
     coste_unitario_lote_usd = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     detalle_oc = models.ForeignKey('compras.DetalleOrdenesCompra', on_delete=models.CASCADE, null=True, blank=True)
     proveedor = models.ForeignKey('compras.Proveedores', on_delete=models.CASCADE, null=True, blank=True)
-    activo = models.BooleanField(default=False, null=False)
+    estado = models.CharField(
+        max_length=10,
+        choices=LotesStatus.choices,
+        default=LotesStatus.DISPONIBLE
+    )
     notas = models.TextField(max_length=255, null=True, blank=True)
 
     def __str__(self):
