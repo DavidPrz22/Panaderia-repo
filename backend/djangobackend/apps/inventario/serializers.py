@@ -639,3 +639,73 @@ class ProductosReventaSerializer(serializers.ModelSerializer):
             data['proveedor_preferido_nombre'] = None
 
         return data
+class ProductosReventaDetallesSerializer(serializers.ModelSerializer):
+    categoria = serializers.SerializerMethodField()
+    proveedor_preferido = serializers.SerializerMethodField()
+    unidad_base_inventario = serializers.SerializerMethodField()
+    unidad_venta = serializers.SerializerMethodField()
+    convert_inventory_to_sale_units = serializers.SerializerMethodField()
+    convert_sale_to_inventory_units = serializers.SerializerMethodField()
+
+    class Meta:
+        model = ProductosReventa
+        fields = [
+            'id',
+            'nombre_producto',
+            'descripcion',
+            'SKU',
+            'categoria',
+            'marca',
+            'proveedor_preferido',
+            'unidad_base_inventario',
+            'unidad_venta',
+            'factor_conversion',
+            'stock_actual',
+            'precio_venta_usd',
+            'costo_ultima_compra_usd',
+            'pecedero',
+            'fecha_creacion_registro',
+            'fecha_modificacion_registro',
+            'convert_inventory_to_sale_units',
+            'convert_sale_to_inventory_units',
+        ]
+
+    def get_categoria(self, obj):
+        categoria = CategoriasProductosReventa.objects.get(id=obj.categoria.id)
+        return {
+            'id': categoria.id,
+            'nombre_categoria': categoria.nombre_categoria,
+        }
+
+    def get_proveedor_preferido(self, obj):
+        if obj.proveedor_preferido:
+            proveedor = Proveedores.objects.get(id=obj.proveedor_preferido.id)
+            return {
+                'id': proveedor.id,
+                'nombre_proveedor': proveedor.nombre_proveedor,
+            }
+        return None
+
+    def get_unidad_base_inventario(self, obj):
+        unidad = UnidadesDeMedida.objects.get(id=obj.unidad_base_inventario.id)
+        return {
+            'id': unidad.id,
+            'nombre_completo': unidad.nombre_completo,
+            'abreviatura': unidad.abreviatura,
+        }
+
+    def get_unidad_venta(self, obj):
+        unidad = UnidadesDeMedida.objects.get(id=obj.unidad_venta.id)
+        return {
+            'id': unidad.id,
+            'nombre_completo': unidad.nombre_completo,
+            'abreviatura': unidad.abreviatura,
+        }
+
+    def get_convert_inventory_to_sale_units(self, obj):
+        # Since it's a method that takes parameter, return the factor as example
+        return f"Divide by {obj.factor_conversion}"
+
+    def get_convert_sale_to_inventory_units(self, obj):
+        # Since it's a method that takes parameter, return the factor as example
+        return f"Multiply by {obj.factor_conversion}"

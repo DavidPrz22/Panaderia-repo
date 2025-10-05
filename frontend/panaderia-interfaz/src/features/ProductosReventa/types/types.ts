@@ -92,4 +92,6 @@ export type ProductosReventaDetalles = {
   pecedero: boolean;
   fecha_creacion_registro: string;
   fecha_modificacion_registro: string;
+  convert_inventory_to_sale_units: string;
+  convert_sale_to_inventory_units: string;
 };

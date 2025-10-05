@@ -18,7 +18,6 @@ export default function ProductosReventaDetalles() {
     setShowProductosReventaDetalles,
     registroDelete,
     productoReventaId,
-    setIsLoadingDetalles,
     enabledDetalles,
     setEnabledDetalles,
   } = useProductosReventaContext();
@@ -44,14 +43,10 @@ export default function ProductosReventaDetalles() {
     productosReventaDetalles,
     isSuccessDetalles,
     enabledDetalles,
-    setIsLoadingDetalles,
     setShowProductosReventaDetalles,
     setEnabledDetalles,
   ]);
 
-  useEffect(() => {
-    setIsLoadingDetalles(isFetchingDetalles);
-  }, [isFetchingDetalles, setIsLoadingDetalles]);
 
   if (!showProductosReventaDetalles) return <></>;
 

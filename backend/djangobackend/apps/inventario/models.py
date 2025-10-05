@@ -471,7 +471,7 @@ class ProductosReventa(models.Model):
     categoria = models.ForeignKey(CategoriasProductosReventa, on_delete=models.CASCADE)
     marca = models.CharField(max_length=100, null=True, blank=True)
     proveedor_preferido = models.ForeignKey('compras.Proveedores', on_delete=models.CASCADE, null=True, blank=True)
-    
+
     # Replace tipo_manejo_venta with separate units
     unidad_base_inventario = models.ForeignKey(
         UnidadesDeMedida, 
@@ -481,7 +481,7 @@ class ProductosReventa(models.Model):
         related_name='productos_reventa_inventario',
         help_text="Unidad en la que se gestiona el stock (ej: Unidad para latas, Gramos para jamón)"
     )
-    
+
     unidad_venta = models.ForeignKey(
         UnidadesDeMedida,
         on_delete=models.CASCADE,
@@ -490,7 +490,7 @@ class ProductosReventa(models.Model):
         related_name='productos_reventa_venta',
         help_text="Unidad en la que se vende el producto (ej: Unidad para bolsa de 1kg)"
     )
-    
+
     # Conversion factor: how many inventory units = 1 sale unit
     # Example: 1 bag (sale unit) = 1000 grams (inventory unit), factor = 1000
     factor_conversion = models.DecimalField(
@@ -499,9 +499,9 @@ class ProductosReventa(models.Model):
         default=1,
         help_text="Cuántas unidades de inventario equivalen a 1 unidad de venta"
     )
-    
+
     stock_actual = models.DecimalField(max_digits=10, decimal_places=2, default=0)
-    
+
     # Price is always per sale unit
     precio_venta_usd = models.DecimalField(
         max_digits=10, 
@@ -509,7 +509,7 @@ class ProductosReventa(models.Model):
         default=0,
         help_text="Precio por unidad de venta"
     )
-    
+
     costo_ultima_compra_usd = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     pecedero = models.BooleanField(default=False, null=False)
     fecha_creacion_registro = models.DateField(auto_now_add=True)
@@ -518,7 +518,7 @@ class ProductosReventa(models.Model):
     def convert_inventory_to_sale_units(self, cantidad_inventario):
         """Convert inventory units to sale units"""
         return cantidad_inventario / self.factor_conversion
-    
+
     def convert_sale_to_inventory_units(self, cantidad_venta):
         """Convert sale units to inventory units"""
         return cantidad_venta * self.factor_conversion

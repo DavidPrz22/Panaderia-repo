@@ -24,9 +24,10 @@ export const productosReventaSchema = z.object({
     .string()
     .max(100, "La marca no puede exceder 100 caracteres")
     .optional(),
-  proveedor_preferido: z.coerce
-    .number()
-    .optional(),
+  proveedor_preferido: z
+    .string()
+    .optional()
+    .transform((val) => (!val || val === "" ? undefined : Number(val))) as unknown as z.ZodOptional<z.ZodNumber>,
   unidad_base_inventario: z.coerce
     .number({
       required_error: "La unidad base de inventario es requerida",
@@ -39,17 +40,11 @@ export const productosReventaSchema = z.object({
       invalid_type_error: "La unidad de venta no es válida",
     })
     .min(1, "La unidad de venta es requerida"),
-  factor_conversion: z
-    .number({
-      required_error: "El factor de conversión es requerido",
-      invalid_type_error: "El factor de conversión debe ser un número",
-    })
-    .min(0, "El factor de conversión debe ser mayor o igual a 0"),
-  precio_venta_usd: z
-    .number({
-      required_error: "El precio de venta es requerido",
-      invalid_type_error: "El precio de venta debe ser un número",
-    })
+  factor_conversion: z.coerce
+    .number()
+    .min(0, "El Factor de conversion debe ser mayor o igual a 0"),
+  precio_venta_usd: z.coerce
+    .number()
     .min(0, "El precio de venta debe ser mayor o igual a 0"),
   pecedero: z.coerce.boolean(),
 });

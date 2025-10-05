@@ -16,7 +16,6 @@ export default function ProductosReventaPanel() {
     setUnidadesMedida,
     setCategoriasProductosReventa,
     setProveedores,
-    isLoadingDetalles,
   } = useProductosReventaContext();
 
   const [
@@ -45,7 +44,7 @@ export default function ProductosReventaPanel() {
     <>
       <div className="flex flex-col gap-6 h-full">
         <FilterSearch />
-        <ProductosReventaLista isLoadingDetalles={isLoadingDetalles} />
+        <ProductosReventaLista />
       </div>
     </>
   );

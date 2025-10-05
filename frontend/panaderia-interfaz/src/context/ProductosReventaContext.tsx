@@ -23,8 +23,6 @@ type ProductosReventaContextType = {
   setCategoriasProductosReventa: (value: CategoriaProductosReventa[]) => void;
   proveedores: Proveedor[];
   setProveedores: (value: Proveedor[]) => void;
-  isLoadingDetalles: boolean;
-  setIsLoadingDetalles: (value: boolean) => void;
   enabledDetalles: boolean;
   setEnabledDetalles: (value: boolean) => void;
   // Search & filters for productos reventa list
@@ -57,8 +55,6 @@ export const ProductosReventaProvider = ({ children }: childrenProp) => {
     useState<CategoriaProductosReventa[]>([]);
   const [proveedores, setProveedores] = useState<Proveedor[]>([]);
 
-  const [isLoadingDetalles, setIsLoadingDetalles] = useState(false);
-
   // Search & filters state
   const [productosReventaSearchTerm, setProductosReventaSearchTerm] = useState("");
   const [selectedCategoriasReventa, setSelectedCategoriasReventa] = useState<string[]>([]);
@@ -83,8 +79,6 @@ export const ProductosReventaProvider = ({ children }: childrenProp) => {
         setCategoriasProductosReventa,
         proveedores,
         setProveedores,
-        isLoadingDetalles,
-        setIsLoadingDetalles,
         enabledDetalles,
         setEnabledDetalles,
         productosReventaSearchTerm,
