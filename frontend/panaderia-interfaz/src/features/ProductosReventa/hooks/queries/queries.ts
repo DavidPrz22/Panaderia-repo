@@ -5,6 +5,7 @@ import {
   unidadesMedidaQueryOptions,
   categoriasProductosReventaQueryOptions,
   proveedoresQueryOptions,
+  lotesProductosReventaQueryOptions,
 } from "./queryOptions";
 
 export const useGetParametros = () => {
@@ -26,4 +27,8 @@ export const useGetProductosReventaDetalles = (id: number) => {
     ...productosReventaDetallesQueryOptions(id),
     enabled: !!id,
   });
+};
+
+export const useGetLotesProductosReventa = (id: number) => {
+  return useQuery(lotesProductosReventaQueryOptions(id));
 };

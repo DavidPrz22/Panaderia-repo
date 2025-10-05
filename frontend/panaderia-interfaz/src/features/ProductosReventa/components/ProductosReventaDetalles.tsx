@@ -8,6 +8,8 @@ import { useEffect } from "react";
 import { useDeleteProductosReventaMutation } from "../hooks/mutations/productosReventaMutations";
 import { PendingTubeSpinner } from "./PendingTubeSpinner";
 import { DetallesHeader } from "@/components/DetallesHeader";
+import Title from "@/components/Title";
+import { LotesProductosReventaTable } from "./LotesProductosReventaTable";
 
 export default function ProductosReventaDetalles() {
   const {
@@ -107,6 +109,11 @@ export default function ProductosReventaDetalles() {
         <DetailsTable
           productosReventaDetalles={productosReventaDetalles!}
         />
+      </div>
+
+      <div className="space-y-4 mt-4">
+        <Title extraClass="text-blue-600">Lotes de producto de reventa</Title>
+        <LotesProductosReventaTable />
       </div>
     </div>
   );

@@ -95,3 +95,16 @@ export type ProductosReventaDetalles = {
   convert_inventory_to_sale_units: string;
   convert_sale_to_inventory_units: string;
 };
+
+export type LotesProductosReventa = {
+  id: number;
+  producto_reventa: number;
+  fecha_recepcion: string;
+  fecha_caducidad: string;
+  cantidad_recibida: number;
+  stock_actual_lote: number;
+  coste_unitario_lote_usd: number;
+  detalle_oc: number | null;
+  proveedor: { id: number; nombre_proveedor: string } | null;
+  estado: string;
+};

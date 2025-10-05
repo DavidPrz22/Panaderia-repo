@@ -1,5 +1,6 @@
 import {
   getCategoriasProductosReventa,
+  getLotesProductosReventa,
   getProductosReventa,
   getProductosReventaDetalles,
   getUnidadesMedida,
@@ -33,5 +34,11 @@ export const productosReventaQueryOptions = {
 export const productosReventaDetallesQueryOptions = (id: number) => ({
   queryKey: ["productos-reventa-detalles", id],
   queryFn: () => getProductosReventaDetalles(id),
+  staleTime: Infinity,
+});
+
+export const lotesProductosReventaQueryOptions = (id: number) => ({
+  queryKey: ["lotes-productos-reventa", id],
+  queryFn: () => getLotesProductosReventa(id),
   staleTime: Infinity,
 });

@@ -541,7 +541,6 @@ class LotesProductosReventa(models.Model):
         choices=LotesStatus.choices,
         default=LotesStatus.DISPONIBLE
     )
-    notas = models.TextField(max_length=255, null=True, blank=True)
 
     def __str__(self):
         return f"Lote {self.id} - {self.producto_reventa.nombre_producto} - {self.stock_actual_lote}"

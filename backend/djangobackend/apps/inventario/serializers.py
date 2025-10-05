@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import MateriasPrimas, LotesMateriasPrimas, ProductosIntermedios, ProductosFinales, ProductosElaborados, LotesProductosElaborados, ProductosReventa
+from .models import MateriasPrimas, LotesMateriasPrimas, ProductosIntermedios, ProductosFinales, ProductosElaborados, LotesProductosElaborados, ProductosReventa, LotesProductosReventa
 from apps.core.models import UnidadesDeMedida, CategoriasMateriaPrima, CategoriasProductosElaborados, CategoriasProductosReventa
 from apps.compras.serializers import ProveedoresSerializer
 from apps.compras.models import Proveedores
@@ -639,6 +639,33 @@ class ProductosReventaSerializer(serializers.ModelSerializer):
             data['proveedor_preferido_nombre'] = None
 
         return data
+
+
+class LotesProductosReventaSerializer(serializers.ModelSerializer):
+    proveedor = ProveedoresSerializer(read_only=True)
+    proveedor_id = serializers.PrimaryKeyRelatedField(
+        source='proveedor',
+        queryset=Proveedores.objects.all(),
+        write_only=True
+    )
+
+    class Meta:
+        model = LotesProductosReventa
+        fields = [
+            'id',
+            'producto_reventa',
+            'fecha_recepcion',
+            'fecha_caducidad',
+            'cantidad_recibida',
+            'stock_actual_lote',
+            'coste_unitario_lote_usd',
+            'detalle_oc',
+            'proveedor',
+            'proveedor_id',
+            'estado',
+        ]
+
+
 class ProductosReventaDetallesSerializer(serializers.ModelSerializer):
     categoria = serializers.SerializerMethodField()
     proveedor_preferido = serializers.SerializerMethodField()

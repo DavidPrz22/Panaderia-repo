@@ -1,5 +1,5 @@
 from rest_framework.routers import DefaultRouter
-from apps.inventario.viewsets import ComponenteSearchViewSet, MateriaPrimaViewSet, LotesMateriaPrimaViewSet, ProductosFinalesDetallesViewSet, ProductosIntermediosViewSet, ProductosFinalesViewSet, ProductosIntermediosDetallesViewSet, ProductosElaboradosViewSet, ProductosFinalesSearchViewset, ProductosIntermediosSearchViewSet, ProductosFinalesListaTransformacionViewSet, LotesProductosElaboradosViewSet, ProductosReventaViewSet, ProductosReventaDetallesViewSet
+from apps.inventario.viewsets import ComponenteSearchViewSet, MateriaPrimaViewSet, LotesMateriaPrimaViewSet, ProductosFinalesDetallesViewSet, ProductosIntermediosViewSet, ProductosFinalesViewSet, ProductosIntermediosDetallesViewSet, ProductosElaboradosViewSet, ProductosFinalesSearchViewset, ProductosIntermediosSearchViewSet, ProductosFinalesListaTransformacionViewSet, LotesProductosElaboradosViewSet, ProductosReventaViewSet, ProductosReventaDetallesViewSet, LotesProductosReventaViewSet
 
 router = DefaultRouter()
 router.register('materiaprima', MateriaPrimaViewSet, basename='materiaprima')
@@ -15,6 +15,7 @@ router.register('productosfinales-search', ProductosFinalesSearchViewset, basena
 router.register('productosintermedios-search', ProductosIntermediosSearchViewSet, basename='productosintermedios-search')
 router.register('lotes-productos-elaborados', LotesProductosElaboradosViewSet, basename='lotes-productos-elaborados')
 router.register('productosreventa-detalles', ProductosReventaDetallesViewSet, basename='productosreventa-detalles')
+router.register('lotes-productos-reventa', LotesProductosReventaViewSet, basename='lotes-productos-reventa')
 router.register('productosreventa', ProductosReventaViewSet, basename='productosreventa')
 
 urlpatterns = router.urls

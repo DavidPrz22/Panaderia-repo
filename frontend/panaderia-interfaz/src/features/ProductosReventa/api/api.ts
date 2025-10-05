@@ -4,6 +4,7 @@ import type {
   CategoriaProductosReventa,
   ProductosReventa,
   ProductosReventaDetalles,
+  LotesProductosReventa,
   UnidadesDeMedida,
   Proveedor,
 } from "../types/types";
@@ -94,5 +95,15 @@ export const deleteProductosReventa = async (id: number) => {
   } catch (error) {
     console.error("Error deleting producto reventa:", error);
     throw error;
+  }
+};
+
+export const getLotesProductosReventa = async (id: number): Promise<LotesProductosReventa[]> => {
+  try {
+    const response = await apiClient.get(`/api/lotes-productos-reventa/?producto_reventa=${id}`);
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching lotes productos reventa:", error);
+    return [];
   }
 };
