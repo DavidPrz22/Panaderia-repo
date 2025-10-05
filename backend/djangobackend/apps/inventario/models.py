@@ -476,8 +476,8 @@ class ProductosReventa(models.Model):
     unidad_base_inventario = models.ForeignKey(
         UnidadesDeMedida, 
         on_delete=models.CASCADE, 
-        null=False, 
-        blank=False,
+        null=True, 
+        blank=True,
         related_name='productos_reventa_inventario',
         help_text="Unidad en la que se gestiona el stock (ej: Unidad para latas, Gramos para jamón)"
     )
@@ -485,8 +485,8 @@ class ProductosReventa(models.Model):
     unidad_venta = models.ForeignKey(
         UnidadesDeMedida,
         on_delete=models.CASCADE,
-        null=False,
-        blank=False,
+        null=True,
+        blank=True,
         related_name='productos_reventa_venta',
         help_text="Unidad en la que se vende el producto (ej: Unidad para bolsa de 1kg)"
     )
