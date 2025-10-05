@@ -1,6 +1,6 @@
 from rest_framework import serializers
-from .models import MateriasPrimas, LotesMateriasPrimas, ProductosIntermedios, ProductosFinales, ProductosElaborados, LotesProductosElaborados
-from apps.core.models import UnidadesDeMedida, CategoriasMateriaPrima, CategoriasProductosElaborados
+from .models import MateriasPrimas, LotesMateriasPrimas, ProductosIntermedios, ProductosFinales, ProductosElaborados, LotesProductosElaborados, ProductosReventa
+from apps.core.models import UnidadesDeMedida, CategoriasMateriaPrima, CategoriasProductosElaborados, CategoriasProductosReventa
 from apps.compras.serializers import ProveedoresSerializer
 from apps.compras.models import Proveedores
 from apps.produccion.models import Recetas
@@ -564,3 +564,78 @@ class ProductosIntermediosSearchSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProductosIntermedios
         fields = ['id', 'nombre_producto', 'unidad_medida']
+
+
+class ProductosReventaSerializer(serializers.ModelSerializer):
+    # Read-only fields for displaying related object names
+    categoria_nombre = serializers.CharField(source='categoria.nombre_categoria', read_only=True)
+    unidad_base_inventario_nombre = serializers.CharField(source='unidad_base_inventario.nombre_completo', read_only=True)
+    unidad_venta_nombre = serializers.CharField(source='unidad_venta.nombre_completo', read_only=True)
+    proveedor_preferido_nombre = serializers.CharField(source='proveedor_preferido.nombre_proveedor', read_only=True)
+
+    # Write-only fields for create/update operations
+    categoria = serializers.PrimaryKeyRelatedField(
+        queryset=CategoriasProductosReventa.objects.all(), write_only=True
+    )
+    unidad_base_inventario = serializers.PrimaryKeyRelatedField(
+        queryset=UnidadesDeMedida.objects.all(), write_only=True
+    )
+    unidad_venta = serializers.PrimaryKeyRelatedField(
+        queryset=UnidadesDeMedida.objects.all(), write_only=True
+    )
+    proveedor_preferido = serializers.PrimaryKeyRelatedField(
+        queryset=Proveedores.objects.all(), write_only=True, required=False, allow_null=True
+    )
+
+    class Meta:
+        model = ProductosReventa
+        fields = [
+            'id',
+            'nombre_producto',
+            'descripcion',
+            'SKU',
+            'categoria',
+            'categoria_nombre',
+            'marca',
+            'proveedor_preferido',
+            'proveedor_preferido_nombre',
+            'unidad_base_inventario',
+            'unidad_base_inventario_nombre',
+            'unidad_venta',
+            'unidad_venta_nombre',
+            'factor_conversion',
+            'precio_venta_usd',
+            'stock_actual',
+            'costo_ultima_compra_usd',
+            'pecedero',
+            'fecha_creacion_registro',
+            'fecha_modificacion_registro',
+        ]
+        read_only_fields = [
+            'id',
+            'stock_actual',
+            'fecha_creacion_registro',
+            'fecha_modificacion_registro',
+        ]
+
+    def create(self, validated_data):
+        # Set default values for fields not provided in the form
+        validated_data['stock_actual'] = 0
+        validated_data['costo_ultima_compra_usd'] = 0
+
+        return super().create(validated_data)
+
+    def to_representation(self, instance):
+        """Customize the output representation."""
+        data = super().to_representation(instance)
+
+        # Remove write_only fields from output
+        write_only_fields = ['categoria', 'unidad_base_inventario', 'unidad_venta', 'proveedor_preferido']
+        for field in write_only_fields:
+            data.pop(field, None)
+
+        # Handle optional proveedor_preferido
+        if not instance.proveedor_preferido:
+            data['proveedor_preferido_nombre'] = None
+
+        return data
