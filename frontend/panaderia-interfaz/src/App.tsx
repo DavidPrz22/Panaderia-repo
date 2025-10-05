@@ -5,6 +5,7 @@ import { LandingPage } from "./pages/LandingPage";
 import MateriaPrimaPage from "./pages/MateriaPrimaPage";
 import { AuthProvider, useAuth, withAuth } from "./context/AuthContext";
 import ProductosIntermediosPage from "./pages/ProductosIntermediosPage";
+import ProductosReventaPage from "./pages/ProductosReventaPage";
 import RecetasPage from "./pages/RecetasPage";
 import ProductosFinalesPage from "./pages/ProductosFinalesPage";
 import ProductionPage from "./pages/ProductionPage";
@@ -15,6 +16,7 @@ const ProtectedProductosIntermediosPage = withAuth(ProductosIntermediosPage);
 const ProtectedProductosFinalesPage = withAuth(ProductosFinalesPage);
 const ProtectedProductionPage = withAuth(ProductionPage);
 const ProtectedRecetasPage = withAuth(RecetasPage);
+const ProtectedProductosReventaPage = withAuth(ProductosReventaPage);
 
 function Logout() {
   const { logout } = useAuth();
@@ -39,6 +41,10 @@ function App() {
           <Route
             path="/dashboard/productos-intermedios"
             element={<ProtectedProductosIntermediosPage />}
+          />
+          <Route
+            path="/dashboard/productos-reventa"
+            element={<ProtectedProductosReventaPage />}
           />
           <Route 
             path="/dashboard/recetas" 

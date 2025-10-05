@@ -28,6 +28,7 @@ export default function ProductosReventaFormShared({
     formState: { errors },
   } = useForm<TProductosReventaSchema>({
     resolver: zodResolver(productosReventaSchema),
+    mode: 'onSubmit',
     defaultValues:
       isUpdate && initialData
         ? {
@@ -41,7 +42,6 @@ export default function ProductosReventaFormShared({
             unidad_venta: initialData.unidad_venta.id,
             factor_conversion: initialData.factor_conversion,
             precio_venta_usd: initialData.precio_venta_usd,
-            costo_ultima_compra_usd: initialData.costo_ultima_compra_usd,
             pecedero: initialData.pecedero,
           }
         : {
@@ -49,9 +49,7 @@ export default function ProductosReventaFormShared({
             descripcion: "",
             SKU: "",
             marca: "",
-            factor_conversion: 1,
-            precio_venta_usd: 0,
-            costo_ultima_compra_usd: 0,
+            proveedor_preferido: undefined,
             pecedero: false,
           },
   });
@@ -135,7 +133,7 @@ export default function ProductosReventaFormShared({
 
     return (
       <>
-        <option value="">Seleccione un proveedor (opcional)</option>
+        <option value="">Seleccione un proveedor</option>
         {proveedores.map(({ id, nombre_proveedor }) => (
           <option key={id} value={id}>
             {nombre_proveedor}
@@ -185,16 +183,8 @@ export default function ProductosReventaFormShared({
               name="SKU"
               register={register}
               errors={errors}
-              optional={true}
             />
-            <PRFormInputContainer
-              inputType="textarea"
-              title="Descripción"
-              name="descripcion"
-              register={register}
-              errors={errors}
-              optional={true}
-            />
+
             <PRFormSelectContainer
               title="Categoría"
               name="categoria"
@@ -203,6 +193,13 @@ export default function ProductosReventaFormShared({
             >
               {renderCategoriasProductosReventa()}
             </PRFormSelectContainer>
+            <PRFormInputContainer
+              inputType="number"
+              title="Precio venta USD"
+              name="precio_venta_usd"
+              register={register}
+              errors={errors}
+            />
             <PRFormInputContainer
               inputType="text"
               title="Marca"
@@ -243,20 +240,6 @@ export default function ProductosReventaFormShared({
               register={register}
               errors={errors}
             />
-            <PRFormInputContainer
-              inputType="number"
-              title="Precio venta USD"
-              name="precio_venta_usd"
-              register={register}
-              errors={errors}
-            />
-            <PRFormInputContainer
-              inputType="number"
-              title="Costo última compra USD"
-              name="costo_ultima_compra_usd"
-              register={register}
-              errors={errors}
-            />
             <PRFormSelectContainer
               title="¿Es perecedero?"
               name="pecedero"
@@ -267,7 +250,16 @@ export default function ProductosReventaFormShared({
               <option value="false">No</option>
               <option value="true">Sí</option>
             </PRFormSelectContainer>
+            <PRFormInputContainer
+              inputType="textarea"
+              title="Descripción"
+              name="descripcion"
+              register={register}
+              errors={errors}
+              optional={true}
+            />
           </div>
+
         </div>
         <div className="flex gap-2 justify-end py-4 px-5 bg-white">
           <Button type="cancel" onClick={handleCancelButtonClick}>

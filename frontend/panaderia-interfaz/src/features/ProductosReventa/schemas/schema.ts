@@ -11,9 +11,9 @@ export const productosReventaSchema = z.object({
     .optional(),
   SKU: z
     .string()
+    .min(1, "El SKU es requerido")
     .min(4, "El SKU debe tener al menos 4 caracteres")
-    .max(50, "El SKU no puede exceder 50 caracteres")
-    .optional(),
+    .max(50, "El SKU no puede exceder 50 caracteres"),
   categoria: z.coerce
     .number({
       required_error: "La categoría es requerida",
@@ -39,24 +39,18 @@ export const productosReventaSchema = z.object({
       invalid_type_error: "La unidad de venta no es válida",
     })
     .min(1, "La unidad de venta es requerida"),
-  factor_conversion: z.coerce
+  factor_conversion: z
     .number({
       required_error: "El factor de conversión es requerido",
       invalid_type_error: "El factor de conversión debe ser un número",
     })
     .min(0, "El factor de conversión debe ser mayor o igual a 0"),
-  precio_venta_usd: z.coerce
+  precio_venta_usd: z
     .number({
       required_error: "El precio de venta es requerido",
       invalid_type_error: "El precio de venta debe ser un número",
     })
     .min(0, "El precio de venta debe ser mayor o igual a 0"),
-  costo_ultima_compra_usd: z.coerce
-    .number({
-      required_error: "El costo de última compra es requerido",
-      invalid_type_error: "El costo de última compra debe ser un número",
-    })
-    .min(0, "El costo de última compra debe ser mayor o igual a 0"),
   pecedero: z.coerce.boolean(),
 });
 

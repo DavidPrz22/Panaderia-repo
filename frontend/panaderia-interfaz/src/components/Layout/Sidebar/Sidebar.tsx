@@ -94,6 +94,7 @@ export default function Sidebar() {
                   icon: ReventaIcon,
                   title: "Reventa",
                   id: "reventa",
+                  link: "/dashboard/productos-reventa",
                 },
               ]}
               onclick={handleClick}
