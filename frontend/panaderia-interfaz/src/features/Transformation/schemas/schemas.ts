@@ -21,3 +21,11 @@ export const EjecutarTransformacionSchema = z.object({
 });
 
 export type TEjecutarTransformacionSchema = z.infer<typeof EjecutarTransformacionSchema>;
+
+
+export const searchQuerySchema = z.object({
+    query: z.string().min(2, 'Mínimo 2 caracteres').max(100),
+    limit: z.number().min(1).max(50).optional().default(10),
+});
+
+export type SearchQueryInput = z.infer<typeof searchQuerySchema>;
