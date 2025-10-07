@@ -4,28 +4,24 @@ import type { searchResults } from '../types/types';
 import { useProductosFinalesSearch } from '../hooks/queries/TransformacionQueries';
 
 interface SearchProductsOriginProps {
-    onSelect: (result: searchResults) => void;
+    onSelect: (result: searchResults | null) => void;
+    selectedResult: searchResults | null;
 }
 
-export const SearchProductsOrigin: React.FC<SearchProductsOriginProps> = ({ onSelect }) => {
+export const SearchProductsOrigin: React.FC<SearchProductsOriginProps> = ({ onSelect, selectedResult }) => {
     const [query, setQuery] = useState('');
     const { data, isLoading, error } = useProductosFinalesSearch(query);
-
-    const handleSelect = (result: searchResults) => {
-        console.log('Producto de origen seleccionado:', result);
-        onSelect(result);
-        setQuery(''); // Limpiar el input después de seleccionar
-    };
 
     return (
         <div>
             <SearchInput
                 query={query}
                 setQuery={setQuery}
-                onSelect={handleSelect}
-                data={data} // Pasamos el objeto de datos completo
+                onSelect={onSelect}
+                data={data}
                 isLoading={isLoading}
                 error={error}
+                selectedResult={selectedResult}
                 placeholder="Buscar producto de origen..."
             />
         </div>
