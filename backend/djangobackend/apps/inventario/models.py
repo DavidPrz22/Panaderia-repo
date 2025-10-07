@@ -138,7 +138,7 @@ class ComponentesStockManagement(models.Model):
 
         cache.set(cache_key, True, 86400)  # Cache for 24 hours
 
-        # Get expired lots for both types
+        # Get expired lots for all types
         expired_mp_lots = LotesMateriasPrimas.objects.filter(
             fecha_caducidad__lte=hoy,
             estado=LotesStatus.DISPONIBLE,
@@ -148,6 +148,11 @@ class ComponentesStockManagement(models.Model):
             fecha_caducidad__lte=hoy,
             estado=LotesStatus.DISPONIBLE,
         ).select_related('producto_elaborado')
+
+        expired_pr_lots = LotesProductosReventa.objects.filter(
+            fecha_caducidad__lte=hoy,
+            estado=LotesStatus.DISPONIBLE,
+        ).select_related('producto_reventa')
 
         # Build summary before updating
         resumen = []
@@ -174,14 +179,27 @@ class ComponentesStockManagement(models.Model):
                     'stock_expirado': lote.stock_actual_lote
                 })
 
+        # Process productos reventa lots
+        for lote in expired_pr_lots:
+            if lote.stock_actual_lote > 0:
+                resumen.append({
+                    'lote_id': lote.id,
+                    'tipo': 'Producto Reventa',
+                    'componente': lote.producto_reventa.nombre_producto,
+                    'fecha_caducidad': lote.fecha_caducidad,
+                    'stock_expirado': lote.stock_actual_lote
+                })
+
         # Update stock for affected materials (get unique materials from expired lots)
         affected_mp_ids = list(expired_mp_lots.values_list('materia_prima_id', flat=True).distinct())
         affected_pe_ids = list(expired_pe_lots.values_list('producto_elaborado_id', flat=True).distinct())
+        affected_pr_ids = list(expired_pr_lots.values_list('producto_reventa_id', flat=True).distinct())
 
         # Update lot statuses
         mp_count = expired_mp_lots.update(estado=LotesStatus.EXPIRADO)
         pe_count = expired_pe_lots.update(estado=LotesStatus.EXPIRADO)
-        total_count = mp_count + pe_count
+        pr_count = expired_pr_lots.update(estado=LotesStatus.EXPIRADO)
+        total_count = mp_count + pe_count + pr_count
 
         # Update stock for affected raw materials
         for mp_id in affected_mp_ids:
@@ -193,11 +211,17 @@ class ComponentesStockManagement(models.Model):
             pe = ProductosElaborados.objects.get(id=pe_id)
             pe.actualizar_stock()
 
+        # Update stock for affected productos reventa
+        for pr_id in affected_pr_ids:
+            pr = ProductosReventa.objects.get(id=pr_id)
+            pr.actualizar_stock()
+
         return {
             "resumen": resumen, 
             "count": total_count,
             "materias_primas_afectadas": len(affected_mp_ids),
-            "productos_elaborados_afectados": len(affected_pe_ids)
+            "productos_elaborados_afectados": len(affected_pe_ids),
+            "productos_reventa_afectados": len(affected_pr_ids)
         }
 
 
@@ -515,6 +539,98 @@ class ProductosReventa(models.Model):
     fecha_creacion_registro = models.DateField(auto_now_add=True)
     fecha_modificacion_registro = models.DateField(auto_now=True)
 
+    def actualizar_stock(self):
+        """Update stock based on available lots"""
+        lote_total = LotesProductosReventa.objects.filter(
+            producto_reventa=self, 
+            fecha_caducidad__gt=timezone.now().date(), 
+            estado=LotesStatus.DISPONIBLE
+        ).aggregate(total=Sum('stock_actual_lote'))
+        stock_total = lote_total.get('total') or 0
+
+        self.__class__.objects.filter(id=self.id).update(stock_actual=stock_total)
+        return stock_total
+
+    def expirar_lotes_viejos(self, force=False):
+        """Expire old lots for this specific product"""
+        ahora = timezone.now().date()
+        cache_key = f"expirar_lotes_productos_reventa_{self.id}_{ahora}"
+
+        if not force and cache.get(cache_key):
+            return {"resumen": [], "cached": True}
+
+        cache.set(cache_key, True, 86400)  # Cache for 24 hours
+        lotes_expirados = LotesProductosReventa.objects.filter(
+            producto_reventa=self, 
+            fecha_caducidad__lte=ahora, 
+            estado=LotesStatus.DISPONIBLE
+        )
+
+        resumen = []
+        for lote in lotes_expirados:
+            if lote.stock_actual_lote > 0:
+                resumen.append({
+                    'lote_id': lote.id,
+                    'producto_reventa': self.nombre_producto,
+                    'stock_expirado': lote.stock_actual_lote,
+                    'fecha_caducidad': lote.fecha_caducidad
+                })
+
+        # Update expired lots
+        count = lotes_expirados.update(estado=LotesStatus.EXPIRADO)
+        
+        # Update stock for this product
+        if count > 0:
+            self.actualizar_stock()
+
+        return {"resumen": resumen, "count": count}
+
+    @classmethod
+    def expirar_todos_lotes_viejos(cls, force=False):
+        """Expire all old lots for all ProductosReventa"""
+        hoy = timezone.now().date()
+        cache_key = f"expirar_todos_lotes_productos_reventa_{hoy}"
+
+        if not force and cache.get(cache_key):
+            return {"resumen": [], "count": 0, "cached": True}
+
+        cache.set(cache_key, True, 86400)  # Cache for 24 hours
+
+        # Get expired lots
+        expired_pr_lots = LotesProductosReventa.objects.filter(
+            fecha_caducidad__lte=hoy,
+            estado=LotesStatus.DISPONIBLE,
+        ).select_related('producto_reventa')
+
+        # Build summary before updating
+        resumen = []
+        for lote in expired_pr_lots:
+            if lote.stock_actual_lote > 0:
+                resumen.append({
+                    'lote_id': lote.id,
+                    'tipo': 'Producto Reventa',
+                    'producto': lote.producto_reventa.nombre_producto,
+                    'fecha_caducidad': lote.fecha_caducidad,
+                    'stock_expirado': lote.stock_actual_lote
+                })
+
+        # Get unique product IDs
+        affected_pr_ids = list(expired_pr_lots.values_list('producto_reventa_id', flat=True).distinct())
+
+        # Update lot statuses
+        count = expired_pr_lots.update(estado=LotesStatus.EXPIRADO)
+
+        # Update stock for affected products
+        for pr_id in affected_pr_ids:
+            pr = cls.objects.get(id=pr_id)
+            pr.actualizar_stock()
+
+        return {
+            "resumen": resumen, 
+            "count": count,
+            "productos_reventa_afectados": len(affected_pr_ids)
+        }
+
     def convert_inventory_to_sale_units(self, cantidad_inventario):
         """Convert inventory units to sale units"""
         return cantidad_inventario / self.factor_conversion
@@ -565,3 +681,26 @@ def update_materia_prima_stock(sender, instance, **kwargs):
     ).aggregate(total=Sum('stock_actual_lote'))['total'] or 0
 
     MateriasPrimas.objects.filter(id=materia_prima.id).update(stock_actual=total_stock)
+
+
+@receiver([post_save, post_delete], sender=LotesProductosReventa)
+def update_producto_reventa_stock(sender, instance, **kwargs):
+    producto_reventa = instance.producto_reventa
+
+    # Expire lots that have passed their expiration date
+    if getattr(instance, "id", None) and instance.fecha_caducidad <= timezone.now().date() and instance.estado == LotesStatus.DISPONIBLE:
+        expired_lots = LotesProductosReventa.objects.filter(
+            producto_reventa=producto_reventa,
+            fecha_caducidad__lte=timezone.now().date(),
+            estado=LotesStatus.DISPONIBLE
+        )
+        expired_lots.update(estado=LotesStatus.EXPIRADO)
+
+    # Calculate total stock from available, non-expired lots
+    total_stock = LotesProductosReventa.objects.filter(
+        producto_reventa=producto_reventa,
+        fecha_caducidad__gt=timezone.now().date(),
+        estado=LotesStatus.DISPONIBLE
+    ).aggregate(total=Sum('stock_actual_lote'))['total'] or 0
+
+    ProductosReventa.objects.filter(id=producto_reventa.id).update(stock_actual=total_stock)

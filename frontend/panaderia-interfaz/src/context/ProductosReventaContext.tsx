@@ -2,6 +2,7 @@ import { createContext, useContext, useState } from "react";
 import type {
   CategoriaProductosReventa,
   childrenProp,
+  LotesProductosReventa,
   Proveedor,
   UnidadesDeMedida,
 } from "@/features/ProductosReventa/types/types";
@@ -32,6 +33,15 @@ type ProductosReventaContextType = {
   setSelectedCategoriasReventa: React.Dispatch<React.SetStateAction<string[]>>;
   showPRFiltersPanel: boolean;
   setShowPRFiltersPanel: React.Dispatch<React.SetStateAction<boolean>>;
+  // Lot management
+  showPRLotesForm: boolean;
+  setShowPRLotesForm: (value: boolean) => void;
+  showPRLotesDetalles: boolean;
+  setShowPRLotesDetalles: (value: boolean) => void;
+  lotesProductosReventaDetalles: LotesProductosReventa | null;
+  setLotesProductosReventaDetalles: (value: LotesProductosReventa | null) => void;
+  updateLoteRegistro: boolean;
+  setUpdateLoteRegistro: (value: boolean) => void;
 };
 
 const ProductosReventaContext =
@@ -60,6 +70,12 @@ export const ProductosReventaProvider = ({ children }: childrenProp) => {
   const [selectedCategoriasReventa, setSelectedCategoriasReventa] = useState<string[]>([]);
   const [showPRFiltersPanel, setShowPRFiltersPanel] = useState(false);
 
+  // Lot management state
+  const [showPRLotesForm, setShowPRLotesForm] = useState(false);
+  const [showPRLotesDetalles, setShowPRLotesDetalles] = useState(false);
+  const [lotesProductosReventaDetalles, setLotesProductosReventaDetalles] = useState<LotesProductosReventa | null>(null);
+  const [updateLoteRegistro, setUpdateLoteRegistro] = useState(false);
+
   return (
     <ProductosReventaContext.Provider
       value={{
@@ -87,6 +103,14 @@ export const ProductosReventaProvider = ({ children }: childrenProp) => {
         setSelectedCategoriasReventa,
         showPRFiltersPanel,
         setShowPRFiltersPanel,
+        showPRLotesForm,
+        setShowPRLotesForm,
+        showPRLotesDetalles,
+        setShowPRLotesDetalles,
+        lotesProductosReventaDetalles,
+        setLotesProductosReventaDetalles,
+        updateLoteRegistro,
+        setUpdateLoteRegistro,
       }}
     >
       {children}

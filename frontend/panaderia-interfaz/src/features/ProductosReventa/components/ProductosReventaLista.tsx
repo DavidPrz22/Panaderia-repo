@@ -23,7 +23,7 @@ export default function ProductosReventaLista() {
             "Stock",
             "Precio Venta",
             "Categoría",
-            "Marca",
+            "Unidad de inventario",
             "Fecha de creación",
           ]}
         />

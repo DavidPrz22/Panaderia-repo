@@ -26,7 +26,7 @@ export const PRTableRow = ({
       <div>{item.stock_actual || "-"}</div>
       <div>{item.precio_venta_usd || "-"}</div>
       <div>{item.categoria_nombre || "-"}</div>
-      <div>{item.marca || "-"}</div>
+      <div>{item.unidad_base_inventario_nombre || "-"}</div>
       <div>{item.fecha_creacion_registro || "-"}</div>
     </div>
   );

@@ -1,5 +1,5 @@
 import apiClient from "@/api/client";
-import type { TProductosReventaSchema } from "../schemas/schema";
+import type { TProductosReventaSchema, TLoteProductosReventaSchema } from "../schemas/schema";
 import type {
   CategoriaProductosReventa,
   ProductosReventa,
@@ -105,5 +105,62 @@ export const getLotesProductosReventa = async (id: number): Promise<LotesProduct
   } catch (error) {
     console.error("Error fetching lotes productos reventa:", error);
     return [];
+  }
+};
+
+export const createLoteProductosReventa = async (
+  data: Omit<TLoteProductosReventaSchema, 'fecha_recepcion' | 'fecha_caducidad'> & {
+    fecha_recepcion: string;
+    fecha_caducidad: string;
+    producto_reventa: number;
+    stock_actual_lote: number;
+    detalle_oc: null;
+  },
+) => {
+  try {
+    const response = await apiClient.post("/api/lotes-productos-reventa/", data);
+    return response.data;
+  } catch (error) {
+    console.error("Error creating lote productos reventa:", error);
+    throw error;
+  }
+};
+
+export const updateLoteProductosReventa = async (
+  id: number,
+  data: Omit<TLoteProductosReventaSchema, 'fecha_recepcion' | 'fecha_caducidad'> & {
+    fecha_recepcion: string;
+    fecha_caducidad: string;
+    producto_reventa: number;
+    stock_actual_lote: number;
+    detalle_oc: null;
+  },
+) => {
+  try {
+    const response = await apiClient.put(`/api/lotes-productos-reventa/${id}/`, data);
+    return response.data;
+  } catch (error) {
+    console.error("Error updating lote productos reventa:", error);
+    throw error;
+  }
+};
+
+export const deleteLoteProductosReventa = async (id: number) => {
+  try {
+    const response = await apiClient.delete(`/api/lotes-productos-reventa/${id}/`);
+    return response.data;
+  } catch (error) {
+    console.error("Error deleting lote productos reventa:", error);
+    throw error;
+  }
+};
+
+export const changeEstadoLoteProductosReventa = async (id: number) => {
+  try {
+    const response = await apiClient.get(`/api/lotes-productos-reventa/${id}/change-estado-lote/`);
+    return response.data;
+  } catch (error) {
+    console.error("Error changing estado lote productos reventa:", error);
+    return null;
   }
 };

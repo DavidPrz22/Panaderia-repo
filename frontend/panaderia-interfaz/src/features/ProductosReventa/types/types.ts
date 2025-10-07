@@ -5,7 +5,7 @@ import type {
   UseFormRegister,
   UseFormSetValue,
 } from "react-hook-form";
-import type { TProductosReventaSchema } from "../schemas/schema";
+import type { TProductosReventaSchema, TLoteProductosReventaSchema } from "../schemas/schema";
 
 export type childrenProp = {
   children: ReactNode;
@@ -44,6 +44,31 @@ export type PRFormSelectContainerProps = {
   optional?: boolean;
 };
 
+export type PRLotesFormInputContainerProps = {
+  inputType: string;
+  title: string;
+  name: Path<TLoteProductosReventaSchema>;
+  register: UseFormRegister<TLoteProductosReventaSchema>;
+  errors: FieldErrors<TLoteProductosReventaSchema>;
+  optional?: boolean;
+};
+
+export type PRLotesFormInputProps = {
+  register: UseFormRegister<TLoteProductosReventaSchema>;
+  name: Path<TLoteProductosReventaSchema>;
+  typeInput: string;
+  placeholder?: string;
+};
+
+export type PRLotesFormSelectContainerProps = {
+  title: string;
+  name: Path<TLoteProductosReventaSchema>;
+  register: UseFormRegister<TLoteProductosReventaSchema>;
+  errors: FieldErrors<TLoteProductosReventaSchema>;
+  children: ReactNode;
+  optional?: boolean;
+};
+
 export type UnidadesDeMedida = {
   id: number;
   nombre_completo: string;
@@ -71,7 +96,7 @@ export type ProductosReventa = {
   stock_actual: number;
   precio_venta_usd: number;
   categoria_nombre: string;
-  marca: string | null;
+  unidad_base_inventario_nombre: string | null;
   fecha_creacion_registro: string;
 };
 

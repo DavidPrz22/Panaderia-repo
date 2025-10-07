@@ -49,4 +49,36 @@ export const productosReventaSchema = z.object({
   pecedero: z.coerce.boolean(),
 });
 
+export const loteProductosReventaSchema = z
+  .object({
+    proveedor_id: z.coerce
+      .number({
+        required_error: "El proveedor es requerido",
+        invalid_type_error: "El proveedor no es válido",
+      })
+      .min(1, "El proveedor es requerido"),
+    fecha_recepcion: z.coerce.date({
+      required_error: "La fecha de recepción es requerida",
+      invalid_type_error: "La fecha de recepción no es válida",
+    }),
+    fecha_caducidad: z.coerce.date({
+      required_error: "La fecha de caducidad es requerida",
+      invalid_type_error: "La fecha de caducidad no es válida",
+    }),
+    cantidad_recibida: z.coerce
+      .number({
+        required_error: "La cantidad recibida es requerida",
+        invalid_type_error: "La cantidad recibida no es válida",
+      })
+      .min(1, "La cantidad recibida debe ser mayor a 0"),
+    costo_unitario_usd: z.coerce
+      .number()
+      .min(0, "El costo unitario debe ser mayor a 0"),
+  })
+  .refine((data) => data.fecha_recepcion < data.fecha_caducidad, {
+    message: "La fecha de recepción debe ser anterior a la fecha de caducidad",
+    path: ["fecha_recepcion"],
+  });
+
 export type TProductosReventaSchema = z.infer<typeof productosReventaSchema>;
+export type TLoteProductosReventaSchema = z.infer<typeof loteProductosReventaSchema>;

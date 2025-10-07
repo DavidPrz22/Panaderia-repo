@@ -10,6 +10,10 @@ import { PendingTubeSpinner } from "./PendingTubeSpinner";
 import { DetallesHeader } from "@/components/DetallesHeader";
 import Title from "@/components/Title";
 import { LotesProductosReventaTable } from "./LotesProductosReventaTable";
+import { PRLotesDetailsContainer } from "./PRLotesDetailsContainer";
+import { PRLotesFormShared } from "./PRLotesFormShared";
+import Button from "@/components/Button";
+import { PlusCircle } from "@/assets/GeneralIcons/Index";
 
 export default function ProductosReventaDetalles() {
   const {
@@ -22,6 +26,9 @@ export default function ProductosReventaDetalles() {
     productoReventaId,
     enabledDetalles,
     setEnabledDetalles,
+    showPRLotesDetalles,
+    showPRLotesForm,
+    setShowPRLotesForm,
   } = useProductosReventaContext();
 
   const {
@@ -79,6 +86,20 @@ export default function ProductosReventaDetalles() {
     setRegistroDelete(false);
   };
 
+  if (showPRLotesForm) {
+    return (
+      <PRLotesFormShared
+        title="Nuevo Lote"
+        onClose={() => setShowPRLotesForm(false)}
+        onSubmitSuccess={() => setShowPRLotesForm(false)}
+      />
+    );
+  }
+
+  if (showPRLotesDetalles) {
+    return <PRLotesDetailsContainer />;
+  }
+
   return (
     <div className="flex flex-col gap-5 mx-8 border border-gray-200 p-5 rounded-lg shadow-md h-full relative">
       <DetallesHeader
@@ -112,7 +133,14 @@ export default function ProductosReventaDetalles() {
       </div>
 
       <div className="space-y-4 mt-4">
-        <Title extraClass="text-blue-600">Lotes de producto de reventa</Title>
+        <div className="flex items-center justify-between">
+          <Title extraClass="text-blue-600">Lotes de producto de reventa</Title>
+          <Button type="add" onClick={() => setShowPRLotesForm(true)}>
+            <div className="flex items-center gap-2"> 
+              Agregar Lote <PlusCircle className="inline-block ml-2"/>
+            </div>
+          </Button>
+        </div>
         <LotesProductosReventaTable />
       </div>
     </div>

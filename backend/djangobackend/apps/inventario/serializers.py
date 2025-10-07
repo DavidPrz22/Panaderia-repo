@@ -78,6 +78,35 @@ class LotesMateriaPrimaSerializer(serializers.ModelSerializer):
             'estado',
         ]
 
+    def validate(self, data):
+        """Validate dates for lot registration."""
+        fecha_recepcion = data.get('fecha_recepcion')
+        fecha_caducidad = data.get('fecha_caducidad')
+
+        # Import datetime here to avoid circular imports
+        from datetime import date
+
+        # Validate that fecha_recepcion is not in the future
+        if fecha_recepcion and fecha_recepcion > date.today():
+            raise serializers.ValidationError({
+                'fecha_recepcion': 'La fecha de recepción no puede ser una fecha futura.'
+            })
+
+        # Validate that fecha_caducidad is after fecha_recepcion
+        if fecha_recepcion and fecha_caducidad:
+            if fecha_caducidad <= fecha_recepcion:
+                raise serializers.ValidationError({
+                    'fecha_caducidad': 'La fecha de caducidad debe ser posterior a la fecha de recepción.'
+                })
+
+            # Optional: Warn if dates are too close (less than 1 day apart)
+            if (fecha_caducidad - fecha_recepcion).days < 1:
+                raise serializers.ValidationError({
+                    'fecha_caducidad': 'La fecha de caducidad debe ser al menos 1 día después de la fecha de recepción.'
+                })
+
+        return data
+
 
 class MateriaPrimaSerializer(serializers.ModelSerializer):
 
@@ -514,6 +543,8 @@ class ProductosIntermediosDetallesSerializer(serializers.ModelSerializer):
 
 
 class LotesProductosElaboradosSerializer(serializers.ModelSerializer):
+    fecha_produccion = serializers.DateField(format="%Y-%m-%d", input_formats=["%Y-%m-%d", "iso-8601"])
+    fecha_caducidad = serializers.DateField(format="%Y-%m-%d", input_formats=["%Y-%m-%d", "iso-8601"])
     peso_promedio_por_unidad = serializers.SerializerMethodField()
     volumen_promedio_por_unidad = serializers.SerializerMethodField()
     costo_unitario_usd = serializers.SerializerMethodField()
@@ -535,6 +566,35 @@ class LotesProductosElaboradosSerializer(serializers.ModelSerializer):
             "volumen_promedio_por_unidad",
             "costo_unitario_usd",
         ]
+
+    def validate(self, data):
+        """Validate dates for lot registration."""
+        fecha_produccion = data.get('fecha_produccion')
+        fecha_caducidad = data.get('fecha_caducidad')
+
+        # Import datetime here to avoid circular imports
+        from datetime import date
+
+        # Validate that fecha_produccion is not in the future
+        if fecha_produccion and fecha_produccion > date.today():
+            raise serializers.ValidationError({
+                'fecha_produccion': 'La fecha de producción no puede ser una fecha futura.'
+            })
+
+        # Validate that fecha_caducidad is after fecha_produccion
+        if fecha_produccion and fecha_caducidad:
+            if fecha_caducidad <= fecha_produccion:
+                raise serializers.ValidationError({
+                    'fecha_caducidad': 'La fecha de caducidad debe ser posterior a la fecha de producción.'
+                })
+
+            # Optional: Warn if dates are too close (less than 1 day apart)
+            if (fecha_caducidad - fecha_produccion).days < 1:
+                raise serializers.ValidationError({
+                    'fecha_caducidad': 'La fecha de caducidad debe ser al menos 1 día después de la fecha de producción.'
+                })
+
+        return data
 
     def get_peso_promedio_por_unidad(self, obj):
         return obj.peso_promedio_por_unidad
@@ -642,6 +702,8 @@ class ProductosReventaSerializer(serializers.ModelSerializer):
 
 
 class LotesProductosReventaSerializer(serializers.ModelSerializer):
+    fecha_recepcion = serializers.DateField(format="%Y-%m-%d", input_formats=["%Y-%m-%d", "iso-8601"])
+    fecha_caducidad = serializers.DateField(format="%Y-%m-%d", input_formats=["%Y-%m-%d", "iso-8601"])
     proveedor = ProveedoresSerializer(read_only=True)
     proveedor_id = serializers.PrimaryKeyRelatedField(
         source='proveedor',
@@ -664,6 +726,35 @@ class LotesProductosReventaSerializer(serializers.ModelSerializer):
             'proveedor_id',
             'estado',
         ]
+
+    def validate(self, data):
+        """Validate dates for lot registration."""
+        fecha_recepcion = data.get('fecha_recepcion')
+        fecha_caducidad = data.get('fecha_caducidad')
+
+        # Import datetime here to avoid circular imports
+        from datetime import date, timedelta
+
+        # Validate that fecha_recepcion is not in the future
+        if fecha_recepcion and fecha_recepcion > date.today():
+            raise serializers.ValidationError({
+                'fecha_recepcion': 'La fecha de recepción no puede ser una fecha futura.'
+            })
+
+        # Validate that fecha_caducidad is after fecha_recepcion
+        if fecha_recepcion and fecha_caducidad:
+            if fecha_caducidad <= fecha_recepcion:
+                raise serializers.ValidationError({
+                    'fecha_caducidad': 'La fecha de caducidad debe ser posterior a la fecha de recepción.'
+                })
+
+            # Optional: Warn if dates are too close (less than 1 day apart)
+            if (fecha_caducidad - fecha_recepcion).days < 1:
+                raise serializers.ValidationError({
+                    'fecha_caducidad': 'La fecha de caducidad debe ser al menos 1 día después de la fecha de recepción.'
+                })
+
+        return data
 
 
 class ProductosReventaDetallesSerializer(serializers.ModelSerializer):
