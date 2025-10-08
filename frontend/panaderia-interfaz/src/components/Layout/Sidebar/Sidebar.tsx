@@ -109,6 +109,7 @@ export default function Sidebar() {
                   icon: ClientesIcon,
                   title: "Clientes",
                   id: "clientes",
+                  link: "/dashboard/clientes",
                 },
                 {
                   icon: PedidosIcon,
