@@ -154,6 +154,7 @@ export default function Sidebar() {
               icon={ReportesIcon}
               onclick={handleClick}
               id="reportes"
+              link="/dashboard/shadcn"
             >
               Reportes
             </SidebarCard>

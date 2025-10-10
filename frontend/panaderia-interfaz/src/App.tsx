@@ -9,6 +9,8 @@ import ProductosReventaPage from "./pages/ProductosReventaPage";
 import RecetasPage from "./pages/RecetasPage";
 import ProductosFinalesPage from "./pages/ProductosFinalesPage";
 import ProductionPage from "./pages/ProductionPage";
+import OrdenesPage from "./pages/OrdenesPage";
+
 
 const ProtectedLandingPage = withAuth(LandingPage);
 const ProtectedMateriaPrimaPage = withAuth(MateriaPrimaPage);
@@ -17,6 +19,8 @@ const ProtectedProductosFinalesPage = withAuth(ProductosFinalesPage);
 const ProtectedProductionPage = withAuth(ProductionPage);
 const ProtectedRecetasPage = withAuth(RecetasPage);
 const ProtectedProductosReventaPage = withAuth(ProductosReventaPage);
+const ProtectedOrdenesPage = withAuth(OrdenesPage);
+
 
 function Logout() {
   const { logout } = useAuth();
@@ -57,6 +61,10 @@ function App() {
           <Route 
           path="/dashboard/produccion" 
           element={<ProtectedProductionPage />} 
+          />
+          <Route 
+          path="/dashboard/shadcn" 
+          element={<ProtectedOrdenesPage />} 
           />
         </Routes>
       </AuthProvider>

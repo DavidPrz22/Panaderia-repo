@@ -10,6 +10,7 @@ from django.db.models import Q
 from django.core.exceptions import ValidationError
 from apps.produccion.services import ProductionValidationService, StockConsumptionService, ProductionService
 from decimal import Decimal
+from django.utils import timezone
 
 class RecetasViewSet(viewsets.ModelViewSet):
     queryset = Recetas.objects.all()
@@ -291,6 +292,7 @@ class RecetasSearchViewSet(viewsets.ReadOnlyModelViewSet):
         
         serializer = self.get_serializer(recetas, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
 
 class ProduccionesViewSet(viewsets.ModelViewSet):
     queryset = Produccion.objects.all()

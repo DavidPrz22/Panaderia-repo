@@ -93,7 +93,7 @@ class ComponentesStockManagement(models.Model):
 
         while cantidad_restante > 0:
             lote_consume = self.get_closest_expire_lot()
-            
+
             if not lote_consume:
                 raise ValidationError(f"No hay lotes disponibles para {self._get_display_name()}")
 
