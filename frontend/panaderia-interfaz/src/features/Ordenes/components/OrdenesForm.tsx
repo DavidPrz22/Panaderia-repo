@@ -7,13 +7,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+
 import {
-  Select,
-  SelectContent,
   SelectItem,
-  SelectTrigger,
-  SelectValue,
 } from "@/components/ui/select";
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Table,
@@ -41,6 +39,7 @@ import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { OrdenesFormSelect } from "./OrdenesFormSelect";
+import { OrdenesProductoFormSearch } from "./OrdenesProductoFormSearch";
 
 interface OrderFormProps {
   order?: Order;
@@ -96,10 +95,10 @@ export const OrderForm = ({ order, onClose, onSave }: OrderFormProps) => {
     const item = newItems[index];
 
     if (field === "productId") {
-      const product = mockProducts.find((p) => p.id === value);
+      const product = mockProducts.find((p) => p.name === value);
       if (product) {
         item.product = product;
-        item.productId = value;
+        item.productId = product.id;
         item.unitPrice = product.price;
         item.unit = product.unit;
         
@@ -192,10 +191,9 @@ export const OrderForm = ({ order, onClose, onSave }: OrderFormProps) => {
   };
 
   const totals = calculateTotals();
-
   return (
-    <div className="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center p-4 overflow-auto z-(--z-index-over-header-bar)">
-      <Card className="w-full max-w-6xl max-h-[95vh] overflow-auto">
+    <div className="p-6">
+      <Card className="w-full max-w-6xl mx-auto">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4 border-b bg-card">
           <CardTitle className="text-2xl font-bold">
             {isEdit ? "Editar Orden" : "Nueva Orden"}
@@ -338,7 +336,7 @@ export const OrderForm = ({ order, onClose, onSave }: OrderFormProps) => {
               <div className="border rounded-lg overflow-auto">
                 <Table>
                   <TableHeader>
-                    <TableRow className="bg-table-header hover:bg-table-header">
+                    <TableRow className="bg-table-header hover:bg-table-header bg-(--table-header-bg)">
                       <TableHead className="font-semibold">Producto *</TableHead>
                       <TableHead className="font-semibold w-24">Cantidad *</TableHead>
                       <TableHead className="font-semibold w-20">UdM</TableHead>
@@ -355,21 +353,7 @@ export const OrderForm = ({ order, onClose, onSave }: OrderFormProps) => {
                     {items.map((item, index) => (
                       <TableRow key={item.id}>
                         <TableCell>
-                          <Select
-                            value={item.productId}
-                            onValueChange={(value) => updateItem(index, "productId", value)}
-                          >
-                            <SelectTrigger className="cursor-pointer">
-                              <SelectValue placeholder="Seleccionar" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {mockProducts.map((product) => (
-                                <SelectItem key={product.id} value={product.id}>
-                                  {product.code} - {product.name}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
+                          <OrdenesProductoFormSearch value={item.productId} onChange={(value) => updateItem(index, "productId", value)} data={mockProducts} />
                         </TableCell>
                         <TableCell>
                           <Input
@@ -453,6 +437,7 @@ export const OrderForm = ({ order, onClose, onSave }: OrderFormProps) => {
               <Label htmlFor="notes">Notas</Label>
               <Textarea
                 id="notes"
+                className="focus-visible:ring-blue-200"
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
                 placeholder="Notas adicionales sobre la orden..."
@@ -499,3 +484,4 @@ export const OrderForm = ({ order, onClose, onSave }: OrderFormProps) => {
     </div>
   );
 };
+

@@ -115,6 +115,7 @@ export default function Sidebar() {
                   icon: PedidosIcon,
                   title: "Pedidos",
                   id: "pedidos",
+                  link: "/dashboard/pedidos",
                 },
                 {
                   icon: PuntoVentaIcon,

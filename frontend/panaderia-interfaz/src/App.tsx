@@ -63,7 +63,7 @@ function App() {
           element={<ProtectedProductionPage />} 
           />
           <Route 
-          path="/dashboard/shadcn" 
+          path="/dashboard/pedidos" 
           element={<ProtectedOrdenesPage />} 
           />
         </Routes>

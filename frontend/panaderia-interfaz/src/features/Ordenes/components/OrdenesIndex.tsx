@@ -80,6 +80,19 @@ const OrdenesIndex = () => {
     handleStatusChange(order.id, newStatus);
   };
 
+  if (showForm) {
+    return (
+          <OrderForm
+            order={orderToEdit || undefined}
+            onClose={() => {
+              setShowForm(false);
+              setOrderToEdit(null);
+            }}
+            onSave={handleSaveOrder}
+          />
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background p-6">
       <div className="max-w-7xl mx-auto space-y-6">
@@ -172,18 +185,6 @@ const OrdenesIndex = () => {
         {/* Order Details Modal */}
         {selectedOrder && (
           <OrderDetails order={selectedOrder} onClose={() => setSelectedOrder(null)} />
-        )}
-
-        {/* Order Form Modal */}
-        {showForm && (
-          <OrderForm
-            order={orderToEdit || undefined}
-            onClose={() => {
-              setShowForm(false);
-              setOrderToEdit(null);
-            }}
-            onSave={handleSaveOrder}
-          />
         )}
 
         {/* Status Change Dialog */}
