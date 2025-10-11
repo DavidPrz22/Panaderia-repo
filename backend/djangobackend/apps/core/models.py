@@ -46,16 +46,16 @@ class MetodosDePago(models.Model):
 
 
 class EstadosOrdenVenta(models.Model):
-    nombre_estado_ov = models.CharField(max_length=100, null=False, blank=False)
+    nombre_estado = models.CharField(max_length=100, null=False, blank=False)
     descripcion = models.TextField(max_length=255, null=True, blank=True)
-    
+
     def __str__(self):
-        return self.nombre_estado_ov
+        return self.nombre_estado
 
 
 class EstadosOrdenCompra(models.Model): # Ej: "Borrador", "Emitida", "Recibida Parcialmente", "Recibida Completa", "Cancelada"
-    nombre_estado_oc = models.CharField(max_length=100, null=False, blank=False)
+    nombre_estado = models.CharField(max_length=100, null=False, blank=False)
     descripcion = models.TextField(max_length=255, null=True, blank=True)
 
     def __str__(self):
-        return self.nombre_estado_oc
+        return self.nombre_estado

@@ -1,64 +1,55 @@
-export type OrdenesEstado = 
-  | "Pendiente" 
-  | "Confirmado" 
-  | "En Preparación" 
-  | "Listo para Entrega" 
-  | "Entregado" 
-  | "Cancelado";
-
-export type PaymentMethod = "Efectivo" | "Tarjeta" | "Transferencia" | "Crédito";
-
-export interface Customer {
+export type Cliente = {
   id: string;
-  name: string;
-  email?: string;
-  phone?: string;
-  address?: string;
+  nombre_cliente: string;
 }
 
-export interface Product {
+export type MetodoPago = {
   id: string;
-  code: string;
-  name: string;
-  description?: string;
-  price: number;
-  stock: number;
-  unit: string;
+  nombre_metodo: string;
+}
+
+export type EstadoOrden = {
+  id: string;
+  nombre_estado: string;
+}
+
+export type Producto = {
+  id: string;
+  SKU: string;
+  nombre_producto: string;
+  precio_venta_usd: number;
+  stock_actual: number;
+  unidad_venta: string;
+  tipo: 'producto-final' | 'producto-reventa';
 }
 
 export interface OrderLineItem {
   id: string;
-  productId: string;
-  product: Product;
-  quantity: number;
-  quantityDelivered: number;
-  quantityInvoiced: number;
-  unit: string;
-  unitPrice: number;
-  discount: number;
-  tax: number;
+  producto: Producto;
+  stock: number;
+  cantidad_solicitada: number;
+  unidad_medida_venta: string;
+  precio_unitario_usd: number;
+  descuento_porcentaje: number;
+  impuesto_porcentaje: number;
   subtotal: number;
-  stockAssigned: number;
-  forProduction: number;
 }
 
 export interface Order {
   id: string;
   orderNumber: string;
-  customerId: string;
-  customer: Customer;
-  orderDate: string;
-  requestedDeliveryDate?: string;
-  confirmedDeliveryDate?: string;
-  status: OrdenesEstado;
-  paymentMethod: PaymentMethod;
+  cliente_id: string;
+  fecha_creacion_orden: string;
+  fecha_entrega_solicitada?: string;
+  fecha_entrega_definitiva?: string;
+  status: string;
+  paymentMethod: string;
   items: OrderLineItem[];
   subtotal: number;
   taxAmount: number;
   discountAmount: number;
   total: number;
   notes?: string;
-  createdBy: string;
   createdAt: string;
   updatedAt: string;
 }

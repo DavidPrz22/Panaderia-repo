@@ -19,7 +19,7 @@ const ProtectedProductosFinalesPage = withAuth(ProductosFinalesPage);
 const ProtectedProductionPage = withAuth(ProductionPage);
 const ProtectedRecetasPage = withAuth(RecetasPage);
 const ProtectedProductosReventaPage = withAuth(ProductosReventaPage);
-const ProtectedOrdenesPage = withAuth(OrdenesPage);
+// const ProtectedOrdenesPage = withAuth(OrdenesPage);
 
 
 function Logout() {
@@ -64,7 +64,7 @@ function App() {
           />
           <Route 
           path="/dashboard/pedidos" 
-          element={<ProtectedOrdenesPage />} 
+          element={<OrdenesPage />} 
           />
         </Routes>
       </AuthProvider>

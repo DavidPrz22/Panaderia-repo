@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { Order, OrdenesEstado } from "../types/types";
+import type { Order } from "../types/types";
 import { mockOrders } from "../data/mockData";
 
 import { OrdersTable } from "../components/OrdenesTable";
@@ -27,6 +27,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useGetEstadosOrden } from "../hooks/queries";
 
 const OrdenesIndex = () => {
   const [orders, setOrders] = useState<Order[]>(mockOrders);
@@ -36,6 +37,9 @@ const OrdenesIndex = () => {
   const [statusDialogOrder, setStatusDialogOrder] = useState<Order | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
+
+  const { data: estadosOrden } = useGetEstadosOrden();
+
 
   const filteredOrders = orders.filter((order) => {
     const matchesSearch =
@@ -128,13 +132,9 @@ const OrdenesIndex = () => {
                 <SelectValue placeholder="Estado" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Todos los Estados</SelectItem>
-                <SelectItem value="Pendiente">Pendiente</SelectItem>
-                <SelectItem value="Confirmado">Confirmado</SelectItem>
-                <SelectItem value="En Preparación">En Preparación</SelectItem>
-                <SelectItem value="Listo para Entrega">Listo para Entrega</SelectItem>
-                <SelectItem value="Entregado">Entregado</SelectItem>
-                <SelectItem value="Cancelado">Cancelado</SelectItem>
+                {estadosOrden?.map((estado) => (
+                  <SelectItem key={estado.id} value={estado.id}>{estado.nombre_estado}</SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </CardContent>

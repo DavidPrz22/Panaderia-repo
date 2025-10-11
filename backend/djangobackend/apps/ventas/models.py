@@ -3,8 +3,8 @@ from django.db.models import Q
 from django.core.exceptions import ValidationError
 from apps.users.models import User
 from apps.inventario.models import UnidadesDeMedida, ProductosElaborados, ProductosReventa, LotesProductosElaborados, LotesProductosReventa
-from apps.produccion.models import Produccion
-from apps.core.models import MetodosDePago
+from apps.core.models import MetodosDePago, EstadosOrdenVenta
+
 # Create your models here.
 class Clientes(models.Model):
     nombre_cliente = models.CharField(max_length=100, null=False, blank=False)
@@ -141,13 +141,13 @@ class OrdenVenta(models.Model):
     monto_total_usd = models.DecimalField(max_digits=10, decimal_places=2, null=False, blank=False)
     monto_total_ves = models.DecimalField(max_digits=10, decimal_places=2, null=False, blank=False)
     tasa_cambio_aplicada = models.DecimalField(max_digits=10, decimal_places=2, null=False, blank=False)
+    estado_orden = models.ForeignKey(EstadosOrdenVenta, on_delete=models.CASCADE, null=False, blank=False)
 
     def __str__(self):
         return f"Orden de Venta #{self.id} - {self.cliente.nombre_cliente}"
 
 
 class DetallesOrdenVenta(models.Model):
-    produccion_asociada = models.ForeignKey(Produccion, on_delete=models.CASCADE, null=False, blank=False)
     orden_venta_asociada = models.ForeignKey(OrdenVenta, on_delete=models.CASCADE, null=False, blank=False)
     producto_elaborado = models.ForeignKey(ProductosElaborados, on_delete=models.CASCADE, null=True, blank=True)
     producto_reventa = models.ForeignKey(ProductosReventa, on_delete=models.CASCADE, null=True, blank=True)
@@ -155,8 +155,9 @@ class DetallesOrdenVenta(models.Model):
     unidad_medida = models.ForeignKey(UnidadesDeMedida, on_delete=models.CASCADE, null=False, blank=False)
     precio_unitario_usd = models.DecimalField(max_digits=10, decimal_places=2, null=False, blank=False)
     subtotal_linea_usd = models.DecimalField(max_digits=10, decimal_places=2, null=False, blank=False)
-    notas = models.TextField(max_length=255, null=True, blank=True)
-    
+    descuento_porcentaje = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    impuesto_porcentaje = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+
     def __str__(self):
         return f"Detalle de Orden de Venta #{self.id} - {self.producto_elaborado.nombre if self.producto_elaborado else self.producto_reventa.nombre}"
 

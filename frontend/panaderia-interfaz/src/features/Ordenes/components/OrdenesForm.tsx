@@ -40,6 +40,7 @@ import { es } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { OrdenesFormSelect } from "./OrdenesFormSelect";
 import { OrdenesProductoFormSearch } from "./OrdenesProductoFormSearch";
+import { useGetParametros, useGetEstadosOrden } from "../hooks/queries";
 
 interface OrderFormProps {
   order?: Order;
@@ -49,7 +50,10 @@ interface OrderFormProps {
 
 export const OrderForm = ({ order, onClose, onSave }: OrderFormProps) => {
   const isEdit = !!order;
-  
+
+  const [{ data: clientes }, { data: metodosDePago }] = useGetParametros();
+  const { data: estadosOrden } = useGetEstadosOrden();
+
   const [customerId, setCustomerId] = useState(order?.customerId || "");
   const [orderDate, setOrderDate] = useState<Date>(
     order ? new Date(order.orderDate) : new Date()
@@ -210,9 +214,9 @@ export const OrderForm = ({ order, onClose, onSave }: OrderFormProps) => {
               <div className="space-y-2">
                 <Label htmlFor="customer">Cliente *</Label>
                 <OrdenesFormSelect id="customer" value={customerId} onChange={(v) => setCustomerId(v)} placeholder="Selecciona un cliente">
-                    {mockCustomers.map((customer) => (
+                    {clientes?.map((customer) => (
                       <SelectItem key={customer.id} value={customer.id}>
-                        {customer.name}
+                        {customer.nombre_cliente}
                       </SelectItem>
                     ))}
                   </OrdenesFormSelect>
@@ -246,7 +250,7 @@ export const OrderForm = ({ order, onClose, onSave }: OrderFormProps) => {
               </div>
 
               <div className="space-y-2">
-                <Label>Entrega Solicitada</Label>
+                <Label>Entrega Solicitada*</Label>
                 <Popover>
                   <PopoverTrigger asChild>
                     <Button
@@ -274,7 +278,7 @@ export const OrderForm = ({ order, onClose, onSave }: OrderFormProps) => {
               </div>
 
               <div className="space-y-2">
-                <Label>Entrega Confirmada</Label>
+                <Label>Entrega Definitiva</Label>
                 <Popover>
                   <PopoverTrigger asChild>
                     <Button
@@ -304,21 +308,18 @@ export const OrderForm = ({ order, onClose, onSave }: OrderFormProps) => {
               <div className="space-y-2">
                 <Label htmlFor="status">Estado *</Label>
                 <OrdenesFormSelect id="status" value={status} onChange={(v) => setStatus(v as OrdenesEstado)}>
-                    <SelectItem value="Pendiente">Pendiente</SelectItem>
-                    <SelectItem value="Confirmado">Confirmado</SelectItem>
-                    <SelectItem value="En Preparación">En Preparación</SelectItem>
-                    <SelectItem value="Listo para Entrega">Listo para Entrega</SelectItem>
-                    <SelectItem value="Entregado">Entregado</SelectItem>
-                    <SelectItem value="Cancelado">Cancelado</SelectItem>
+                    {estadosOrden?.map((estado) => (
+                      <SelectItem key={estado.id} value={estado.id}>{estado.nombre_estado}</SelectItem>
+                    ))}
                 </OrdenesFormSelect>
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="payment">Método de Pago *</Label>
                 <OrdenesFormSelect id="payment" value={paymentMethod} onChange={(v) => setPaymentMethod(v as PaymentMethod)}>
-                    <SelectItem value="Efectivo">Efectivo</SelectItem>
-                    <SelectItem value="Tarjeta">Tarjeta</SelectItem>
-                    <SelectItem value="Transferencia">Transferencia</SelectItem>
+                    {metodosDePago?.map((metodo) => (
+                      <SelectItem key={metodo.id} value={metodo.id}>{metodo.nombre_metodo}</SelectItem>
+                    ))}
                 </OrdenesFormSelect>
               </div>
             </div>
@@ -338,14 +339,13 @@ export const OrderForm = ({ order, onClose, onSave }: OrderFormProps) => {
                   <TableHeader>
                     <TableRow className="bg-table-header hover:bg-table-header bg-(--table-header-bg)">
                       <TableHead className="font-semibold">Producto *</TableHead>
+                      <TableHead className="font-semibold w-24">Stock </TableHead>
                       <TableHead className="font-semibold w-24">Cantidad *</TableHead>
                       <TableHead className="font-semibold w-20">UdM</TableHead>
-                      <TableHead className="font-semibold w-28">Precio Unit.</TableHead>
+                      <TableHead className="font-semibold w-28">Precio UdM</TableHead>
                       <TableHead className="font-semibold w-20">Desc%</TableHead>
                       <TableHead className="font-semibold w-20">Imp%</TableHead>
                       <TableHead className="font-semibold w-28">Subtotal</TableHead>
-                      <TableHead className="font-semibold w-24">Stock</TableHead>
-                      <TableHead className="font-semibold w-24">Producir</TableHead>
                       <TableHead className="font-semibold w-16"></TableHead>
                     </TableRow>
                   </TableHeader>
@@ -354,6 +354,9 @@ export const OrderForm = ({ order, onClose, onSave }: OrderFormProps) => {
                       <TableRow key={item.id}>
                         <TableCell>
                           <OrdenesProductoFormSearch value={item.productId} onChange={(value) => updateItem(index, "productId", value)} data={mockProducts} />
+                        </TableCell>
+                        <TableCell className="text-center text-sm text-success">
+                          {item.stockAssigned}
                         </TableCell>
                         <TableCell>
                           <Input
@@ -367,16 +370,8 @@ export const OrderForm = ({ order, onClose, onSave }: OrderFormProps) => {
                           />
                         </TableCell>
                         <TableCell className="text-sm">{item.unit}</TableCell>
-                        <TableCell>
-                          <Input
-                            type="number"
-                            min="0"
-                            step="0.01"
-                            value={item.unitPrice}
-                            onChange={(e) =>
-                              updateItem(index, "unitPrice", parseFloat(e.target.value) || 0)
-                            }
-                          />
+                        <TableCell className="text-sm">
+                          {formatCurrency(item.unitPrice)}
                         </TableCell>
                         <TableCell>
                           <Input
@@ -402,12 +397,6 @@ export const OrderForm = ({ order, onClose, onSave }: OrderFormProps) => {
                         </TableCell>
                         <TableCell className="font-medium">
                           {formatCurrency(item.subtotal)}
-                        </TableCell>
-                        <TableCell className="text-center text-sm text-success">
-                          {item.stockAssigned}
-                        </TableCell>
-                        <TableCell className="text-center text-sm text-warning">
-                          {item.forProduction}
                         </TableCell>
                         <TableCell>
                           <Button
