@@ -3,7 +3,7 @@ import type { Cliente, EstadoOrden, MetodoPago } from "../types/types";
 
 export const getClientes = async () : Promise<Cliente[]> => {
     try {
-        const response = await apiClient.get("/api/ventas/clientes/");
+        const response = await apiClient.get("/api/clientes/");
         return response.data;
     } catch (error) {
         console.error("Error fetching clientes:", error);
@@ -13,7 +13,7 @@ export const getClientes = async () : Promise<Cliente[]> => {
 
 export const getMetodosDePago = async () : Promise<MetodoPago[] > => {
     try {
-        const response = await apiClient.get("/api/core/metodos-de-pago/");
+        const response = await apiClient.get("/api/metodos-de-pago/");
         return response.data;
     } catch (error) {
         console.error("Error fetching metodos de pago:", error);
@@ -23,7 +23,8 @@ export const getMetodosDePago = async () : Promise<MetodoPago[] > => {
 
 export const getEstadosOrden = async (): Promise<EstadoOrden[]> => {
     try {
-        const response = await apiClient.get("/api/core/estados-orden-venta/");
+        const response = await apiClient.get("/api/estados-orden-venta/");
+        console.log(response.data);
         return response.data;
     } catch (error) {
         console.error("Error fetching estados de orden:", error);

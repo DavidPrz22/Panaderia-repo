@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-import type { Order, OrderLineItem, OrdenesEstado, PaymentMethod } from "../types/types";
+import type { Orden, OrderLineItem, Estados, MetodoPago } from "../types/types";
 import { mockCustomers, mockProducts } from "../data/mockData";
 
 import { Button } from "@/components/ui/button";
@@ -22,70 +22,86 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
-import { X, Plus, Trash2, Calendar as CalendarIcon } from "lucide-react";
+import { X, Plus, Trash2 } from "lucide-react";
 
-import { Calendar } from "@/components/ui/calendar";
-
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-
-import { toast } from "sonner";
-
-
-import { format } from "date-fns";
-import { es } from "date-fns/locale";
-import { cn } from "@/lib/utils";
 import { OrdenesFormSelect } from "./OrdenesFormSelect";
 import { OrdenesProductoFormSearch } from "./OrdenesProductoFormSearch";
 import { useGetParametros, useGetEstadosOrden } from "../hooks/queries";
 
+import { useForm } from "react-hook-form";
+import { orderSchema, type TOrderSchema } from "../schema/schema";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { OrdenesFormDatePicker } from "./OrdenesFormDatePicker";
+
 interface OrderFormProps {
-  order?: Order;
+  order?: Orden;
   onClose: () => void;
-  onSave: (order: Order) => void;
+  onSave: (order: Orden) => void;
 }
 
 export const OrderForm = ({ order, onClose, onSave }: OrderFormProps) => {
+
+  const {
+    handleSubmit,
+    watch,
+    setValue,
+  } = useForm<TOrderSchema>({
+    resolver: zodResolver(orderSchema),
+    defaultValues:
+      order
+        ? {
+            cliente_id: order.cliente_id,
+            fecha_creacion_orden: order.fecha_creacion_orden,
+            fecha_entrega_solicitada: order.fecha_entrega_solicitada,
+            fecha_entrega_definitiva: order.fecha_entrega_definitiva,
+            estado_orden: order.estado_orden,
+            metodo_pago_id: order.metodo_pago_id,
+            productos: order.productos.map(p => ({
+              producto: { id: Number(p.producto.id), tipo_producto: p.producto.tipo },
+              cantidad_solicitada: p.cantidad_solicitada,
+              unidad_medida_id: 0,
+              precio_unitario_usd: p.precio_unitario_usd,
+              subtotal_linea_usd: p.subtotal,
+              descuento_porcentaje: p.descuento_porcentaje,
+              impuesto_porcentaje: p.impuesto_porcentaje,
+            })),
+            notas_generales: order.notas_generales,
+            monto_descuento_usd: order.monto_descuento_usd,
+            monto_total_usd: order.monto_total_usd,
+            monto_total_ves: order.monto_total_ves,
+            tasa_cambio_aplicada: order.tasa_cambio_aplicada,
+          }
+        : {
+            fecha_creacion_orden: new Date().toISOString().split('T')[0],
+            fecha_entrega_solicitada: new Date().toISOString().split('T')[0],
+            fecha_entrega_definitiva: undefined,
+            productos: [],
+            notas_generales: "",
+            monto_descuento_usd: 0,
+            monto_total_usd: 0,
+            monto_total_ves: 0,
+            tasa_cambio_aplicada: 0,
+          },
+  });
+
   const isEdit = !!order;
 
   const [{ data: clientes }, { data: metodosDePago }] = useGetParametros();
   const { data: estadosOrden } = useGetEstadosOrden();
+  
 
-  const [customerId, setCustomerId] = useState(order?.customerId || "");
-  const [orderDate, setOrderDate] = useState<Date>(
-    order ? new Date(order.orderDate) : new Date()
-  );
-  const [requestedDeliveryDate, setRequestedDeliveryDate] = useState<Date | undefined>(
-    order?.requestedDeliveryDate ? new Date(order.requestedDeliveryDate) : undefined
-  );
-  const [confirmedDeliveryDate, setConfirmedDeliveryDate] = useState<Date | undefined>(
-    order?.confirmedDeliveryDate ? new Date(order.confirmedDeliveryDate) : undefined
-  );
-  const [status, setStatus] = useState<OrdenesEstado>(order?.status || "Pendiente");
-  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>(
-    order?.paymentMethod || "Efectivo"
-  );
-  const [notes, setNotes] = useState(order?.notes || "");
-  const [items, setItems] = useState<OrderLineItem[]>(order?.items || []);
-
+  const [items, setItems] = useState<OrderLineItem[]>(order?.productos || []);
+  console.log(watch())
   const addItem = () => {
     const newItem: OrderLineItem = {
-      id: `temp-${Date.now()}`,
-      productId: "",
-      product: mockProducts[0],
-      quantity: 1,
-      quantityDelivered: 0,
-      quantityInvoiced: 0,
-      unit: "Units",
-      unitPrice: 0,
-      discount: 0,
-      tax: 15,
+      id: items.length + 1,
+      producto: mockProducts[0],
+      cantidad_solicitada: 1,
+      unidad_medida_venta: "Units",
+      precio_unitario_usd: 0,
+      descuento_porcentaje: 0,
+      impuesto_porcentaje: 15,
       subtotal: 0,
-      stockAssigned: 0,
-      forProduction: 0,
     };
     setItems([...items, newItem]);
   };
@@ -139,53 +155,53 @@ export const OrderForm = ({ order, onClose, onSave }: OrderFormProps) => {
     return { subtotal, discountAmount, taxAmount, total };
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  // const handleSubmit = (e: React.FormEvent) => {
+  //   e.preventDefault();
 
-    if (!customerId) {
-      toast.error("Por favor selecciona un cliente");
-      return;
-    }
+  //   if (!customerId) {
+  //     toast.error("Por favor selecciona un cliente");
+  //     return;
+  //   }
 
-    if (items.length === 0) {
-      toast.error("Agrega al menos un producto");
-      return;
-    }
+  //   if (items.length === 0) {
+  //     toast.error("Agrega al menos un producto");
+  //     return;
+  //   }
 
-    const hasInvalidItems = items.some((item) => !item.productId || item.quantity <= 0);
-    if (hasInvalidItems) {
-      toast.error("Verifica que todos los productos tengan cantidad válida");
-      return;
-    }
+  //   const hasInvalidItems = items.some((item) => !item.productId || item.quantity <= 0);
+  //   if (hasInvalidItems) {
+  //     toast.error("Verifica que todos los productos tengan cantidad válida");
+  //     return;
+  //   }
 
-    const customer = mockCustomers.find((c) => c.id === customerId)!;
-    const { subtotal, discountAmount, taxAmount, total } = calculateTotals();
+  //   const customer = mockCustomers.find((c) => c.id === customerId)!;
+  //   const { subtotal, discountAmount, taxAmount, total } = calculateTotals();
 
-    const newOrder: Order = {
-      id: order?.id || `order-${Date.now()}`,
-      orderNumber: order?.orderNumber || `S${String(Date.now()).slice(-5)}`,
-      customerId,
-      customer,
-      orderDate: orderDate.toISOString(),
-      requestedDeliveryDate: requestedDeliveryDate?.toISOString(),
-      confirmedDeliveryDate: confirmedDeliveryDate?.toISOString(),
-      status,
-      paymentMethod,
-      items,
-      subtotal,
-      taxAmount,
-      discountAmount,
-      total,
-      notes,
-      createdBy: "admin",
-      createdAt: order?.createdAt || new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
+  //   const newOrder: Order = {
+  //     id: order?.id || `order-${Date.now()}`,
+  //     orderNumber: order?.orderNumber || `S${String(Date.now()).slice(-5)}`,
+  //     customerId,
+  //     customer,
+  //     orderDate: orderDate.toISOString(),
+  //     requestedDeliveryDate: requestedDeliveryDate?.toISOString(),
+  //     confirmedDeliveryDate: confirmedDeliveryDate?.toISOString(),
+  //     status,
+  //     paymentMethod,
+  //     items,
+  //     subtotal,
+  //     taxAmount,
+  //     discountAmount,
+  //     total,
+  //     notes,
+  //     createdBy: "admin",
+  //     createdAt: order?.createdAt || new Date().toISOString(),
+  //     updatedAt: new Date().toISOString(),
+  //   };
 
-    onSave(newOrder);
-    toast.success(isEdit ? "Orden actualizada" : "Orden creada exitosamente");
-    onClose();
-  };
+  //   onSave(newOrder);
+  //   toast.success(isEdit ? "Orden actualizada" : "Orden creada exitosamente");
+  //   onClose();
+  // };
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat("es-MX", {
@@ -207,15 +223,18 @@ export const OrderForm = ({ order, onClose, onSave }: OrderFormProps) => {
           </Button>
         </CardHeader>
 
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit(onSave) }>
           <CardContent className="space-y-6 pt-6">
             {/* Basic Info */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {/* Cliente */}
               <div className="space-y-2">
-                <Label htmlFor="customer">Cliente *</Label>
-                <OrdenesFormSelect id="customer" value={customerId} onChange={(v) => setCustomerId(v)} placeholder="Selecciona un cliente">
+                <Label htmlFor="cliente">Cliente *</Label>
+                <OrdenesFormSelect id="cliente" value={watch("cliente_id") ? watch("cliente_id").toString() : ""} onChange={(v) => {
+                  setValue("cliente_id", Number(v))
+                  }} placeholder="Selecciona un cliente">
                     {clientes?.map((customer) => (
-                      <SelectItem key={customer.id} value={customer.id}>
+                      <SelectItem key={customer.id} value={customer.id.toString()}>
                         {customer.nombre_cliente}
                       </SelectItem>
                     ))}
@@ -223,102 +242,43 @@ export const OrderForm = ({ order, onClose, onSave }: OrderFormProps) => {
                 
               </div>
 
-              <div className="space-y-2">
-                <Label>Fecha de Orden *</Label>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className={cn(
-                        "w-full justify-start text-left font-normal cursor-pointer",
-                        !orderDate && "text-muted-foreground"
-                      )}
-                    >
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-                      {format(orderDate, "PPP", { locale: es })}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0 z-(--z-index-over-header-bar)" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={orderDate}
-                      onSelect={(date) => date && setOrderDate(date)}
-                      className="pointer-events-auto"
-                    />
-                  </PopoverContent>
-                </Popover>
-              </div>
+              {/* Fecha de Orden */}
+              <OrdenesFormDatePicker 
+                label="Fecha de Orden" 
+                value={watch("fecha_creacion_orden")} 
+                onChange={(v) => setValue("fecha_creacion_orden", v)} 
+              />
 
-              <div className="space-y-2">
-                <Label>Entrega Solicitada*</Label>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className={cn(
-                        "w-full justify-start text-left font-normal cursor-pointer",
-                        !requestedDeliveryDate && "text-muted-foreground"
-                      )}
-                    >
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-                      {requestedDeliveryDate
-                        ? format(requestedDeliveryDate, "PPP", { locale: es })
-                        : "Seleccionar fecha"}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0 z-(--z-index-over-header-bar)" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={requestedDeliveryDate}
-                      onSelect={setRequestedDeliveryDate}
-                      className="pointer-events-auto"
-                    />
-                  </PopoverContent>
-                </Popover>
-              </div>
+              {/* Fecha de Entrega Solicitada */}
+              <OrdenesFormDatePicker 
+                label="Fecha de Entrega Solicitada" 
+                value={watch("fecha_entrega_solicitada")} 
+                onChange={(v) => setValue("fecha_entrega_solicitada", v)} 
+              />
 
-              <div className="space-y-2">
-                <Label>Entrega Definitiva</Label>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className={cn(
-                        "w-full justify-start text-left font-normal cursor-pointer",
-                        !confirmedDeliveryDate && "text-muted-foreground"
-                      )}
-                    >
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-                      {confirmedDeliveryDate
-                        ? format(confirmedDeliveryDate, "PPP", { locale: es })
-                        : "Seleccionar fecha"}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0 z-(--z-index-over-header-bar)" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={confirmedDeliveryDate}
-                      onSelect={setConfirmedDeliveryDate}
-                      className="pointer-events-auto"
-                    />
-                  </PopoverContent>
-                </Popover>
-              </div>
+              {/* Fecha de Entrega Definitiva */}
+              <OrdenesFormDatePicker 
+                label="Fecha de Entrega Definitiva" 
+                value={watch("fecha_entrega_definitiva")!} 
+                onChange={(v) => setValue("fecha_entrega_definitiva", v)} 
+              />
 
+              {/* Estado de la Orden */}
               <div className="space-y-2">
-                <Label htmlFor="status">Estado *</Label>
-                <OrdenesFormSelect id="status" value={status} onChange={(v) => setStatus(v as OrdenesEstado)}>
+                <Label htmlFor="estadoOrden">Estado *</Label>
+                <OrdenesFormSelect id="estadoOrden" value={watch("estado_orden") ? watch("estado_orden").toString() : ""} placeholder="Selecciona un estado" onChange={(v) => setValue("estado_orden", Number(v))}>
                     {estadosOrden?.map((estado) => (
-                      <SelectItem key={estado.id} value={estado.id}>{estado.nombre_estado}</SelectItem>
+                      <SelectItem key={estado.id} value={estado.id.toString()}>{estado.nombre_estado}</SelectItem>
                     ))}
                 </OrdenesFormSelect>
               </div>
 
+              {/* Método de Pago */}
               <div className="space-y-2">
                 <Label htmlFor="payment">Método de Pago *</Label>
-                <OrdenesFormSelect id="payment" value={paymentMethod} onChange={(v) => setPaymentMethod(v as PaymentMethod)}>
+                <OrdenesFormSelect id="payment" value={watch("metodo_pago_id") ? watch("metodo_pago_id").toString() : ""} onChange={(v) => setValue("metodo_pago_id", Number(v))} placeholder="Selecciona un método de pago">
                     {metodosDePago?.map((metodo) => (
-                      <SelectItem key={metodo.id} value={metodo.id}>{metodo.nombre_metodo}</SelectItem>
+                      <SelectItem key={metodo.id} value={metodo.id.toString()}>{metodo.nombre_metodo}</SelectItem>
                     ))}
                 </OrdenesFormSelect>
               </div>
@@ -427,8 +387,8 @@ export const OrderForm = ({ order, onClose, onSave }: OrderFormProps) => {
               <Textarea
                 id="notes"
                 className="focus-visible:ring-blue-200"
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
+                value={watch("notas_generales")}
+                onChange={(e) => setValue("notas_generales", e.target.value)}
                 placeholder="Notas adicionales sobre la orden..."
                 rows={3}
               />

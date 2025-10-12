@@ -1,20 +1,22 @@
 export type Cliente = {
-  id: string;
+  id: number;
   nombre_cliente: string;
 }
 
 export type MetodoPago = {
-  id: string;
+  id: number;
   nombre_metodo: string;
 }
 
 export type EstadoOrden = {
-  id: string;
+  id: number;
   nombre_estado: string;
 }
 
+export type Estados = 'Pendiente' | 'En Proceso' | 'Completado' | 'Cancelado';
+
 export type Producto = {
-  id: string;
+  id: number;
   SKU: string;
   nombre_producto: string;
   precio_venta_usd: number;
@@ -24,7 +26,7 @@ export type Producto = {
 }
 
 export interface OrderLineItem {
-  id: string;
+  id: number;
   producto: Producto;
   stock: number;
   cantidad_solicitada: number;
@@ -35,21 +37,23 @@ export interface OrderLineItem {
   subtotal: number;
 }
 
-export interface Order {
-  id: string;
-  orderNumber: string;
-  cliente_id: string;
+export interface Orden {
+  id: number;
+  orden_id: string;
+  cliente_id: number;
   fecha_creacion_orden: string;
-  fecha_entrega_solicitada?: string;
+  fecha_entrega_solicitada: string;
   fecha_entrega_definitiva?: string;
-  status: string;
-  paymentMethod: string;
-  items: OrderLineItem[];
-  subtotal: number;
-  taxAmount: number;
-  discountAmount: number;
-  total: number;
-  notes?: string;
-  createdAt: string;
-  updatedAt: string;
+  estado_orden: number;
+  metodo_pago_id: number;
+  productos: OrderLineItem[];
+  subtotal_usd: number;
+  monto_impuestos_usd: number;
+  monto_descuento_usd: number;
+  monto_total_usd: number;
+  monto_total_ves: number;
+  tasa_cambio_aplicada: number;
+  notas_generales?: string;
+  created_at: string;
+  updated_at: string;
 }

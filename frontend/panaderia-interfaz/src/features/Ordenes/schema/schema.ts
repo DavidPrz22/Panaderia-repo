@@ -18,8 +18,15 @@ export const orderSchema = z.object({
     fecha_creacion_orden: z.string().min(1, "La fecha de la orden es requerida"),
     fecha_entrega_solicitada: z.string().min(1, "La fecha de entrega solicitada es requerida"),
     fecha_entrega_definitiva: z.string().optional(),
-    estado_orden: z.string().min(1, "El estado de la orden es requerido"),
-    notas_generales: z.string().min(0, "Las notas generales son requeridas"),
+    estado_orden: z.number().min(0, "El estado de la orden es requerido"),
+    notas_generales: z.string()
+    .refine((val) => !val || val.length >= 3, {
+      message: "Las notas no pueden tener menos de 3 caracteres",
+    })
+    .refine((val) => !val || val.length <= 250, {
+      message: "Las notas no pueden tener más de 250 caracteres",
+    })
+    .optional(),
     monto_descuento_usd: z.number().min(0, "El monto de descuento es requerido"),
     monto_total_usd: z.number().min(0, "El monto total es requerido"),
     monto_total_ves: z.number().min(0, "El monto total en VES es requerido"),
@@ -27,3 +34,5 @@ export const orderSchema = z.object({
     metodo_pago_id: z.number().min(0, "El ID del método de pago es requerido"),
     productos: z.array(productSchema),
 });
+
+export type TOrderSchema = z.infer<typeof orderSchema>;
