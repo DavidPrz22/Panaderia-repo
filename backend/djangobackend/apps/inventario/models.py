@@ -275,6 +275,14 @@ class ProductosElaborados(models.Model):
 
     def __str__(self):
         return f"Producto {self.id} - {self.nombre_producto}"
+
+    def actualizar_stock(self, cantidad, tipo='resta'):   # tipo = 'resta' | 'suma'
+        if tipo == 'resta':
+            self.stock_actual -= cantidad
+        else:
+            self.stock_actual += cantidad
+        self.save()
+    
     
     class Meta:
         constraints = [
