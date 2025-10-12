@@ -58,8 +58,7 @@ class EjecutarTransformacionViewSet(viewsets.ModelViewSet):
                 #         fecha_caducidad=lotes_producto_origen.first().fecha_caducidad
                 #     )
 
-                producto_origen.stock_actual -= transformacion.cantidad_origen
-                producto_destino.stock_actual += transformacion.cantidad_destino
+                
 
                 producto_origen.actualizar_stock(transformacion.cantidad_origen, tipo='resta')
                 producto_destino.actualizar_stock(transformacion.cantidad_destino, tipo='suma')
