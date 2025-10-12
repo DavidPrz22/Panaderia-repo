@@ -1,5 +1,6 @@
 import {
   getCategoriasProductoIntermedio,
+  getLotesProductosIntermedios,
   getProductosIntermedios,
   getProductosIntermediosDetalles,
   getUnidadesMedida,
@@ -26,5 +27,11 @@ export const productosIntermediosQueryOptions = {
 export const productosIntermediosDetallesQueryOptions = (id: number) => ({
   queryKey: ["productos-intermedios-detalles", id],
   queryFn: () => getProductosIntermediosDetalles(id),
+  staleTime: Infinity,
+});
+
+export const lotesProductosIntermediosQueryOptions = (id: number) => ({
+  queryKey: ["lotes-productos-intermedios", id],
+  queryFn: () => getLotesProductosIntermedios(id),
   staleTime: Infinity,
 });

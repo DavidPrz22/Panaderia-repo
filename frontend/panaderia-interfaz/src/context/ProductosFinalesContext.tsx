@@ -1,4 +1,4 @@
-import type { receta_relacionada, recetasSearchItem } from "@/features/ProductosFinales/types/types";
+import type { LotesProductosFinales, receta_relacionada, recetasSearchItem } from "@/features/ProductosFinales/types/types";
 import { createContext, useContext, useState, useRef } from "react";
 import type { CategoriaProductoFinal } from "@/features/ProductosFinales/types/types";
 import type { UnidadesDeMedida } from "@/features/ProductosFinales/types/types";
@@ -44,6 +44,10 @@ type ProductosFinalesContextType = {
   setSelectedCategoriasProductoFinal: React.Dispatch<React.SetStateAction<string[]>>;
   showFiltersPanel: boolean;
   setShowFiltersPanel: React.Dispatch<React.SetStateAction<boolean>>;
+  showLotesDetalles: boolean;
+  setShowLotesDetalles: (value: boolean) => void;
+  lotesProductosFinalesDetalles: LotesProductosFinales | null;
+  setLotesProductosFinalesDetalles: (value: LotesProductosFinales | null) => void;
 };
 
 const ProductosFinalesContextProvider = createContext<ProductosFinalesContextType | null>(null);
@@ -66,7 +70,8 @@ export const ProductosFinalesProvider = ({
   const [productoId, setProductoId] = useState<number | null>(null);
   const [updateRegistro, setUpdateRegistro] = useState(false);
   const [registroDelete, setRegistroDelete] = useState<boolean | null>(null);
-
+  const [showLotesDetalles, setShowLotesDetalles] = useState(false);
+  const [lotesProductosFinalesDetalles, setLotesProductosFinalesDetalles] = useState<LotesProductosFinales | null>(null);
 
   const searchListRecetaListRef = useRef<HTMLInputElement | null>(null);
   const [searchListRecetaList, setSearchListRecetaList] = useState<receta_relacionada[]>(
@@ -97,6 +102,7 @@ export const ProductosFinalesProvider = ({
   const [selectedUnidadesVenta, setSelectedUnidadesVenta] = useState<string[]>([]);
   const [selectedCategoriasProductoFinal, setSelectedCategoriasProductoFinal] = useState<string[]>([]);
   const [showFiltersPanel, setShowFiltersPanel] = useState<boolean>(false);
+
   return (
     <ProductosFinalesContextProvider.Provider
       value={{
@@ -138,6 +144,10 @@ export const ProductosFinalesProvider = ({
         setSelectedCategoriasProductoFinal,
         showFiltersPanel,
         setShowFiltersPanel,
+        showLotesDetalles,
+        setShowLotesDetalles,
+        lotesProductosFinalesDetalles,
+        setLotesProductosFinalesDetalles,
       }}
     >
       {children}

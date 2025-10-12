@@ -1,4 +1,4 @@
-import type { UseFormWatch } from "react-hook-form";
+import type { UseFormHandleSubmit, UseFormWatch } from "react-hook-form";
 import type { UseFormSetValue } from "react-hook-form";
 import type { TProductionFormData } from "../schemas/schemas";
 
@@ -37,11 +37,17 @@ export type componentesRecetaProducto = {
   // the UI will scale component quantities by the production amount. Otherwise, it won't.
   medida_produccion?: string; // e.g., "Unidad", "Kg", etc.
   es_por_unidad?: boolean;
+  tipo_medida_fisica?: "UNIDAD" | "PESO" | "VOLUMEN";
 };
 
 export type watchSetvalueTypeProduction = {
   watch?: UseFormWatch<TProductionFormData>;
   setValue?: UseFormSetValue<TProductionFormData>;
+  onSubmit?: UseFormHandleSubmit<TProductionFormData>;
+};
+
+export type watchSetvalueTypeProductionWithSubmit = watchSetvalueTypeProduction & {
+  onSubmit: UseFormHandleSubmit<TProductionFormData>;
 };
 
 export type componentesSearchItem = {
@@ -64,4 +70,24 @@ export type newComponentItem = {
 
 export type componentesSearchList = {
   [categoria: string]: componentesSearchItem[];
+};
+
+
+export type ProductionComponentDetail = {
+  materia_prima_consumida: string | null;
+  producto_intermedio_consumido: string | null;
+  cantidad_consumida: string; 
+  unidad_medida: string;
+};
+
+export type ProductionDetails = {
+  id: number;
+  producto_produccion: string;
+  cantidad_producida: string; 
+  unidad_medida_produccion: string;
+  fecha_produccion: string; 
+  fecha_expiracion: string; 
+  costo_total_componentes_usd: string; 
+  componentes_produccion: ProductionComponentDetail[];
+  usuario_produccion: string; 
 };

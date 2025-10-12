@@ -104,3 +104,19 @@ export type watchSetValueProps = {
   watch?: UseFormWatch<TProductoFinalSchema>;
   setValue?: UseFormSetValue<TProductoFinalSchema>;
 };
+
+export type LotesProductosFinales = {
+  id: number;
+  fecha_produccion: string;
+  fecha_caducidad: string;
+  cantidad_inicial_lote: string;
+  stock_actual_lote: string;
+  coste_total_lote_usd: string;
+  estado: "DISPONIBLE" | "INACTIVO" | "EXPIRADO" | "AGOTADO";
+  produccion_origen: number;
+  peso_total_lote_gramos: string | null;
+  volumen_total_lote_ml: string | null;
+  peso_promedio_por_unidad: number | null;
+  volumen_promedio_por_unidad: number | null;
+  costo_unitario_usd: number;
+};

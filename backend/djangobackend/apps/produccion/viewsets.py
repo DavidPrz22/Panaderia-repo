@@ -2,11 +2,14 @@ from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.db import transaction
+from apps.produccion.models import Produccion, DetalleProduccionCosumos
 from apps.produccion.models import Recetas, RecetasDetalles, RelacionesRecetas
-from apps.inventario.models import MateriasPrimas, ProductosElaborados, ProductosIntermedios
-from apps.produccion.serializers import RecetasSerializer, RecetasDetallesSerializer, RecetasSearchSerializer
+from apps.inventario.models import MateriasPrimas, ProductosElaborados, ProductosIntermedios, ProductosFinales, LotesProductosElaborados, LotesStatus, ComponentesStockManagement
+from apps.produccion.serializers import RecetasSerializer, RecetasDetallesSerializer, RecetasSearchSerializer, ProduccionSerializer, ProduccionDetallesSerializer
 from django.db.models import Q
-
+from django.core.exceptions import ValidationError
+from apps.produccion.services import ProductionValidationService, StockConsumptionService, ProductionService
+from decimal import Decimal
 
 class RecetasViewSet(viewsets.ModelViewSet):
     queryset = Recetas.objects.all()
@@ -289,3 +292,102 @@ class RecetasSearchViewSet(viewsets.ReadOnlyModelViewSet):
         serializer = self.get_serializer(recetas, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+class ProduccionesViewSet(viewsets.ModelViewSet):
+    queryset = Produccion.objects.all()
+    serializer_class = ProduccionSerializer
+
+
+    def create(self, request, *args, **kwargs):
+
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        print(serializer.validated_data)
+        try:
+            with transaction.atomic():
+                # Expire old lots before processing
+                ComponentesStockManagement.expirar_todos_lotes_viejos(True)
+                producto = ProductionValidationService.validate_production_data(serializer.validated_data)
+                # Extract validated data
+                componentes = serializer.validated_data['componentes']
+
+                # Separate components by type
+                mp_componentes = [c for c in componentes if c['tipo'] == 'MateriaPrima']
+                pi_componentes = [c for c in componentes if c['tipo'] == 'ProductoIntermedio']
+
+                # Get component instances
+                materias_primas_produccion = MateriasPrimas.objects.filter(
+                    id__in=[c['id'] for c in mp_componentes]
+                ).select_related('unidad_medida_base', 'categoria')
+
+                productos_intermedios_produccion = ProductosIntermedios.objects.filter(
+                    id__in=[c['id'] for c in pi_componentes]
+                ).select_related('unidad_produccion', 'categoria')
+
+
+                # Create quantity maps
+                map_mp_cantidad = {c['id']: Decimal(str(c['cantidad']))for c in mp_componentes}
+                map_pi_cantidad = {c['id']: Decimal(str(c['cantidad'])) for c in pi_componentes}
+
+                ProductionValidationService.validate_component_availability(
+                    materias_primas_produccion, 
+                    productos_intermedios_produccion, 
+                    map_mp_cantidad, 
+                    map_pi_cantidad
+                )
+
+                # Create production record using service
+                produccion = ProductionService.create_production_record(
+                    producto=producto,
+                    cantidad_produccion=serializer.validated_data['cantidadProduction'],
+                    fecha_expiracion=serializer.validated_data['fechaExpiracion'],
+                    user=request.user,
+                    unidad_medida=producto.unidad_produccion
+                )
+
+                costo_total = StockConsumptionService.consume_materials_and_intermediates(
+                    materias_primas_produccion, 
+                    productos_intermedios_produccion, 
+                    map_mp_cantidad, 
+                    map_pi_cantidad,
+                    produccion
+                )
+
+                # Update total cost
+                produccion.costo_total_componentes_usd = costo_total
+                produccion.save(update_fields=['costo_total_componentes_usd'])
+
+                # Create product lot using service
+                lote = ProductionService.create_product_lot(
+                    produccion=produccion,
+                    producto=producto,
+                    cantidad=serializer.validated_data['cantidadProduction'],
+                    fecha_expiracion=serializer.validated_data['fechaExpiracion'],
+                    costo_total=costo_total,
+                    peso=serializer.validated_data.get('peso', None),
+                    volumen=serializer.validated_data.get('volumen', None)
+                )
+
+                # update components stock
+                product_id = serializer.validated_data['productoId']
+                product_type = serializer.validated_data['tipoProducto']
+                
+                StockConsumptionService.update_components_stock(
+                    product_id, product_type
+                )
+
+                return Response({
+                    "message": "Producción registrada exitosamente",
+                    "produccion_id": produccion.id,
+                    "lote_id": lote.id,
+                    "costo_total": costo_total
+                }, status=status.HTTP_201_CREATED)
+
+        except ValidationError as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({"error": f"Error interno: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class ProduccionDetallesViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = Produccion.objects.all()
+    serializer_class = ProduccionDetallesSerializer

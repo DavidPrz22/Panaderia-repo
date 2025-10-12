@@ -1,0 +1,12 @@
+export const PILotesHeader = () => {
+    return (
+        <div className="p-4 grid grid-cols-6 font-bold font-[Roboto] text-sm">
+            <div>Stock Inicial</div>
+            <div>Stock actual</div>
+            <div>Fecha de caducidad</div>
+            <div>Fecha de producción</div>
+            <div>Costo total</div>
+            <div>Estado</div>
+        </div>
+    );
+};

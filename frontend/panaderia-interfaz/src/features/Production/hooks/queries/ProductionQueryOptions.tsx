@@ -1,5 +1,7 @@
+import { queryOptions } from "@tanstack/react-query";
 import {
   getRecetaComponentes,
+  getProductionDetails,
   searchProductosFinales,
   searchProductosIntermedios,
 } from "../../api/api";
@@ -22,4 +24,12 @@ export const componentsProductionOptions = (id: number) => {
     queryFn: () => getRecetaComponentes(id),
     staleTime: Infinity,
   };
+};
+
+export const productionDetailsOptions = () => {
+  return queryOptions({
+    queryKey: ["productionDetails"],
+    queryFn: getProductionDetails,
+    staleTime: Infinity,
+  });
 };

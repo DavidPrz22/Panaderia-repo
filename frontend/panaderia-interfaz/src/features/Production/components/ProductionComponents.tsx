@@ -5,29 +5,31 @@ import { useComponentsProductionQuery } from "../hooks/queries/ProductionQueries
 import type {
   ComponentesLista,
   subreceta,
-  watchSetvalueTypeProduction,
+  watchSetvalueTypeProductionWithSubmit,
 } from "../types/types";
 import { ProductionSubComponents } from "./ProductionSubComponents";
 import { ChefHatIcon } from "@/assets/DashboardAssets";
 import { ProductionWarning } from "./ProductionWarning";
 import { useProductionContext } from "@/context/ProductionContext";
 import { useEffect, useMemo, memo } from "react";
+import ProductionButtons from "./ProductionButtons";
 
 type Componente = ComponentesLista[number];
 
 const ProductionComponentsBase = ({
   setValue,
   watch,
+  onSubmit,
   cantidadProduction,
-}: watchSetvalueTypeProduction & { cantidadProduction?: number }) => {
+  resetProduction,
+}: watchSetvalueTypeProductionWithSubmit & { cantidadProduction?: number, resetProduction: () => void }) => {
   const { data : productionComponentes , isFetching, isFetched } = useComponentsProductionQuery();
 
-  const { setInsufficientStock, componentesBaseProduccion, setComponentesBaseProduccion } = useProductionContext();
+  const { setInsufficientStock, componentesBaseProduccion, setComponentesBaseProduccion, setMedidaFisica, esPorUnidad, setEsPorUnidad } = useProductionContext();
 
   // Cantidad a producir desde el formulario (1 por defecto)
   const cantidad = cantidadProduction ?? 1;
-
-  // Escalar cantidades de componentes base por la cantidad a producir
+  
   const roundTo3 = (n: number) => Math.round(n * 1000) / 1000;
 
   // Store unscaled base componentes from backend in context when fetched
@@ -44,20 +46,23 @@ const ProductionComponentsBase = ({
   }, [isFetched, productionComponentes, setComponentesBaseProduccion]);
 
 
-  const esPorUnidad = useMemo(() => {
-    const prod = productionComponentes as unknown as {
-      medida_produccion?: string;
-      // optional fallback field just in case backend sends this typo
-      mededa_produccion?: string;
-      es_por_unidad?: boolean;
-    } | undefined;
-    const medidaRaw = prod?.medida_produccion ?? prod?.mededa_produccion;
+  useEffect(() => {
+    if (!isFetched || !productionComponentes) return;
+  
+    const medidaRaw = productionComponentes.medida_produccion;
     const m = typeof medidaRaw === "string" ? medidaRaw.toLowerCase() : undefined;
-    return (
-      (prod?.es_por_unidad === true) ||
+
+    setEsPorUnidad((
+      (productionComponentes.es_por_unidad === true) ||
       (typeof m === "string" && m === "unidad")
-    );
-  }, [productionComponentes]);
+    ));
+
+    if (productionComponentes.tipo_medida_fisica) {
+      setMedidaFisica(productionComponentes.tipo_medida_fisica);
+    }
+  
+  }, [isFetched, productionComponentes, setMedidaFisica, setEsPorUnidad]);
+
 
   const componentesPrincipalesProducts: Componente[] = useMemo(() => {
     const base = componentesBaseProduccion ?? [];
@@ -72,6 +77,7 @@ const ProductionComponentsBase = ({
 
   // Escalar cantidades de subrecetas por la cantidad a producir
   const subrecetasProducts: subreceta[] = useMemo(() => {
+
     const subs = productionComponentes?.subrecetas ?? [];
     const q = Number(cantidad) || 0;
     if (!esPorUnidad) {
@@ -116,25 +122,38 @@ const ProductionComponentsBase = ({
   }, [componentesPrincipalesProducts, subrecetasProducts]);
 
   const insufficientStock: ComponentesLista = useMemo(() => {
-    return componentesEnProducto.filter((c) => c.stock < c.cantidad);
-  }, [componentesEnProducto]);
+    const formComponentes = (watch?.("componentes") as { id: number; cantidad: number }[] | undefined) ?? [];
+    const byFormId = new Map(formComponentes.map((c) => [c.id, c.cantidad]));
+    
+    return componentesEnProducto.filter((c) => {
+      const formQuantity = byFormId.get(c.id) ?? c.cantidad;
+      return c.stock < formQuantity;
+    });
+  }, [componentesEnProducto, watch]);
 
   useEffect(() => {
     if (!isFetched) return;
-    // Guardar en el formulario solo lo necesario para el backend/zod: id, cantidad y tipo
-    const formComponentes = componentesEnProducto.map(({ id, cantidad, tipo }) => ({
-      id,
-      cantidad: roundTo3(cantidad),
-      tipo: tipo || "MateriaPrima", // Default to MateriaPrima if not specified
-    }));
-    setValue?.("componentes", formComponentes, { shouldValidate: true });
-  }, [isFetched, componentesEnProducto, setValue]);
+  
+    const existing = (watch?.("componentes") as { id: number; cantidad: number; tipo?: string }[] | undefined) ?? [];
+    const byId = new Map(existing.map((c) => [c.id, c]));
+  
+    const merged = componentesEnProducto.map(({ id, cantidad, tipo }) => {
+      const prev = byId.get(id);
+      const chosenCantidad = esPorUnidad
+        ? roundTo3(cantidad) // scale/refresh when unit-based
+        : typeof prev?.cantidad === "number"
+          ? roundTo3(prev.cantidad) // preserve user edits when not unit-based
+          : roundTo3(cantidad);     // initial load fallback
+      return { id, cantidad: chosenCantidad, tipo: tipo || "MateriaPrima" };
+    });
+  
+    setValue?.("componentes", merged, { shouldValidate: true });
+  }, [isFetched, componentesEnProducto, esPorUnidad, setValue, watch]);
 
-  // Al cargar componentes del servidor, si no hay cantidad indicada por el usuario,
-  // establecer 1 para mostrar cantidades base de la receta
   useEffect(() => {
     if (!isFetched) return;
     const current = cantidad;
+
     if (!current || current - 1 <= 0) {
       const input = document.getElementById("cantidadProduction");
       if (input) {
@@ -143,7 +162,7 @@ const ProductionComponentsBase = ({
       }
       setValue?.("cantidadProduction", 1, { shouldValidate: true });
     }
-  }, [isFetched, setValue, watch, productionComponentes, cantidad]);
+  }, [isFetched, setValue, watch, productionComponentes]);
 
   useEffect(() => {
     if (!isFetched) return;
@@ -161,7 +180,7 @@ const ProductionComponentsBase = ({
           <div className="flex flex-col gap-2 mt-8">
             {componentesPrincipalesProducts.map((componente) => (
               <ProductionComponentItem
-                key={`${componente.id}-${componente.cantidad}`}
+                key={componente.id}
                 id={componente.id}
                 titulo={componente.nombre}
                 stock={componente.stock}
@@ -182,7 +201,7 @@ const ProductionComponentsBase = ({
                 </div>
                 {subrecetasProducts.map((sr, index) => (
                   <ProductionSubComponents
-                    key={`${sr.nombre}-${index}-${cantidad}`}
+                    key={`${sr.nombre}-${index}`}
                     subreceta={sr}
                     setValue={setValue}
                     watch={watch}
@@ -201,6 +220,12 @@ const ProductionComponentsBase = ({
           </div>
         </div>
       )}
+
+      {
+        componentesPrincipalesProducts.length > 0 && (
+          <ProductionButtons onSubmit={onSubmit} resetProduction={resetProduction} />
+        )
+      }
     </>
   );
 };

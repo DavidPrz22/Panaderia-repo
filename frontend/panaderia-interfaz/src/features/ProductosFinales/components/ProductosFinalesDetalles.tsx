@@ -8,6 +8,9 @@ import { useEffect } from "react";
 import { useDeleteProductoFinal } from "../hooks/mutations/productosFinalesMutations";
 import { PendingTubeSpinner } from "./PendingTubeSpinner";
 import { DetallesHeader } from "@/components/DetallesHeader";
+import Title from "@/components/Title";
+import { PFLotesTable } from "./PFLotesTable";
+import { PFLotesDetailsContainer } from "./PFLotesDetailsContainer";
 
 export default function ProductosFinalesDetalles() {
   const {
@@ -21,6 +24,7 @@ export default function ProductosFinalesDetalles() {
     setIsLoadingDetalles,
     enabledProductoDetalles,
     setEnabledProductoDetalles,
+    showLotesDetalles,
   } = useProductosFinalesContext();
 
   const {
@@ -77,12 +81,14 @@ export default function ProductosFinalesDetalles() {
       />
     );
   }
-  console.log(productoFinalDetalles);
   const handleDelete = async () => {
     await deleteProductoFinal(productoId!);
     setShowProductoDetalles(false);
     setRegistroDelete(false);
   };
+  if (showLotesDetalles) {
+    return <PFLotesDetailsContainer />;
+  }
   return (
     <div className="flex flex-col gap-5 mx-8 border border-gray-200 p-5 rounded-lg shadow-md h-full relative">
       <DetallesHeader
@@ -112,6 +118,11 @@ export default function ProductosFinalesDetalles() {
         <TitleDetails>Detalles</TitleDetails>
         <DetailsTable productoFinalDetalles={productoFinalDetalles!} />
       </div>
+
+      <div className="space-y-4 mt-4">
+          <Title extraClass="text-blue-600">Lotes de producto final</Title>  
+          <PFLotesTable />
+        </div>
     </div>
   );
 }

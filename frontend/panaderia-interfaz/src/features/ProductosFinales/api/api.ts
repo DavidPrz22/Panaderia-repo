@@ -5,8 +5,9 @@ import type {
   ProductosFinalesList,
   recetasSearchItem,
 } from "../types/types";
+
 import type { TProductoFinalSchema } from "../schemas/schemas";
-import type { UnidadesDeMedida } from "../types/types";
+import type { UnidadesDeMedida, LotesProductosFinales } from "../types/types";
 
 export const getProductosFinales = async (): Promise<ProductosFinalesList> => {
   try {
@@ -112,5 +113,16 @@ export const removeRecetaRelacionada = async (id: number) => {
   } catch (error) {
     console.error(error);
     return null;
+  }
+};
+
+
+export const getLotesProductosFinales = async (id: number): Promise<LotesProductosFinales[]> => {
+  try {
+    const response = await apiClient.get(`/api/productoselaborados/${id}/lotes/`);
+    return response.data;
+  } catch (error) {
+    console.error(error);
+    return [];
   }
 };
