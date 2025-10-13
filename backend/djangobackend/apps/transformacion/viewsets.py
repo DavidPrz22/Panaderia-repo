@@ -35,34 +35,39 @@ class EjecutarTransformacionViewSet(viewsets.ModelViewSet):
                 producto_destino = ProductosElaborados.objects.get(id=id_producto_destino)
 
                 # Lógica de lotes y stock
-                # lotes_producto_origen = LotesProductosElaborados.objects.filter(
-                #     producto_elaborado=producto_origen,
-                #     estado=LotesStatus.DISPONIBLE,
-                #     fecha_caducidad__gt=timezone.now().date()
-                # ).order_by('fecha_caducidad')
-                # lotes_producto_destino = LotesProductosElaborados.objects.filter(
-                #     producto_elaborado=producto_destino,
-                #     estado=LotesStatus.DISPONIBLE,
-                #     fecha_caducidad__gt=timezone.now().date()
-                # ).order_by('fecha_caducidad')
+                lotes_producto_origen = LotesProductosElaborados.objects.filter(
+                    producto_elaborado=producto_origen,
+                    estado=LotesStatus.DISPONIBLE,
+                    fecha_caducidad__gt=timezone.now().date()
+                ).order_by('fecha_caducidad')
+                lotes_producto_destino = LotesProductosElaborados.objects.filter(
+                    producto_elaborado=producto_destino,
+                    estado=LotesStatus.DISPONIBLE,
+                    fecha_caducidad__gt=timezone.now().date()
+                ).order_by('fecha_caducidad')
 
-                # if not lotes_producto_origen.exists():
-                #     print("No hay lotes disponibles para el producto de origen.")
-                #     return Response({"error": "No hay lotes disponibles para el producto de origen."}, status=status.HTTP_400_BAD_REQUEST)
+                if not lotes_producto_origen.exists():
+                    print("No hay lotes disponibles para el producto de origen.")
+                    return Response({"error": "No hay lotes disponibles para el producto de origen."}, status=status.HTTP_400_BAD_REQUEST)
 
-                # if not lotes_producto_destino.exists():
-                #     print("No hay lotes disponibles para el producto de destino, creando lote nuevo.")
-                #     lotes_producto_destino = LotesProductosElaborados.objects.create(
-                #         producto_elaborado=producto_destino,
-                #         stock_actual_lote=0,
-                #         fecha_caducidad=lotes_producto_origen.first().fecha_caducidad
-                #     )
+                if not lotes_producto_destino.exists():
+                    print("No hay lotes disponibles para el producto de destino, creando lote nuevo.")
+                if lotes_producto_origen.exists():
+                    produccion_origen = lotes_producto_origen.first().produccion_origen
+                    fecha_caducidad = lotes_producto_origen.first().fecha_caducidad
+                    LotesProductosElaborados.objects.create(
+                    produccion_origen=produccion_origen,
+                    producto_elaborado=producto_destino,
+                    stock_actual_lote=0,
+                    fecha_caducidad=fecha_caducidad
+                )
+                else:
+                    return Response({"error": "No se puede crear lote destino sin lote de origen válido."}, status=status.HTTP_400_BAD_REQUEST)
 
                 
 
                 producto_origen.actualizar_stock(transformacion.cantidad_origen, tipo='resta')
                 producto_destino.actualizar_stock(transformacion.cantidad_destino, tipo='suma')
-
 
                 # Registrar la ejecución de la transformación
                 ejecucion = EjecutarTransformacion.objects.create(
