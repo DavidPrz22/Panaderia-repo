@@ -27,7 +27,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useGetEstadosOrden } from "../hooks/queries";
+import { useGetEstadosOrden } from "../hooks/queries/queries";
 
 const OrdenesIndex = () => {
   const [orders, setOrders] = useState<Order[]>(mockOrders);

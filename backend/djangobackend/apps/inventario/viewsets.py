@@ -8,7 +8,6 @@ from datetime import datetime
 from collections import defaultdict
 from apps.inventario.models import LotesStatus
 
-
 class MateriaPrimaViewSet(viewsets.ModelViewSet):
     queryset = MateriasPrimas.objects.all()
     serializer_class = MateriaPrimaSerializer
@@ -298,6 +297,60 @@ class ProductosElaboradosViewSet(viewsets.ModelViewSet):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
+# class ProductosPedidoSearchViewSet(viewsets.ReadOnlyModelViewSet):
+#     queryset = ProductosElaborados.objects.all()
+
+#     def list(self, request, *args, **kwargs):
+#         param = request.query_params.get('search')
+#         if not param:
+#             return Response(
+#                 status=status.HTTP_400_BAD_REQUEST,
+#                 data={"error": "El parámetro 'search' es requerido"}
+#             )
+        
+#         # Get ProductosElaborados using .values()
+#         productos = ProductosElaborados.objects.filter(
+#             nombre_producto__icontains=param,
+#             es_intermediario=False  # Only final products
+#         ).values('id', 'nombre_producto', 'unidad_venta__nombre', 'SKU', 'precio_venta_usd')
+        
+#         # Get ProductosReventa using .values()
+#         productos_reventa = ProductosReventa.objects.filter(
+#             nombre_producto__icontains=param
+#         ).values('id', 'nombre_producto', 'unidad_venta__nombre', 'SKU', 'precio_venta_usd')
+        
+#         # Convert to list and add 'tipo' field
+#         productos_list = [
+#             {
+#                 'id': p['id'],
+#                 'nombre_producto': p['nombre_producto'],
+#                 'unidad_venta': p['unidad_venta__nombre'],
+#                 'SKU': p['SKU'],
+#                 'precio_venta_usd': p['precio_venta_usd'],
+#                 'tipo': 'producto-elaborado'
+#             }
+#             for p in productos
+#         ]
+        
+#         reventa_list = [
+#             {
+#                 'id': p['id'],
+#                 'nombre_producto': p['nombre_producto'],
+#                 'unidad_venta': p['unidad_venta__nombre'],
+#                 'SKU': p['SKU'],
+#                 'precio_venta_usd': p['precio_venta_usd'],
+#                 'tipo': 'producto-reventa'
+#             }
+#             for p in productos_reventa
+#         ]
+        
+#         # Combine and sort
+#         combined = productos_list + reventa_list
+#         combined.sort(key=lambda x: x['nombre_producto'].lower())
+        
+#         return Response({"productos": combined}, status=status.HTTP_200_OK)
+
+
 class LotesProductosElaboradosViewSet(viewsets.ModelViewSet):
     queryset = LotesProductosElaborados.objects.all()
     serializer = LotesProductosElaboradosSerializer
@@ -408,6 +461,7 @@ class ProductosReventaDetallesViewSet(viewsets.ReadOnlyModelViewSet):
         
         serializer = self.get_serializer(instance)
         return Response(serializer.data)
+
 
 class LotesProductosReventaViewSet(viewsets.ModelViewSet):
     queryset = LotesProductosReventa.objects.all()

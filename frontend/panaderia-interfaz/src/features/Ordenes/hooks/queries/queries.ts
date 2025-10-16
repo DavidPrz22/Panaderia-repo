@@ -1,5 +1,5 @@
 import { useQueries, useQuery } from "@tanstack/react-query";
-import { clientesQueryOptions, metodosDePagoQueryOptions, estadosOrdenQueryOptions } from "./queryOptions";
+import { clientesQueryOptions, metodosDePagoQueryOptions, estadosOrdenQueryOptions, bcvRateQueryOptions } from "./queryOptions";
 
 export const useGetParametros = () => {
     return useQueries({
@@ -9,4 +9,8 @@ export const useGetParametros = () => {
 
 export const useGetEstadosOrden = () => {
     return useQuery(estadosOrdenQueryOptions);
+};
+
+export const useGetBCVRate = () => {
+    return useQuery(bcvRateQueryOptions);
 };

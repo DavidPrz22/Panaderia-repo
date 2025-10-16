@@ -827,3 +827,23 @@ class ProductosReventaDetallesSerializer(serializers.ModelSerializer):
     def get_convert_sale_to_inventory_units(self, obj):
         # Since it's a method that takes parameter, return the factor as example
         return f"Multiply by {obj.factor_conversion}"
+
+
+# class ProductosReventaPedidoSearchSerializer(serializers.ModelSerializer):
+#     tipo = serializers.SerializerMethodField()
+#     class Meta:
+#         model = ProductosReventa
+#         fields = ['id', 'nombre_producto', 'unidad_venta', 'SKU', 'precio_venta_usd', 'tipo']
+
+#     def get_tipo(self, obj):
+#         return 'producto-reventa'
+
+
+# class ProductosElaboradosPedidoSearchSerializer(serializers.ModelSerializer):
+#     tipo = serializers.SerializerMethodField()
+#     class Meta:
+#         model = ProductosElaborados
+#         fields = ['id', 'nombre_producto', 'unidad_venta', 'SKU', 'precio_venta_usd', 'tipo']
+
+#     def get_tipo(self, obj):
+#         return 'producto-elaborado'

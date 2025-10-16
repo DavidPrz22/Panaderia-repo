@@ -25,12 +25,19 @@ export type Producto = {
   tipo: 'producto-final' | 'producto-reventa';
 }
 
+type productoOrden = {
+  id: number | null;
+  SKU: string;
+  nombre_producto: string;
+  tipo_producto: 'producto-final' | 'producto-reventa' | null;
+}
+
 export interface OrderLineItem {
   id: number;
-  producto: Producto;
+  producto: productoOrden;
   stock: number;
   cantidad_solicitada: number;
-  unidad_medida_venta: string;
+  unidad_medida_venta: { id: number; abreviatura: string };
   precio_unitario_usd: number;
   descuento_porcentaje: number;
   impuesto_porcentaje: number;
@@ -56,4 +63,21 @@ export interface Orden {
   notas_generales?: string;
   created_at: string;
   updated_at: string;
+}
+
+export type OrdenProductoSearch = {
+  id: number;
+  SKU: string;
+  unidad_venta: {
+    id: number;
+    abreviatura: string;
+  };
+  nombre_producto: string;
+  precio_venta_usd: number;
+  stock_actual: number;
+  tipo: 'producto-final' | 'producto-reventa';
+}
+
+export type OrdenProductosSearch = {
+  productos: OrdenProductoSearch[];
 }

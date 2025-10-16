@@ -1,7 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
-import type { Orden, OrderLineItem, Estados, MetodoPago } from "../types/types";
-import { mockCustomers, mockProducts } from "../data/mockData";
+import type { Orden, OrderLineItem } from "../types/types";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -26,12 +25,13 @@ import { X, Plus, Trash2 } from "lucide-react";
 
 import { OrdenesFormSelect } from "./OrdenesFormSelect";
 import { OrdenesProductoFormSearch } from "./OrdenesProductoFormSearch";
-import { useGetParametros, useGetEstadosOrden } from "../hooks/queries";
+import { useGetParametros, useGetEstadosOrden, useGetBCVRate } from "../hooks/queries/queries";
 
 import { useForm } from "react-hook-form";
 import { orderSchema, type TOrderSchema } from "../schema/schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { OrdenesFormDatePicker } from "./OrdenesFormDatePicker";
+import { toast } from "sonner";
 
 interface OrderFormProps {
   order?: Orden;
@@ -88,73 +88,56 @@ export const OrderForm = ({ order, onClose, onSave }: OrderFormProps) => {
 
   const [{ data: clientes }, { data: metodosDePago }] = useGetParametros();
   const { data: estadosOrden } = useGetEstadosOrden();
-  
+  const { data: bcvRate } = useGetBCVRate();
 
   const [items, setItems] = useState<OrderLineItem[]>(order?.productos || []);
-  console.log(watch())
+  const [subtotal, setSubtotal] = useState(0);
+
+  useEffect(() => {
+    if (bcvRate) {
+      setValue('tasa_cambio_aplicada', Number(bcvRate.promedio))
+    }
+  }, [bcvRate, setValue])
+
   const addItem = () => {
     const newItem: OrderLineItem = {
       id: items.length + 1,
-      producto: mockProducts[0],
-      cantidad_solicitada: 1,
-      unidad_medida_venta: "Units",
+      producto: {
+        id: null,
+        SKU: "",
+        nombre_producto: "",
+        tipo_producto: null,
+      },
+      stock: 0,
+      cantidad_solicitada: 0,
+      unidad_medida_venta: { id: 0, abreviatura: "" },
       precio_unitario_usd: 0,
       descuento_porcentaje: 0,
-      impuesto_porcentaje: 15,
+      impuesto_porcentaje: 0,
       subtotal: 0,
     };
     setItems([...items, newItem]);
   };
 
-  const removeItem = (index: number) => {
-    setItems(items.filter((_, i) => i !== index));
+  const removeItem = (id: number) => {
+    setItems(items.filter((item) => item.id !== id));
   };
 
-  const updateItem = (index: number, field: keyof OrderLineItem, value: any) => {
-    const newItems = [...items];
-    const item = newItems[index];
+  const calculateSubtotal = (item: OrderLineItem) => {
+    return item.precio_unitario_usd * item.cantidad_solicitada * (1 - item.descuento_porcentaje / 100) * (1 + item.impuesto_porcentaje / 100)
+  }
 
-    if (field === "productId") {
-      const product = mockProducts.find((p) => p.name === value);
-      if (product) {
-        item.product = product;
-        item.productId = product.id;
-        item.unitPrice = product.price;
-        item.unit = product.unit;
-        
-        // Calcular asignación de stock y producción
-        const stockAvailable = product.stock;
-        item.stockAssigned = Math.min(item.quantity, stockAvailable);
-        item.forProduction = Math.max(0, item.quantity - stockAvailable);
-      }
-    } else {
-      (item as any)[field] = value;
+  const handleUpdate = (e: React.ChangeEvent<HTMLInputElement>, item: OrderLineItem, fieldSchema: keyof TOrderSchema['productos'][number], field: 'descuento_porcentaje' | 'impuesto_porcentaje') =>{
+    const productoId = item.producto.id!
+    const productoIndex = watch("productos")?.findIndex((p) => p.producto.id === productoId)
+    if (productoIndex !== -1) {
+      setValue(`productos.${productoIndex}.${fieldSchema}`, Number(e.target.value), { shouldValidate: true })
+      item[field] = Number(e.target.value)
+      const subtotal = calculateSubtotal(item)
+      item.subtotal = subtotal
     }
-
-    // Recalcular subtotal
-    const baseAmount = item.quantity * item.unitPrice;
-    const discountAmount = (baseAmount * item.discount) / 100;
-    const afterDiscount = baseAmount - discountAmount;
-    item.subtotal = afterDiscount;
-
-    setItems(newItems);
-  };
-
-  const calculateTotals = () => {
-    const subtotal = items.reduce((sum, item) => sum + item.subtotal, 0);
-    const discountAmount = items.reduce(
-      (sum, item) => sum + (item.quantity * item.unitPrice * item.discount) / 100,
-      0
-    );
-    const taxAmount = items.reduce(
-      (sum, item) => sum + (item.subtotal * item.tax) / 100,
-      0
-    );
-    const total = subtotal + taxAmount;
-
-    return { subtotal, discountAmount, taxAmount, total };
-  };
-
+    calculateTotal();
+  }
   // const handleSubmit = (e: React.FormEvent) => {
   //   e.preventDefault();
 
@@ -203,6 +186,29 @@ export const OrderForm = ({ order, onClose, onSave }: OrderFormProps) => {
   //   onClose();
   // };
 
+  const calculateTotal = () => {
+    // Calculate subtotal (before discounts and taxes)
+    const subtotalBeforeFees = items.reduce((sum, item) => sum + (item.precio_unitario_usd * item.cantidad_solicitada), 0)
+    
+    // Calculate total discount amount
+    const CantidadDescuento = items.reduce((sum, item) => {
+      const lineSubtotal = item.precio_unitario_usd * item.cantidad_solicitada;
+      return sum + (item.descuento_porcentaje * lineSubtotal / 100);
+    }, 0)
+    
+    // Calculate total tax amount
+    const CantidadImpuesto = items.reduce((sum, item) => {
+      const lineSubtotal = item.precio_unitario_usd * item.cantidad_solicitada;
+      return sum + (item.impuesto_porcentaje * lineSubtotal / 100);
+    }, 0)
+
+    setSubtotal(subtotalBeforeFees)
+    setValue('monto_impuestos_usd', CantidadImpuesto)
+    setValue('monto_descuento_usd', CantidadDescuento)
+    setValue('monto_total_usd', subtotalBeforeFees - CantidadDescuento + CantidadImpuesto)
+    setValue('monto_total_ves', (subtotalBeforeFees - CantidadDescuento + CantidadImpuesto) * watch('tasa_cambio_aplicada'))
+  }
+
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat("es-MX", {
       style: "currency",
@@ -210,7 +216,6 @@ export const OrderForm = ({ order, onClose, onSave }: OrderFormProps) => {
     }).format(amount);
   };
 
-  const totals = calculateTotals();
   return (
     <div className="p-6">
       <Card className="w-full max-w-6xl mx-auto">
@@ -223,7 +228,7 @@ export const OrderForm = ({ order, onClose, onSave }: OrderFormProps) => {
           </Button>
         </CardHeader>
 
-        <form onSubmit={handleSubmit(onSave) }>
+        <form onSubmit={handleSubmit() }>
           <CardContent className="space-y-6 pt-6">
             {/* Basic Info */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -310,38 +315,95 @@ export const OrderForm = ({ order, onClose, onSave }: OrderFormProps) => {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {items.map((item, index) => (
+                    {items.map((item) => (
                       <TableRow key={item.id}>
                         <TableCell>
-                          <OrdenesProductoFormSearch value={item.productId} onChange={(value) => updateItem(index, "productId", value)} data={mockProducts} />
+                          <OrdenesProductoFormSearch value={item.producto.id ? item.producto.nombre_producto : ""} onChange={
+                            (producto) => {
+
+                              if (producto.stock_actual <= 0) {
+                                toast.error("El Producto No Tiene Stock")
+                                return
+                              }
+
+                              if (watch("productos")?.findIndex((p) => p.producto.id === producto.id) !== -1) {
+                                toast.error("El Producto Ya Existe en la Orden")
+                                return
+                              }
+
+                              console.log(producto)
+                              item.precio_unitario_usd = producto.precio_venta_usd
+                              item.unidad_medida_venta = producto.unidad_venta
+                              item.stock = producto.stock_actual
+                              item.producto.id = producto.id
+                              item.producto.tipo_producto = producto.tipo
+                              item.producto.nombre_producto = producto.nombre_producto
+
+                              setItems([...items])
+                              const schemaValue: TOrderSchema['productos'] = items.map((item)=>{
+                                return {
+                                  producto: { id: item.producto.id!, tipo_producto: item.producto.tipo_producto! },
+                                  cantidad_solicitada: item.cantidad_solicitada,
+                                  unidad_medida_id: item.unidad_medida_venta.id,
+                                  precio_unitario_usd: item.precio_unitario_usd,
+                                  subtotal_linea_usd: item.subtotal,
+                                  descuento_porcentaje: item.descuento_porcentaje,
+                                  impuesto_porcentaje: item.impuesto_porcentaje,
+                                }
+                              })
+                              setValue('productos', schemaValue )
+                            }
+                            } />
                         </TableCell>
                         <TableCell className="text-center text-sm text-success">
-                          {item.stockAssigned}
+                          {item.stock}
                         </TableCell>
                         <TableCell>
                           <Input
                             type="number"
                             min="0"
-                            step="0.01"
-                            value={item.quantity}
+                            step="1"
+                            defaultValue={item.cantidad_solicitada}
                             onChange={(e) =>
-                              updateItem(index, "quantity", parseFloat(e.target.value) || 0)
-                            }
+                              {
+
+                                const productoId = item.producto.id!
+                                
+                                if (Number(e.target.value) > item.stock) {
+                                  e.target.value = item.stock.toString()
+                                  toast.error("La Cantidad No Puede Ser Mayor al Stock")
+                                  return
+                                }
+                                if (Number(e.target.value) < 0) {
+                                  e.target.value = "0"
+                                  toast.error("La Cantidad No Puede Ser Menor a 0")
+                                  return
+                                }
+
+                                const productoIndex = watch("productos")?.findIndex((p) => p.producto.id === productoId)
+                                if (productoIndex !== -1) {
+                                  setValue(`productos.${productoIndex}.cantidad_solicitada`, Number(e.target.value), { shouldValidate: true })
+                                  item.cantidad_solicitada = Number(e.target.value)
+                                  const subtotal = calculateSubtotal(item)
+                                  item.subtotal = subtotal
+                                }
+                                calculateTotal();
+                              }}
                           />
                         </TableCell>
-                        <TableCell className="text-sm">{item.unit}</TableCell>
+                        <TableCell className="text-sm">{item.unidad_medida_venta.abreviatura}</TableCell>
                         <TableCell className="text-sm">
-                          {formatCurrency(item.unitPrice)}
+                          {formatCurrency(item.precio_unitario_usd)}
                         </TableCell>
                         <TableCell>
                           <Input
                             type="number"
                             min="0"
                             max="100"
-                            value={item.discount}
-                            onChange={(e) =>
-                              updateItem(index, "discount", parseFloat(e.target.value) || 0)
-                            }
+                            step="0.1"
+                            className="p-1.5"
+                            defaultValue={item.descuento_porcentaje}
+                            onChange={(e) => handleUpdate(e, item, 'descuento_porcentaje', 'descuento_porcentaje')}
                           />
                         </TableCell>
                         <TableCell>
@@ -349,10 +411,10 @@ export const OrderForm = ({ order, onClose, onSave }: OrderFormProps) => {
                             type="number"
                             min="0"
                             max="100"
-                            value={item.tax}
-                            onChange={(e) =>
-                              updateItem(index, "tax", parseFloat(e.target.value) || 0)
-                            }
+                            step="0.1"
+                            className="p-1.5"
+                            defaultValue={item.impuesto_porcentaje}
+                            onChange={(e) => handleUpdate(e, item, 'impuesto_porcentaje', 'impuesto_porcentaje')}
                           />
                         </TableCell>
                         <TableCell className="font-medium">
@@ -364,7 +426,7 @@ export const OrderForm = ({ order, onClose, onSave }: OrderFormProps) => {
                             className="cursor-pointer"
                             variant="ghost"
                             size="icon"
-                            onClick={() => removeItem(index)}
+                            onClick={() => removeItem(item.id)}
                           >
                             <Trash2 className="h-4 w-4 text-destructive" />
                           </Button>
@@ -396,25 +458,40 @@ export const OrderForm = ({ order, onClose, onSave }: OrderFormProps) => {
 
             {/* Totals */}
             <div className="border-t pt-4 flex justify-end">
-              <div className="space-y-2 w-80">
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Subtotal:</span>
-                  <span className="font-medium">{formatCurrency(totals.subtotal)}</span>
+              <div className="grid grid-cols-2 gap-2">
+
+                <div className="space-y-2 w-60">
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Tasa de Cambio VES: </span>
+                    <span className="font-medium">{bcvRate?.promedio.toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Total en VES: </span>
+                    <span className="font-medium">{watch("monto_total_ves").toFixed(2)}</span>
+                  </div>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Descuentos:</span>
-                  <span className="font-medium text-destructive">
-                    -{formatCurrency(totals.discountAmount)}
-                  </span>
+
+                <div className="space-y-2 w-80">
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Subtotal:</span>
+                    <span className="font-medium">{formatCurrency(subtotal)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Descuentos:</span>
+                    <span className="font-medium text-destructive">
+                      -{formatCurrency(watch("monto_descuento_usd"))}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Impuestos:</span>
+                    <span className="font-medium">{formatCurrency(watch("monto_impuestos_usd"))}</span>
+                  </div>
+                  <div className="flex justify-between text-xl font-bold border-t pt-2">
+                    <span>Total:</span>
+                    <span>{formatCurrency(watch("monto_total_usd"))}</span>
+                  </div>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Impuestos:</span>
-                  <span className="font-medium">{formatCurrency(totals.taxAmount)}</span>
-                </div>
-                <div className="flex justify-between text-xl font-bold border-t pt-2">
-                  <span>Total:</span>
-                  <span>{formatCurrency(totals.total)}</span>
-                </div>
+
               </div>
             </div>
 

@@ -28,6 +28,7 @@ export const orderSchema = z.object({
     })
     .optional(),
     monto_descuento_usd: z.number().min(0, "El monto de descuento es requerido"),
+    monto_impuestos_usd: z.number().min(0, "El monto de impuestos es requerido"),
     monto_total_usd: z.number().min(0, "El monto total es requerido"),
     monto_total_ves: z.number().min(0, "El monto total en VES es requerido"),
     tasa_cambio_aplicada: z.number().min(0, "La tasa de cambio es requerida"),

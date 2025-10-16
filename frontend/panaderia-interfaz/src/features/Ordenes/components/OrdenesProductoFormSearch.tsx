@@ -17,12 +17,13 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover"
-import type { Product } from "../types/types"
+import type { OrdenProductoSearch } from "../types/types"
+import { useProductosPedidoSearchMutation } from "../hooks/mutations/mutations"
 
-
-export function OrdenesProductoFormSearch({ value, onChange, data }: { value: string, onChange: (value: string) => void, data: Product[] }) {
+export function OrdenesProductoFormSearch({ value, onChange }: { value: string, onChange: (producto: OrdenProductoSearch) => void }) {
   const [open, setOpen] = useState(false)
-
+  const [timer, setTimer] = useState<NodeJS.Timeout | null>(null)
+  const { data: dataProductosPedido, mutate: searchProductosPedido } = useProductosPedidoSearchMutation()
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild >
@@ -33,33 +34,37 @@ export function OrdenesProductoFormSearch({ value, onChange, data }: { value: st
           className="w-[300px] justify-between overflow-hidden"
         >
           {value
-            ? data.find((data) => data.id === value)?.code + " - " + data.find((data) => data.id === value)?.name
-            : "Seleccionar producto..."}
+          ? value : "Seleccionar producto..."}
           <ChevronsUpDownIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-[300px] p-0">
         <Command>
-          <CommandInput placeholder="Buscar producto..." />
+          <CommandInput placeholder="Buscar producto..." onValueChange={(e: string) => {
+            if (e === "") return;
+            if (timer) clearTimeout(timer)
+            const timerRef = setTimeout(() => searchProductosPedido(e), 1000)
+            setTimer(timerRef)
+          }} />
           <CommandList>
-            <CommandEmpty>No Se encontró el producto.</CommandEmpty>
+            <CommandEmpty className="pl-10">...</CommandEmpty>
             <CommandGroup>
-              {data.map((dataValue) => (
+              {dataProductosPedido?.productos.map((dataValue) => (
                 <CommandItem
                   key={dataValue.id}
-                  value={dataValue.name}
-                  onSelect={(currentValue) => {
-                    onChange(currentValue)
+                  value={dataValue.nombre_producto}
+                  onSelect={() => {
+                    onChange(dataValue as OrdenProductoSearch)
                     setOpen(false)
                   }}
                 >
                   <CheckIcon
                     className={cn(
                       "mr-2 h-4 w-4",
-                      value === dataValue.id ? "opacity-100" : "opacity-0"
+                      value === dataValue.id.toString() ? "opacity-100" : "opacity-0"
                     )}
                   />
-                  {dataValue.code} - {dataValue.name}
+                  {dataValue.SKU} - {dataValue.nombre_producto}
                 </CommandItem>
               ))}
             </CommandGroup>
