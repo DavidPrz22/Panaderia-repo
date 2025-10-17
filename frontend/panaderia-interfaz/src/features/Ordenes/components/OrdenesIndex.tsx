@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { Order } from "../types/types";
+import type { EstadoOrden } from "../types/types";
 import { mockOrders } from "../data/mockData";
 
 import { OrdersTable } from "../components/OrdenesTable";
@@ -11,14 +11,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Plus, Search } from "lucide-react";
-// import {
-//   DropdownMenu,
-//   DropdownMenuContent,
-//   DropdownMenuItem,
-//   DropdownMenuLabel,
-//   DropdownMenuSeparator,
-//   DropdownMenuTrigger,
-// } from "@/components/ui/dropdown-menu";
 
 import {
   Select,
@@ -27,7 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useGetEstadosOrden } from "../hooks/queries/queries";
+import { useGetAllEstadosOrdenVenta } from "../hooks/queries/queries";
 
 const OrdenesIndex = () => {
   const [orders, setOrders] = useState<Order[]>(mockOrders);
@@ -38,7 +30,7 @@ const OrdenesIndex = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
 
-  const { data: estadosOrden } = useGetEstadosOrden();
+  const { data: estadosOrden } = useGetAllEstadosOrdenVenta();
 
 
   const filteredOrders = orders.filter((order) => {
@@ -72,7 +64,7 @@ const OrdenesIndex = () => {
     setSelectedOrder(null);
   };
 
-  const handleStatusChange = (orderId: string, newStatus: OrdenesEstado) => {
+  const handleStatusChange = (orderId: string, newStatus: EstadoOrden) => {
     setOrders(
       orders.map((o) =>
         o.id === orderId ? { ...o, status: newStatus, updatedAt: new Date().toISOString() } : o
@@ -80,7 +72,7 @@ const OrdenesIndex = () => {
     );
   };
 
-  const handleQuickStatusChange = (order: Order, newStatus: OrdenesEstado) => {
+  const handleQuickStatusChange = (order: Order, newStatus: EstadoOrden) => {
     handleStatusChange(order.id, newStatus);
   };
 
@@ -124,22 +116,22 @@ const OrdenesIndex = () => {
                 placeholder="Buscar por número de orden o cliente..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 focus-visible:ring-blue-200"
+                className="pl-10 focus-visible:ring-blue-200 bg-gray-50"
               />
             </div>
             <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-full md:w-[200px]">
+              <SelectTrigger className="w-full md:w-[200px] bg-gray-50">
                 <SelectValue placeholder="Estado" />
               </SelectTrigger>
               <SelectContent>
+                <SelectItem value="all">Todos</SelectItem>
                 {estadosOrden?.map((estado) => (
-                  <SelectItem key={estado.id} value={estado.id}>{estado.nombre_estado}</SelectItem>
+                  <SelectItem key={estado.id} value={estado.id.toString()}>{estado.nombre_estado}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </CardContent>
         </Card>
-
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <Card>

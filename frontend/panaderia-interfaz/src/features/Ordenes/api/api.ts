@@ -1,6 +1,7 @@
 import apiClient from "@/api/client";
 import type { Cliente, EstadoOrden, MetodoPago, OrdenProductosSearch } from "../types/types";
 import axios from "axios";
+import type { TOrderSchema } from "../schema/schema";
 
 export const getClientes = async () : Promise<Cliente[]> => {
     try {
@@ -22,9 +23,20 @@ export const getMetodosDePago = async () : Promise<MetodoPago[] > => {
     }
 };
 
-export const getEstadosOrden = async (): Promise<EstadoOrden[]> => {
+export const getAllEstadosOrdenVenta = async (): Promise<EstadoOrden[]> => {
     try {
         const response = await apiClient.get("/api/estados-orden-venta/");
+        console.log(response.data);
+        return response.data;
+    } catch (error) {
+        console.error("Error fetching estados de orden:", error);
+        throw error;
+    }
+};
+
+export const getEstadosOrdenRegistro = async (): Promise<EstadoOrden[]> => {
+    try {
+        const response = await apiClient.get("/api/estados-orden-venta/get-estados-registro/");
         console.log(response.data);
         return response.data;
     } catch (error) {
@@ -62,6 +74,16 @@ export const BCVRate = async () : Promise<BCVRateType> => {
         return response.data;
     } catch (error) {
         console.error("Error fetching BCV rate:", error);
+        throw error;
+    }
+};
+
+export const createOrden = async (data: TOrderSchema) => {
+    try {
+        const response = await apiClient.post("/api/ordenes/", data);
+        return response.data;
+    } catch (error) {
+        console.error("Error creating orden:", error);
         throw error;
     }
 };

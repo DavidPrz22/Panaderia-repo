@@ -21,17 +21,20 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
+import { format } from "date-fns";
 import { X, Plus, Trash2 } from "lucide-react";
-
+import { PendingTubeSpinner } from "@/components/PendingTubeSpinner";
 import { OrdenesFormSelect } from "./OrdenesFormSelect";
 import { OrdenesProductoFormSearch } from "./OrdenesProductoFormSearch";
-import { useGetParametros, useGetEstadosOrden, useGetBCVRate } from "../hooks/queries/queries";
+import { useGetParametros, useGetEstadosOrdenRegistro, useGetBCVRate } from "../hooks/queries/queries";
 
 import { useForm } from "react-hook-form";
 import { orderSchema, type TOrderSchema } from "../schema/schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { OrdenesFormDatePicker } from "./OrdenesFormDatePicker";
 import { toast } from "sonner";
+
+import { useCreateOrdenMutation } from "../hooks/mutations/mutations";
 
 interface OrderFormProps {
   order?: Orden;
@@ -50,16 +53,16 @@ export const OrderForm = ({ order, onClose, onSave }: OrderFormProps) => {
     defaultValues:
       order
         ? {
-            cliente_id: order.cliente_id,
+            cliente: order.cliente,
             fecha_creacion_orden: order.fecha_creacion_orden,
             fecha_entrega_solicitada: order.fecha_entrega_solicitada,
             fecha_entrega_definitiva: order.fecha_entrega_definitiva,
             estado_orden: order.estado_orden,
-            metodo_pago_id: order.metodo_pago_id,
+            metodo_pago: order.metodo_pago,
             productos: order.productos.map(p => ({
-              producto: { id: Number(p.producto.id), tipo_producto: p.producto.tipo },
+              producto: { id: Number(p.producto.id), tipo_producto: p.producto.tipo_producto!},
               cantidad_solicitada: p.cantidad_solicitada,
-              unidad_medida_id: 0,
+              unidad_medida: 0,
               precio_unitario_usd: p.precio_unitario_usd,
               subtotal_linea_usd: p.subtotal,
               descuento_porcentaje: p.descuento_porcentaje,
@@ -72,8 +75,8 @@ export const OrderForm = ({ order, onClose, onSave }: OrderFormProps) => {
             tasa_cambio_aplicada: order.tasa_cambio_aplicada,
           }
         : {
-            fecha_creacion_orden: new Date().toISOString().split('T')[0],
-            fecha_entrega_solicitada: new Date().toISOString().split('T')[0],
+            fecha_creacion_orden: format(new Date(), "yyyy-MM-dd"),
+            fecha_entrega_solicitada: format(new Date(), "yyyy-MM-dd"),
             fecha_entrega_definitiva: undefined,
             productos: [],
             notas_generales: "",
@@ -85,10 +88,11 @@ export const OrderForm = ({ order, onClose, onSave }: OrderFormProps) => {
   });
 
   const isEdit = !!order;
-
   const [{ data: clientes }, { data: metodosDePago }] = useGetParametros();
-  const { data: estadosOrden } = useGetEstadosOrden();
+  const { data: estadosOrden } = useGetEstadosOrdenRegistro();
   const { data: bcvRate } = useGetBCVRate();
+
+  const { mutateAsync: createOrdenMutation, isPending: isCreatingOrden } = useCreateOrdenMutation();
 
   const [items, setItems] = useState<OrderLineItem[]>(order?.productos || []);
   const [subtotal, setSubtotal] = useState(0);
@@ -98,6 +102,32 @@ export const OrderForm = ({ order, onClose, onSave }: OrderFormProps) => {
       setValue('tasa_cambio_aplicada', Number(bcvRate.promedio))
     }
   }, [bcvRate, setValue])
+
+  const calculateTotal = () => {
+    calculateTotalFromItems(items);
+  };
+
+  const roundTo3 = (n: number) => Math.round(n * 1000) / 1000;
+  const calculateTotalFromItems = (itemsArray: OrderLineItem[]) => {
+    const subtotalBeforeFees = itemsArray.reduce((sum, item) => sum + (item.precio_unitario_usd * item.cantidad_solicitada), 0);
+    
+    const CantidadDescuento = itemsArray.reduce((sum, item) => {
+      const lineSubtotal = item.precio_unitario_usd * item.cantidad_solicitada;
+      return sum + (item.descuento_porcentaje * lineSubtotal / 100);
+    }, 0);
+
+    const CantidadImpuesto = itemsArray.reduce((sum, item) => {
+      const lineSubtotal = item.precio_unitario_usd * item.cantidad_solicitada;
+      const lineSubtotalAfterDiscount = lineSubtotal * (1 - item.descuento_porcentaje / 100);
+      return sum + (item.impuesto_porcentaje * lineSubtotalAfterDiscount / 100);
+    }, 0);
+
+    setSubtotal(subtotalBeforeFees);
+    setValue('monto_impuestos_usd', roundTo3(CantidadImpuesto));
+    setValue('monto_descuento_usd', roundTo3(CantidadDescuento));
+    setValue('monto_total_usd', roundTo3(subtotalBeforeFees - CantidadDescuento + CantidadImpuesto));
+    setValue('monto_total_ves', roundTo3((subtotalBeforeFees - CantidadDescuento + CantidadImpuesto) * watch('tasa_cambio_aplicada')));
+  };
 
   const addItem = () => {
     const newItem: OrderLineItem = {
@@ -119,12 +149,30 @@ export const OrderForm = ({ order, onClose, onSave }: OrderFormProps) => {
     setItems([...items, newItem]);
   };
 
-  const removeItem = (id: number) => {
-    setItems(items.filter((item) => item.id !== id));
+  const removeItem = (id: number, productoId: number) => {
+    const newItems = items.filter((i) => i.id !== id);
+    const newProductos = watch('productos')?.filter((p) => p.producto.id !== productoId) || [];
+    
+    setItems(newItems);
+    setValue('productos', newProductos);
+    
+    if (newProductos.length === 0) {
+      resetAmounts();
+    } else {
+      calculateTotalFromItems(newItems);
+    }
   };
 
+  const resetAmounts = () => {
+    setSubtotal(0)
+    setValue('monto_impuestos_usd', 0)
+    setValue('monto_descuento_usd', 0)
+    setValue('monto_total_usd', 0)
+    setValue('monto_total_ves', 0)
+  }
   const calculateSubtotal = (item: OrderLineItem) => {
-    return item.precio_unitario_usd * item.cantidad_solicitada * (1 - item.descuento_porcentaje / 100) * (1 + item.impuesto_porcentaje / 100)
+    const subtotal = item.precio_unitario_usd * item.cantidad_solicitada * (1 - item.descuento_porcentaje / 100) * (1 + item.impuesto_porcentaje / 100)
+    return roundTo3(subtotal)
   }
 
   const handleUpdate = (e: React.ChangeEvent<HTMLInputElement>, item: OrderLineItem, fieldSchema: keyof TOrderSchema['productos'][number], field: 'descuento_porcentaje' | 'impuesto_porcentaje') =>{
@@ -134,80 +182,20 @@ export const OrderForm = ({ order, onClose, onSave }: OrderFormProps) => {
       setValue(`productos.${productoIndex}.${fieldSchema}`, Number(e.target.value), { shouldValidate: true })
       item[field] = Number(e.target.value)
       const subtotal = calculateSubtotal(item)
+      setValue(`productos.${productoIndex}.subtotal_linea_usd`, subtotal)
       item.subtotal = subtotal
     }
     calculateTotal();
   }
-  // const handleSubmit = (e: React.FormEvent) => {
-  //   e.preventDefault();
-
-  //   if (!customerId) {
-  //     toast.error("Por favor selecciona un cliente");
-  //     return;
-  //   }
-
-  //   if (items.length === 0) {
-  //     toast.error("Agrega al menos un producto");
-  //     return;
-  //   }
-
-  //   const hasInvalidItems = items.some((item) => !item.productId || item.quantity <= 0);
-  //   if (hasInvalidItems) {
-  //     toast.error("Verifica que todos los productos tengan cantidad válida");
-  //     return;
-  //   }
-
-  //   const customer = mockCustomers.find((c) => c.id === customerId)!;
-  //   const { subtotal, discountAmount, taxAmount, total } = calculateTotals();
-
-  //   const newOrder: Order = {
-  //     id: order?.id || `order-${Date.now()}`,
-  //     orderNumber: order?.orderNumber || `S${String(Date.now()).slice(-5)}`,
-  //     customerId,
-  //     customer,
-  //     orderDate: orderDate.toISOString(),
-  //     requestedDeliveryDate: requestedDeliveryDate?.toISOString(),
-  //     confirmedDeliveryDate: confirmedDeliveryDate?.toISOString(),
-  //     status,
-  //     paymentMethod,
-  //     items,
-  //     subtotal,
-  //     taxAmount,
-  //     discountAmount,
-  //     total,
-  //     notes,
-  //     createdBy: "admin",
-  //     createdAt: order?.createdAt || new Date().toISOString(),
-  //     updatedAt: new Date().toISOString(),
-  //   };
-
-  //   onSave(newOrder);
-  //   toast.success(isEdit ? "Orden actualizada" : "Orden creada exitosamente");
-  //   onClose();
-  // };
-
-  const calculateTotal = () => {
-    // Calculate subtotal (before discounts and taxes)
-    const subtotalBeforeFees = items.reduce((sum, item) => sum + (item.precio_unitario_usd * item.cantidad_solicitada), 0)
-    
-    // Calculate total discount amount
-    const CantidadDescuento = items.reduce((sum, item) => {
-      const lineSubtotal = item.precio_unitario_usd * item.cantidad_solicitada;
-      return sum + (item.descuento_porcentaje * lineSubtotal / 100);
-    }, 0)
-    
-    // Calculate total tax amount
-    const CantidadImpuesto = items.reduce((sum, item) => {
-      const lineSubtotal = item.precio_unitario_usd * item.cantidad_solicitada;
-      return sum + (item.impuesto_porcentaje * lineSubtotal / 100);
-    }, 0)
-
-    setSubtotal(subtotalBeforeFees)
-    setValue('monto_impuestos_usd', CantidadImpuesto)
-    setValue('monto_descuento_usd', CantidadDescuento)
-    setValue('monto_total_usd', subtotalBeforeFees - CantidadDescuento + CantidadImpuesto)
-    setValue('monto_total_ves', (subtotalBeforeFees - CantidadDescuento + CantidadImpuesto) * watch('tasa_cambio_aplicada'))
-  }
+  const handleSubmitForm = async (data: TOrderSchema) => {
+    try {
+      await createOrdenMutation(data);
+      onClose();
+      toast.success("Orden creada exitosamente")
+    } catch {
+      toast.error("Error al crear la orden");
+    }
+  };
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat("es-MX", {
@@ -217,7 +205,12 @@ export const OrderForm = ({ order, onClose, onSave }: OrderFormProps) => {
   };
 
   return (
-    <div className="p-6">
+    <div className="p-6 relative">
+      {isCreatingOrden && (
+        <div className="absolute flex justify-center items-center h-full w-full">
+          <PendingTubeSpinner size={28} extraClass="bg-white opacity-50" />
+        </div>
+      )}
       <Card className="w-full max-w-6xl mx-auto">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4 border-b bg-card">
           <CardTitle className="text-2xl font-bold">
@@ -227,16 +220,15 @@ export const OrderForm = ({ order, onClose, onSave }: OrderFormProps) => {
             <X className="h-4 w-4 " />
           </Button>
         </CardHeader>
-
-        <form onSubmit={handleSubmit() }>
+        <form onSubmit={handleSubmit(handleSubmitForm) }>
           <CardContent className="space-y-6 pt-6">
             {/* Basic Info */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {/* Cliente */}
               <div className="space-y-2">
                 <Label htmlFor="cliente">Cliente *</Label>
-                <OrdenesFormSelect id="cliente" value={watch("cliente_id") ? watch("cliente_id").toString() : ""} onChange={(v) => {
-                  setValue("cliente_id", Number(v))
+                <OrdenesFormSelect id="cliente" value={watch("cliente") ? watch("cliente").toString() : ""} onChange={(v) => {
+                  setValue("cliente", Number(v))
                   }} placeholder="Selecciona un cliente">
                     {clientes?.map((customer) => (
                       <SelectItem key={customer.id} value={customer.id.toString()}>
@@ -281,7 +273,7 @@ export const OrderForm = ({ order, onClose, onSave }: OrderFormProps) => {
               {/* Método de Pago */}
               <div className="space-y-2">
                 <Label htmlFor="payment">Método de Pago *</Label>
-                <OrdenesFormSelect id="payment" value={watch("metodo_pago_id") ? watch("metodo_pago_id").toString() : ""} onChange={(v) => setValue("metodo_pago_id", Number(v))} placeholder="Selecciona un método de pago">
+                <OrdenesFormSelect id="payment" value={watch("metodo_pago") ? watch("metodo_pago").toString() : ""} onChange={(v) => setValue("metodo_pago", Number(v))} placeholder="Selecciona un método de pago">
                     {metodosDePago?.map((metodo) => (
                       <SelectItem key={metodo.id} value={metodo.id.toString()}>{metodo.nombre_metodo}</SelectItem>
                     ))}
@@ -316,7 +308,7 @@ export const OrderForm = ({ order, onClose, onSave }: OrderFormProps) => {
                   </TableHeader>
                   <TableBody>
                     {items.map((item) => (
-                      <TableRow key={item.id}>
+                      <TableRow key={item.id + item.producto.id!}>
                         <TableCell>
                           <OrdenesProductoFormSearch value={item.producto.id ? item.producto.nombre_producto : ""} onChange={
                             (producto) => {
@@ -331,7 +323,6 @@ export const OrderForm = ({ order, onClose, onSave }: OrderFormProps) => {
                                 return
                               }
 
-                              console.log(producto)
                               item.precio_unitario_usd = producto.precio_venta_usd
                               item.unidad_medida_venta = producto.unidad_venta
                               item.stock = producto.stock_actual
@@ -344,7 +335,7 @@ export const OrderForm = ({ order, onClose, onSave }: OrderFormProps) => {
                                 return {
                                   producto: { id: item.producto.id!, tipo_producto: item.producto.tipo_producto! },
                                   cantidad_solicitada: item.cantidad_solicitada,
-                                  unidad_medida_id: item.unidad_medida_venta.id,
+                                  unidad_medida: item.unidad_medida_venta.id,
                                   precio_unitario_usd: item.precio_unitario_usd,
                                   subtotal_linea_usd: item.subtotal,
                                   descuento_porcentaje: item.descuento_porcentaje,
@@ -426,7 +417,7 @@ export const OrderForm = ({ order, onClose, onSave }: OrderFormProps) => {
                             className="cursor-pointer"
                             variant="ghost"
                             size="icon"
-                            onClick={() => removeItem(item.id)}
+                            onClick={() => removeItem(item.id, item.producto.id!)}
                           >
                             <Trash2 className="h-4 w-4 text-destructive" />
                           </Button>
@@ -466,7 +457,7 @@ export const OrderForm = ({ order, onClose, onSave }: OrderFormProps) => {
                     <span className="font-medium">{bcvRate?.promedio.toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">Total en VES: </span>
+                    <span className="font-bold">Total en VES: </span>
                     <span className="font-medium">{watch("monto_total_ves").toFixed(2)}</span>
                   </div>
                 </div>
@@ -484,7 +475,7 @@ export const OrderForm = ({ order, onClose, onSave }: OrderFormProps) => {
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Impuestos:</span>
-                    <span className="font-medium">{formatCurrency(watch("monto_impuestos_usd"))}</span>
+                    <span className="font-medium">{formatCurrency(watch("monto_impuestos_usd") || 0)}</span>
                   </div>
                   <div className="flex justify-between text-xl font-bold border-t pt-2">
                     <span>Total:</span>

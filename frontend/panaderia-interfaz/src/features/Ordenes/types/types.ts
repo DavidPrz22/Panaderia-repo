@@ -47,12 +47,12 @@ export interface OrderLineItem {
 export interface Orden {
   id: number;
   orden_id: string;
-  cliente_id: number;
+  cliente: number;
   fecha_creacion_orden: string;
   fecha_entrega_solicitada: string;
   fecha_entrega_definitiva?: string;
   estado_orden: number;
-  metodo_pago_id: number;
+  metodo_pago: number;
   productos: OrderLineItem[];
   subtotal_usd: number;
   monto_impuestos_usd: number;

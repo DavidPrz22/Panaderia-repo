@@ -6,7 +6,7 @@ const productSchema = z.object({
         tipo_producto: z.enum(["producto-final", "producto-reventa"]),
     }),
     cantidad_solicitada: z.number().min(1, "La cantidad es requerida"),
-    unidad_medida_id: z.number().min(0, "El ID de la unidad de medida es requerido"),
+    unidad_medida: z.number().min(0, "El ID de la unidad de medida es requerido"),
     precio_unitario_usd: z.number().min(0, "El precio unitario es requerido"),
     subtotal_linea_usd: z.number().min(0, "El subtotal es requerido"),
     descuento_porcentaje: z.number().min(0, "El descuento es requerido"),
@@ -14,7 +14,7 @@ const productSchema = z.object({
 });
 
 export const orderSchema = z.object({
-    cliente_id: z.number().min(0, "El ID del cliente es requerido"),
+    cliente: z.number().min(0, "El ID del cliente es requerido"),
     fecha_creacion_orden: z.string().min(1, "La fecha de la orden es requerida"),
     fecha_entrega_solicitada: z.string().min(1, "La fecha de entrega solicitada es requerida"),
     fecha_entrega_definitiva: z.string().optional(),
@@ -32,7 +32,7 @@ export const orderSchema = z.object({
     monto_total_usd: z.number().min(0, "El monto total es requerido"),
     monto_total_ves: z.number().min(0, "El monto total en VES es requerido"),
     tasa_cambio_aplicada: z.number().min(0, "La tasa de cambio es requerida"),
-    metodo_pago_id: z.number().min(0, "El ID del método de pago es requerido"),
+    metodo_pago: z.number().min(0, "El ID del método de pago es requerido"),
     productos: z.array(productSchema),
 });
 

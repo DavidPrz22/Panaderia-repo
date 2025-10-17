@@ -8,7 +8,7 @@ export const OrdenesFormSelect = ({id, value, onChange, children, placeholder}: 
                   value={value}
                   onValueChange={(v) => onChange(v)}
                 >
-                  <SelectTrigger className="cursor-pointer w-full" id={id}>
+                  <SelectTrigger className="cursor-pointer w-full bg-gray-50" id={id}>
                     <SelectValue placeholder={placeholder} />
                   </SelectTrigger>
                   <SelectContent className="z-(--z-index-over-header-bar)">
