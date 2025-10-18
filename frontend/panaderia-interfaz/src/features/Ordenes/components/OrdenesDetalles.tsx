@@ -1,8 +1,8 @@
-import type { Order } from "../types/types";
+import type { Orden } from "../types/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { OrdenesEstadoBadge } from "./OrdenesEstadoBadge";
 import { Button } from "@/components/ui/button";
-import { X } from "lucide-react";
+import { X, CheckCircle, Truck, XCircle } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -13,16 +13,72 @@ import {
 } from "@/components/ui/table";
 
 interface OrderDetailsProps {
-  order: Order;
+  orden: Orden;
   onClose: () => void;
 }
 
-export const OrderDetails = ({ order, onClose }: OrderDetailsProps) => {
+import { toast } from "sonner";
+type OrderStatus = "Pendiente" | "En Proceso" | "Completado";
+
+export const OrdenDetalles = ({ orden, onClose }: OrderDetailsProps) => {
+
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat("es-MX", {
       style: "currency",
       currency: "USD",
     }).format(amount);
+  };
+  console.log(orden);
+  const handleStatusChange = (newStatus: OrderStatus) => {
+    // Si se está confirmando y el método de pago requiere referencia
+    if (
+      newStatus === "En Proceso" &&
+      (orden.metodo_pago.nombre_metodo === "Tarjeta" || orden.metodo_pago.nombre_metodo === "Transferencia")
+    ) {
+      return;
+      // setPendingStatus(newStatus);
+      // setShowPaymentDialog(true);
+    // } else {
+    //   onStatusChange(order.id, newStatus);
+    //   toast.success(`Orden marcada como ${newStatus}`);
+    // }
+  };
+
+  // const handlePaymentConfirm = (reference: string) => {
+  //   if (pendingStatus) {
+  //     onStatusChange(order.id, pendingStatus, reference);
+  //     toast.success(`Orden confirmada con referencia: ${reference}`);
+  //   }
+  //   setShowPaymentDialog(false);
+  //   setPendingStatus(null);
+  // };
+
+  // const handleCancelOrder = () => {
+  //   onStatusChange(order.id, "Cancelado");
+  //   toast.success("Orden cancelada");
+  //   setShowCancelDialog(false);
+  // };
+  }
+
+  const getStatusActions = () => {
+    switch (orden.estado_orden.nombre_estado) {
+      case "Pendiente":
+        return (
+          <Button onClick={() => handleStatusChange("En Proceso")} className="gap-2">
+            <CheckCircle className="h-4 w-4" />
+            Marcar como En Proceso
+          </Button>
+        );
+      case "En Proceso":
+        return (
+          <Button onClick={() => handleStatusChange("Completado")} className="gap-2">
+            <Truck className="h-4 w-4" />
+            Marcar como Completado
+          </Button>
+        );
+      default:
+        return null;
+    }
   };
 
   const formatDate = (dateString: string) => {
@@ -34,142 +90,173 @@ export const OrderDetails = ({ order, onClose }: OrderDetailsProps) => {
       minute: "2-digit",
     });
   };
+  console.log(orden);
 
   return (
-    <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <Card className="w-full max-w-6xl max-h-[90vh] overflow-auto">
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-          <CardTitle className="text-2xl font-bold">{order.orderNumber}</CardTitle>
-          <Button variant="ghost" size="icon" onClick={onClose}>
-            <X className="h-4 w-4" />
-          </Button>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          {/* Order Info */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div>
-              <p className="text-sm text-muted-foreground">Cliente</p>
-              <p className="font-medium">{order.customer.name}</p>
+    <>
+      <div className="flex items-center justify-center p-4">
+        <Card className="w-full max-w-6xl">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4 border-b sticky top-0 bg-card z-10">
+            <div className="flex items-center gap-3">
+              <CardTitle className="text-2xl font-bold">{orden.id}</CardTitle>
+              <OrdenesEstadoBadge status={orden.estado_orden.nombre_estado} />
             </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Fecha de Orden</p>
-              <p className="font-medium">{formatDate(order.orderDate)}</p>
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Estado</p>
-              <OrdenesEstadoBadge status={order.status} />
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Método de Pago</p>
-              <p className="font-medium">{order.paymentMethod}</p>
-            </div>
-          </div>
-
-          {/* Customer Details */}
-          <div className="border-t pt-4">
-            <h3 className="font-semibold mb-2">Datos del Cliente</h3>
-            <div className="grid grid-cols-2 gap-4">
-              {order.customer.address && (
-                <div>
-                  <p className="text-sm text-muted-foreground">Dirección</p>
-                  <p className="text-sm">{order.customer.address}</p>
-                </div>
+            <div className="flex items-center gap-2">
+              {getStatusActions()}
+              {orden.estado_orden.nombre_estado !== "Completado" && orden.estado_orden.nombre_estado !== "Cancelado" && (
+                <Button 
+                  variant="destructive" 
+                  onClick={() => {}}
+                  className="gap-2"
+                >
+                  <XCircle className="h-4 w-4" />
+                  Cancelar Orden
+                </Button>
               )}
-              {order.customer.email && (
-                <div>
-                  <p className="text-sm text-muted-foreground">Email</p>
-                  <p className="text-sm">{order.customer.email}</p>
-                </div>
-              )}
-              {order.customer.phone && (
-                <div>
-                  <p className="text-sm text-muted-foreground">Teléfono</p>
-                  <p className="text-sm">{order.customer.phone}</p>
-                </div>
-              )}
+              <Button variant="ghost" size="icon" onClick={onClose}>
+                <X className="h-4 w-4" />
+              </Button>
             </div>
-          </div>
-
-          {/* Order Lines */}
-          <div className="border-t pt-4">
-            <h3 className="font-semibold mb-4">Líneas de Productos</h3>
-            <div className="border rounded-lg overflow-hidden">
-              <Table>
-                <TableHeader>
-                  <TableRow className="bg-table-header hover:bg-table-header">
-                    <TableHead className="font-semibold">Producto</TableHead>
-                    <TableHead className="font-semibold">Descripción</TableHead>
-                    <TableHead className="font-semibold text-center">Cantidad</TableHead>
-                    <TableHead className="font-semibold text-center">Entregado</TableHead>
-                    <TableHead className="font-semibold text-center">Facturado</TableHead>
-                    <TableHead className="font-semibold">UdM</TableHead>
-                    <TableHead className="font-semibold text-right">Precio</TableHead>
-                    <TableHead className="font-semibold text-center">Impuesto</TableHead>
-                    <TableHead className="font-semibold text-center">Desc%</TableHead>
-                    <TableHead className="font-semibold text-right">Total</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {order.items.map((item) => (
-                    <TableRow key={item.id}>
-                      <TableCell className="font-medium">{item.product.code}</TableCell>
-                      <TableCell>{item.product.description || item.product.name}</TableCell>
-                      <TableCell className="text-center">{item.quantity.toFixed(2)}</TableCell>
-                      <TableCell className="text-center">
-                        {item.quantityDelivered.toFixed(2)}
-                      </TableCell>
-                      <TableCell className="text-center">
-                        {item.quantityInvoiced.toFixed(2)}
-                      </TableCell>
-                      <TableCell>{item.unit}</TableCell>
-                      <TableCell className="text-right">
-                        {formatCurrency(item.unitPrice)}
-                      </TableCell>
-                      <TableCell className="text-center">{item.tax}%</TableCell>
-                      <TableCell className="text-center">{item.discount}%</TableCell>
-                      <TableCell className="text-right font-medium">
-                        {formatCurrency(item.subtotal)}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-          </div>
-
-          {/* Totals */}
-          <div className="border-t pt-4 flex justify-end">
-            <div className="space-y-2 w-64">
-              <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Subtotal:</span>
-                <span className="font-medium">{formatCurrency(order.subtotal)}</span>
+          </CardHeader>
+          <CardContent className="space-y-6 pt-6">
+            {/* Order Info */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div>
+                <p className="text-sm text-muted-foreground">Cliente</p>
+                <p className="font-medium">{orden.cliente.nombre_cliente}</p>
               </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Impuestos:</span>
-                <span className="font-medium">{formatCurrency(order.taxAmount)}</span>
+              <div>
+                <p className="text-sm text-muted-foreground">Fecha de Orden</p>
+                <p className="font-medium">{formatDate(orden.fecha_creacion_orden)}</p>
               </div>
-              {order.discountAmount > 0 && (
-                <div className="flex justify-between text-sm text-destructive">
-                  <span>Descuento:</span>
-                  <span>-{formatCurrency(order.discountAmount)}</span>
-                </div>
-              )}
-              <div className="flex justify-between text-lg font-bold border-t pt-2">
-                <span>Total:</span>
-                <span>{formatCurrency(order.total)}</span>
+              <div>
+                <p className="text-sm text-muted-foreground">Método de Pago</p>
+                <p className="font-medium">{orden.metodo_pago.nombre_metodo}</p>
               </div>
             </div>
-          </div>
 
-          {/* Notes */}
-          {order.notes && (
+            {/* Customer Details */}
             <div className="border-t pt-4">
-              <h3 className="font-semibold mb-2">Notas</h3>
-              <p className="text-sm text-muted-foreground">{order.notes}</p>
+              <h3 className="font-semibold mb-2">Datos del Cliente</h3>
+              <div className="grid grid-cols-2 gap-4">
+                {orden.cliente.email && (
+                  <div>
+                    <p className="text-sm text-muted-foreground">Email</p>
+                    <p className="text-sm">{orden.cliente.email}</p>
+                  </div>
+                )}
+                {orden.cliente.telefono && (
+                  <div>
+                    <p className="text-sm text-muted-foreground">Teléfono</p>
+                    <p className="text-sm">{orden.cliente.telefono}</p>
+                  </div>
+                )}
+              </div>
             </div>
-          )}
-        </CardContent>
-      </Card>
-    </div>
+
+            {/* Order Lines */}
+            <div className="border-t pt-4">
+              <h3 className="font-semibold mb-4">Líneas de Productos</h3>
+              <div className="border rounded-lg overflow-hidden">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="bg-gray-50 hover:bg-table-header">
+                      <TableHead className="font-semibold">Producto</TableHead>
+                      <TableHead className="font-semibold text-center">Cantidad Solicitada</TableHead>
+                      <TableHead className="font-semibold text-center">Unidad de Medida</TableHead>
+                      <TableHead className="font-semibold text-right">Precio Unitario</TableHead>
+                      <TableHead className="font-semibold text-center">Impuesto</TableHead>
+                      <TableHead className="font-semibold text-center">Descuento</TableHead>
+                      <TableHead className="font-semibold text-right">Subtotal</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {orden.productos.map((item, index) => (
+                      <TableRow key={index}>
+                        <TableCell>{item.nombre_producto}</TableCell>
+                        <TableCell className="text-center">{item.cantidad_solicitada}</TableCell>
+                        <TableCell className="text-center">{item.unidad_medida}</TableCell>
+                        <TableCell className="text-right">{formatCurrency(item.precio_unitario_usd)}</TableCell>
+                        <TableCell className="text-center">{item.impuesto_porcentaje}%</TableCell>
+                        <TableCell className="text-center">{item.descuento_porcentaje}%</TableCell>
+                        <TableCell className="text-right">{formatCurrency(item.subtotal_linea_usd)}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </div>
+
+            {/* Totals */}
+            <div className="border-t pt-4 flex justify-end gap-6">
+
+              <div className="space-y-2 w-64">
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Tasa de Cambio:</span>
+                  <span className="font-medium">{orden.tasa_cambio_aplicada}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="font-bold">Total en VES:</span>
+                  <span className="font-medium">{orden.monto_total_ves}</span>
+                </div>
+              </div>
+
+              <div className="space-y-2 w-64">
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Impuestos:</span>
+                  <span className="font-medium">{formatCurrency(orden.monto_impuestos_usd)}</span>
+                </div>
+                {orden.monto_descuento_usd > 0 && (
+                  <div className="flex justify-between text-sm ">
+                    <span>Descuento:</span>
+                    <span>{formatCurrency(orden.monto_descuento_usd)}</span>
+                  </div>
+                )}
+                <div className="flex justify-between text-lg font-bold border-t pt-2">
+                  <span>Total:</span>
+                  <span>{formatCurrency(orden.monto_total_usd)}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Notes */}
+            {orden.notas_generales && (
+              <div className="border-t pt-4">
+                <h3 className="font-semibold mb-2">Notas</h3>
+                <p className="text-sm text-muted-foreground">{orden.notas_generales}</p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* <PaymentReferenceDialog
+        open={showPaymentDialog}
+        onClose={() => {
+          setShowPaymentDialog(false);
+          setPendingStatus(null);
+        }}
+        onConfirm={handlePaymentConfirm}
+        paymentMethod={order.paymentMethod}
+      />
+
+      <AlertDialog open={showCancelDialog} onOpenChange={setShowCancelDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>¿Cancelar orden {order.orderNumber}?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta acción cancelará la orden. Los productos asignados serán liberados al stock.
+              ¿Estás seguro de que deseas continuar?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>No, mantener orden</AlertDialogCancel>
+            <AlertDialogAction onClick={handleCancelOrder} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Sí, cancelar orden
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog> */}
+    </>
   );
 };

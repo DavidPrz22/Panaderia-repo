@@ -448,6 +448,7 @@ class ProductosReventaViewSet(viewsets.ModelViewSet):
     queryset = ProductosReventa.objects.all()
     serializer_class = ProductosReventaSerializer
 
+
 class ProductosReventaDetallesViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = ProductosReventa.objects.all()
     serializer_class = ProductosReventaDetallesSerializer

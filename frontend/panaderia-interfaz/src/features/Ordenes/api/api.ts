@@ -1,5 +1,5 @@
 import apiClient from "@/api/client";
-import type { Cliente, EstadoOrden, MetodoPago, OrdenProductosSearch } from "../types/types";
+import type { Cliente, EstadoOrden, MetodoPago, OrdenProductosSearch, OrdenTable, Orden } from "../types/types";
 import axios from "axios";
 import type { TOrderSchema } from "../schema/schema";
 
@@ -84,6 +84,28 @@ export const createOrden = async (data: TOrderSchema) => {
         return response.data;
     } catch (error) {
         console.error("Error creating orden:", error);
+        throw error;
+    }
+};
+
+export const getOrdenes = async () : Promise<OrdenTable[]> => {
+    try {
+        const response = await apiClient.get("/api/ordenes/get_ordenes_table/");
+        return response.data;
+    } catch (error) {
+        console.error("Error fetching ordenes:", error);
+        throw error;
+    }
+};
+
+export const getOrdenesDetalles = async (id: number) : Promise<Orden> => {
+    try {
+        const response = await apiClient.get(`/api/ordenes/${id}/get_orden_detalles/`);
+        console.log(response.data);
+        return response.data;
+
+    } catch (error) {
+        console.error("Error fetching ordenes detalles:", error);
         throw error;
     }
 };

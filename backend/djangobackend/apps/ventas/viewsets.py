@@ -1,10 +1,12 @@
 from rest_framework import viewsets
 from .models import Clientes, OrdenVenta, DetallesOrdenVenta
-from .serializers import ClientesSerializer, OrdenesSerializer
+from .serializers import ClientesSerializer, OrdenesSerializer, OrdenesDetallesSerializer
 from apps.inventario.models import ProductosElaborados, ProductosReventa
 from django.db import transaction
 from rest_framework.response import Response
 from rest_framework import status
+from apps.ventas.serializers import OrdenesTableSerializer
+from rest_framework.decorators import action
 
 class ClientesViewSet(viewsets.ModelViewSet):
     queryset = Clientes.objects.all()
@@ -16,6 +18,7 @@ class OrdenesViewSet(viewsets.ModelViewSet):
     serializer_class = OrdenesSerializer
 
     def create(self, request, *args, **kwargs):
+
         with transaction.atomic():
             serializer = self.get_serializer(data=request.data)
             serializer.is_valid(raise_exception=True)
@@ -87,3 +90,16 @@ class OrdenesViewSet(viewsets.ModelViewSet):
             response_serializer = self.get_serializer(orden_venta)
             headers = self.get_success_headers(response_serializer.data)
             return Response(response_serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+    @action(detail=False, methods=['get'])
+    def get_ordenes_table(self, request):
+
+        ordenes = OrdenVenta.objects.all()
+        serializer = OrdenesTableSerializer(ordenes, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    @action(detail=True, methods=['get'])
+    def get_orden_detalles(self, request, pk=None):
+        orden = OrdenVenta.objects.get(id=pk)
+        serializer = OrdenesDetallesSerializer(orden)
+        return Response(serializer.data, status=status.HTTP_200_OK)

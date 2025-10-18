@@ -1,4 +1,4 @@
-import type { Order } from "../types/types";
+import type { Orden, OrdenTable, Order } from "../types/types";
 import { OrdenesEstadoBadge } from "./OrdenesEstadoBadge";
 import {
   Table,
@@ -18,15 +18,18 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useOrdenesContext } from "@/context/OrdenesContext";
 
 interface OrdersTableProps {
-  orders: Order[];
-  onViewOrder: (order: Order) => void;
-  onEditOrder: (order: Order) => void;
-  onStatusChange?: (order: Order, newStatus: any) => void;
+  orders: OrdenTable[];
+  onEditOrder: (order: OrdenTable) => void;
+  onStatusChange?: (order: OrdenTable, newStatus: any) => void;
 }
 
-export const OrdersTable = ({ orders, onViewOrder, onEditOrder, onStatusChange }: OrdersTableProps) => {
+export const OrdersTable = ({ orders, onEditOrder, onStatusChange }: OrdersTableProps) => {
+
+  const { setOrdenSeleccionadaId } = useOrdenesContext();
+
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat("es-MX", {
       style: "currency",
@@ -40,6 +43,10 @@ export const OrdersTable = ({ orders, onViewOrder, onEditOrder, onStatusChange }
       month: "2-digit",
       day: "2-digit",
     });
+  };
+
+  const handleOrdenSeleccionada = (id: number) => {
+    setOrdenSeleccionadaId(id);
   };
 
   return (
@@ -59,34 +66,26 @@ export const OrdersTable = ({ orders, onViewOrder, onEditOrder, onStatusChange }
         </TableHeader>
         <TableBody>
           {orders.map((order) => (
-            <TableRow key={order.id} className="hover:bg-table-rowHover">
-              <TableCell className="font-medium">{order.orderNumber}</TableCell>
-              <TableCell>{order.customer.name}</TableCell>
-              <TableCell>{formatDate(order.orderDate)}</TableCell>
+            <TableRow key={order.id} className="hover:bg-gray-50 cursor-pointer" onClick={() => handleOrdenSeleccionada(order.id)}>
+              <TableCell className="font-medium">{order.id}</TableCell>
+              <TableCell>{order.cliente}</TableCell>
+              <TableCell>{formatDate(order.fecha_creacion_orden)}</TableCell>
               <TableCell>
-                {order.confirmedDeliveryDate
-                  ? formatDate(order.confirmedDeliveryDate)
-                  : order.requestedDeliveryDate
-                  ? formatDate(order.requestedDeliveryDate)
+                {order.fecha_entrega_solicitada
+                  ? formatDate(order.fecha_entrega_solicitada)
+                  : order.fecha_entrega_definitiva
+                  ? formatDate(order.fecha_entrega_definitiva)
                   : "-"}
               </TableCell>
               <TableCell>
-                <OrdenesEstadoBadge status={order.status} />
+                <OrdenesEstadoBadge status={order.estado_orden} />
               </TableCell>
-              <TableCell>{order.paymentMethod}</TableCell>
+              <TableCell>{order.metodo_pago}</TableCell>
               <TableCell className="text-right font-medium">
                 {formatCurrency(order.total)}
               </TableCell>
               <TableCell>
                 <div className="flex gap-1 justify-center">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => onViewOrder(order)}
-                    title="Ver detalles"
-                  >
-                    <Eye className="h-4 w-4" />
-                  </Button>
                   <Button
                     variant="ghost"
                     size="icon"
@@ -106,35 +105,35 @@ export const OrdersTable = ({ orders, onViewOrder, onEditOrder, onStatusChange }
                       <DropdownMenuSeparator />
                       <DropdownMenuItem
                         onClick={() => onStatusChange?.(order, "Pendiente")}
-                        disabled={order.status === "Pendiente"}
+                        disabled={order.estado_orden === "Pendiente"}
                       >
                         <RefreshCw className="h-4 w-4 mr-2" />
                         Pendiente
                       </DropdownMenuItem>
                       <DropdownMenuItem
                         onClick={() => onStatusChange?.(order, "Confirmado")}
-                        disabled={order.status === "Confirmado"}
+                        disabled={order.estado_orden === "Confirmado"}
                       >
                         <RefreshCw className="h-4 w-4 mr-2" />
                         Confirmado
                       </DropdownMenuItem>
                       <DropdownMenuItem
                         onClick={() => onStatusChange?.(order, "En Preparación")}
-                        disabled={order.status === "En Preparación"}
+                        disabled={order.estado_orden === "En Preparación"}
                       >
                         <RefreshCw className="h-4 w-4 mr-2" />
                         En Preparación
                       </DropdownMenuItem>
                       <DropdownMenuItem
                         onClick={() => onStatusChange?.(order, "Listo para Entrega")}
-                        disabled={order.status === "Listo para Entrega"}
+                        disabled={order.estado_orden === "Listo para Entrega"}
                       >
                         <RefreshCw className="h-4 w-4 mr-2" />
                         Listo para Entrega
                       </DropdownMenuItem>
                       <DropdownMenuItem
                         onClick={() => onStatusChange?.(order, "Entregado")}
-                        disabled={order.status === "Entregado"}
+                        disabled={order.estado_orden === "Entregado"}
                       >
                         <RefreshCw className="h-4 w-4 mr-2" />
                         Entregado
@@ -142,7 +141,7 @@ export const OrdersTable = ({ orders, onViewOrder, onEditOrder, onStatusChange }
                       <DropdownMenuSeparator />
                       <DropdownMenuItem
                         onClick={() => onStatusChange?.(order, "Cancelado")}
-                        disabled={order.status === "Cancelado"}
+                        disabled={order.estado_orden === "Cancelado"}
                         className="text-destructive"
                       >
                         <RefreshCw className="h-4 w-4 mr-2" />

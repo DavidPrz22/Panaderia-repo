@@ -44,16 +44,23 @@ export interface OrderLineItem {
   subtotal: number;
 }
 
+export type ClienteDetalles = {
+  id: number;
+  nombre_cliente: string;
+  telefono: string;
+  email: string;
+  rif_cedula: string;
+}
+
 export interface Orden {
   id: number;
-  orden_id: string;
-  cliente: number;
+  cliente: ClienteDetalles;
   fecha_creacion_orden: string;
   fecha_entrega_solicitada: string;
   fecha_entrega_definitiva?: string;
-  estado_orden: number;
-  metodo_pago: number;
-  productos: OrderLineItem[];
+  estado_orden: EstadoOrden;
+  metodo_pago: MetodoPago;
+  productos: VentaDetalles[];
   subtotal_usd: number;
   monto_impuestos_usd: number;
   monto_descuento_usd: number;
@@ -63,6 +70,28 @@ export interface Orden {
   notas_generales?: string;
   created_at: string;
   updated_at: string;
+}
+
+export type VentaDetalles = {
+  id: number;
+  nombre_producto: string;
+  cantidad_solicitada: number;
+  unidad_medida: string;
+  impuesto_porcentaje: number;
+  descuento_porcentaje: number;
+  precio_unitario_usd: number;
+  subtotal_linea_usd: number;
+}
+
+export type OrdenTable = {
+  id: number;
+  cliente: string;
+  fecha_creacion_orden: string;
+  fecha_entrega_solicitada: string;
+  fecha_entrega_definitiva: string;
+  estado_orden: string;
+  metodo_pago: string;
+  total: number;
 }
 
 export type OrdenProductoSearch = {

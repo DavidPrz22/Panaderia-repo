@@ -99,7 +99,7 @@ export const OrderForm = ({ order, onClose, onSave }: OrderFormProps) => {
 
   useEffect(() => {
     if (bcvRate) {
-      setValue('tasa_cambio_aplicada', Number(bcvRate.promedio))
+      setValue('tasa_cambio_aplicada', roundTo3(bcvRate.promedio))
     }
   }, [bcvRate, setValue])
 

@@ -1,4 +1,4 @@
-import { getClientes, getMetodosDePago, getAllEstadosOrdenVenta, getEstadosOrdenRegistro, BCVRate } from "../../api/api";
+import { getClientes, getMetodosDePago, getAllEstadosOrdenVenta, getEstadosOrdenRegistro, BCVRate, getOrdenes, getOrdenesDetalles } from "../../api/api";
 
 export const clientesQueryOptions = {
     queryKey: ["clientes"],
@@ -28,4 +28,18 @@ export const bcvRateQueryOptions = {
     queryKey: ["bcv-rate"],
     queryFn: BCVRate,
     staleTime: Infinity,
+};
+
+export const ordenesTableQueryOptions = {
+    queryKey: ["ordenes-table"],
+    queryFn: getOrdenes,
+    staleTime: Infinity,
+};
+
+export const ordenesDetallesQueryOptions = (id: number) => {
+    return {
+        queryKey: ["ordenes-detalles", id],
+        queryFn: () => getOrdenesDetalles(id),
+        staleTime: Infinity,
+    }
 };

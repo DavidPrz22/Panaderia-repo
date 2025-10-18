@@ -1,10 +1,11 @@
 import OrdenesIndex from "../features/Ordenes/components/OrdenesIndex";
 import Sidebar from "../components/Layout/Sidebar/Sidebar";
 import HeaderBar from "../components/Layout/HeaderBar/HeaderBar";
+import { OrdenesProvider } from "@/context/OrdenesContext";
 
 const OrdenesPage = () => {
   return (
-    <>
+    <OrdenesProvider>
       <Sidebar />
       <HeaderBar />
       <div className="flex min-h-screen">
@@ -14,7 +15,7 @@ const OrdenesPage = () => {
           </main>
         </div>
       </div >
-    </>
+    </OrdenesProvider>
   );
 };
 

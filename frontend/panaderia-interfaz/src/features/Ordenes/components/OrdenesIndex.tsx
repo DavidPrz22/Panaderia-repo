@@ -1,9 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import type { EstadoOrden } from "../types/types";
 import { mockOrders } from "../data/mockData";
 
 import { OrdersTable } from "../components/OrdenesTable";
-import { OrderDetails } from "../components/OrdenesDetalles";
+import { OrdenDetalles } from "../components/OrdenesDetalles";
 import { OrderForm } from "../components/OrdenesForm";
 import { OrderStatusDialog } from "../components/OrdenesDialogo";
 
@@ -20,10 +20,18 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useGetAllEstadosOrdenVenta } from "../hooks/queries/queries";
+import { useGetOrdenesDetalles, useGetOrdenesTable } from "../hooks/queries/queries";
+import { useOrdenesContext } from "@/context/OrdenesContext";
+
 
 const OrdenesIndex = () => {
+
+  const { ordenSeleccionadaId, showOrdenDetalles, setShowOrdenDetalles, setOrdenSeleccionadaId } = useOrdenesContext();
+  
+  const { data: ordenesTable } = useGetOrdenesTable();
+  const { data: ordenDetalles, isFetched } = useGetOrdenesDetalles(ordenSeleccionadaId!);
+
   const [orders, setOrders] = useState<Order[]>(mockOrders);
-  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [orderToEdit, setOrderToEdit] = useState<Order | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [statusDialogOrder, setStatusDialogOrder] = useState<Order | null>(null);
@@ -32,14 +40,20 @@ const OrdenesIndex = () => {
 
   const { data: estadosOrden } = useGetAllEstadosOrdenVenta();
 
+  useEffect(() => {
+    if (ordenSeleccionadaId && isFetched && ordenDetalles) {
+      setShowOrdenDetalles(true);
+    }
+  }, [ordenSeleccionadaId, isFetched, setShowOrdenDetalles, ordenDetalles]);
 
-  const filteredOrders = orders.filter((order) => {
-    const matchesSearch =
-      order.orderNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      order.customer.name.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = statusFilter === "all" || order.status === statusFilter;
-    return matchesSearch && matchesStatus;
-  });
+
+  // const filteredOrders = orders.filter((order) => {
+  //   const matchesSearch =
+  //     order.orderNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
+  //     order.customer.name.toLowerCase().includes(searchTerm.toLowerCase());
+  //   const matchesStatus = statusFilter === "all" || order.status === statusFilter;
+  //   return matchesSearch && matchesStatus;
+  // });
 
   const handleSaveOrder = (order: Order) => {
     if (orderToEdit) {
@@ -75,6 +89,19 @@ const OrdenesIndex = () => {
   const handleQuickStatusChange = (order: Order, newStatus: EstadoOrden) => {
     handleStatusChange(order.id, newStatus);
   };
+
+  if (showOrdenDetalles) {
+    return (
+      <OrdenDetalles 
+      orden={ordenDetalles!} 
+      onClose={() => 
+        {
+          setShowOrdenDetalles(false);
+          setOrdenSeleccionadaId(null);
+        }}  
+      />
+    );
+  }
 
   if (showForm) {
     return (
@@ -168,16 +195,10 @@ const OrdenesIndex = () => {
 
         {/* Orders Table */}
         <OrdersTable
-            orders={filteredOrders}
-            onViewOrder={(order) => setSelectedOrder(order)}
+            orders={ordenesTable || []}
             onEditOrder={handleEditOrder}
             onStatusChange={handleQuickStatusChange}
         />
-
-        {/* Order Details Modal */}
-        {selectedOrder && (
-          <OrderDetails order={selectedOrder} onClose={() => setSelectedOrder(null)} />
-        )}
 
         {/* Status Change Dialog */}
         {statusDialogOrder && (
