@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-import type { Orden, OrderLineItem } from "../types/types";
+import type { Orden, OrderLineItemForm } from "../types/types";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -34,15 +34,14 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { OrdenesFormDatePicker } from "./OrdenesFormDatePicker";
 import { toast } from "sonner";
 
-import { useCreateOrdenMutation } from "../hooks/mutations/mutations";
+import { useCreateOrdenMutation, useUpdateOrdenMutation } from "../hooks/mutations/mutations";
 
 interface OrderFormProps {
   order?: Orden;
   onClose: () => void;
-  onSave: (order: Orden) => void;
 }
 
-export const OrderForm = ({ order, onClose, onSave }: OrderFormProps) => {
+export const OrderForm = ({ order, onClose }: OrderFormProps) => {
 
   const {
     handleSubmit,
@@ -53,23 +52,24 @@ export const OrderForm = ({ order, onClose, onSave }: OrderFormProps) => {
     defaultValues:
       order
         ? {
-            cliente: order.cliente,
+            cliente: order.cliente.id,
             fecha_creacion_orden: order.fecha_creacion_orden,
             fecha_entrega_solicitada: order.fecha_entrega_solicitada,
             fecha_entrega_definitiva: order.fecha_entrega_definitiva,
-            estado_orden: order.estado_orden,
-            metodo_pago: order.metodo_pago,
+            estado_orden: order.estado_orden.id,
+            metodo_pago: order.metodo_pago.id,
             productos: order.productos.map(p => ({
               producto: { id: Number(p.producto.id), tipo_producto: p.producto.tipo_producto!},
               cantidad_solicitada: p.cantidad_solicitada,
-              unidad_medida: 0,
+              unidad_medida: p.unidad_medida.id,
               precio_unitario_usd: p.precio_unitario_usd,
-              subtotal_linea_usd: p.subtotal,
+              subtotal_linea_usd: p.subtotal_linea_usd,
               descuento_porcentaje: p.descuento_porcentaje,
               impuesto_porcentaje: p.impuesto_porcentaje,
             })),
             notas_generales: order.notas_generales,
             monto_descuento_usd: order.monto_descuento_usd,
+            monto_impuestos_usd: order.monto_impuestos_usd,
             monto_total_usd: order.monto_total_usd,
             monto_total_ves: order.monto_total_ves,
             tasa_cambio_aplicada: order.tasa_cambio_aplicada,
@@ -81,6 +81,7 @@ export const OrderForm = ({ order, onClose, onSave }: OrderFormProps) => {
             productos: [],
             notas_generales: "",
             monto_descuento_usd: 0,
+            monto_impuestos_usd: 0,
             monto_total_usd: 0,
             monto_total_ves: 0,
             tasa_cambio_aplicada: 0,
@@ -93,8 +94,21 @@ export const OrderForm = ({ order, onClose, onSave }: OrderFormProps) => {
   const { data: bcvRate } = useGetBCVRate();
 
   const { mutateAsync: createOrdenMutation, isPending: isCreatingOrden } = useCreateOrdenMutation();
+  const { mutateAsync: updateOrdenMutation, isPending: isUpdatingOrden } = useUpdateOrdenMutation();
 
-  const [items, setItems] = useState<OrderLineItem[]>(order?.productos || []);
+  const [items, setItems] = useState<OrderLineItemForm[]>(
+    order?.productos.map((p, idx) => ({
+      id: idx + 1,
+      producto: p.producto,
+      stock: p.producto.stock || 0, // Will need to fetch actual stock if editing
+      cantidad_solicitada: p.cantidad_solicitada,
+      unidad_medida_venta: p.unidad_medida,
+      precio_unitario_usd: p.precio_unitario_usd,
+      descuento_porcentaje: p.descuento_porcentaje,
+      impuesto_porcentaje: p.impuesto_porcentaje,
+      subtotal: p.subtotal_linea_usd,
+    })) || []
+  );
   const [subtotal, setSubtotal] = useState(0);
 
   useEffect(() => {
@@ -103,12 +117,14 @@ export const OrderForm = ({ order, onClose, onSave }: OrderFormProps) => {
     }
   }, [bcvRate, setValue])
 
+
   const calculateTotal = () => {
     calculateTotalFromItems(items);
   };
 
   const roundTo3 = (n: number) => Math.round(n * 1000) / 1000;
-  const calculateTotalFromItems = (itemsArray: OrderLineItem[]) => {
+  
+  const calculateTotalFromItems = (itemsArray: OrderLineItemForm[]) => {
     const subtotalBeforeFees = itemsArray.reduce((sum, item) => sum + (item.precio_unitario_usd * item.cantidad_solicitada), 0);
     
     const CantidadDescuento = itemsArray.reduce((sum, item) => {
@@ -126,11 +142,18 @@ export const OrderForm = ({ order, onClose, onSave }: OrderFormProps) => {
     setValue('monto_impuestos_usd', roundTo3(CantidadImpuesto));
     setValue('monto_descuento_usd', roundTo3(CantidadDescuento));
     setValue('monto_total_usd', roundTo3(subtotalBeforeFees - CantidadDescuento + CantidadImpuesto));
-    setValue('monto_total_ves', roundTo3((subtotalBeforeFees - CantidadDescuento + CantidadImpuesto) * watch('tasa_cambio_aplicada')));
+    setValue('monto_total_ves', roundTo3((subtotalBeforeFees - CantidadDescuento + CantidadImpuesto) * (Number(watch('tasa_cambio_aplicada')) || 0)));
   };
 
+  useEffect(() => {
+    if (order) {
+      calculateTotalFromItems(items)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
   const addItem = () => {
-    const newItem: OrderLineItem = {
+    const newItem: OrderLineItemForm = {
       id: items.length + 1,
       producto: {
         id: null,
@@ -170,12 +193,12 @@ export const OrderForm = ({ order, onClose, onSave }: OrderFormProps) => {
     setValue('monto_total_usd', 0)
     setValue('monto_total_ves', 0)
   }
-  const calculateSubtotal = (item: OrderLineItem) => {
+  const calculateSubtotal = (item: OrderLineItemForm) => {
     const subtotal = item.precio_unitario_usd * item.cantidad_solicitada * (1 - item.descuento_porcentaje / 100) * (1 + item.impuesto_porcentaje / 100)
     return roundTo3(subtotal)
   }
 
-  const handleUpdate = (e: React.ChangeEvent<HTMLInputElement>, item: OrderLineItem, fieldSchema: keyof TOrderSchema['productos'][number], field: 'descuento_porcentaje' | 'impuesto_porcentaje') =>{
+  const handleUpdate = (e: React.ChangeEvent<HTMLInputElement>, item: OrderLineItemForm, fieldSchema: keyof TOrderSchema['productos'][number], field: 'descuento_porcentaje' | 'impuesto_porcentaje') =>{
     const productoId = item.producto.id!
     const productoIndex = watch("productos")?.findIndex((p) => p.producto.id === productoId)
     if (productoIndex !== -1) {
@@ -189,11 +212,16 @@ export const OrderForm = ({ order, onClose, onSave }: OrderFormProps) => {
   }
   const handleSubmitForm = async (data: TOrderSchema) => {
     try {
-      await createOrdenMutation(data);
+      if (isEdit && order) {
+        await updateOrdenMutation({ id: order.id, data });
+        toast.success("Orden actualizada exitosamente");
+      } else {
+        await createOrdenMutation(data);
+        toast.success("Orden creada exitosamente");
+      }
       onClose();
-      toast.success("Orden creada exitosamente")
     } catch {
-      toast.error("Error al crear la orden");
+      toast.error(isEdit ? "Error al actualizar la orden" : "Error al crear la orden");
     }
   };
 
@@ -206,7 +234,7 @@ export const OrderForm = ({ order, onClose, onSave }: OrderFormProps) => {
 
   return (
     <div className="p-6 relative">
-      {isCreatingOrden && (
+      {(isCreatingOrden || isUpdatingOrden) && (
         <div className="absolute flex justify-center items-center h-full w-full">
           <PendingTubeSpinner size={28} extraClass="bg-white opacity-50" />
         </div>
@@ -454,32 +482,32 @@ export const OrderForm = ({ order, onClose, onSave }: OrderFormProps) => {
                 <div className="space-y-2 w-60">
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Tasa de Cambio VES: </span>
-                    <span className="font-medium">{bcvRate?.promedio.toFixed(2)}</span>
+                    <span className="font-medium">{bcvRate?.promedio ? bcvRate.promedio.toFixed(2) : '0.00'}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="font-bold">Total en VES: </span>
-                    <span className="font-medium">{watch("monto_total_ves").toFixed(2)}</span>
+                    <span className="font-medium">{(Number(watch("monto_total_ves")) || 0).toFixed(2)}</span>
                   </div>
                 </div>
 
                 <div className="space-y-2 w-80">
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Subtotal:</span>
-                    <span className="font-medium">{formatCurrency(subtotal)}</span>
+                    <span className="font-medium">{formatCurrency(Number(subtotal) || 0)}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Descuentos:</span>
                     <span className="font-medium text-destructive">
-                      -{formatCurrency(watch("monto_descuento_usd"))}
+                      -{formatCurrency(Number(watch("monto_descuento_usd")) || 0)}
                     </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Impuestos:</span>
-                    <span className="font-medium">{formatCurrency(watch("monto_impuestos_usd") || 0)}</span>
+                    <span className="font-medium">{formatCurrency(Number(watch("monto_impuestos_usd")) || 0)}</span>
                   </div>
                   <div className="flex justify-between text-xl font-bold border-t pt-2">
                     <span>Total:</span>
-                    <span>{formatCurrency(watch("monto_total_usd"))}</span>
+                    <span>{formatCurrency(Number(watch("monto_total_usd")) || 0)}</span>
                   </div>
                 </div>
 

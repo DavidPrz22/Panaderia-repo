@@ -18,9 +18,17 @@ interface OrderDetailsProps {
 }
 
 import { toast } from "sonner";
-type OrderStatus = "Pendiente" | "En Proceso" | "Completado";
+import type { Estados } from "../types/types";
+import { ReferenciaPagoDialog } from "./ReferenciaPagoDialog";
+import { CancelOrderDialog } from "./CancelOrderDialog";
+import { useOrdenesContext } from "@/context/OrdenesContext";
+import { useState } from "react";
 
 export const OrdenDetalles = ({ orden, onClose }: OrderDetailsProps) => {
+
+  const { showReferenciaPagoDialog, setShowReferenciaPagoDialog, showCancelDialog, setShowCancelDialog } = useOrdenesContext();
+
+  const [estadoPendiente, setEstadoPendiente] = useState<Estados>(orden.estado_orden.nombre_estado as Estados);
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat("es-MX", {
@@ -28,50 +36,33 @@ export const OrdenDetalles = ({ orden, onClose }: OrderDetailsProps) => {
       currency: "USD",
     }).format(amount);
   };
-  console.log(orden);
-  const handleStatusChange = (newStatus: OrderStatus) => {
+
+  const handleStatusChange = (newStatus: Estados) => {
     // Si se está confirmando y el método de pago requiere referencia
     if (
       newStatus === "En Proceso" &&
       (orden.metodo_pago.nombre_metodo === "Tarjeta" || orden.metodo_pago.nombre_metodo === "Transferencia")
     ) {
-      return;
-      // setPendingStatus(newStatus);
-      // setShowPaymentDialog(true);
-    // } else {
-    //   onStatusChange(order.id, newStatus);
-    //   toast.success(`Orden marcada como ${newStatus}`);
-    // }
+      setShowReferenciaPagoDialog(true);
+    } else {
+      setEstadoPendiente(newStatus);
+      toast.success(`Orden marcada como ${newStatus}`);
+    }
   };
 
-  // const handlePaymentConfirm = (reference: string) => {
-  //   if (pendingStatus) {
-  //     onStatusChange(order.id, pendingStatus, reference);
-  //     toast.success(`Orden confirmada con referencia: ${reference}`);
-  //   }
-  //   setShowPaymentDialog(false);
-  //   setPendingStatus(null);
-  // };
-
-  // const handleCancelOrder = () => {
-  //   onStatusChange(order.id, "Cancelado");
-  //   toast.success("Orden cancelada");
-  //   setShowCancelDialog(false);
-  // };
-  }
 
   const getStatusActions = () => {
-    switch (orden.estado_orden.nombre_estado) {
+    switch (estadoPendiente) {
       case "Pendiente":
         return (
-          <Button onClick={() => handleStatusChange("En Proceso")} className="gap-2">
+          <Button onClick={() => handleStatusChange("En Proceso")} className="gap-2 bg-blue-600 text-white hover:bg-blue-700 cursor-pointer">
             <CheckCircle className="h-4 w-4" />
             Marcar como En Proceso
           </Button>
         );
       case "En Proceso":
         return (
-          <Button onClick={() => handleStatusChange("Completado")} className="gap-2">
+          <Button onClick={() => handleStatusChange("Completado")} className="gap-2 bg-green-600 text-white hover:bg-green-700 cursor-pointer">
             <Truck className="h-4 w-4" />
             Marcar como Completado
           </Button>
@@ -90,7 +81,14 @@ export const OrdenDetalles = ({ orden, onClose }: OrderDetailsProps) => {
       minute: "2-digit",
     });
   };
-  console.log(orden);
+
+  const handleReferenciaPagoConfirm = () => {
+    setShowReferenciaPagoDialog(false);
+  };
+
+  const handleCancelOrder = () => {
+    setShowCancelDialog(false);
+  };
 
   return (
     <>
@@ -99,15 +97,17 @@ export const OrdenDetalles = ({ orden, onClose }: OrderDetailsProps) => {
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4 border-b sticky top-0 bg-card z-10">
             <div className="flex items-center gap-3">
               <CardTitle className="text-2xl font-bold">{orden.id}</CardTitle>
-              <OrdenesEstadoBadge status={orden.estado_orden.nombre_estado} />
+              <OrdenesEstadoBadge estadoOrden={estadoPendiente as Estados} />
             </div>
             <div className="flex items-center gap-2">
               {getStatusActions()}
               {orden.estado_orden.nombre_estado !== "Completado" && orden.estado_orden.nombre_estado !== "Cancelado" && (
                 <Button 
                   variant="destructive" 
-                  onClick={() => {}}
-                  className="gap-2"
+                  onClick={() => {
+                    setShowCancelDialog(true);
+                  }}
+                  className="gap-2 bg-red-600 text-white hover:bg-red-700 cursor-pointer"
                 >
                   <XCircle className="h-4 w-4" />
                   Cancelar Orden
@@ -173,9 +173,9 @@ export const OrdenDetalles = ({ orden, onClose }: OrderDetailsProps) => {
                   <TableBody>
                     {orden.productos.map((item, index) => (
                       <TableRow key={index}>
-                        <TableCell>{item.nombre_producto}</TableCell>
+                        <TableCell>{item.producto.nombre_producto}</TableCell>
                         <TableCell className="text-center">{item.cantidad_solicitada}</TableCell>
-                        <TableCell className="text-center">{item.unidad_medida}</TableCell>
+                        <TableCell className="text-center">{item.unidad_medida.abreviatura}</TableCell>
                         <TableCell className="text-right">{formatCurrency(item.precio_unitario_usd)}</TableCell>
                         <TableCell className="text-center">{item.impuesto_porcentaje}%</TableCell>
                         <TableCell className="text-center">{item.descuento_porcentaje}%</TableCell>
@@ -230,33 +230,21 @@ export const OrdenDetalles = ({ orden, onClose }: OrderDetailsProps) => {
         </Card>
       </div>
 
-      {/* <PaymentReferenceDialog
-        open={showPaymentDialog}
+      <ReferenciaPagoDialog
+        open={showReferenciaPagoDialog}
         onClose={() => {
-          setShowPaymentDialog(false);
-          setPendingStatus(null);
+          setShowReferenciaPagoDialog(false);
         }}
-        onConfirm={handlePaymentConfirm}
-        paymentMethod={order.paymentMethod}
+        onConfirm={handleReferenciaPagoConfirm}
+        paymentMethod={orden.metodo_pago}
       />
-
-      <AlertDialog open={showCancelDialog} onOpenChange={setShowCancelDialog}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>¿Cancelar orden {order.orderNumber}?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Esta acción cancelará la orden. Los productos asignados serán liberados al stock.
-              ¿Estás seguro de que deseas continuar?
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>No, mantener orden</AlertDialogCancel>
-            <AlertDialogAction onClick={handleCancelOrder} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-              Sí, cancelar orden
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog> */}
+      
+      <CancelOrderDialog
+        open={showCancelDialog}
+        onOpenChange={setShowCancelDialog}
+        onConfirm={handleCancelOrder}
+        orderId={orden.id}
+      />
     </>
   );
 };

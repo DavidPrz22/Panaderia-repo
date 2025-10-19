@@ -88,6 +88,16 @@ export const createOrden = async (data: TOrderSchema) => {
     }
 };
 
+export const updateOrden = async (id: number, data: TOrderSchema) => {
+    try {
+        const response = await apiClient.put(`/api/ordenes/${id}/`, data);
+        return response.data;
+    } catch (error) {
+        console.error("Error updating orden:", error);
+        throw error;
+    }
+};
+
 export const getOrdenes = async () : Promise<OrdenTable[]> => {
     try {
         const response = await apiClient.get("/api/ordenes/get_ordenes_table/");

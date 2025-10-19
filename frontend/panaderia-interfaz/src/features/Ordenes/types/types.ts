@@ -28,16 +28,28 @@ export type Producto = {
 type productoOrden = {
   id: number | null;
   SKU: string;
+  stock?: number;
   nombre_producto: string;
   tipo_producto: 'producto-final' | 'producto-reventa' | null;
 }
 
 export interface OrderLineItem {
+  producto: productoOrden;
+  cantidad_solicitada: number;
+  unidad_medida: { id: number; abreviatura: string; nombre_completo?: string };
+  precio_unitario_usd: number;
+  descuento_porcentaje: number;
+  impuesto_porcentaje: number;
+  subtotal_linea_usd: number;
+}
+
+// Form-specific type with additional fields for local state management
+export interface OrderLineItemForm {
   id: number;
   producto: productoOrden;
   stock: number;
   cantidad_solicitada: number;
-  unidad_medida_venta: { id: number; abreviatura: string };
+  unidad_medida_venta: { id: number; abreviatura: string; nombre_completo?: string };
   precio_unitario_usd: number;
   descuento_porcentaje: number;
   impuesto_porcentaje: number;
@@ -60,7 +72,7 @@ export interface Orden {
   fecha_entrega_definitiva?: string;
   estado_orden: EstadoOrden;
   metodo_pago: MetodoPago;
-  productos: VentaDetalles[];
+  productos: OrderLineItem[];
   subtotal_usd: number;
   monto_impuestos_usd: number;
   monto_descuento_usd: number;
@@ -72,16 +84,6 @@ export interface Orden {
   updated_at: string;
 }
 
-export type VentaDetalles = {
-  id: number;
-  nombre_producto: string;
-  cantidad_solicitada: number;
-  unidad_medida: string;
-  impuesto_porcentaje: number;
-  descuento_porcentaje: number;
-  precio_unitario_usd: number;
-  subtotal_linea_usd: number;
-}
 
 export type OrdenTable = {
   id: number;

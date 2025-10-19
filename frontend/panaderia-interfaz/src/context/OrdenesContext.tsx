@@ -8,6 +8,12 @@ import { createContext, useContext, useState } from "react";
     setOrdenSeleccionadaId: (id: number | null) => void;
     showOrdenDetalles: boolean;
     setShowOrdenDetalles: (show: boolean) => void;
+    showReferenciaPagoDialog: boolean;
+    setShowReferenciaPagoDialog: (show: boolean) => void;
+    showCancelDialog: boolean;
+    setShowCancelDialog: (show: boolean) => void;
+    showForm: boolean;
+    setShowForm: (show: boolean) => void;
   };
   
   const OrdenesContext = createContext<OrdenesContextType | null>(null);
@@ -25,9 +31,13 @@ import { createContext, useContext, useState } from "react";
   }: {
     children: React.ReactNode;
   }) => {
+    const [showForm, setShowForm] = useState(false);
     const [ordenes, setOrdenes] = useState<Orden[]>([]);
     const [ordenSeleccionadaId, setOrdenSeleccionadaId] = useState<number | null>(null);
     const [showOrdenDetalles, setShowOrdenDetalles] = useState(false);
+    const [showReferenciaPagoDialog, setShowReferenciaPagoDialog] = useState(false);
+    const [showCancelDialog, setShowCancelDialog] = useState(false);
+    
     return (
       <OrdenesContext.Provider
         value={{
@@ -37,6 +47,12 @@ import { createContext, useContext, useState } from "react";
           setOrdenSeleccionadaId,
           showOrdenDetalles,
           setShowOrdenDetalles,
+          showReferenciaPagoDialog,
+          setShowReferenciaPagoDialog,
+          showCancelDialog,
+          setShowCancelDialog,
+          showForm,
+          setShowForm,
         }}
       >
         {children}

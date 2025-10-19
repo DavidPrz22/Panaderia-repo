@@ -11,6 +11,8 @@ class ClientesSerializer(serializers.ModelSerializer):
 
 class ProductoSerializer(serializers.Serializer):
     id = serializers.IntegerField()
+    nombre_producto = serializers.CharField(required=False)
+    stock = serializers.IntegerField(required=False)
     tipo_producto = serializers.CharField()
 
 
@@ -32,38 +34,31 @@ class ProductosOrdenesSerializer(serializers.Serializer):
         if instance.producto_elaborado:
             producto_data = {
                 'id': instance.producto_elaborado.id,
+                'stock': instance.producto_elaborado.stock_actual,
+                'nombre_producto': instance.producto_elaborado.nombre_producto,
                 'tipo_producto': 'producto-final'
             }
         elif instance.producto_reventa:
             producto_data = {
                 'id': instance.producto_reventa.id,
+                'stock': instance.producto_reventa.stock_actual,
+                'nombre_producto': instance.producto_reventa.nombre_producto,
                 'tipo_producto': 'producto-reventa'
             }
         else:
             producto_data = None
 
+        # Get unidad_medida data with full name
+        unidad_medida_data = {
+            'id': instance.unidad_medida.id,
+            'abreviatura': instance.unidad_medida.abreviatura,
+            'nombre_completo': instance.unidad_medida.nombre_completo
+        } if instance.unidad_medida else None
+
         return {
             'producto': producto_data,
             'cantidad_solicitada': instance.cantidad_solicitada,
-            'unidad_medida': instance.unidad_medida.id if hasattr(instance.unidad_medida, 'id') else instance.unidad_medida,
-            'precio_unitario_usd': instance.precio_unitario_usd,
-            'subtotal_linea_usd': instance.subtotal_linea_usd,
-            'descuento_porcentaje': instance.descuento_porcentaje,
-            'impuesto_porcentaje': instance.impuesto_porcentaje,
-        }
-
-
-class VentaDetallesSerializer(serializers.Serializer):
-
-    class Meta:
-        model = DetallesOrdenVenta
-        fields = '__all__'
-
-    def to_representation(self, instance):
-        return {
-            'nombre_producto': instance.producto_elaborado.nombre_producto if instance.producto_elaborado else instance.producto_reventa.nombre_producto,
-            'cantidad_solicitada': instance.cantidad_solicitada,
-            'unidad_medida': instance.unidad_medida.nombre_completo,
+            'unidad_medida': unidad_medida_data,
             'precio_unitario_usd': instance.precio_unitario_usd,
             'subtotal_linea_usd': instance.subtotal_linea_usd,
             'descuento_porcentaje': instance.descuento_porcentaje,
@@ -95,7 +90,7 @@ class OrdenesDetallesSerializer(serializers.ModelSerializer):
     cliente = ClientesSerializer()
     estado_orden = EstadosOrdenVentaSerializer()
     metodo_pago = MetodosDePagoSerializer()
-    productos = serializers.SerializerMethodField()
+    productos = ProductosOrdenesSerializer(many=True)
 
     class Meta:
         model = OrdenVenta
@@ -116,9 +111,9 @@ class OrdenesDetallesSerializer(serializers.ModelSerializer):
             'productos',
         ]
 
-    def get_productos(self, instance):
-        productos = DetallesOrdenVenta.objects.filter(orden_venta_asociada=instance)
-        return VentaDetallesSerializer(productos, many=True).data
+    # def get_productos(self, instance):
+    #     productos = DetallesOrdenVenta.objects.filter(orden_venta_asociada=instance)
+    #     return VentaDetallesSerializer(productos, many=True).data
 
 
 class OrdenesTableSerializer(serializers.ModelSerializer):

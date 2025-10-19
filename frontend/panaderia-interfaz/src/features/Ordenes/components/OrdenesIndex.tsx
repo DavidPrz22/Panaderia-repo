@@ -1,11 +1,9 @@
 import { useState, useEffect } from "react";
-import type { EstadoOrden } from "../types/types";
-import { mockOrders } from "../data/mockData";
+import type { OrdenTable } from "../types/types";
 
 import { OrdersTable } from "../components/OrdenesTable";
 import { OrdenDetalles } from "../components/OrdenesDetalles";
 import { OrderForm } from "../components/OrdenesForm";
-import { OrderStatusDialog } from "../components/OrdenesDialogo";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -26,69 +24,47 @@ import { useOrdenesContext } from "@/context/OrdenesContext";
 
 const OrdenesIndex = () => {
 
-  const { ordenSeleccionadaId, showOrdenDetalles, setShowOrdenDetalles, setOrdenSeleccionadaId } = useOrdenesContext();
+  const { ordenSeleccionadaId, showOrdenDetalles, showForm, setShowForm, setShowOrdenDetalles, setOrdenSeleccionadaId } = useOrdenesContext();
   
   const { data: ordenesTable } = useGetOrdenesTable();
   const { data: ordenDetalles, isFetched } = useGetOrdenesDetalles(ordenSeleccionadaId!);
 
-  const [orders, setOrders] = useState<Order[]>(mockOrders);
-  const [orderToEdit, setOrderToEdit] = useState<Order | null>(null);
-  const [showForm, setShowForm] = useState(false);
-  const [statusDialogOrder, setStatusDialogOrder] = useState<Order | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [statusFilter, setStatusFilter] = useState<string>("Todos");
 
   const { data: estadosOrden } = useGetAllEstadosOrdenVenta();
 
   useEffect(() => {
-    if (ordenSeleccionadaId && isFetched && ordenDetalles) {
+    if (ordenSeleccionadaId && isFetched && ordenDetalles && !showForm) {
       setShowOrdenDetalles(true);
     }
-  }, [ordenSeleccionadaId, isFetched, setShowOrdenDetalles, ordenDetalles]);
+  }, [ordenSeleccionadaId, isFetched, setShowOrdenDetalles, ordenDetalles, showForm]);
 
+  // Filter orders based on search term and status
+  const filteredOrders = (ordenesTable || []).filter((order) => {
+    // Search filter: match order ID or client name
+    const matchesSearch = searchTerm === "" || 
+      order.id.toString().includes(searchTerm) ||
+      order.cliente.toLowerCase().includes(searchTerm.toLowerCase());
 
-  // const filteredOrders = orders.filter((order) => {
-  //   const matchesSearch =
-  //     order.orderNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
-  //     order.customer.name.toLowerCase().includes(searchTerm.toLowerCase());
-  //   const matchesStatus = statusFilter === "all" || order.status === statusFilter;
-  //   return matchesSearch && matchesStatus;
-  // });
+    // Status filter
+    const matchesStatus = statusFilter === "Todos" ||
+      order.estado_orden === estadosOrden?.find(e => e.id.toString() === statusFilter)?.nombre_estado;
 
-  const handleSaveOrder = (order: Order) => {
-    if (orderToEdit) {
-      // Update existing order
-      setOrders(orders.map((o) => (o.id === order.id ? order : o)));
-    } else {
-      // Add new order
-      setOrders([order, ...orders]);
-    }
-    setShowForm(false);
-    setOrderToEdit(null);
-  };
+    return matchesSearch && matchesStatus;
+  });
 
   const handleNewOrder = () => {
-    setOrderToEdit(null);
+    setShowForm(true);
+    setOrdenSeleccionadaId(null);
+  };
+
+  const handleEditOrder = (order: OrdenTable) => {
+    setShowOrdenDetalles(false);
+    setOrdenSeleccionadaId(order.id);
     setShowForm(true);
   };
 
-  const handleEditOrder = (order: Order) => {
-    setOrderToEdit(order);
-    setShowForm(true);
-    setSelectedOrder(null);
-  };
-
-  const handleStatusChange = (orderId: string, newStatus: EstadoOrden) => {
-    setOrders(
-      orders.map((o) =>
-        o.id === orderId ? { ...o, status: newStatus, updatedAt: new Date().toISOString() } : o
-      )
-    );
-  };
-
-  const handleQuickStatusChange = (order: Order, newStatus: EstadoOrden) => {
-    handleStatusChange(order.id, newStatus);
-  };
 
   if (showOrdenDetalles) {
     return (
@@ -104,14 +80,14 @@ const OrdenesIndex = () => {
   }
 
   if (showForm) {
+    const ordenToEdit = ordenSeleccionadaId ? ordenDetalles : undefined;
     return (
           <OrderForm
-            order={orderToEdit || undefined}
+            order={ordenToEdit}
             onClose={() => {
-              setShowForm(false);
-              setOrderToEdit(null);
+                setShowForm(false);
+                setOrdenSeleccionadaId(null);
             }}
-            onSave={handleSaveOrder}
           />
     );
   }
@@ -151,7 +127,7 @@ const OrdenesIndex = () => {
                 <SelectValue placeholder="Estado" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Todos</SelectItem>
+                <SelectItem value="Todos">Todos</SelectItem>
                 {estadosOrden?.map((estado) => (
                   <SelectItem key={estado.id} value={estado.id.toString()}>{estado.nombre_estado}</SelectItem>
                 ))}
@@ -163,14 +139,14 @@ const OrdenesIndex = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <Card>
             <CardContent className="pt-6">
-              <div className="text-2xl font-bold">{orders.length}</div>
+              <div className="text-2xl font-bold">{ordenesTable?.length}</div>
               <p className="text-sm text-muted-foreground">Total Órdenes</p>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="pt-6">
               <div className="text-2xl font-bold">
-                {orders.filter((o) => o.status === "Pendiente").length}
+                {ordenesTable?.filter((o) => o.estado_orden === "Pendiente").length}
               </div>
               <p className="text-sm text-muted-foreground">Pendientes</p>
             </CardContent>
@@ -178,7 +154,7 @@ const OrdenesIndex = () => {
           <Card>
             <CardContent className="pt-6">
               <div className="text-2xl font-bold">
-                {orders.filter((o) => o.status === "En Preparación").length}
+                {ordenesTable?.filter((o) => o.estado_orden === "En Preparación").length}
               </div>
               <p className="text-sm text-muted-foreground">En Preparación</p>
             </CardContent>
@@ -186,7 +162,7 @@ const OrdenesIndex = () => {
           <Card>
             <CardContent className="pt-6">
               <div className="text-2xl font-bold">
-                {orders.filter((o) => o.status === "Entregado").length}
+                {ordenesTable?.filter((o) => o.estado_orden === "Entregado").length}
               </div>
               <p className="text-sm text-muted-foreground">Entregados</p>
             </CardContent>
@@ -195,20 +171,11 @@ const OrdenesIndex = () => {
 
         {/* Orders Table */}
         <OrdersTable
-            orders={ordenesTable || []}
+            orders={filteredOrders}
             onEditOrder={handleEditOrder}
-            onStatusChange={handleQuickStatusChange}
+            onStatusChange={()=>{}}
         />
 
-        {/* Status Change Dialog */}
-        {statusDialogOrder && (
-          <OrderStatusDialog
-            order={statusDialogOrder}
-            open={!!statusDialogOrder}
-            onOpenChange={(open) => !open && setStatusDialogOrder(null)}
-            onStatusChange={handleStatusChange}
-          />
-        )}
       </div>
     </div>
   );

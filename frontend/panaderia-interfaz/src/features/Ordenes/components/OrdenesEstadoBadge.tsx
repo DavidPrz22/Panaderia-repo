@@ -1,32 +1,28 @@
 import { Badge } from "@/components/ui/badge";
-import type { OrdenesEstado } from "../types/types";
+import type { Estados } from "../types/types";
 
 interface OrdenesEstadoBadgeProps {
-  status: OrdenesEstado;
+  estadoOrden: Estados;
 }
 
-export const OrdenesEstadoBadge = ({ status }: OrdenesEstadoBadgeProps) => {
-  const variants: Record<OrdenesEstado, "default" | "secondary" | "destructive" | "outline"> = {
+export const OrdenesEstadoBadge = ({ estadoOrden }: OrdenesEstadoBadgeProps) => {
+  const variants: Record<Estados, "default" | "secondary" | "destructive" | "outline"> = {
     "Pendiente": "outline",
-    "Confirmado": "default",
-    "En Preparación": "secondary",
-    "Listo para Entrega": "default",
-    "Entregado": "default",
+    "En Proceso": "secondary",
+    "Completado": "default",
     "Cancelado": "destructive",
   };
 
-  const colors: Record<OrdenesEstado, string> = {
+  const colors: Record<Estados, string> = {
     "Pendiente": "border-orange-500 text-orange-500",
-    "Confirmado": "bg-blue-500 text-white",
-    "En Preparación": "bg-green-500 text-white",
-    "Listo para Entrega": "bg-green-500 text-white",
-    "Entregado": "bg-green-500 text-white",
+    "En Proceso": "bg-blue-500 text-white",
+    "Completado": "bg-green-500 text-white",
     "Cancelado": "bg-red-500 text-white",
   };
 
   return (
-    <Badge variant={variants[status]} className={colors[status]}>
-      {status}
+    <Badge variant={variants[estadoOrden]} className={colors[estadoOrden]}>
+      {estadoOrden}
     </Badge>
   );
 };

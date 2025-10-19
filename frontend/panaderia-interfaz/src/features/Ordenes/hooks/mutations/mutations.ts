@@ -1,5 +1,5 @@
-import { useMutation } from "@tanstack/react-query";
-import { getOrdenProductosSearch, createOrden } from "../../api/api";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { getOrdenProductosSearch, createOrden, updateOrden } from "../../api/api";
 import type { TOrderSchema } from "../../schema/schema";
 
 export const useProductosPedidoSearchMutation = () => {
@@ -15,13 +15,30 @@ export const useProductosPedidoSearchMutation = () => {
 };
 
 export const useCreateOrdenMutation = () => {
+    const queryClient = useQueryClient();
     return useMutation({
     mutationFn: (data: TOrderSchema) => createOrden(data),
     onSuccess: (data) => {
         console.log(data);
+        queryClient.invalidateQueries({ queryKey: ["ordenes-table"] });
     },
     onError: (error) => {
         console.error("Error creating orden:", error);
+    },
+  });
+};
+
+export const useUpdateOrdenMutation = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+    mutationFn: ({ id, data }: { id: number; data: TOrderSchema }) => updateOrden(id, data),
+    onSuccess: (data) => {
+        console.log(data);
+        queryClient.invalidateQueries({ queryKey: ["ordenes-table"] });
+        queryClient.invalidateQueries({ queryKey: ["ordenes-detalles"] });
+    },
+    onError: (error) => {
+        console.error("Error updating orden:", error);
     },
   });
 };

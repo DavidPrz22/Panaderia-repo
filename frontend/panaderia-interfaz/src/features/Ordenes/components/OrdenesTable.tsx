@@ -1,4 +1,4 @@
-import type { Orden, OrdenTable, Order } from "../types/types";
+import type { Estados, OrdenTable  } from "../types/types";
 import { OrdenesEstadoBadge } from "./OrdenesEstadoBadge";
 import {
   Table,
@@ -9,7 +9,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Eye, Pencil, MoreVertical, RefreshCw } from "lucide-react";
+import { Pencil, MoreVertical, RefreshCw } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -25,10 +25,14 @@ interface OrdersTableProps {
   onEditOrder: (order: OrdenTable) => void;
   onStatusChange?: (order: OrdenTable, newStatus: any) => void;
 }
+import { useGetOrdenesDetalles } from "../hooks/queries/queries";
+import { PendingTubeSpinner } from "@/components/PendingTubeSpinner";
 
 export const OrdersTable = ({ orders, onEditOrder, onStatusChange }: OrdersTableProps) => {
 
-  const { setOrdenSeleccionadaId } = useOrdenesContext();
+  const { ordenSeleccionadaId, setOrdenSeleccionadaId } = useOrdenesContext();
+
+  const { isFetching: isFetchingOrdenDetalles } = useGetOrdenesDetalles(ordenSeleccionadaId!);
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat("es-MX", {
@@ -50,7 +54,10 @@ export const OrdersTable = ({ orders, onEditOrder, onStatusChange }: OrdersTable
   };
 
   return (
-    <div className="border rounded-lg overflow-hidden bg-card shadow-sm">
+    <div className="border rounded-lg bg-card shadow-sm relative">
+      {isFetchingOrdenDetalles && (
+        <PendingTubeSpinner size={20} extraClass="absolute top-0 left-0 w-full h-full flex justify-center items-center bg-white opacity-50 z-50" />
+      )}
       <Table>
         <TableHeader className="bg-(--table-header-bg)">
           <TableRow className="bg-table-header hover:bg-table-header">
@@ -78,13 +85,13 @@ export const OrdersTable = ({ orders, onEditOrder, onStatusChange }: OrdersTable
                   : "-"}
               </TableCell>
               <TableCell>
-                <OrdenesEstadoBadge status={order.estado_orden} />
+                <OrdenesEstadoBadge estadoOrden={order.estado_orden as Estados} />
               </TableCell>
               <TableCell>{order.metodo_pago}</TableCell>
               <TableCell className="text-right font-medium">
                 {formatCurrency(order.total)}
               </TableCell>
-              <TableCell>
+              <TableCell onClick={(e) => e.stopPropagation()}>
                 <div className="flex gap-1 justify-center">
                   <Button
                     variant="ghost"
