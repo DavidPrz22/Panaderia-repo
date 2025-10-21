@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { OrdenesEstadoBadge } from "./OrdenesEstadoBadge";
 import { Button } from "@/components/ui/button";
 import { X, CheckCircle, Truck, XCircle } from "lucide-react";
+
 import {
   Table,
   TableBody,
@@ -24,11 +25,17 @@ import { CancelOrderDialog } from "./CancelOrderDialog";
 import { useOrdenesContext } from "@/context/OrdenesContext";
 import { useState } from "react";
 
+import { useRegisterPaymentReferenceMutation, useUpdateOrdenStatusMutation } from "../hooks/mutations/mutations";
+
 export const OrdenDetalles = ({ orden, onClose }: OrderDetailsProps) => {
 
   const { showReferenciaPagoDialog, setShowReferenciaPagoDialog, showCancelDialog, setShowCancelDialog } = useOrdenesContext();
 
   const [estadoPendiente, setEstadoPendiente] = useState<Estados>(orden.estado_orden.nombre_estado as Estados);
+
+  const { mutateAsync: updateOrdenStatusMutation} = useUpdateOrdenStatusMutation();
+
+  const { mutateAsync: registerPaymentReferenceMutation} = useRegisterPaymentReferenceMutation();
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat("es-MX", {
@@ -37,15 +44,16 @@ export const OrdenDetalles = ({ orden, onClose }: OrderDetailsProps) => {
     }).format(amount);
   };
 
-  const handleStatusChange = (newStatus: Estados) => {
+  const handleStatusChange = async (newStatus: Estados) => {
     // Si se está confirmando y el método de pago requiere referencia
     if (
-      newStatus === "En Proceso" &&
+      newStatus === "Completado" &&
       (orden.metodo_pago.nombre_metodo === "Tarjeta" || orden.metodo_pago.nombre_metodo === "Transferencia")
     ) {
       setShowReferenciaPagoDialog(true);
     } else {
       setEstadoPendiente(newStatus);
+      await updateOrdenStatusMutation({ id: orden.id, estado: newStatus });
       toast.success(`Orden marcada como ${newStatus}`);
     }
   };
@@ -82,8 +90,9 @@ export const OrdenDetalles = ({ orden, onClose }: OrderDetailsProps) => {
     });
   };
 
-  const handleReferenciaPagoConfirm = () => {
-    setShowReferenciaPagoDialog(false);
+  const handleReferenciaPagoConfirm = (ordenId: number, referenciaPago: string) => {
+    setShowReferenciaPagoDialog(false)
+    registerPaymentReferenceMutation({ id: ordenId, referencia_pago: referenciaPago });
   };
 
   const handleCancelOrder = () => {

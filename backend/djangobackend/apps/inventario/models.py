@@ -7,6 +7,8 @@ from django.dispatch import receiver
 from django.utils import timezone
 from django.core.exceptions import ValidationError
 from decimal import Decimal
+
+
 # Create your models here.
 class LotesStatus(models.TextChoices):
     DISPONIBLE = 'DISPONIBLE', 'Disponible para uso'
@@ -225,6 +227,100 @@ class ComponentesStockManagement(models.Model):
         }
 
 
+class ProductosStockManagement(models.Model):
+    class Meta:
+        abstract = True
+    
+    def actualizar_product_stock(self):
+        if isinstance(self, ProductosReventa):
+            lote_total = LotesProductosReventa.objects.filter(
+                producto_reventa=self, 
+                fecha_caducidad__gt=timezone.now().date(), 
+                estado=LotesStatus.DISPONIBLE
+            ).aggregate(total=Sum('stock_actual_lote'))
+            stock_total = lote_total.get('total') or 0
+
+            self.__class__.objects.filter(id=self.id).update(stock_actual=stock_total)
+            return stock_total
+    
+        elif isinstance(self, ProductosElaborados):
+
+            lote_total = LotesProductosElaborados.objects.filter(
+                producto_elaborado=self, 
+                fecha_caducidad__gt=timezone.now().date(), 
+                estado=LotesStatus.DISPONIBLE
+            ).aggregate(total=Sum('stock_actual_lote'))
+    
+            stock_total = lote_total.get('total') or 0
+            self.__class__.objects.filter(id=self.id).update(stock_actual=stock_total)
+            return stock_total
+
+    def check_product_availability(self, cantidad):
+        return self.stock_actual >= cantidad
+
+    def _get_display_name(self):
+        """Helper method to get display name for different product types"""
+        if hasattr(self, 'nombre'):
+            return self.nombre
+        elif hasattr(self, 'nombre_producto'):
+            return self.nombre_producto
+        return str(self)
+    
+    def get_closest_expire_lot_producto(self, exclude_id=None): 
+        if isinstance(self, ProductosReventa):
+            queryset = LotesProductosReventa.objects.filter(
+                producto_reventa=self, 
+                estado=LotesStatus.DISPONIBLE
+            )
+            if exclude_id:
+                queryset = queryset.exclude(id=exclude_id)
+            return queryset.order_by('fecha_caducidad').first()
+
+        elif isinstance(self, ProductosElaborados):
+            queryset = LotesProductosElaborados.objects.filter(
+                producto_elaborado=self, 
+                estado=LotesStatus.DISPONIBLE
+            )
+            if exclude_id:
+                queryset = queryset.exclude(id=exclude_id)
+
+            return queryset.order_by('fecha_caducidad').first()
+    
+    def consume_product_stock(self, cantidad, price = 0):
+        if not self.check_product_availability(cantidad):
+            raise ValidationError(f"Stock insuficiente. Disponible: {self.stock_actual}, Requerido: {cantidad}")
+
+        cantidad_restante = cantidad
+        lotes_consumidos = []
+
+        while cantidad_restante > 0:
+            lote_consume = self.get_closest_expire_lot_producto()
+
+            if not lote_consume:
+                raise ValidationError(f"No hay lotes disponibles para {self._get_display_name()}")
+
+            cantidad_del_lote = min(cantidad_restante, lote_consume.stock_actual_lote)
+            
+            lote_consume.stock_actual_lote -= cantidad_del_lote
+            if lote_consume.stock_actual_lote <= 0:
+                lote_consume.estado = LotesStatus.AGOTADO
+            lote_consume.save()
+            
+            detalle_consumo = {
+                'lote_producto_reventa': lote_consume if isinstance(self, LotesProductosReventa) else None,
+                'lote_producto_elaborado': lote_consume if isinstance(self, LotesProductosElaborados) else None,
+                'cantidad_consumida': cantidad_del_lote,
+                'costo_parcial_usd': cantidad_del_lote * price
+            }
+            lotes_consumidos.append(detalle_consumo)
+            cantidad_restante -= cantidad_del_lote
+
+        self.stock_actual -= cantidad
+        self.save(update_fields=['stock_actual'])
+
+        return lotes_consumidos
+
+
 class MateriasPrimas(ComponentesStockManagement):
     nombre = models.CharField(max_length=100, null=False, blank=False, unique=True)
     unidad_medida_base = models.ForeignKey(UnidadesDeMedida, on_delete=models.CASCADE, null=False, blank=False, related_name='materias_primas_unidad_base')
@@ -324,7 +420,7 @@ class LotesMateriasPrimas(models.Model):
                 lote.save(update_fields=['estado'])
 
 
-class ProductosElaborados(ComponentesStockManagement):
+class ProductosElaborados(ComponentesStockManagement, ProductosStockManagement):
     nombre_producto = models.CharField(max_length=100, null=False, blank=False, unique=True)
     SKU = models.CharField(max_length=50, null=True, blank=True, unique=True)
     descripcion = models.TextField(max_length=255, null=True, blank=True)
@@ -488,7 +584,7 @@ class ProductosFinales(ProductosElaborados):
             raise ValidationError("Productos finales deben tener precio de venta")
 
 
-class ProductosReventa(models.Model):
+class ProductosReventa(ProductosStockManagement):
     nombre_producto = models.CharField(max_length=100, null=False, blank=False, unique=True)
     descripcion = models.TextField(max_length=255, null=True, blank=True)
     SKU = models.CharField(max_length=50, null=True, blank=True, unique=True)
@@ -538,19 +634,7 @@ class ProductosReventa(models.Model):
     pecedero = models.BooleanField(default=False, null=False)
     fecha_creacion_registro = models.DateField(auto_now_add=True)
     fecha_modificacion_registro = models.DateField(auto_now=True)
-
-    def actualizar_stock(self):
-        """Update stock based on available lots"""
-        lote_total = LotesProductosReventa.objects.filter(
-            producto_reventa=self, 
-            fecha_caducidad__gt=timezone.now().date(), 
-            estado=LotesStatus.DISPONIBLE
-        ).aggregate(total=Sum('stock_actual_lote'))
-        stock_total = lote_total.get('total') or 0
-
-        self.__class__.objects.filter(id=self.id).update(stock_actual=stock_total)
-        return stock_total
-
+  
     def expirar_lotes_viejos(self, force=False):
         """Expire old lots for this specific product"""
         ahora = timezone.now().date()
@@ -581,7 +665,7 @@ class ProductosReventa(models.Model):
         
         # Update stock for this product
         if count > 0:
-            self.actualizar_stock()
+            self.actualizar_product_stock()
 
         return {"resumen": resumen, "count": count}
 
@@ -623,7 +707,7 @@ class ProductosReventa(models.Model):
         # Update stock for affected products
         for pr_id in affected_pr_ids:
             pr = cls.objects.get(id=pr_id)
-            pr.actualizar_stock()
+            pr.actualizar_product_stock()
 
         return {
             "resumen": resumen, 
@@ -642,7 +726,7 @@ class ProductosReventa(models.Model):
     def __str__(self):
         return f"Producto {self.id} - {self.nombre_producto} {self.stock_actual}"
 
-
+    
 class LotesProductosReventa(models.Model):
     producto_reventa = models.ForeignKey(ProductosReventa, on_delete=models.CASCADE, null=False, blank=False)
     fecha_recepcion = models.DateField(null=False, blank=False)

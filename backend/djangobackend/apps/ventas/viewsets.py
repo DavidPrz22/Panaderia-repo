@@ -1,5 +1,5 @@
 from rest_framework import viewsets
-from .models import Clientes, OrdenVenta, DetallesOrdenVenta
+from .models import Clientes, OrdenConsumoLoteDetalle, OrdenVenta, DetallesOrdenVenta, OrdenConsumoLote, Pagos
 from .serializers import ClientesSerializer, OrdenesSerializer, OrdenesDetallesSerializer
 from apps.inventario.models import ProductosElaborados, ProductosReventa
 from django.db import transaction
@@ -182,3 +182,73 @@ class OrdenesViewSet(viewsets.ModelViewSet):
             # Return the updated order data
             response_serializer = OrdenesDetallesSerializer(instance)
             return Response(response_serializer.data, status=status.HTTP_200_OK)
+            
+            
+    @action(detail=True, methods=['put'])
+    def update_status(self, request, pk=None):
+        param = request.data.get('estado')
+        orden = OrdenVenta.objects.get(id=pk)
+
+        try:
+            if param == 'En Proceso' and orden.estado_orden == 'PENDIENTE':
+                detallesOrdenVenta = DetallesOrdenVenta.objects.filter(orden_venta_asociada=orden)
+                lotes_detalles_consumo = []
+
+                for detalle in detallesOrdenVenta:
+                    cantidad_consumir = detalle.cantidad_solicitada
+                    price = detalle.precio_unitario_usd
+                    producto = detalle.producto_elaborado if detalle.producto_elaborado else detalle.producto_reventa
+                    
+                    if producto:
+                        detalles_consumo_lotes = producto.consume_product_stock(cantidad_consumir, price)
+                        producto.actualizar_product_stock()
+                        
+                        orden_consumo_lote = OrdenConsumoLote.objects.create(
+                            orden_venta_asociada=orden,
+                            detalle_orden_venta=detalle
+                        )
+                        
+                        lotes_detalles_consumo.append(
+                            OrdenConsumoLoteDetalle(
+                                **detalles_consumo_lotes,
+                                orden_consumo_lote=orden_consumo_lote
+                            )
+                        )
+                OrdenConsumoLoteDetalle.objects.bulk_create(lotes_detalles_consumo)
+    
+            orden.estado_orden = param
+            orden.save()
+            return Response(status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+    
+    @action(detail=True, methods=['put'])
+    def cancel_order(self, request, pk=None):
+        orden = OrdenVenta.objects.get(id=pk)
+
+        if orden.estado_orden == 'EN PROCESO':
+
+            orden.estado_orden = 'CANCELADO'
+            orden.save()
+            return Response(status=status.HTTP_200_OK)
+        
+        return Response({"error": "No se puede cancelar una orden que no está en proceso"}, status=status.HTTP_400_BAD_REQUEST)
+        
+    @action(detail=True, methods=['put'])
+    def register_payment_reference(self, request, pk=None):
+        orden = OrdenVenta.objects.get(id=pk)
+        try:
+            Pagos.objects.create(
+            orden_venta_asociada=orden,
+            metodo_pago=orden.metodo_pago,
+            monto_pago_usd=orden.monto_total_usd,
+            monto_pago_ves=orden.monto_total_ves,
+            fecha_pago=datetime.now(),
+            referencia_pago=request.data.get('referencia_pago'),
+            usuario_registrador=request.user,
+            tasa_cambio_aplicada=orden.tasa_cambio
+        )
+            return Response(status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)

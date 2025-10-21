@@ -4,11 +4,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import type { MetodoPago } from "../types/types";
-
+import { useOrdenesContext } from "@/context/OrdenesContext";
 interface ReferenciaPagoDialogProps {
   open: boolean;
   onClose: () => void;
-  onConfirm: (reference: string) => void;
+  onConfirm: (ordenId: number, reference: string) => void;
   paymentMethod: MetodoPago;
 }
 
@@ -18,11 +18,13 @@ export const ReferenciaPagoDialog = ({
   onConfirm,
   paymentMethod,
 }: ReferenciaPagoDialogProps) => {
-  const [reference, setReference] = useState("");
+    const { ordenSeleccionadaId } = useOrdenesContext();
+    const [reference, setReference] = useState("");
 
   const handleConfirm = () => {
+
     if (reference.trim()) {
-      onConfirm(reference);
+      onConfirm(ordenSeleccionadaId!, reference);
       setReference("");
     }
   };

@@ -119,3 +119,23 @@ export const getOrdenesDetalles = async (id: number) : Promise<Orden> => {
         throw error;
     }
 };
+
+export const updateOrdenStatus = async (id: number, estado: string) => {
+    try {
+        const response = await apiClient.put(`/api/ordenes/${id}/update_status/?estado=${estado}`);
+        return response.data;
+    } catch (error) {
+        console.error("Error updating orden status:", error);
+        throw error;
+    }
+};
+
+export const registerPaymentReference = async (id: number, referencia_pago: string) => {
+    try {
+        const response = await apiClient.put(`/api/ordenes/${id}/register_payment_reference/`, { referencia_pago });
+        return response.data;
+    } catch (error) {
+        console.error("Error registering payment reference:", error);
+        throw error;
+    }
+};

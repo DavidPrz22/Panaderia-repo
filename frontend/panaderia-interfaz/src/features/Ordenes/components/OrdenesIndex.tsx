@@ -20,13 +20,14 @@ import {
 import { useGetAllEstadosOrdenVenta } from "../hooks/queries/queries";
 import { useGetOrdenesDetalles, useGetOrdenesTable } from "../hooks/queries/queries";
 import { useOrdenesContext } from "@/context/OrdenesContext";
+import { DoubleSpinnerLoading } from "@/components/DoubleSpinnerLoading";
 
 
 const OrdenesIndex = () => {
 
   const { ordenSeleccionadaId, showOrdenDetalles, showForm, setShowForm, setShowOrdenDetalles, setOrdenSeleccionadaId } = useOrdenesContext();
   
-  const { data: ordenesTable } = useGetOrdenesTable();
+  const { data: ordenesTable, isFetching: isFetchingOrdenesTable } = useGetOrdenesTable();
   const { data: ordenDetalles, isFetched } = useGetOrdenesDetalles(ordenSeleccionadaId!);
 
   const [searchTerm, setSearchTerm] = useState("");
@@ -170,11 +171,15 @@ const OrdenesIndex = () => {
         </div>
 
         {/* Orders Table */}
-        <OrdersTable
+        {isFetchingOrdenesTable ? (
+          <DoubleSpinnerLoading extraClassName="size-20" />
+        ) : (
+          <OrdersTable
             orders={filteredOrders}
             onEditOrder={handleEditOrder}
             onStatusChange={()=>{}}
-        />
+          />
+        )}
 
       </div>
     </div>
