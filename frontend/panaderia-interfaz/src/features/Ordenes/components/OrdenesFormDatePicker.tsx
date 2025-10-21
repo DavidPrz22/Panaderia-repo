@@ -7,11 +7,11 @@ import { Calendar } from "@/components/ui/calendar";
 import { format, parse } from "date-fns";
 import { es } from "date-fns/locale";
 
-export const OrdenesFormDatePicker = ({ label, value, onChange }: { label: string, value: string, onChange: (value: string) => void }) => {
+export const OrdenesFormDatePicker = ({ label, value, onChange, optional }: { label: string, value: string, onChange: (value: string) => void, optional?: boolean }) => {
   const parsedValue = value ? parse(value, "yyyy-MM-dd", new Date()) : undefined;
   return (
     <div className="space-y-2">
-                <Label>{label} *</Label>
+                <Label>{label} {optional ? "(Opcional)" : "*"}</Label>
                 <Popover>
                   <PopoverTrigger asChild>
                     <Button

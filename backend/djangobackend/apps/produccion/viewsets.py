@@ -1,3 +1,4 @@
+from apps.users.models import User
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -342,7 +343,7 @@ class ProduccionesViewSet(viewsets.ModelViewSet):
                     producto=producto,
                     cantidad_produccion=serializer.validated_data['cantidadProduction'],
                     fecha_expiracion=serializer.validated_data['fechaExpiracion'],
-                    user=request.user,
+                    user=User.objects.get(id=1), # TODO: Change this to the current user
                     unidad_medida=producto.unidad_produccion
                 )
 

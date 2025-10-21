@@ -295,7 +295,6 @@ class ProductosStockManagement(models.Model):
 
         while cantidad_restante > 0:
             lote_consume = self.get_closest_expire_lot_producto()
-
             if not lote_consume:
                 raise ValidationError(f"No hay lotes disponibles para {self._get_display_name()}")
 
@@ -305,10 +304,10 @@ class ProductosStockManagement(models.Model):
             if lote_consume.stock_actual_lote <= 0:
                 lote_consume.estado = LotesStatus.AGOTADO
             lote_consume.save()
-            
+
             detalle_consumo = {
-                'lote_producto_reventa': lote_consume if isinstance(self, LotesProductosReventa) else None,
-                'lote_producto_elaborado': lote_consume if isinstance(self, LotesProductosElaborados) else None,
+                'lote_producto_reventa': lote_consume if isinstance(lote_consume, LotesProductosReventa) else None,
+                'lote_producto_elaborado': lote_consume if isinstance(lote_consume, LotesProductosElaborados) else None,
                 'cantidad_consumida': cantidad_del_lote,
                 'costo_parcial_usd': cantidad_del_lote * price
             }

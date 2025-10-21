@@ -9,26 +9,17 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Pencil, MoreVertical, RefreshCw } from "lucide-react";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { Pencil } from "lucide-react";
 import { useOrdenesContext } from "@/context/OrdenesContext";
 
 interface OrdersTableProps {
   orders: OrdenTable[];
   onEditOrder: (order: OrdenTable) => void;
-  onStatusChange?: (order: OrdenTable, newStatus: any) => void;
 }
 import { useGetOrdenesDetalles } from "../hooks/queries/queries";
 import { PendingTubeSpinner } from "@/components/PendingTubeSpinner";
 
-export const OrdersTable = ({ orders, onEditOrder, onStatusChange }: OrdersTableProps) => {
+export const OrdersTable = ({ orders, onEditOrder }: OrdersTableProps) => {
 
   const { ordenSeleccionadaId, setOrdenSeleccionadaId } = useOrdenesContext();
 
@@ -68,13 +59,13 @@ export const OrdersTable = ({ orders, onEditOrder, onStatusChange }: OrdersTable
             <TableHead className="font-semibold">Estado</TableHead>
             <TableHead className="font-semibold">Pago</TableHead>
             <TableHead className="font-semibold text-right">Total</TableHead>
-            <TableHead className="font-semibold text-center">Acciones</TableHead>
+            <TableHead className="font-semibold text-center"></TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {orders.map((order) => (
             <TableRow key={order.id} className="hover:bg-gray-50 cursor-pointer" onClick={() => handleOrdenSeleccionada(order.id)}>
-              <TableCell className="font-medium">{order.id}</TableCell>
+              <TableCell className="font-medium pl-3">{order.id}</TableCell>
               <TableCell>{order.cliente}</TableCell>
               <TableCell>{formatDate(order.fecha_creacion_orden)}</TableCell>
               <TableCell>
@@ -101,61 +92,7 @@ export const OrdersTable = ({ orders, onEditOrder, onStatusChange }: OrdersTable
                   >
                     <Pencil className="h-4 w-4" />
                   </Button>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon" title="Más acciones">
-                        <MoreVertical className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-48">
-                      <DropdownMenuLabel>Cambiar Estado</DropdownMenuLabel>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem
-                        onClick={() => onStatusChange?.(order, "Pendiente")}
-                        disabled={order.estado_orden === "Pendiente"}
-                      >
-                        <RefreshCw className="h-4 w-4 mr-2" />
-                        Pendiente
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onClick={() => onStatusChange?.(order, "Confirmado")}
-                        disabled={order.estado_orden === "Confirmado"}
-                      >
-                        <RefreshCw className="h-4 w-4 mr-2" />
-                        Confirmado
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onClick={() => onStatusChange?.(order, "En Preparación")}
-                        disabled={order.estado_orden === "En Preparación"}
-                      >
-                        <RefreshCw className="h-4 w-4 mr-2" />
-                        En Preparación
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onClick={() => onStatusChange?.(order, "Listo para Entrega")}
-                        disabled={order.estado_orden === "Listo para Entrega"}
-                      >
-                        <RefreshCw className="h-4 w-4 mr-2" />
-                        Listo para Entrega
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onClick={() => onStatusChange?.(order, "Entregado")}
-                        disabled={order.estado_orden === "Entregado"}
-                      >
-                        <RefreshCw className="h-4 w-4 mr-2" />
-                        Entregado
-                      </DropdownMenuItem>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem
-                        onClick={() => onStatusChange?.(order, "Cancelado")}
-                        disabled={order.estado_orden === "Cancelado"}
-                        className="text-destructive"
-                      >
-                        <RefreshCw className="h-4 w-4 mr-2" />
-                        Cancelado
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+                  
                 </div>
               </TableCell>
             </TableRow>

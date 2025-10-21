@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Clientes, OrdenVenta, DetallesOrdenVenta   
+from .models import Clientes, OrdenVenta, DetallesOrdenVenta, Pagos   
 from apps.core.serializers import MetodosDePagoSerializer, EstadosOrdenVentaSerializer
 from apps.inventario.serializers import ProductosElaboradosSerializer, ProductosReventaSerializer
 
@@ -68,6 +68,11 @@ class ProductosOrdenesSerializer(serializers.Serializer):
 
 class OrdenesSerializer(serializers.ModelSerializer):
     productos = ProductosOrdenesSerializer(many=True)
+    referencia_pago = serializers.CharField(
+        required=False,
+        allow_blank=True
+    )
+
     class Meta:
         model = OrdenVenta
         fields = [
@@ -84,13 +89,17 @@ class OrdenesSerializer(serializers.ModelSerializer):
             'monto_descuento_usd', 
             'monto_impuestos_usd',
             'productos',
+            'referencia_pago',
         ]
+
+        
 
 class OrdenesDetallesSerializer(serializers.ModelSerializer):
     cliente = ClientesSerializer()
     estado_orden = EstadosOrdenVentaSerializer()
     metodo_pago = MetodosDePagoSerializer()
     productos = ProductosOrdenesSerializer(many=True)
+    referencia_pago = serializers.SerializerMethodField()
 
     class Meta:
         model = OrdenVenta
@@ -109,11 +118,14 @@ class OrdenesDetallesSerializer(serializers.ModelSerializer):
             'monto_descuento_usd', 
             'monto_impuestos_usd',
             'productos',
+            'referencia_pago',
         ]
+        extra_kwargs = {
+            'referencia_pago': {'read_only': True},
+        }
 
-    # def get_productos(self, instance):
-    #     productos = DetallesOrdenVenta.objects.filter(orden_venta_asociada=instance)
-    #     return VentaDetallesSerializer(productos, many=True).data
+    def get_referencia_pago(self, instance):
+        return Pagos.objects.filter(orden_venta_asociada=instance).values_list('referencia_pago', flat=True).first()
 
 
 class OrdenesTableSerializer(serializers.ModelSerializer):

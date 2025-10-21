@@ -2,7 +2,7 @@ import type { Orden } from "../types/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { OrdenesEstadoBadge } from "./OrdenesEstadoBadge";
 import { Button } from "@/components/ui/button";
-import { X, CheckCircle, Truck, XCircle } from "lucide-react";
+import { X, CheckCircle, XCircle, Banknote } from "lucide-react";
 
 import {
   Table,
@@ -33,10 +33,12 @@ export const OrdenDetalles = ({ orden, onClose }: OrderDetailsProps) => {
 
   const [estadoPendiente, setEstadoPendiente] = useState<Estados>(orden.estado_orden.nombre_estado as Estados);
 
-  const { mutateAsync: updateOrdenStatusMutation} = useUpdateOrdenStatusMutation();
+  const { mutateAsync: updateOrdenStatusMutation, isPending: isLoadingUpdateOrdenStatusMutation} = useUpdateOrdenStatusMutation();
 
   const { mutateAsync: registerPaymentReferenceMutation} = useRegisterPaymentReferenceMutation();
 
+ 
+  
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat("es-MX", {
       style: "currency",
@@ -48,7 +50,7 @@ export const OrdenDetalles = ({ orden, onClose }: OrderDetailsProps) => {
     // Si se está confirmando y el método de pago requiere referencia
     if (
       newStatus === "Completado" &&
-      (orden.metodo_pago.nombre_metodo === "Tarjeta" || orden.metodo_pago.nombre_metodo === "Transferencia")
+      ((orden.metodo_pago.nombre_metodo === "Tarjeta" || orden.metodo_pago.nombre_metodo === "Transferencia" || orden.metodo_pago.nombre_metodo === "Pago Movíl") && !orden.referencia_pago)
     ) {
       setShowReferenciaPagoDialog(true);
     } else {
@@ -58,23 +60,32 @@ export const OrdenDetalles = ({ orden, onClose }: OrderDetailsProps) => {
     }
   };
 
-
   const getStatusActions = () => {
-    switch (estadoPendiente) {
+    switch (estadoPendiente) {  
       case "Pendiente":
         return (
-          <Button onClick={() => handleStatusChange("En Proceso")} className="gap-2 bg-blue-600 text-white hover:bg-blue-700 cursor-pointer">
+          <Button disabled={isLoadingUpdateOrdenStatusMutation} onClick={() => handleStatusChange("En Proceso")} className="gap-2 bg-blue-600 text-white hover:bg-blue-700 cursor-pointer">
             <CheckCircle className="h-4 w-4" />
             Marcar como En Proceso
           </Button>
         );
       case "En Proceso":
+
+      if ((orden.metodo_pago.nombre_metodo === "Tarjeta" || orden.metodo_pago.nombre_metodo === "Transferencia" || orden.metodo_pago.nombre_metodo === "Pago Movíl") && !orden.referencia_pago) {
         return (
-          <Button onClick={() => handleStatusChange("Completado")} className="gap-2 bg-green-600 text-white hover:bg-green-700 cursor-pointer">
-            <Truck className="h-4 w-4" />
+          <Button disabled={isLoadingUpdateOrdenStatusMutation} onClick={() => handleStatusChange("Completado")} className="gap-2 bg-green-600 text-white hover:bg-green-700 cursor-pointer">
+            <Banknote className="h-4 w-4" />
+            Proveer Referencia de Pago
+          </Button>
+        );
+      } else {
+        return (
+          <Button disabled={isLoadingUpdateOrdenStatusMutation} onClick={() => handleStatusChange("Completado")} className="gap-2 bg-green-600 text-white hover:bg-green-700 cursor-pointer">
+            <CheckCircle className="h-4 w-4" />
             Marcar como Completado
           </Button>
         );
+      }
       default:
         return null;
     }
@@ -90,9 +101,9 @@ export const OrdenDetalles = ({ orden, onClose }: OrderDetailsProps) => {
     });
   };
 
-  const handleReferenciaPagoConfirm = (ordenId: number, referenciaPago: string) => {
+  const handleReferenciaPagoConfirm = async (ordenId: number, referenciaPago: string) => {
+    await registerPaymentReferenceMutation({ id: ordenId, referencia_pago: referenciaPago });
     setShowReferenciaPagoDialog(false)
-    registerPaymentReferenceMutation({ id: ordenId, referencia_pago: referenciaPago });
   };
 
   const handleCancelOrder = () => {
@@ -142,6 +153,12 @@ export const OrdenDetalles = ({ orden, onClose }: OrderDetailsProps) => {
                 <p className="text-sm text-muted-foreground">Método de Pago</p>
                 <p className="font-medium">{orden.metodo_pago.nombre_metodo}</p>
               </div>
+              {orden.referencia_pago && (
+                <div>
+                  <p className="text-sm text-muted-foreground">Referencia de Pago</p>
+                  <p className="font-medium">{orden.referencia_pago}</p>
+                </div>
+              )}
             </div>
 
             {/* Customer Details */}

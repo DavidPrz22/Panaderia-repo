@@ -41,6 +41,7 @@ const OrdenesIndex = () => {
     }
   }, [ordenSeleccionadaId, isFetched, setShowOrdenDetalles, ordenDetalles, showForm]);
 
+
   // Filter orders based on search term and status
   const filteredOrders = (ordenesTable || []).filter((order) => {
     // Search filter: match order ID or client name
@@ -81,16 +82,19 @@ const OrdenesIndex = () => {
   }
 
   if (showForm) {
-    const ordenToEdit = ordenSeleccionadaId ? ordenDetalles : undefined;
-    return (
-          <OrderForm
-            order={ordenToEdit}
-            onClose={() => {
-                setShowForm(false);
-                setOrdenSeleccionadaId(null);
-            }}
-          />
-    );
+  
+    if (!ordenSeleccionadaId || ordenDetalles) {
+      const ordenToEdit = ordenSeleccionadaId ? ordenDetalles : undefined;
+      return (
+            <OrderForm
+              order={ordenToEdit}
+              onClose={() => {
+                  setShowForm(false);
+                  setOrdenSeleccionadaId(null);
+              }}
+            />
+      );
+    }
   }
 
   return (
@@ -163,9 +167,9 @@ const OrdenesIndex = () => {
           <Card>
             <CardContent className="pt-6">
               <div className="text-2xl font-bold">
-                {ordenesTable?.filter((o) => o.estado_orden === "Entregado").length}
+                {ordenesTable?.filter((o) => o.estado_orden === "Completado").length}
               </div>
-              <p className="text-sm text-muted-foreground">Entregados</p>
+              <p className="text-sm text-muted-foreground">Completados</p>
             </CardContent>
           </Card>
         </div>
@@ -177,7 +181,6 @@ const OrdenesIndex = () => {
           <OrdersTable
             orders={filteredOrders}
             onEditOrder={handleEditOrder}
-            onStatusChange={()=>{}}
           />
         )}
 

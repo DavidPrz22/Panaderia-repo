@@ -73,6 +73,7 @@ export const OrderForm = ({ order, onClose }: OrderFormProps) => {
             monto_total_usd: order.monto_total_usd,
             monto_total_ves: order.monto_total_ves,
             tasa_cambio_aplicada: order.tasa_cambio_aplicada,
+            referencia_pago: order.referencia_pago,
           }
         : {
             fecha_creacion_orden: format(new Date(), "yyyy-MM-dd"),
@@ -85,6 +86,7 @@ export const OrderForm = ({ order, onClose }: OrderFormProps) => {
             monto_total_usd: 0,
             monto_total_ves: 0,
             tasa_cambio_aplicada: 0,
+            referencia_pago: "",
           },
   });
 
@@ -286,6 +288,7 @@ export const OrderForm = ({ order, onClose }: OrderFormProps) => {
                 label="Fecha de Entrega Definitiva" 
                 value={watch("fecha_entrega_definitiva")!} 
                 onChange={(v) => setValue("fecha_entrega_definitiva", v)} 
+                optional
               />
 
               {/* Estado de la Orden */}
@@ -306,6 +309,17 @@ export const OrderForm = ({ order, onClose }: OrderFormProps) => {
                       <SelectItem key={metodo.id} value={metodo.id.toString()}>{metodo.nombre_metodo}</SelectItem>
                     ))}
                 </OrdenesFormSelect>
+              </div>
+              {/* Referencia de Pago */}
+              <div className="space-y-2">
+                <Label htmlFor="payment">Referencia de Pago (Opcional)</Label>
+                <Input
+                  id="payment"
+                  type="text"
+                  value={watch("referencia_pago")}
+                  onChange={(e) => setValue("referencia_pago", e.target.value)}
+                  placeholder="Referencia de Pago"
+                />
               </div>
             </div>
 

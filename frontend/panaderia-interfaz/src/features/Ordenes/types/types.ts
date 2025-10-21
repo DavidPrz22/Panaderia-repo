@@ -82,6 +82,7 @@ export interface Orden {
   notas_generales?: string;
   created_at: string;
   updated_at: string;
+  referencia_pago?: string;
 }
 
 
