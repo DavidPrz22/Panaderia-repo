@@ -23,6 +23,7 @@ import type { Estados } from "../types/types";
 import { ReferenciaPagoDialog } from "./ReferenciaPagoDialog";
 import { CancelOrderDialog } from "./CancelOrderDialog";
 import { useOrdenesContext } from "@/context/OrdenesContext";
+import { useCancelOrdenMutation } from "../hooks/mutations/mutations";
 import { useState } from "react";
 
 import { useRegisterPaymentReferenceMutation, useUpdateOrdenStatusMutation } from "../hooks/mutations/mutations";
@@ -37,6 +38,7 @@ export const OrdenDetalles = ({ orden, onClose }: OrderDetailsProps) => {
 
   const { mutateAsync: registerPaymentReferenceMutation} = useRegisterPaymentReferenceMutation();
 
+  const { mutateAsync: cancelOrdenMutation} = useCancelOrdenMutation();
  
   
   const formatCurrency = (amount: number) => {
@@ -102,12 +104,25 @@ export const OrdenDetalles = ({ orden, onClose }: OrderDetailsProps) => {
   };
 
   const handleReferenciaPagoConfirm = async (ordenId: number, referenciaPago: string) => {
-    await registerPaymentReferenceMutation({ id: ordenId, referencia_pago: referenciaPago });
-    setShowReferenciaPagoDialog(false)
+    try {
+      await registerPaymentReferenceMutation({ id: ordenId, referencia_pago: referenciaPago });
+      toast.success(`Referencia de pago registrada correctamente`);
+      setShowReferenciaPagoDialog(false)
+    } catch (error) {
+      console.error("Error registering payment reference:", error);
+      toast.error(`Error registrando referencia de pago`);
+    }
   };
 
-  const handleCancelOrder = () => {
-    setShowCancelDialog(false);
+  const handleCancelOrder = async () => {
+    try {
+      await cancelOrdenMutation(orden.id);
+      toast.success(`Orden cancelada correctamente`);
+      setShowCancelDialog(false);
+    } catch (error) {
+      console.error("Error canceling orden:", error);
+      toast.error(`Error cancelando orden`);
+    }
   };
 
   return (

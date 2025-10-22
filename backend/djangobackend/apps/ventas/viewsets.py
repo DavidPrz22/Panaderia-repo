@@ -239,7 +239,7 @@ class OrdenesViewSet(viewsets.ModelViewSet):
 
 
     @action(detail=True, methods=['put'])
-    def cancel_order(self, request, pk=None):
+    def cancel(self, request, pk=None):
         orden = OrdenVenta.objects.get(id=pk)
 
         if orden.estado_orden.nombre_estado == 'En Proceso':

@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { getOrdenProductosSearch, createOrden, updateOrden, updateOrdenStatus, registerPaymentReference } from "../../api/api";
+import { getOrdenProductosSearch, createOrden, updateOrden, updateOrdenStatus, registerPaymentReference, cancelOrden } from "../../api/api";
 import type { TOrderSchema } from "../../schema/schema";
 import { ordenesDetallesQueryOptions, ordenesTableQueryOptions } from "../queries/queryOptions";
 
@@ -52,6 +52,20 @@ export const useUpdateOrdenStatusMutation = () => {
     },
     onError: (error) => {
         console.error("Error updating orden:", error);
+    },
+  });
+};
+
+export const useCancelOrdenMutation = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+    mutationFn: (id: number) => cancelOrden(id),
+    onSuccess: (_, id) => {
+        queryClient.invalidateQueries({ queryKey: ordenesTableQueryOptions.queryKey });
+        queryClient.invalidateQueries({ queryKey: ordenesDetallesQueryOptions(id).queryKey });
+    },
+    onError: (error) => {
+        console.error("Error canceling orden:", error);
     },
   });
 };

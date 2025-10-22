@@ -108,6 +108,15 @@ export const getOrdenes = async () : Promise<OrdenTable[]> => {
     }
 };
 
+export const cancelOrden = async (id: number) => {
+    try {
+        const response = await apiClient.put(`/api/ordenes/${id}/cancel/`);
+        return response.data;
+    } catch (error) {
+        console.error("Error canceling orden:", error);
+        throw error;
+    }
+};
 export const getOrdenesDetalles = async (id: number) : Promise<Orden> => {
     try {
         const response = await apiClient.get(`/api/ordenes/${id}/get_orden_detalles/`);
