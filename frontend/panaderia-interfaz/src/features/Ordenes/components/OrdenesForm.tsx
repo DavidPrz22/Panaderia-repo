@@ -73,7 +73,7 @@ export const OrderForm = ({ order, onClose }: OrderFormProps) => {
             monto_total_usd: order.monto_total_usd,
             monto_total_ves: order.monto_total_ves,
             tasa_cambio_aplicada: order.tasa_cambio_aplicada,
-            referencia_pago: order.referencia_pago,
+            referencia_pago: order.referencia_pago ?? undefined,
           }
         : {
             fecha_creacion_orden: format(new Date(), "yyyy-MM-dd"),
