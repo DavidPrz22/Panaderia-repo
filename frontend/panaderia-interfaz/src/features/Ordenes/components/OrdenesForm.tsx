@@ -94,7 +94,7 @@ export const OrderForm = ({ order, onClose }: OrderFormProps) => {
   const [{ data: clientes }, { data: metodosDePago }] = useGetParametros();
   const { data: estadosOrden } = useGetEstadosOrdenRegistro();
   const { data: bcvRate } = useGetBCVRate();
-
+  console.log( watch())
   const { mutateAsync: createOrdenMutation, isPending: isCreatingOrden } = useCreateOrdenMutation();
   const { mutateAsync: updateOrdenMutation, isPending: isUpdatingOrden } = useUpdateOrdenMutation();
 
@@ -317,9 +317,9 @@ export const OrderForm = ({ order, onClose }: OrderFormProps) => {
                 <Input
                   id="payment"
                   type="text"
-                  value={watch("referencia_pago")}
+                  value={watch("referencia_pago") ?? ""}
                   className="focus-visible:ring-blue-200"
-                  onChange={(e) => setValue("referencia_pago", e.target.value)}
+                  onChange={(e) => setValue("referencia_pago", e.target.value || undefined)}
                   placeholder="Referencia de Pago"
                 />
               </div>

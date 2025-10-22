@@ -34,7 +34,7 @@ export const orderSchema = z.object({
     tasa_cambio_aplicada: z.number().min(0, "La tasa de cambio es requerida"),
     metodo_pago: z.number().min(0, "El ID del método de pago es requerido"),
     productos: z.array(productSchema),
-    referencia_pago: z.string().optional(),
+    referencia_pago: z.string().nullish().transform(val => !val ? undefined : val),
 });
 
 export type TOrderSchema = z.infer<typeof orderSchema>;

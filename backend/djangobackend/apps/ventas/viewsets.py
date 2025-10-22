@@ -29,7 +29,7 @@ class OrdenesViewSet(viewsets.ModelViewSet):
             # Extract and remove productos from validated_data
             validated_data = serializer.validated_data.copy()
             productos_orden = validated_data.pop('productos')
-            referencia_pago = validated_data.pop('referencia_pago')
+            referencia_pago = validated_data.pop('referencia_pago', None)
             
             # Add user creator
             validated_data['usuario_creador_id'] = request.user.id if request.user.id else 2
@@ -91,7 +91,6 @@ class OrdenesViewSet(viewsets.ModelViewSet):
             DetallesOrdenVenta.objects.bulk_create(detalles_to_create)
 
             # Register payment if reference is provided
-            referencia_pago = request.data.get('referencia_pago')
             if referencia_pago:
                 self.register_payment(orden_venta, referencia_pago, request.user)
 
@@ -127,9 +126,10 @@ class OrdenesViewSet(viewsets.ModelViewSet):
             validated_data = serializer.validated_data.copy()
             productos_orden = validated_data.pop('productos')
             
-            # Update payment reference
-            referencia_pago = validated_data.pop('referencia_pago')
-            self.update_payment(instance, referencia_pago, request.user)
+            # Update payment reference (allow clearing by setting to None/empty)
+            if 'referencia_pago' in serializer.validated_data:
+                referencia_pago = validated_data.pop('referencia_pago', None)
+                self.update_payment(instance, referencia_pago, request.user)
 
             # Update the order fields
             for attr, value in validated_data.items():
@@ -298,8 +298,13 @@ class OrdenesViewSet(viewsets.ModelViewSet):
 
     def update_payment(self, orden, ref, user):
         try:
-            Pagos.objects.filter(orden_venta_asociada=orden).update(referencia_pago=ref, usuario_registrador=user)
-            
+            existing_payment = Pagos.objects.filter(orden_venta_asociada=orden).first()
+            if existing_payment:
+                existing_payment.referencia_pago = ref
+                existing_payment.usuario_registrador = user
+                existing_payment.save()
+            elif ref: 
+                self.register_payment(orden, ref, user)
             return True
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
