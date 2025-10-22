@@ -215,6 +215,7 @@ export const OrderForm = ({ order, onClose }: OrderFormProps) => {
   const handleSubmitForm = async (data: TOrderSchema) => {
     try {
       if (isEdit && order) {
+    
         await updateOrdenMutation({ id: order.id, data });
         toast.success("Orden actualizada exitosamente");
       } else {
@@ -317,6 +318,7 @@ export const OrderForm = ({ order, onClose }: OrderFormProps) => {
                   id="payment"
                   type="text"
                   value={watch("referencia_pago")}
+                  className="focus-visible:ring-blue-200"
                   onChange={(e) => setValue("referencia_pago", e.target.value)}
                   placeholder="Referencia de Pago"
                 />
@@ -396,6 +398,7 @@ export const OrderForm = ({ order, onClose }: OrderFormProps) => {
                             type="number"
                             min="0"
                             step="1"
+                            className="focus-visible:ring-blue-200"
                             defaultValue={item.cantidad_solicitada}
                             onChange={(e) =>
                               {
@@ -434,7 +437,7 @@ export const OrderForm = ({ order, onClose }: OrderFormProps) => {
                             min="0"
                             max="100"
                             step="0.1"
-                            className="p-1.5"
+                            className="p-1.5 focus-visible:ring-blue-200"
                             defaultValue={item.descuento_porcentaje}
                             onChange={(e) => handleUpdate(e, item, 'descuento_porcentaje', 'descuento_porcentaje')}
                           />
@@ -445,7 +448,7 @@ export const OrderForm = ({ order, onClose }: OrderFormProps) => {
                             min="0"
                             max="100"
                             step="0.1"
-                            className="p-1.5"
+                            className="p-1.5 focus-visible:ring-blue-200"
                             defaultValue={item.impuesto_porcentaje}
                             onChange={(e) => handleUpdate(e, item, 'impuesto_porcentaje', 'impuesto_porcentaje')}
                           />

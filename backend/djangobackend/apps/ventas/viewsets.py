@@ -126,6 +126,10 @@ class OrdenesViewSet(viewsets.ModelViewSet):
             validated_data = serializer.validated_data.copy()
             productos_orden = validated_data.pop('productos')
             
+            # Update payment reference
+            referencia_pago = validated_data.pop('referencia_pago')
+            self.update_payment(instance, referencia_pago, request.user)
+
             # Update the order fields
             for attr, value in validated_data.items():
                 setattr(instance, attr, value)
@@ -249,7 +253,7 @@ class OrdenesViewSet(viewsets.ModelViewSet):
 
     def register_payment(self, orden, ref, user):
         try:
-            pay = Pagos.objects.create(
+            Pagos.objects.create(
                 orden_venta_asociada=orden,
                 metodo_pago=orden.metodo_pago,
                 monto_pago_usd=orden.monto_total_usd,
@@ -262,8 +266,16 @@ class OrdenesViewSet(viewsets.ModelViewSet):
             return True
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
-             
-    @action(detail=True, methods=['put'])
+
+    def update_payment(self, orden, ref, user):
+        try:
+            Pagos.objects.filter(orden_venta_asociada=orden).update(referencia_pago=ref, usuario_registrador=user)
+            
+            return True
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+    
+    @action(detail=True, methods=['post'])
     def register_payment_reference(self, request, pk=None):
         orden = OrdenVenta.objects.get(id=pk)
         ref = request.data.get('referencia_pago')
