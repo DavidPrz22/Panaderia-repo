@@ -38,7 +38,7 @@ export const OrdenDetalles = ({ orden, onClose }: OrderDetailsProps) => {
 
   const { mutateAsync: registerPaymentReferenceMutation} = useRegisterPaymentReferenceMutation();
 
-  const { mutateAsync: cancelOrdenMutation} = useCancelOrdenMutation();
+  const { mutateAsync: cancelOrdenMutation, isPending: isLoadingCancelOrdenMutation} = useCancelOrdenMutation();
  
   
   const formatCurrency = (amount: number) => {
@@ -119,12 +119,12 @@ export const OrdenDetalles = ({ orden, onClose }: OrderDetailsProps) => {
       await cancelOrdenMutation(orden.id);
       toast.success(`Orden cancelada correctamente`);
       setShowCancelDialog(false);
+      setEstadoPendiente("Cancelado");
     } catch (error) {
       console.error("Error canceling orden:", error);
       toast.error(`Error cancelando orden`);
     }
   };
-
   return (
     <>
       <div className="flex items-center justify-center p-4">
@@ -136,6 +136,7 @@ export const OrdenDetalles = ({ orden, onClose }: OrderDetailsProps) => {
             </div>
             <div className="flex items-center gap-2">
               {getStatusActions()}
+
               {orden.estado_orden.nombre_estado !== "Completado" && orden.estado_orden.nombre_estado !== "Cancelado" && (
                 <Button 
                   variant="destructive" 
@@ -285,6 +286,7 @@ export const OrdenDetalles = ({ orden, onClose }: OrderDetailsProps) => {
         onOpenChange={setShowCancelDialog}
         onConfirm={handleCancelOrder}
         orderId={orden.id}
+        isLoadingCancelOrdenMutation={isLoadingCancelOrdenMutation}
       />
     </>
   );

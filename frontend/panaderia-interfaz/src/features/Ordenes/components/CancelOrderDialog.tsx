@@ -5,9 +5,10 @@ interface CancelOrderDialogProps {
   onOpenChange: (open: boolean) => void;
   onConfirm: () => void;
   orderId: number;
+  isLoadingCancelOrdenMutation: boolean;
 }
 
-export const CancelOrderDialog = ({ open, onOpenChange, onConfirm, orderId }: CancelOrderDialogProps) => {
+export const CancelOrderDialog = ({ open, onOpenChange, onConfirm, orderId, isLoadingCancelOrdenMutation }: CancelOrderDialogProps) => {
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange} >
       <AlertDialogContent>
@@ -25,6 +26,7 @@ export const CancelOrderDialog = ({ open, onOpenChange, onConfirm, orderId }: Ca
           <AlertDialogAction 
             onClick={onConfirm} 
             className="bg-destructive text-white hover:bg-destructive/90"
+            disabled={isLoadingCancelOrdenMutation}
           >
             Sí, cancelar orden
           </AlertDialogAction>

@@ -9,6 +9,7 @@ from rest_framework import status
 from apps.ventas.serializers import OrdenesTableSerializer
 from rest_framework.decorators import action
 from datetime import datetime
+from apps.inventario.models import LotesStatus
 
 class ClientesViewSet(viewsets.ModelViewSet):
     queryset = Clientes.objects.all()
@@ -240,17 +241,45 @@ class OrdenesViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=['put'])
     def cancel(self, request, pk=None):
-        orden = OrdenVenta.objects.get(id=pk)
+        try:
+            with transaction.atomic():
+                orden = OrdenVenta.objects.get(id=pk)
 
-        if orden.estado_orden.nombre_estado == 'En Proceso':
+                if orden.estado_orden.nombre_estado == 'En Proceso':
 
-            orden.estado_orden = EstadosOrdenVenta.objects.filter(nombre_estado='Cancelado').values_list('id', flat=True).first()
-            orden.save()
-            return Response(status=status.HTTP_200_OK)
+                    consumo_lote = OrdenConsumoLote.objects.filter(orden_venta_asociada=orden)
+                    consumo_lote_detalle = OrdenConsumoLoteDetalle.objects.filter(orden_consumo_lote__in=consumo_lote)
+
+                    for lote in consumo_lote_detalle:
+                        if lote.lote_producto_elaborado:
+                            self.actualizar_lote(lote.lote_producto_elaborado, lote.cantidad_consumida)
+                            lote.lote_producto_elaborado.producto_elaborado.actualizar_product_stock()
+
+                        elif lote.lote_producto_reventa:
+                            self.actualizar_lote(lote.lote_producto_reventa, lote.cantidad_consumida)
+                            lote.lote_producto_reventa.producto_reventa.actualizar_product_stock()
+            
+                    orden.estado_orden = EstadosOrdenVenta.objects.filter(nombre_estado='Cancelado').first()
+                    orden.save()
+                    return Response(status=status.HTTP_200_OK)
+                elif orden.estado_orden.nombre_estado == 'Pendiente':
+                    orden.estado_orden = EstadosOrdenVenta.objects.filter(nombre_estado='Cancelado').first()
+                    orden.save()
+                    return Response(status=status.HTTP_200_OK)
+                return Response({"error": "No se puede cancelar una orden que no está en proceso"}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+    def actualizar_lote(self, lote, cantidad_consumida):
+        # Restore the consumed quantity back to the lot
+        lote.stock_actual_lote += cantidad_consumida
         
-        return Response({"error": "No se puede cancelar una orden que no está en proceso"}, status=status.HTTP_400_BAD_REQUEST)
-
-
+        # If the lot was marked as depleted, make it available again
+        if lote.estado == LotesStatus.AGOTADO:
+            lote.estado = LotesStatus.DISPONIBLE
+        
+        lote.save()
+    
     def register_payment(self, orden, ref, user):
         try:
             Pagos.objects.create(
@@ -275,7 +304,7 @@ class OrdenesViewSet(viewsets.ModelViewSet):
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
     
-    @action(detail=True, methods=['post'])
+    @action(detail=True, methods=['put'])
     def register_payment_reference(self, request, pk=None):
         orden = OrdenVenta.objects.get(id=pk)
         ref = request.data.get('referencia_pago')
