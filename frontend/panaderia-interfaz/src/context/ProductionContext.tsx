@@ -43,6 +43,8 @@ type ProductionContextType = {
     setMedidaFisica: (value: "UNIDAD" | "PESO" | "VOLUMEN" | null) => void;
     esPorUnidad: boolean | null;
     setEsPorUnidad: (value: boolean | null) => void;
+    detailPage: number;
+    setDetailPage: (value: number) => void;
 };
 
 const ProductionContextProvider = createContext<ProductionContextType | null>(null);
@@ -70,7 +72,7 @@ export function ProductionProvider({ children }: { children: React.ReactNode }) 
   const productUnitRef = useRef<HTMLDivElement | null>(null);
   const [medidaFisica, setMedidaFisica] = useState<"UNIDAD" | "PESO" | "VOLUMEN" | null>(null);
   const [esPorUnidad, setEsPorUnidad] = useState<boolean | null>(null);
-
+  const [detailPage, setDetailPage] = useState<number>(1);
   return (
     <ProductionContextProvider.Provider value={{
       productType,
@@ -113,7 +115,9 @@ export function ProductionProvider({ children }: { children: React.ReactNode }) 
       setMedidaFisica,
       esPorUnidad,
       setEsPorUnidad,
-    }}>
+      detailPage,
+      setDetailPage,
+      }}>
         {children}
     </ProductionContextProvider.Provider>
     );

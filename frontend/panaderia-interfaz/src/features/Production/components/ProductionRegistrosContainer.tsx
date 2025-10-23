@@ -5,12 +5,12 @@ import Title from "@/components/Title";
 import { ProductionRecord } from "./ProductionRecord";
 import { useProductionDetailsQuery } from "../hooks/queries/ProductionQueries";
 import { PendingTubeSpinner } from "@/components/PendingTubeSpinner";
+import { ProductionPagination } from "./ProductionPagination";
 
 export const ProductionRegistrosContainer = () => {
 
-  const { data: productionDetails, isPending } = useProductionDetailsQuery();
+  const { data: productionDetails, isPending } = useProductionDetailsQuery(); 
   const { setIsClosingModal, isClosingModal } = useProductionContext();
-
   return (
     <div
       className={`w-[80%] h-[85%] max-h-[85%] p-6 bg-white shadow-lg overflow-auto relative rounded-lg ${isClosingModal ? "animate-fadeOut" : "animate-fadeIn"}`}
@@ -25,6 +25,7 @@ export const ProductionRegistrosContainer = () => {
           <img src={CerrarIcon} className="size-4" alt="close" />
         </Button>
       </div>
+      
 
       <div className="font-[Roboto] mb-2">
         <h2 className="text-lg font-semibold">Productiones Registradas</h2>
@@ -33,6 +34,7 @@ export const ProductionRegistrosContainer = () => {
         </h1>
       </div>
 
+      <ProductionPagination  />
       <div className="w-full p-5 border border-gray-300 rounded-lg mt-4">
         <div className="flex items-center space-x-2 mb-5">
           <img src={DotMenuIcon} alt="menu" className="size-4" />
@@ -43,8 +45,8 @@ export const ProductionRegistrosContainer = () => {
             isPending ? (
               <PendingTubeSpinner size={40} extraClass="bg-white opacity-50 w-full h-full" />
             ) : (
-            productionDetails?.length && productionDetails?.length > 0 ? (
-              productionDetails?.map((production) => (
+            productionDetails?.data?.length && productionDetails?.data?.length > 0 ? (
+              productionDetails?.data?.map((production) => (
                 <ProductionRecord key={production.id} production={production} />
               ))
           ) : (

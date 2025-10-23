@@ -394,3 +394,22 @@ class ProduccionesViewSet(viewsets.ModelViewSet):
 class ProduccionDetallesViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Produccion.objects.all()
     serializer_class = ProduccionDetallesSerializer
+
+    def list(self, request, *args, **kwargs):
+        
+        offset = 10
+        page = int(request.query_params.get('page', 1))
+        start = (page - 1) * offset
+        end = start + offset
+
+        queryset = Produccion.objects.order_by('-id')[start:end]
+        serializer = self.get_serializer(queryset, many=True)
+        
+        total_count = Produccion.objects.count()
+        
+        return Response({
+            "data": serializer.data, 
+            "page": page,
+            "total_count": total_count,
+            "total_pages": (total_count + offset - 1) // offset
+        })
