@@ -113,3 +113,10 @@ export type OrdenProductoSearch = {
 export type OrdenProductosSearch = {
   productos: OrdenProductoSearch[];
 }
+
+export type CancelOrdenResponse = {
+  message: string;
+  warning?: string;
+  lotes_expirados?: any;
+  error?: string;
+}

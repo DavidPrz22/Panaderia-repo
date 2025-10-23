@@ -135,7 +135,7 @@ class OrdenVenta(models.Model):
     cliente = models.ForeignKey(Clientes, on_delete=models.CASCADE, null=False, blank=False)
     fecha_creacion_orden = models.DateField(null=False, blank=False)
     fecha_entrega_solicitada = models.DateField(null=False, blank=False)
-    fecha_entrega_definitiva = models.DateField(null=False, blank=False)
+    fecha_entrega_definitiva = models.DateField(null=True, blank=True)
     usuario_creador = models.ForeignKey(User, on_delete=models.CASCADE, null=False, blank=False)
     notas_generales = models.TextField(max_length=255, null=True, blank=True)
     monto_descuento_usd = models.DecimalField(max_digits=10, decimal_places=3, null=True, blank=True, default=0)

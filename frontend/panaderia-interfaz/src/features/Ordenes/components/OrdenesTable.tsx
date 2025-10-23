@@ -63,8 +63,8 @@ export const OrdersTable = ({ orders, onEditOrder }: OrdersTableProps) => {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {orders.map((order) => (
-            <TableRow key={order.id} className="hover:bg-gray-50 cursor-pointer" onClick={() => handleOrdenSeleccionada(order.id)}>
+          {orders.map((order, index) => (
+            <TableRow key={order.id} className={`hover:bg-gray-100 cursor-pointer ${index % 2 !== 0 ? "bg-gray-50" : ""}`} onClick={() => handleOrdenSeleccionada(order.id)}>
               <TableCell className="font-medium pl-3">{order.id}</TableCell>
               <TableCell>{order.cliente}</TableCell>
               <TableCell>{formatDate(order.fecha_creacion_orden)}</TableCell>

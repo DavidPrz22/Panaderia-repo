@@ -238,9 +238,7 @@ export const OrderForm = ({ order, onClose }: OrderFormProps) => {
   return (
     <div className="p-6 relative">
       {(isCreatingOrden || isUpdatingOrden) && (
-        <div className="absolute flex justify-center items-center h-full w-full">
-          <PendingTubeSpinner size={28} extraClass="bg-white opacity-50" />
-        </div>
+        <PendingTubeSpinner size={20} extraClass="absolute top-0 left-0 w-full h-full flex justify-center items-center bg-white opacity-50 z-50" />
       )}
       <Card className="w-full max-w-6xl mx-auto">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4 border-b bg-card">

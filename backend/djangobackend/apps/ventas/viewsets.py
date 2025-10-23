@@ -9,6 +9,7 @@ from rest_framework import status
 from apps.ventas.serializers import OrdenesTableSerializer
 from rest_framework.decorators import action
 from datetime import datetime
+from django.utils import timezone
 from apps.inventario.models import LotesStatus
 
 class ClientesViewSet(viewsets.ModelViewSet):
@@ -244,7 +245,7 @@ class OrdenesViewSet(viewsets.ModelViewSet):
         try:
             with transaction.atomic():
                 orden = OrdenVenta.objects.get(id=pk)
-
+                lotes_expirados = []
                 if orden.estado_orden.nombre_estado == 'En Proceso':
 
                     consumo_lote = OrdenConsumoLote.objects.filter(orden_venta_asociada=orden)
@@ -252,26 +253,55 @@ class OrdenesViewSet(viewsets.ModelViewSet):
 
                     for lote in consumo_lote_detalle:
                         if lote.lote_producto_elaborado:
-                            self.actualizar_lote(lote.lote_producto_elaborado, lote.cantidad_consumida)
+                            lote_expirado = self.actualizar_lote(lote.lote_producto_elaborado, lote.cantidad_consumida)
+                            if lote_expirado:
+                                lotes_expirados.append(lote_expirado)
+                            
                             lote.lote_producto_elaborado.producto_elaborado.actualizar_product_stock()
 
                         elif lote.lote_producto_reventa:
-                            self.actualizar_lote(lote.lote_producto_reventa, lote.cantidad_consumida)
+                            lote_expirado = self.actualizar_lote(lote.lote_producto_reventa, lote.cantidad_consumida)
+                            if lote_expirado:
+                                lotes_expirados.append(lote_expirado)
                             lote.lote_producto_reventa.producto_reventa.actualizar_product_stock()
             
                     orden.estado_orden = EstadosOrdenVenta.objects.filter(nombre_estado='Cancelado').first()
                     orden.save()
-                    return Response(status=status.HTTP_200_OK)
+                    
+                    if lotes_expirados:
+                        return Response({
+                            "message": "Orden cancelada exitosamente",
+                            "warning": "Algunos lotes no pudieron ser reabastecidos porque están vencidos",
+                            "lotes_expirados": lotes_expirados
+                        }, status=status.HTTP_200_OK)
+                    
+                    return Response({"message": "Orden cancelada exitosamente"}, status=status.HTTP_200_OK)
+                
                 elif orden.estado_orden.nombre_estado == 'Pendiente':
                     orden.estado_orden = EstadosOrdenVenta.objects.filter(nombre_estado='Cancelado').first()
                     orden.save()
-                    return Response(status=status.HTTP_200_OK)
+                    return Response({"message": "Orden cancelada exitosamente"}, status=status.HTTP_200_OK)
                 return Response({"error": "No se puede cancelar una orden que no está en proceso"}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
     def actualizar_lote(self, lote, cantidad_consumida):
         # Restore the consumed quantity back to the lot
+        if (lote.fecha_caducidad < timezone.now().date()):
+            # Determine product name based on lot type
+            if hasattr(lote, 'producto_elaborado') and lote.producto_elaborado:
+                producto_nombre = lote.producto_elaborado.nombre_producto
+            elif hasattr(lote, 'producto_reventa') and lote.producto_reventa:
+                producto_nombre = lote.producto_reventa.nombre_producto
+            else:
+                producto_nombre = 'Producto desconocido'
+            
+            return {
+                'lote_expirado': lote.id, 
+                'producto': producto_nombre,
+                'fecha_caducidad': lote.fecha_caducidad.strftime('%Y-%m-%d')
+            }
+        
         lote.stock_actual_lote += cantidad_consumida
         
         # If the lot was marked as depleted, make it available again

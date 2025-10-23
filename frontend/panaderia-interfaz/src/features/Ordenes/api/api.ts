@@ -1,5 +1,5 @@
 import apiClient from "@/api/client";
-import type { Cliente, EstadoOrden, MetodoPago, OrdenProductosSearch, OrdenTable, Orden } from "../types/types";
+import type { Cliente, EstadoOrden, MetodoPago, OrdenProductosSearch, OrdenTable, Orden, CancelOrdenResponse } from "../types/types";
 import axios from "axios";
 import type { TOrderSchema } from "../schema/schema";
 
@@ -108,7 +108,7 @@ export const getOrdenes = async () : Promise<OrdenTable[]> => {
     }
 };
 
-export const cancelOrden = async (id: number) => {
+export const cancelOrden = async (id: number) : Promise<CancelOrdenResponse> => {
     try {
         const response = await apiClient.put(`/api/ordenes/${id}/cancel/`);
         return response.data;

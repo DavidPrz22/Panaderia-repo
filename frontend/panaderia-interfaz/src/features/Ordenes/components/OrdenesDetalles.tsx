@@ -56,9 +56,13 @@ export const OrdenDetalles = ({ orden, onClose }: OrderDetailsProps) => {
     ) {
       setShowReferenciaPagoDialog(true);
     } else {
-      setEstadoPendiente(newStatus);
-      await updateOrdenStatusMutation({ id: orden.id, estado: newStatus });
-      toast.success(`Orden marcada como ${newStatus}`);
+      try {
+        await updateOrdenStatusMutation({ id: orden.id, estado: newStatus });
+        toast.success(`Orden marcada como ${newStatus}`);
+        setEstadoPendiente(newStatus);
+      } catch (error) {
+        toast.error(`Error marcando orden como ${newStatus}`);
+      }
     }
   };
 
@@ -116,13 +120,18 @@ export const OrdenDetalles = ({ orden, onClose }: OrderDetailsProps) => {
 
   const handleCancelOrder = async () => {
     try {
-      await cancelOrdenMutation(orden.id);
-      toast.success(`Orden cancelada correctamente`);
+      const response = await cancelOrdenMutation(orden.id);
+      toast.success(response.message);
+      if (response.warning) {
+        const lotes_expirados = response.lotes_expirados ? response.lotes_expirados.map((lote : {lote_expirado: number, producto: string, fecha_caducidad: string}) => `Lote expirado id: ${lote.lote_expirado} \n Para el producto: ${lote.producto} \n Con fecha de caducidad: ${lote.fecha_caducidad}`) : [];
+        toast.warning(response.warning + "\n" + lotes_expirados.join("\n"), {
+          duration: 5000,
+        });
+      }
       setShowCancelDialog(false);
       setEstadoPendiente("Cancelado");
-    } catch (error) {
-      console.error("Error canceling orden:", error);
-      toast.error(`Error cancelando orden`);
+    } catch (error : any) {
+      toast.error("Error cancelando orden");
     }
   };
   return (
