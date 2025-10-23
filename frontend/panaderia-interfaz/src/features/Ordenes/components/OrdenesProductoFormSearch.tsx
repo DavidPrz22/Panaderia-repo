@@ -24,6 +24,7 @@ export function OrdenesProductoFormSearch({ value, onChange }: { value: string, 
   const [open, setOpen] = useState(false)
   const [timer, setTimer] = useState<NodeJS.Timeout | null>(null)
   const { data: dataProductosPedido, mutate: searchProductosPedido } = useProductosPedidoSearchMutation()
+  
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild >
@@ -41,13 +42,18 @@ export function OrdenesProductoFormSearch({ value, onChange }: { value: string, 
       <PopoverContent className="w-[300px] p-0">
         <Command>
           <CommandInput placeholder="Buscar producto..." onValueChange={(e: string) => {
-            if (e === "") return;
+            const searchTerm = e.trim()
+            if (searchTerm === "") return;
             if (timer) clearTimeout(timer)
-            const timerRef = setTimeout(() => searchProductosPedido(e), 1000)
+            const timerRef = setTimeout(() => searchProductosPedido(searchTerm), 1000)
             setTimer(timerRef)
           }} />
           <CommandList>
-            <CommandEmpty className="pl-10">...</CommandEmpty>
+            {dataProductosPedido?.productos.length === 0 ? (
+              <CommandEmpty className="p-2 text-sm">No se encontraron resultados</CommandEmpty>
+            ): 
+            <CommandEmpty className="p-2 text-sm">Resultados de busqueda...</CommandEmpty>
+            } 
             <CommandGroup>
               {dataProductosPedido?.productos.map((dataValue) => (
                 <CommandItem

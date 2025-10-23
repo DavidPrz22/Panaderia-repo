@@ -52,6 +52,7 @@ export const getOrdenProductosSearch = async (search: string) : Promise<OrdenPro
                 search,
             },
         });
+        console.log(response.data);
         return response.data;
     } catch (error) {
         console.error("Error fetching orden productos search:", error);
