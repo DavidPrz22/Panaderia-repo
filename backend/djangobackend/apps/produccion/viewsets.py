@@ -402,7 +402,7 @@ class ProduccionDetallesViewSet(viewsets.ReadOnlyModelViewSet):
         start = (page - 1) * offset
         end = start + offset
 
-        queryset = Produccion.objects.order_by('-id')[start:end]
+        queryset = Produccion.objects.order_by('-fecha_produccion', '-id')[start:end]
         serializer = self.get_serializer(queryset, many=True)
         
         total_count = Produccion.objects.count()

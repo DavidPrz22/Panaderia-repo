@@ -35,22 +35,22 @@ export const ProductionRegistrosContainer = () => {
       </div>
 
       <ProductionPagination  />
-      <div className="w-full p-5 border border-gray-300 rounded-lg mt-4">
+      <div className="w-full p-5 border border-gray-300 rounded-lg mt-4 min-h-[70vh] relative">
         <div className="flex items-center space-x-2 mb-5">
           <img src={DotMenuIcon} alt="menu" className="size-4" />
           <Title>Producciones Registradas</Title>
         </div>
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-4 ">
           {
             isPending ? (
-              <PendingTubeSpinner size={40} extraClass="bg-white opacity-50 w-full h-full" />
+              <PendingTubeSpinner size={40} extraClass="absolute bg-white opacity-50 w-full h-full flex items-center justify-center" />
             ) : (
             productionDetails?.data?.length && productionDetails?.data?.length > 0 ? (
               productionDetails?.data?.map((production) => (
                 <ProductionRecord key={production.id} production={production} />
               ))
           ) : (
-              <div className="text-center py-8 text-muted-foreground">
+              <div className="text-center py-8 text-muted-foreground flex items-center justify-center">
                 No hay producciones registradas
               </div>
             )
