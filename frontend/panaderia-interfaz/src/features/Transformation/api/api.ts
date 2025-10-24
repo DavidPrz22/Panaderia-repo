@@ -107,7 +107,6 @@ export const searchTransformaciones = {
             const adaptedResults = response.data.map((t: TransformacionResponse) => ({
                 id: t.id,
                 nombre_producto: t.nombre_transformacion, // Usamos nombre_producto para mantener la consistencia
-                type: 'category' as const, // O el tipo que corresponda
             }));
             return { results: adaptedResults };
         } catch (error) {
@@ -122,18 +121,26 @@ export const searchTransformaciones = {
 
 export const searchProductosFinales = {
     search: async (params: searchTerm): Promise<searchResponse> => {
-    try {
-        console.log('🌐 disparando petición con query:', params.query);
-        const response = await apiClient.get(`/api/productosfinales-lista-transformacion/`, {
-            params: { q: params.query, limit: params.limit }
-        });
-        return response.data;
-    } catch (error) {
-        const axiosError = error as AxiosError<{ detail?: string }>;
-        const errorMessage = axiosError.response?.data?.detail ||
-            axiosError.message || 'Error buscando productos';
-        console.error("Error al buscar productos:", errorMessage);
-        throw new Error(errorMessage);
+        try {
+            console.log('🌐 disparando petición con query:', params.query);
+            const response = await apiClient.get(`/api/productosfinales-lista-transformacion/`, {
+                params: { q: params.query, limit: params.limit }
+            });
+            // Adaptar la respuesta al formato searchResponse
+            // La API puede devolver un objeto con { results: [...] } o directamente un array.
+            const raw = response.data;
+            const list = Array.isArray(raw) ? raw : (raw.results || []);
+            const adaptedResults = list.map((item: any) => ({
+                ...item,
+                nombre_producto: item.nombre_producto || item.nombre || item.producto_origen || item.producto_destino || "",
+            }));
+            return { results: adaptedResults };
+        } catch (error) {
+            const axiosError = error as AxiosError<{ detail?: string }>;
+            const errorMessage = axiosError.response?.data?.detail ||
+                axiosError.message || 'Error buscando productos';
+            console.error("Error al buscar productos:", errorMessage);
+            throw new Error(errorMessage);
+        }
     }
-}
 };

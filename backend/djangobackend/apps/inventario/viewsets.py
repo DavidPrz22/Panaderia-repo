@@ -281,8 +281,19 @@ class ProductosFinalesSearchViewset(viewsets.ReadOnlyModelViewSet):
 
 
 class ProductosFinalesListaTransformacionViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = ProductosFinales.objects.all()
     serializer_class = ProductosFinalesListaTransformacionSerializer
+    queryset = ProductosFinales.objects.all()
+
+    def get_queryset(self):
+        queryset = ProductosFinales.objects.all()
+        q = self.request.query_params.get('q')
+        if q:
+            print(f"ProductosFinalesListaTransformacionViewSet.get_queryset q=<{q}>")
+            queryset = queryset.filter(nombre_producto__icontains=q)
+            print(f"Filtered count: {queryset.count()}")
+        else:
+            print("ProductosFinalesListaTransformacionViewSet.get_queryset no q param")
+        return queryset
 
 
 class ProductosIntermediosSearchViewSet(viewsets.ReadOnlyModelViewSet):
