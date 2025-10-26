@@ -9,10 +9,10 @@ export const TitleTransformacion = () => {
                 alt="Transformacion Black Icon"
             />
                 <div>
-                    <h1 className="text-3xl font-bold text-gray-900">
+                    <h1 className="text-2xl font-bold text-gray-900">
                         Transformación de productos
                     </h1>
-                    <p className=" text-sm text-gray-600 mt-1">
+                    <p className=" text-gray-500 italic">
                         Aquí puedes gestionar y registrar las transformaciones de productos en tu panadería.
                     </p>
                 </div>
