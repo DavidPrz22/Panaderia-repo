@@ -5,19 +5,19 @@
 ### FASE 1: Preparación Backend (2-3 días)
 
 #### ✅ Paso 1.1: Actualizar Estados de Orden de Compra
-- [ ] Verificar tabla `EstadosOrdenCompra` en DB
-- [ ] Agregar estados faltantes:
+- [ x ] Verificar tabla `EstadosOrdenCompra` en DB
+- [ x ] Agregar estados faltantes:
   - Borrador
   - Emitida
   - Enviada
   - Recibida Parcial
   - Recibida Completa
   - Cancelada
-- [ ] Crear fixture o migration para insertar estados
+- [ x ] Crear fixture o migration para insertar estados
 
 #### ✅ Paso 1.2: Actualizar Modelo OrdenesCompra
-- [ ] Abrir `apps/compras/models.py`
-- [ ] Agregar campos nuevos:
+- [ x ] Abrir `apps/compras/models.py`
+- [ x ] Agregar campos nuevos:
   - `numero_factura_proveedor`
   - `fecha_envio_oc`
   - `email_enviado`

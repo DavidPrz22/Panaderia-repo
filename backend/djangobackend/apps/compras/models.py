@@ -34,8 +34,13 @@ class OrdenesCompra(models.Model):
     subtotal_oc_ves = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     monto_impuestos_oc_ves = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     monto_total_oc_ves = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    
     direccion_envio = models.TextField(max_length=255, null=True, blank=True)
+    fecha_envio_oc = models.DateField(null=True, blank=True)
+    email_enviado = models.EmailField(max_length=100, null=True, blank=True)
+    terminos_pago = models.CharField(max_length=100, null=True, blank=True)
     notas = models.TextField(max_length=255, null=True, blank=True)
+
 
     def __str__(self):
         return f"OC {self.id} - {self.proveedor.nombre_proveedor}"
