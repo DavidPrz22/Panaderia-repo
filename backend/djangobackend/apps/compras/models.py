@@ -34,8 +34,8 @@ class OrdenesCompra(models.Model):
     subtotal_oc_ves = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     monto_impuestos_oc_ves = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     monto_total_oc_ves = models.DecimalField(max_digits=10, decimal_places=2, default=0)
-    
     direccion_envio = models.TextField(max_length=255, null=True, blank=True)
+    
     fecha_envio_oc = models.DateField(null=True, blank=True)
     email_enviado = models.EmailField(max_length=100, null=True, blank=True)
     terminos_pago = models.CharField(max_length=100, null=True, blank=True)
@@ -94,7 +94,7 @@ class Compras(models.Model):
         on_delete=models.CASCADE,
         help_text="Usuario que registró la recepción de mercancía"
     )
-    
+
     # Control de pagos
     pagado = models.BooleanField(
         default=False,
