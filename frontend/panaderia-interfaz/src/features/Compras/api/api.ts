@@ -1,10 +1,11 @@
 
 import apiClient from "@/api/client";
 import axios from "axios";
+import type { OrdenCompraTable, ProveedorRegistro, OrdenCompra, EstadoOC, MetodoDePago } from "../types/types";
 
-export const getProveedores = async (): Promise<any> => {
+export const getProveedores = async (): Promise<ProveedorRegistro[]> => {
     try {
-        const response = await apiClient.get("/api/proveedores/");
+        const response = await apiClient.get("/api/proveedores/compra_registro/");
         return response.data;
     } catch (error) {
         console.error("Error fetching proveedores:", error);
@@ -12,7 +13,7 @@ export const getProveedores = async (): Promise<any> => {
     }
 };
 
-export const getCompras = async (): Promise<any> => {
+export const getOrdenesCompras = async (): Promise<OrdenCompraTable[]> => {
     try {
         const response = await apiClient.get("/api/compras/");
         return response.data;
@@ -22,13 +23,33 @@ export const getCompras = async (): Promise<any> => {
     }
 };
 
-export const getComprasDetalles = async (id: number): Promise<any> => {
+export const getEstadosOrdenCompraRegistro = async (): Promise<EstadoOC[]> => {
+    try {
+        const response = await apiClient.get("/api/estados-orden-compra/get_estados_registro/");
+        return response.data;
+    } catch (error) {
+        console.error("Error fetching estados orden compra registro:", error);
+        return [];
+    }
+};
+
+export const getOrdenesComprasDetalles = async (id: number): Promise<OrdenCompra> => {
     try {
         const response = await apiClient.get(`/api/compras/${id}/`);
         return response.data;
     } catch (error) {
         console.error("Error fetching compras detalles:", error);
-        return null;
+        throw error;
+    }
+};
+
+export const getMetodosDePago = async (): Promise<MetodoDePago[]> => {
+    try {
+        const response = await apiClient.get("/api/metodos-de-pago/");
+        return response.data;
+    } catch (error) {
+        console.error("Error fetching metodos de pago:", error);
+        return [];
     }
 };
 
@@ -48,5 +69,15 @@ export const getBCVRate = async () : Promise<BCVRateType> => {
     } catch (error) {
         console.error("Error fetching BCV rate:", error);
         throw error;
+    }
+};
+
+export const getAllEstadosOrdenCompra = async (): Promise<EstadoOC[]> => {
+    try {
+        const response = await apiClient.get("/api/estados-orden-compra/");
+        return response.data;
+    } catch (error) {
+        console.error("Error fetching estados orden compra:", error);
+        return [];
     }
 };

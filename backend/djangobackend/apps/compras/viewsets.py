@@ -14,3 +14,4 @@ class ProveedoresViewSet(viewsets.ModelViewSet):
         serializer = CompraRegistroProveedoresSerializer(queryset, many=True)
         return Response(serializer.data)
 
+

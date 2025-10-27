@@ -23,20 +23,20 @@
   - `email_enviado`
   - `fecha_email_enviado`
   - `terminos_pago`
-- [ ] Generar migration: `python manage.py makemigrations compras`
-- [ ] Aplicar migration: `python manage.py migrate compras`
+- [ x ] Generar migration: `python manage.py makemigrations compras`
+- [ x ] Aplicar migration: `python manage.py migrate compras`
 
 #### ✅ Paso 1.3: Crear Nuevos Modelos
-- [ ] En `apps/compras/models.py` agregar:
+- [ x ] En `apps/compras/models.py` agregar:
   - Clase `Compras`
   - Clase `DetalleCompras`
   - Clase `PagosProveedores`
-- [ ] Generar migration: `python manage.py makemigrations compras`
-- [ ] Aplicar migration: `python manage.py migrate compras`
-- [ ] Verificar en DB que las tablas se crearon correctamente
+- [ x ] Generar migration: `python manage.py makemigrations compras`
+- [ x ] Aplicar migration: `python manage.py migrate compras`
+- [ x ] Verificar en DB que las tablas se crearon correctamente
 
 #### ✅ Paso 1.4: Registrar Modelos en Admin
-- [ ] Abrir `apps/compras/admin.py`
+- [  ] Abrir `apps/compras/admin.py`
 - [ ] Registrar nuevos modelos:
 ```python
 from django.contrib import admin
@@ -147,10 +147,10 @@ path('api/compras/', include('apps.compras.urls')),
 ### FASE 5: Frontend Base (3-4 días)
 
 #### ✅ Paso 5.1: Estructura y Types
-- [ ] Crear carpeta `src/features/Compras/`
-- [ ] Crear estructura de subcarpetas
-- [ ] Crear `types/types.ts` con todos los tipos
-- [ ] Crear `schema/comprasSchema.ts` con validaciones Zod
+- [ x ] Crear carpeta `src/features/Compras/`
+- [ x ] Crear estructura de subcarpetas
+- [ x ] Crear `types/types.ts` con todos los tipos
+- [ x ] Crear `schema/comprasSchema.ts` con validaciones Zod
 
 #### ✅ Paso 5.2: API y Queries
 - [ ] Crear `api/comprasApi.ts` con todas las funciones
