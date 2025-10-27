@@ -16,3 +16,11 @@ class ProveedoresSerializer(serializers.ModelSerializer):
                     'notas'
                 ]
 
+class CompraRegistroProveedoresSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Proveedores
+        fields = [
+                    'id', 
+                    'nombre_proveedor'
+                ]
+
