@@ -10,7 +10,7 @@ import RecetasPage from "./pages/RecetasPage";
 import ProductosFinalesPage from "./pages/ProductosFinalesPage";
 import ProductionPage from "./pages/ProductionPage";
 import OrdenesPage from "./pages/OrdenesPage";
-
+import ComprasPage from "./pages/ComprasPage";
 
 const ProtectedLandingPage = withAuth(LandingPage);
 const ProtectedMateriaPrimaPage = withAuth(MateriaPrimaPage);
@@ -19,6 +19,7 @@ const ProtectedProductosFinalesPage = withAuth(ProductosFinalesPage);
 const ProtectedProductionPage = withAuth(ProductionPage);
 const ProtectedRecetasPage = withAuth(RecetasPage);
 const ProtectedProductosReventaPage = withAuth(ProductosReventaPage);
+const ProtectedComprasPage = withAuth(ComprasPage);
 // const ProtectedOrdenesPage = withAuth(OrdenesPage);
 
 
@@ -65,6 +66,10 @@ function App() {
           <Route 
           path="/dashboard/pedidos" 
           element={<OrdenesPage />} 
+          />
+          <Route 
+          path="/dashboard/compras" 
+          element={<ProtectedComprasPage />} 
           />
         </Routes>
       </AuthProvider>

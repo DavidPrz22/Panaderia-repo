@@ -148,7 +148,12 @@ export default function Sidebar() {
             <SidebarCard icon={TransformacionIcon} onclick={handleClick} id="transformacion">
               Transformación
             </SidebarCard>
-            <SidebarCard icon={ComprasIcon} onclick={handleClick} id="compras">
+            <SidebarCard 
+              icon={ComprasIcon} 
+              onclick={handleClick} 
+              id="compras"
+              link="/dashboard/compras"
+            >
               Compras
             </SidebarCard>
             <SidebarCard
