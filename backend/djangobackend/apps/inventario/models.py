@@ -361,7 +361,10 @@ class MateriasPrimas(ComponentesStockManagement):
         LotesMateriasPrimas.objects.bulk_update(lotes_actualizar, ['activo',])
 
         return {"resumen": resumen}
-
+    @property
+    def precio_compra_usd(self):
+        return self.costo_ultima_compra_usd
+    
     def __str__(self):
         return self.nombre
 

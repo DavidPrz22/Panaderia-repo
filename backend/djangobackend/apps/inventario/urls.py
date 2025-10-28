@@ -1,6 +1,6 @@
 from rest_framework.routers import DefaultRouter
 from apps.inventario.viewsets import ComponenteSearchViewSet, MateriaPrimaViewSet, LotesMateriaPrimaViewSet, ProductosFinalesDetallesViewSet, ProductosIntermediosViewSet, ProductosFinalesViewSet, ProductosIntermediosDetallesViewSet, ProductosElaboradosViewSet, ProductosFinalesSearchViewset, ProductosIntermediosSearchViewSet, ProductosFinalesListaTransformacionViewSet, LotesProductosElaboradosViewSet, ProductosReventaViewSet, ProductosReventaDetallesViewSet, LotesProductosReventaViewSet
-from apps.inventario.views import ProductosPedidoSearchView
+from apps.inventario.views import ProductosPedidoSearchView, ProductosComprasSearchView
 from django.urls import include, path
 
 router = DefaultRouter()
@@ -22,5 +22,6 @@ router.register('productosreventa', ProductosReventaViewSet, basename='productos
 
 urlpatterns = [
     path('productos-pedidos-search/', ProductosPedidoSearchView.as_view(), name="productos-pedidos-search"),
+    path('productos-compras-search/', ProductosComprasSearchView.as_view(), name="productos-compras-search"),
     path('', include(router.urls))
     ]

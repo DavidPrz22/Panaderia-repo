@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from apps.compras.models import Proveedores
+from apps.compras.models import OrdenesCompra
 
 class ProveedoresSerializer(serializers.ModelSerializer):
     class Meta:
@@ -24,3 +25,7 @@ class CompraRegistroProveedoresSerializer(serializers.ModelSerializer):
                     'nombre_proveedor'
                 ]
 
+class OrdenesCompraSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = OrdenesCompra
+        fields = '__all__'

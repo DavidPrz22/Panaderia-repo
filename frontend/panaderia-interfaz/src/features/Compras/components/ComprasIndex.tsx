@@ -17,14 +17,18 @@ import {
 
 import { 
   useGetAllEstadosOrdenCompra, 
-  useGetComprasTable 
+  useGetComprasTable,
+  useGetOrdenesDetalles 
 } from "../hooks/queries/queries";
+import { DoubleSpinnerLoading } from "@/components/DoubleSpinnerLoading";
+import { OrdersTable } from "./ComprasTable";
+import { ComprasForm } from "./ComprasForma";
 
 export const ComprasIndex = () => {
     const { compraSeleccionadaId, showCompraDetalles, showForm, setShowForm, setShowCompraDetalles, setCompraSeleccionadaId } = useComprasContext();
   
   const { data: comprasTable = [], isFetching: isFetchingComprasTable } = useGetComprasTable();
-    //   const { data: ordenDetalles, isFetched } = useGetOrdenesDetalles(ordenSeleccionadaId!);
+      const { data: compraDetalles, isFetched } = useGetOrdenesDetalles(compraSeleccionadaId!);
 
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("Todos");
@@ -77,21 +81,21 @@ export const ComprasIndex = () => {
 //     );
 //   }
 
-//   if (showForm) {
+  if (showForm) {
   
-//     if (!compraSeleccionadaId || compraDetalles) {
-//       const compraToEdit = compraSeleccionadaId ? compraDetalles : undefined;
-//       return (
-//             <OrderForm
-//               order={compraToEdit}
-//               onClose={() => {
-//                   setShowForm(false);
-//                   setCompraSeleccionadaId(null);
-//               }}
-//             />
-//       );
-//     }
-//   }
+    if (!compraSeleccionadaId || compraDetalles) {
+      const compraToEdit = compraSeleccionadaId ? compraDetalles : undefined;
+      return (
+            <ComprasForm
+              orden={compraToEdit}
+              onClose={() => {
+                  setShowForm(false);
+                  setCompraSeleccionadaId(null);
+              }}
+            />
+      );
+    }
+  }
 
   return (
     <div className="min-h-screen bg-background p-6">
@@ -171,14 +175,14 @@ export const ComprasIndex = () => {
         </div>
 
         {/* Orders Table */}
-        {/* {isFetchingComprasTable ? (
+         {isFetchingComprasTable ? (
           <DoubleSpinnerLoading extraClassName="size-20" />
         ) : (
-          <ComprasTable
-            orders={filteredOrders}
+          <OrdersTable
+            ordenesCompra={filteredOrders}
             onEditOrder={handleEditOrder}
           />
-        )} */}
+        )} 
 
       </div>
     </div>

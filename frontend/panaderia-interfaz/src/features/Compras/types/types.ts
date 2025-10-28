@@ -6,6 +6,8 @@ export type Proveedor = {
   telefono_contacto?: string;
 };
 
+export type EstadosOC = 'Borrador' | 'Enviada' | 'Recibida Parcial' | 'Recibida Completa' | 'Cancelada';
+
 export type ProveedorRegistro = {
     id: number;
     nombre_proveedor: string;
@@ -61,7 +63,7 @@ export type DetalleOC = {
   producto_reventa_nombre?: string;
   cantidad_solicitada: number;
   cantidad_recibida: number;
-  unidad_medida_compra: number;
+  unidad_medida_compra?: number;
   unidad_medida_abrev?: string;
   costo_unitario_usd: number;
   subtotal_linea_usd: number;
