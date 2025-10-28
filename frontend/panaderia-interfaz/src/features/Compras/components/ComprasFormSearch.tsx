@@ -17,14 +17,14 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover"
-// import type { OrdenProductoSearch } from "../types/types"
-// import { useProductosPedidoSearchMutation } from "../hooks/mutations/mutations"
+
+import { useProductosSearchMutation } from "../hooks/mutations/mutations"
 
 export function ComprasFormSearch({ value, onChange }: { value?: string, onChange: (producto: any) => void }) {
   const [open, setOpen] = useState(false)
   const [timer, setTimer] = useState<NodeJS.Timeout | null>(null)
-//   const { data: dataProductosPedido, mutate: searchProductosPedido } = useProductosPedidoSearchMutation()
-  
+  const { data: dataProductosOC, mutate: searchProductosOC } = useProductosSearchMutation()
+
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild >
@@ -45,20 +45,23 @@ export function ComprasFormSearch({ value, onChange }: { value?: string, onChang
             const searchTerm = e.trim()
             if (searchTerm === "") return;
             if (timer) clearTimeout(timer)
-            const timerRef = setTimeout(() => {}, 1000)
+            const timerRef = setTimeout(() => {
+              searchProductosOC(searchTerm)
+            }, 1000)
             setTimer(timerRef)
           }} />
           <CommandList>
-            {/* {dataProductosPedido?.productos.length === 0 ? (
+            {dataProductosOC?.productos.length === 0 ? (
               <CommandEmpty className="p-2 text-sm">No se encontraron resultados</CommandEmpty>
             ): 
             <CommandEmpty className="p-2 text-sm">Resultados de busqueda...</CommandEmpty>
             } 
             <CommandGroup>
-              {dataProductosPedido?.productos.map((dataValue) => (
+              {dataProductosOC?.productos.map((dataValue) => (
+                
                 <CommandItem
-                  key={dataValue.id}
-                  value={dataValue.nombre_producto}
+                  key={`${dataValue.tipo}-${dataValue.id}`}
+                  value={dataValue.nombre}
                   onSelect={() => {
                     onChange(dataValue)
                     setOpen(false)
@@ -67,13 +70,13 @@ export function ComprasFormSearch({ value, onChange }: { value?: string, onChang
                   <CheckIcon
                     className={cn(
                       "mr-2 h-4 w-4",
-                      value === dataValue.id.toString() ? "opacity-100" : "opacity-0"
+                      value === dataValue.nombre ? "opacity-100" : "opacity-0"
                     )}
                   />
-                  {dataValue.SKU} - {dataValue.nombre_producto}
+                  {dataValue.SKU} - {dataValue.nombre}
                 </CommandItem>
               ))} 
-            </CommandGroup> */}
+            </CommandGroup>
           </CommandList>
         </Command>
       </PopoverContent>

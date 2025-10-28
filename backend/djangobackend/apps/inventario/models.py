@@ -363,7 +363,31 @@ class MateriasPrimas(ComponentesStockManagement):
         return {"resumen": resumen}
     @property
     def precio_compra_usd(self):
-        return self.costo_ultima_compra_usd
+        """Calculate weighted average price from available lots"""
+        from django.db.models import Sum, F, DecimalField
+        from django.db.models.functions import Coalesce
+        
+        # Get available lots with their costs
+        lots = LotesMateriasPrimas.objects.filter(
+            materia_prima=self,
+            estado=LotesStatus.DISPONIBLE,
+            stock_actual_lote__gt=0
+        )
+        
+        # Calculate weighted average: sum(price * quantity) / sum(quantity)
+        result = lots.aggregate(
+            total_cost=Coalesce(
+                Sum(F('costo_unitario_usd') * F('stock_actual_lote'), output_field=DecimalField()),
+                Decimal('0')
+            ),
+            total_quantity=Coalesce(Sum('stock_actual_lote'), Decimal('0'))
+        )
+        
+        if result['total_quantity'] and result['total_quantity'] > 0:
+            return result['total_cost'] / result['total_quantity']
+        
+        # Return 0 if no available lots
+        return Decimal('0')
     
     def __str__(self):
         return self.nombre

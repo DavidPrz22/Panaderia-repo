@@ -24,7 +24,7 @@ export function OrdenesProductoFormSearch({ value, onChange }: { value: string, 
   const [open, setOpen] = useState(false)
   const [timer, setTimer] = useState<NodeJS.Timeout | null>(null)
   const { data: dataProductosPedido, mutate: searchProductosPedido } = useProductosPedidoSearchMutation()
-  
+
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild >

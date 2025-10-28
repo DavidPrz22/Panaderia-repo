@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-import type { OrdenCompra, DetalleOC } from "../types/types";
+import type { OrdenCompra, DetalleOC, Producto } from "../types/types";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -103,6 +103,12 @@ export const ComprasForm = ({ orden, onClose }: ComprasFormProps) => {
     setSubtotal(subtotalBeforeFees);
     setValue('monto_total_oc_usd', roundTo3(subtotalBeforeFees));
     setValue('monto_total_oc_ves', roundTo3((subtotalBeforeFees) * (Number(watch('tasa_cambio_aplicada')) || 0)));
+  }
+  const resetProductoItem = (item: DetalleOC) => {
+    item.materia_prima = 0;
+    item.materia_prima_nombre = "";
+    item.producto_reventa = 0;
+    item.producto_reventa_nombre = "";
   }
 
   useEffect(() => {
@@ -293,9 +299,45 @@ export const ComprasForm = ({ orden, onClose }: ComprasFormProps) => {
                     {items.map((item) => (
                       <TableRow key={item.id}>
                         <TableCell>
-                          <ComprasFormSearch value={item.materia_prima ? item.materia_prima_nombre : item.producto_reventa_nombre} onChange={
-                            () => {}
-                            } />
+                          <ComprasFormSearch value={item.materia_prima_nombre || item.producto_reventa_nombre} onChange={
+                            (producto: Producto) => {
+                              const productoId = item.id
+                              resetProductoItem(item)
+                              
+                              if (producto.tipo === 'materia-prima') {
+
+                                item.materia_prima = producto.id
+                                item.materia_prima_nombre = producto.nombre
+                              } else {
+                                item.producto_reventa = producto.id
+                                item.producto_reventa_nombre = producto.nombre
+                              }
+                              item.costo_unitario_usd = producto.precio_compra_usd
+                              item.unidad_medida_compra = producto.unidad_medida_compra.id
+                              item.unidad_medida_abrev = producto.unidad_medida_compra.abreviatura
+                              setItems([...items])
+
+
+                              const subtotal = calculateSubtotal(item)
+                              item.subtotal_linea_usd = subtotal
+                              const schemaValue: TOrdenCompraSchema['detalles'] = items
+                                .filter((item) => item.unidad_medida_compra !== undefined && item.unidad_medida_compra !== 0)
+                                .map((item)=>{
+                                          return {
+                                                  id: item.id,
+                                                  materia_prima: item.materia_prima,
+                                                  producto_reventa: item.producto_reventa,
+                                                  cantidad_solicitada: item.cantidad_solicitada,
+                                                  unidad_medida_compra: item.unidad_medida_compra!,
+                                                  costo_unitario_usd: item.costo_unitario_usd,
+                                                  subtotal_linea_usd: item.subtotal_linea_usd
+                                                  }
+                                                })
+                            setValue('detalles', schemaValue )
+                            setValue(`detalles.${productoId}.subtotal_linea_usd`, subtotal)
+                            calculateTotal();
+                            }
+                          } />
                         </TableCell>
                         <TableCell>
                           <Input
@@ -307,7 +349,7 @@ export const ComprasForm = ({ orden, onClose }: ComprasFormProps) => {
                             onChange={(e) =>
                               {
 
-                                const productoId = item.id!
+                                const productoId = item.id
                                 
                                 if (Number(e.target.value) < 0) {
                                   e.target.value = "0"
@@ -339,7 +381,7 @@ export const ComprasForm = ({ orden, onClose }: ComprasFormProps) => {
                             className="cursor-pointer"
                             variant="ghost"
                             size="icon"
-                            onClick={() => removeItem(item.id!)}
+                            onClick={() => removeItem(item.id)}
                           >
                             <Trash2 className="h-4 w-4 text-destructive" />
                           </Button>

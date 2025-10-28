@@ -1,7 +1,7 @@
 
 import apiClient from "@/api/client";
 import axios from "axios";
-import type { OrdenCompraTable, ProveedorRegistro, OrdenCompra, EstadoOC, MetodoDePago } from "../types/types";
+import type { OrdenCompraTable, ProveedorRegistro, OrdenCompra, EstadoOC, MetodoDePago, Producto } from "../types/types";
 
 export const getProveedores = async (): Promise<ProveedorRegistro[]> => {
     try {
@@ -81,3 +81,16 @@ export const getAllEstadosOrdenCompra = async (): Promise<EstadoOC[]> => {
         return [];
     }
 };
+
+type ProductosOCSearchType = {
+    productos: Producto[];
+}
+export const searchProductosOC = async (search: string): Promise<ProductosOCSearchType> => {
+    try {
+        const response = await apiClient.get(`/api/productos-compras-search/?search=${search}`);
+        return response.data;
+    } catch (error) {
+        console.error("Error fetching productos:", error);
+        throw error;
+    }
+};  

@@ -23,12 +23,12 @@ export type MetodoDePago = {
   nombre_metodo: string;
 };
 
-export type Componente = {
+export type Producto = {
   id: number;
   SKU: string;
-  nombre_componente: string;
-  precio_unitario_usd: number;
-  unidad_medida: string;
+  nombre: string;
+  precio_compra_usd: number;
+  unidad_medida_compra: { id: number; abreviatura: string };
   tipo: 'materia-prima' | 'producto-reventa';
 }
 
@@ -56,13 +56,13 @@ export type PagoProveedor = {
 };
 
 export type DetalleOC = {
-  id?: number;
+  id: number;
   materia_prima?: number;
   materia_prima_nombre?: string;
   producto_reventa?: number;
   producto_reventa_nombre?: string;
   cantidad_solicitada: number;
-  cantidad_recibida: number;
+  cantidad_recibida?: number;
   unidad_medida_compra?: number;
   unidad_medida_abrev?: string;
   costo_unitario_usd: number;

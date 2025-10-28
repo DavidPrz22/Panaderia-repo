@@ -72,27 +72,27 @@ class ProductosComprasSearchView(APIView):
                 data={"error": "El parámetro 'search' es requerido"}
             )
         
-        # Get ProductosElaborados using .values()
+        # Get MateriasPrimas objects
         productos = MateriasPrimas.objects.filter(
             nombre__icontains=param
-        ).values('id', 'nombre', 'unidad_medida_base__id', 'unidad_medida_base__abreviatura', 'SKU', 'precio_compra_usd')
+        ).select_related('unidad_medida_base')
 
         # Get ProductosReventa using .values()
         productos_reventa = ProductosReventa.objects.filter(
             nombre_producto__icontains=param
-        ).values('id', 'nombre_producto', 'unidad_base_inventario__id', 'unidad_base_inventario__abreviatura', 'SKU', 'precio_compra_usd')
+        ).values('id', 'nombre_producto', 'unidad_base_inventario__id', 'unidad_base_inventario__abreviatura', 'SKU', 'precio_venta_usd')
 
         # Convert to list and add 'tipo' field
         materias_primas_list = [
             {
-                'id': p['id'],
-                'nombre': p['nombre'],
+                'id': p.id,
+                'nombre': p.nombre,
                 'unidad_medida_compra': {
-                    'id': p['unidad_medida_base__id'],
-                    'abreviatura': p['unidad_medida_base__abreviatura']
-                } if p['unidad_medida_base__id'] else None,
-                'SKU': p['SKU'],
-                'precio_compra_usd': p['precio_compra_usd'],
+                    'id': p.unidad_medida_base.id,
+                    'abreviatura': p.unidad_medida_base.abreviatura
+                } if p.unidad_medida_base else None,
+                'SKU': p.SKU,
+                'precio_compra_usd': p.precio_compra_usd,
                 'tipo': 'materia-prima'
             }
             for p in productos
@@ -107,7 +107,7 @@ class ProductosComprasSearchView(APIView):
                     'abreviatura': p['unidad_base_inventario__abreviatura']
                 } if p['unidad_base_inventario__id'] else None,
                 'SKU': p['SKU'],
-                'precio_compra_usd': p['precio_compra_usd'],
+                'precio_compra_usd': p['precio_venta_usd'],
                 'tipo': 'producto-reventa'
             }
             for p in productos_reventa

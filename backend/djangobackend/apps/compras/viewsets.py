@@ -3,10 +3,6 @@ from apps.compras.models import Proveedores
 from apps.compras.serializers import ProveedoresSerializer, CompraRegistroProveedoresSerializer
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from apps.inventario.models import MateriasPrimas
-from apps.compras.models import OrdenesCompra
-from apps.compras.serializers import OrdenesCompraSerializer
-from apps.inventario.models import ProductosReventa
 
 class ProveedoresViewSet(viewsets.ModelViewSet):
     queryset = Proveedores.objects.all()
