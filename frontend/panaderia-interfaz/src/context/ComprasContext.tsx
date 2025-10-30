@@ -6,8 +6,8 @@ import { createContext, useContext, useState } from "react";
     setCompras: (compras: Orden[]) => void;
     compraSeleccionadaId: number | null;
     setCompraSeleccionadaId: (id: number | null) => void;
-    showCompraDetalles: boolean;
-    setShowCompraDetalles: (show: boolean) => void;
+    showOrdenCompraDetalles: boolean;
+    setShowOrdenCompraDetalles: (show: boolean) => void;
     showReferenciaPagoDialog: boolean;
     setShowReferenciaPagoDialog: (show: boolean) => void;
     showCancelDialog: boolean;
@@ -34,7 +34,7 @@ import { createContext, useContext, useState } from "react";
     const [showForm, setShowForm] = useState(false);
     const [compras, setCompras] = useState<Orden[]>([]);
     const [compraSeleccionadaId, setCompraSeleccionadaId] = useState<number | null>(null);
-    const [showCompraDetalles, setShowCompraDetalles] = useState(false);
+    const [showOrdenCompraDetalles, setShowOrdenCompraDetalles] = useState(false);
     const [showReferenciaPagoDialog, setShowReferenciaPagoDialog] = useState(false);
     const [showCancelDialog, setShowCancelDialog] = useState(false);
     
@@ -45,8 +45,8 @@ import { createContext, useContext, useState } from "react";
           setCompras,
           compraSeleccionadaId,
           setCompraSeleccionadaId,
-          showCompraDetalles,
-          setShowCompraDetalles,
+          showOrdenCompraDetalles,
+          setShowOrdenCompraDetalles,
           showReferenciaPagoDialog,
           setShowReferenciaPagoDialog,
           showCancelDialog,

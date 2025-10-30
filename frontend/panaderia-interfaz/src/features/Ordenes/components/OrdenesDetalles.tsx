@@ -39,7 +39,7 @@ export const OrdenDetalles = ({ orden, onClose }: OrderDetailsProps) => {
   const { mutateAsync: registerPaymentReferenceMutation} = useRegisterPaymentReferenceMutation();
 
   const { mutateAsync: cancelOrdenMutation, isPending: isLoadingCancelOrdenMutation} = useCancelOrdenMutation();
- 
+
   
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat("es-MX", {
@@ -61,6 +61,7 @@ export const OrdenDetalles = ({ orden, onClose }: OrderDetailsProps) => {
         toast.success(`Orden marcada como ${newStatus}`);
         setEstadoPendiente(newStatus);
       } catch (error) {
+        console.error("Error updating orden status:", error);
         toast.error(`Error marcando orden como ${newStatus}`);
       }
     }
@@ -130,7 +131,8 @@ export const OrdenDetalles = ({ orden, onClose }: OrderDetailsProps) => {
       }
       setShowCancelDialog(false);
       setEstadoPendiente("Cancelado");
-    } catch (error : any) {
+    } catch (error) {
+      console.error("Error canceling order:", error);
       toast.error("Error cancelando orden");
     }
   };

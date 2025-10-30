@@ -67,6 +67,8 @@ export type DetalleOC = {
   unidad_medida_abrev?: string;
   costo_unitario_usd: number;
   subtotal_linea_usd: number;
+  porcentaje_impuesto: number;
+  impuesto_linea_usd: number;
   notas?: string;
 };
 

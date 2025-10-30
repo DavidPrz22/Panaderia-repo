@@ -29,3 +29,4 @@ class OrdenesCompraSerializer(serializers.ModelSerializer):
     class Meta:
         model = OrdenesCompra
         fields = '__all__'
+

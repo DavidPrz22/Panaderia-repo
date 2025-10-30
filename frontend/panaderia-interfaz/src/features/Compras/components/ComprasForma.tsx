@@ -21,7 +21,6 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
-import { format } from "date-fns";
 import { X, Plus, Trash2 } from "lucide-react";
 import { PendingTubeSpinner } from "@/components/PendingTubeSpinner";
 
@@ -35,7 +34,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { ComprasFormDatePicker } from "./ComprasFormDatePicker";
 import { toast } from "sonner";
 
-// import { useCreateOrdenMutation, useUpdateOrdenMutation } from "../hooks/mutations/mutations";
+import { useCreateOCMutation } from "../hooks/mutations/mutations";
 
 interface ComprasFormProps {
   orden?: OrdenCompra;
@@ -60,11 +59,11 @@ export const ComprasForm = ({ orden, onClose }: ComprasFormProps) => {
   });
 
   const isEdit = !!orden;
-  const [{ data: proveedores }, { data: metodosDePago }] = useGetParametros();
+  const [{ data: proveedores }, { data: metodosDePago }, { data: unidadesMedida }] = useGetParametros();
   const { data: estadosOrden } = useGetEstadosOrdenCompraRegistro();
   const { data: bcvRate } = useGetBCVRate();
 
-  // const { mutateAsync: createOrdenMutation, isPending: isCreatingOrden } = useCreateOrdenMutation();
+  const { mutateAsync: createOCMutation, isPending: isCreatingOCMutation } = useCreateOCMutation();
   // const { mutateAsync: updateOrdenMutation, isPending: isUpdatingOrden } = useUpdateOrdenMutation();
   const [items, setItems] = useState<DetalleOC[]>(
     orden?.detalles.map((p, idx) => ({
@@ -79,6 +78,8 @@ export const ComprasForm = ({ orden, onClose }: ComprasFormProps) => {
       unidad_medida_abrev: p.unidad_medida_abrev,
       costo_unitario_usd: p.costo_unitario_usd,
       subtotal_linea_usd: p.subtotal_linea_usd,
+      porcentaje_impuesto: p.porcentaje_impuesto,
+      impuesto_linea_usd: p.impuesto_linea_usd,
       notas: p.notas,
     })) || []
   );
@@ -98,11 +99,15 @@ export const ComprasForm = ({ orden, onClose }: ComprasFormProps) => {
   const roundTo3 = (n: number) => Math.round(n * 1000) / 1000;
   
   const calculateTotalFromItems = (itemsArray: DetalleOC[]) => {
-    const subtotalBeforeFees = itemsArray.reduce((sum, item) => sum + (item.costo_unitario_usd * item.cantidad_solicitada), 0);
-    
-    setSubtotal(subtotalBeforeFees);
-    setValue('monto_total_oc_usd', roundTo3(subtotalBeforeFees));
-    setValue('monto_total_oc_ves', roundTo3((subtotalBeforeFees) * (Number(watch('tasa_cambio_aplicada')) || 0)));
+    const subtotalBeforeTaxes = itemsArray.reduce((sum, item) => sum + (item.costo_unitario_usd * item.cantidad_solicitada), 0);
+    const impuesto = itemsArray.reduce((sum, item) => sum + (item.costo_unitario_usd * item.cantidad_solicitada * item.porcentaje_impuesto / 100), 0);
+    const subtotal = subtotalBeforeTaxes + impuesto;
+    setSubtotal(subtotalBeforeTaxes);
+
+    setValue('monto_total_oc_usd', roundTo3(subtotal));
+    setValue('monto_total_oc_ves', roundTo3(subtotal * (Number(watch('tasa_cambio_aplicada')) || 0)));
+    setValue('monto_impuestos_oc_usd', roundTo3(impuesto));
+    setValue('monto_impuestos_oc_ves', roundTo3(impuesto * (Number(watch('tasa_cambio_aplicada')) || 0)));
   }
   const resetProductoItem = (item: DetalleOC) => {
     item.materia_prima = 0;
@@ -131,10 +136,11 @@ export const ComprasForm = ({ orden, onClose }: ComprasFormProps) => {
       unidad_medida_abrev: "",
       costo_unitario_usd: 0,
       subtotal_linea_usd: 0,
+      porcentaje_impuesto: 0,
+      impuesto_linea_usd: 0,
     };
     setItems([...items, newItem]);
   };
-    console.log(watch('detalles'))
   const removeItem = (id: number) => {
     const newItems = items.filter((i) => i.id !== id);
     const newProductos = watch('detalles')?.filter((p) => p.id !== id) || [];
@@ -148,7 +154,6 @@ export const ComprasForm = ({ orden, onClose }: ComprasFormProps) => {
       calculateTotalFromItems(newItems);
     }
   };
-
   const resetAmounts = () => {
     setSubtotal(0)
     setValue('monto_impuestos_oc_usd', 0)
@@ -157,19 +162,27 @@ export const ComprasForm = ({ orden, onClose }: ComprasFormProps) => {
     setValue('subtotal_oc_usd', 0)
     setValue('subtotal_oc_ves', 0)
   }
-  const calculateSubtotal = (item: DetalleOC) => {
+  const calculateSubtotal = (item: DetalleOC, impuestoPorcentaje: number = 0) => {
     const subtotal = item.costo_unitario_usd * item.cantidad_solicitada
-    return roundTo3(subtotal)
+    const impuesto = calculateImpuesto(subtotal, impuestoPorcentaje)
+    return roundTo3(subtotal + impuesto)
   }
-  
+
+  const calculateImpuesto = (subtotal: number, impuestoPorcentaje: number = 0) => {
+    const impuesto = subtotal * impuestoPorcentaje / 100
+    return roundTo3(impuesto)
+  }
+  console.log(watch())
   const handleSubmitForm = async (data: TOrdenCompraSchema) => {
+    console.log(data)
+    return;
     try {
       if (isEdit && orden) {
     
         // await updateOrdenMutation({ id: orden.id, data });
         toast.success("Orden actualizada exitosamente");
       } else {
-        // await createOrdenMutation(data);
+        await createOCMutation(data);
         toast.success("Orden creada exitosamente");
       }
       onClose();
@@ -187,9 +200,9 @@ export const ComprasForm = ({ orden, onClose }: ComprasFormProps) => {
 
   return (
     <div className="p-6 relative">
-      {/* {(isCreatingOrden || isUpdatingOrden) && (
+      {(isCreatingOCMutation) && (
         <PendingTubeSpinner size={20} extraClass="absolute top-0 left-0 w-full h-full flex justify-center items-center bg-white opacity-50 z-50" />
-      )} */}
+      )}
       <Card className="w-full max-w-6xl mx-auto">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4 border-b bg-card">
           <CardTitle className="text-2xl font-bold">
@@ -291,6 +304,7 @@ export const ComprasForm = ({ orden, onClose }: ComprasFormProps) => {
                       <TableHead className="font-semibold w-24">Cantidad *</TableHead>
                       <TableHead className="font-semibold w-20">UdM</TableHead>
                       <TableHead className="font-semibold w-28">Costo UdM</TableHead>
+                      <TableHead className="font-semibold w-28">Impuesto %</TableHead>
                       <TableHead className="font-semibold w-28">Subtotal</TableHead>
                       <TableHead className="font-semibold w-16"></TableHead>
                     </TableRow>
@@ -330,7 +344,9 @@ export const ComprasForm = ({ orden, onClose }: ComprasFormProps) => {
                                                   cantidad_solicitada: item.cantidad_solicitada,
                                                   unidad_medida_compra: item.unidad_medida_compra!,
                                                   costo_unitario_usd: item.costo_unitario_usd,
-                                                  subtotal_linea_usd: item.subtotal_linea_usd
+                                                  subtotal_linea_usd: item.subtotal_linea_usd,
+                                                  porcentaje_impuesto: item.porcentaje_impuesto,
+                                                  impuesto_linea_usd: item.impuesto_linea_usd,
                                                   }
                                                 })
                             setValue('detalles', schemaValue )
@@ -350,8 +366,8 @@ export const ComprasForm = ({ orden, onClose }: ComprasFormProps) => {
                               {
 
                                 const productoId = item.id
-                                
-                                if (Number(e.target.value) < 0) {
+                                const value = Number(e.target.value)
+                                if (value < 0) {
                                   e.target.value = "0"
                                   toast.error("La Cantidad No Puede Ser Menor a 0")
                                   return
@@ -359,18 +375,53 @@ export const ComprasForm = ({ orden, onClose }: ComprasFormProps) => {
 
                                 const productoIndex = watch("detalles")?.findIndex((p) => p.id === productoId)
                                 if (productoIndex !== -1) {
-                                  setValue(`detalles.${productoIndex}.cantidad_solicitada`, Number(e.target.value), { shouldValidate: true })
-                                  item.cantidad_solicitada = Number(e.target.value)
-                                  const subtotal = calculateSubtotal(item)
+                                  item.cantidad_solicitada = value;
+
+                                  const subtotal = calculateSubtotal(item, item.porcentaje_impuesto)
                                   item.subtotal_linea_usd = subtotal
+
+                                  const impuesto = calculateImpuesto(subtotal, item.porcentaje_impuesto)
+                                  setValue(`detalles.${productoIndex}.cantidad_solicitada`, value, { shouldValidate: true })
+                                  setValue(`detalles.${productoIndex}.impuesto_linea_usd`, impuesto)
+                                  setValue(`detalles.${productoIndex}.subtotal_linea_usd`, subtotal)
+                                  calculateTotal();
                                 }
-                                calculateTotal();
                               }}
                           />
                         </TableCell>
-                        <TableCell className="text-sm">{item.unidad_medida_abrev}</TableCell>
+                        <TableCell className="text-sm">
+                          <ComprasFormSelect 
+                          id="unidad_medida_compra" 
+                          value={watch(`detalles.${item.id}.unidad_medida_compra`)?.toString() || ""} 
+                          onChange={(v: string) => setValue(`detalles.${item.id}.unidad_medida_compra`, Number(v))}>
+                            {unidadesMedida?.map((unidad) => (
+                              <SelectItem key={unidad.id} value={unidad.id.toString()}>{unidad.abreviatura}</SelectItem>
+                            ))}
+                          </ComprasFormSelect>
+                          </TableCell>
                         <TableCell className="text-sm">
                           {formatCurrency(item.costo_unitario_usd)}
+                        </TableCell>
+                        <TableCell className="text-sm">
+                              <Input 
+                              type="number" 
+                              min="0" step="0.1" 
+                              className="focus-visible:ring-blue-200"   
+                              defaultValue={item.porcentaje_impuesto} onChange={(e) => {
+                                const productoId = item.id
+                                const value = Number(e.target.value)
+
+                                const subtotal = calculateSubtotal(item, value)
+                                const impuesto = calculateImpuesto(subtotal, value)
+                                
+                                item.porcentaje_impuesto = value
+                                item.subtotal_linea_usd = subtotal
+                                item.impuesto_linea_usd = impuesto
+                                setValue(`detalles.${productoId}.porcentaje_impuesto`, value, { shouldValidate: true })
+                                setValue(`detalles.${productoId}.subtotal_linea_usd`, subtotal)
+                                setValue(`detalles.${productoId}.impuesto_linea_usd`, impuesto)
+                                calculateTotal();
+                              }} />
                         </TableCell>
                         <TableCell className="font-medium">
                           {formatCurrency(item.subtotal_linea_usd)}
@@ -432,7 +483,7 @@ export const ComprasForm = ({ orden, onClose }: ComprasFormProps) => {
                     <span className="font-medium">{formatCurrency(Number(subtotal) || 0)}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">Impuestos:</span>
+                    <span className="text-muted-foreground">+ Impuestos:</span>
                     <span className="font-medium">{formatCurrency(Number(watch("monto_impuestos_oc_usd")) || 0)}</span>
                   </div>
                   <div className="flex justify-between text-xl font-bold border-t pt-2">

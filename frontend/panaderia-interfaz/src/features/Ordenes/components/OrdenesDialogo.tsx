@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { Order, OrdenesEstado } from "../types/types";
+import type { Orden, Estados } from "../types/types";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -22,10 +22,10 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 
 interface OrderStatusDialogProps {
-  order: Order;
+  order: Orden;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onStatusChange: (orderId: string, newStatus: OrdenesEstado) => void;
+  onStatusChange: (orderId: string, newStatus: Estados) => void;
 }
 
 export const OrderStatusDialog = ({
@@ -34,27 +34,25 @@ export const OrderStatusDialog = ({
   onOpenChange,
   onStatusChange,
 }: OrderStatusDialogProps) => {
-  const [newStatus, setNewStatus] = useState<OrdenesEstado>(order.status);
+  const [newStatus, setNewStatus] = useState<Estados>(order.estado_orden.nombre_estado as Estados);
 
   const handleSubmit = () => {
-    if (newStatus === order.status) {
+    if (newStatus === order.estado_orden.nombre_estado) {
       toast.info("No se realizaron cambios");
       onOpenChange(false);
       return;
     }
 
-    onStatusChange(order.id, newStatus);
+    onStatusChange(order.id.toString(), newStatus);
     toast.success(`Estado cambiado a: ${newStatus}`);
     onOpenChange(false);
   };
 
-  const getStatusDescription = (status: OrdenesEstado): string => {
-    const descriptions: Record<OrdenesEstado, string> = {
+  const getStatusDescription = (status: Estados): string => {
+    const descriptions: Record<Estados, string> = {
       "Pendiente": "La orden está esperando confirmación",
-      "Confirmado": "La orden ha sido confirmada y está lista para procesar",
-      "En Preparación": "Los productos están siendo preparados",
-      "Listo para Entrega": "La orden está lista para ser entregada al cliente",
-      "Entregado": "La orden ha sido entregada al cliente",
+      "En Proceso": "Los productos están siendo preparados",
+      "Completado": "La orden ha sido completada",
       "Cancelado": "La orden ha sido cancelada",
     };
     return descriptions[status];
@@ -66,7 +64,7 @@ export const OrderStatusDialog = ({
         <DialogHeader>
           <DialogTitle>Cambiar Estado de Orden</DialogTitle>
           <DialogDescription>
-            Orden: {order.orderNumber} - {order.customer.name}
+            Orden: {order.id} - {order.cliente.nombre_cliente}
           </DialogDescription>
         </DialogHeader>
 
@@ -74,13 +72,13 @@ export const OrderStatusDialog = ({
           <div className="space-y-2">
             <Label htmlFor="status">Estado Actual</Label>
             <div className="text-sm text-muted-foreground bg-muted p-3 rounded-md">
-              {order.status}
+              {order.estado_orden.nombre_estado}
             </div>
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="new-status">Nuevo Estado</Label>
-            <Select value={newStatus} onValueChange={(v) => setNewStatus(v as OrdenesEstado)}>
+            <Select value={newStatus} onValueChange={(v) => setNewStatus(v as Estados)}>
               <SelectTrigger id="new-status">
                 <SelectValue />
               </SelectTrigger>

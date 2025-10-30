@@ -17,18 +17,18 @@ import {
 
 import { 
   useGetAllEstadosOrdenCompra, 
-  useGetComprasTable,
-  useGetOrdenesDetalles 
+  useGetOrdenesCompraTable,
+  useGetOrdenesCompraDetalles 
 } from "../hooks/queries/queries";
 import { DoubleSpinnerLoading } from "@/components/DoubleSpinnerLoading";
 import { OrdersTable } from "./ComprasTable";
 import { ComprasForm } from "./ComprasForma";
 
 export const ComprasIndex = () => {
-    const { compraSeleccionadaId, showCompraDetalles, showForm, setShowForm, setShowCompraDetalles, setCompraSeleccionadaId } = useComprasContext();
+    const { compraSeleccionadaId, showOrdenCompraDetalles, showForm, setShowForm, setShowOrdenCompraDetalles, setCompraSeleccionadaId } = useComprasContext();
   
-  const { data: comprasTable = [], isFetching: isFetchingComprasTable } = useGetComprasTable();
-      const { data: compraDetalles, isFetched } = useGetOrdenesDetalles(compraSeleccionadaId!);
+  const { data: ordenesCompraTable = [], isFetching: isFetchingOrdenesCompraTable } = useGetOrdenesCompraTable();
+      const { data: compraDetalles, isFetched } = useGetOrdenesCompraDetalles(compraSeleccionadaId!);
 
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("Todos");
@@ -43,7 +43,7 @@ export const ComprasIndex = () => {
 
 
   // Filter orders based on search term and status
-  const filteredOrders = (comprasTable).filter((order) => {
+  const filteredOrders = (ordenesCompraTable).filter((order) => {
     // Search filter: match order ID or provider name
     const matchesSearch = searchTerm === "" || 
       order.id.toString().includes(searchTerm) ||
@@ -62,7 +62,7 @@ export const ComprasIndex = () => {
   };
 
   const handleEditOrder = (order: OrdenCompraTable) => {
-    setShowCompraDetalles(false);
+    setShowOrdenCompraDetalles(false);
     setCompraSeleccionadaId(order.id);
     setShowForm(true);
   };
@@ -144,14 +144,14 @@ export const ComprasIndex = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <Card>
             <CardContent className="pt-6">
-              <div className="text-2xl font-bold">{comprasTable?.length}</div>
+              <div className="text-2xl font-bold">{ordenesCompraTable?.length}</div>
               <p className="text-sm text-muted-foreground">Total Órdenes</p>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="pt-6">
               <div className="text-2xl font-bold">
-                {comprasTable?.filter((o) => o.estado_oc === "Pendiente").length}
+                {ordenesCompraTable?.filter((o) => o.estado_oc === "Pendiente").length}
               </div>
               <p className="text-sm text-muted-foreground">Pendientes</p>
             </CardContent>
@@ -159,7 +159,7 @@ export const ComprasIndex = () => {
           <Card>
             <CardContent className="pt-6">
               <div className="text-2xl font-bold">
-                {comprasTable?.filter((o) => o.estado_oc === "En Preparación").length}
+                {ordenesCompraTable?.filter((o) => o.estado_oc === "En Preparación").length}
               </div>
               <p className="text-sm text-muted-foreground">En Preparación</p>
             </CardContent>
@@ -167,7 +167,7 @@ export const ComprasIndex = () => {
           <Card>
             <CardContent className="pt-6">
               <div className="text-2xl font-bold">
-                {comprasTable?.filter((o) => o.estado_oc === "Completado").length}
+                {ordenesCompraTable?.filter((o) => o.estado_oc === "Completado").length}
               </div>
               <p className="text-sm text-muted-foreground">Completados</p>
             </CardContent>
@@ -175,7 +175,7 @@ export const ComprasIndex = () => {
         </div>
 
         {/* Orders Table */}
-         {isFetchingComprasTable ? (
+         {isFetchingOrdenesCompraTable ? (
           <DoubleSpinnerLoading extraClassName="size-20" />
         ) : (
           <OrdersTable

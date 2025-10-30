@@ -1,4 +1,4 @@
-import { getProveedores, getOrdenesCompras, getOrdenesComprasDetalles, getBCVRate , getAllEstadosOrdenCompra, getMetodosDePago, getEstadosOrdenCompraRegistro } from "../../api/api";
+import { getProveedores, getOrdenesCompras, getOrdenesComprasDetalles, getBCVRate , getAllEstadosOrdenCompra, getMetodosDePago, getEstadosOrdenCompraRegistro, getUnidadesMedida } from "../../api/api";
 
 export const proveedoresQueryOptions = {
     queryKey: ["proveedores"],
@@ -6,15 +6,15 @@ export const proveedoresQueryOptions = {
     staleTime: Infinity,
 };
 
-export const comprasTableQueryOptions = {
-    queryKey: ["compras-table"],
+export const ordenesCompraTableQueryOptions = {
+    queryKey: ["ordenes-compra-table"],
     queryFn: getOrdenesCompras,
     staleTime: Infinity,
 };
 
-export const comprasDetallesQueryOptions = (id: number) => {
+export const ordenesCompraDetallesQueryOptions = (id: number) => {
     return {
-        queryKey: ["compras-detalles", id],
+        queryKey: ["ordenes-compra-detalles", id],
         queryFn: () => getOrdenesComprasDetalles(id),
         staleTime: Infinity,
     }
@@ -41,5 +41,11 @@ export const estadosOrdenCompraQueryOptions = {
 export const estadosOrdenCompraRegistroQueryOptions = {
     queryKey: ["estados-orden-compra-registro"],
     queryFn: getEstadosOrdenCompraRegistro,
+    staleTime: Infinity,
+};
+
+export const unidadesMedidaQueryOptions = {
+    queryKey: ["unidades-medida"],
+    queryFn: getUnidadesMedida,
     staleTime: Infinity,
 };

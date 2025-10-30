@@ -7,7 +7,9 @@ const detalleOC = z.object({
     cantidad_solicitada: z.number(),
     unidad_medida_compra: z.number(),
     costo_unitario_usd: z.number(),
-    subtotal_linea_usd: z.number()
+    subtotal_linea_usd: z.number(),
+    porcentaje_impuesto: z.number(),
+    impuesto_linea_usd: z.number(),
 });
 
 export const OrdenCompraSchema = z.object({

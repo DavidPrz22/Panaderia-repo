@@ -1,9 +1,9 @@
 import { useQueries, useQuery } from "@tanstack/react-query";
-import { bcvRateQueryOptions, comprasTableQueryOptions } from "./queryOptions";
-import { estadosOrdenCompraQueryOptions, proveedoresQueryOptions, metodosDePagoQueryOptions, estadosOrdenCompraRegistroQueryOptions, comprasDetallesQueryOptions } from "./queryOptions";
+import { bcvRateQueryOptions, ordenesCompraTableQueryOptions } from "./queryOptions";
+import { estadosOrdenCompraQueryOptions, proveedoresQueryOptions, metodosDePagoQueryOptions, estadosOrdenCompraRegistroQueryOptions, ordenesCompraDetallesQueryOptions, unidadesMedidaQueryOptions } from "./queryOptions";
 
-export const useGetComprasTable = () => {
-    return useQuery(comprasTableQueryOptions)
+export const useGetOrdenesCompraTable = () => {
+    return useQuery(ordenesCompraTableQueryOptions)
 };
 
 export const useGetAllEstadosOrdenCompra = () => {
@@ -12,7 +12,7 @@ export const useGetAllEstadosOrdenCompra = () => {
 
 export const useGetParametros = () => {
     return useQueries({
-        queries: [proveedoresQueryOptions, metodosDePagoQueryOptions],
+        queries: [proveedoresQueryOptions, metodosDePagoQueryOptions, unidadesMedidaQueryOptions],
     });
 };
 
@@ -24,6 +24,6 @@ export const useGetBCVRate = () => {
     return useQuery(bcvRateQueryOptions);
 };
 
-export const useGetOrdenesDetalles = (id: number) => {
-    return useQuery(comprasDetallesQueryOptions(id));
+export const useGetOrdenesCompraDetalles = (id: number) => {
+    return useQuery(ordenesCompraDetallesQueryOptions(id));
 };

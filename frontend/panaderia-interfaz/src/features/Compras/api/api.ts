@@ -2,10 +2,12 @@
 import apiClient from "@/api/client";
 import axios from "axios";
 import type { OrdenCompraTable, ProveedorRegistro, OrdenCompra, EstadoOC, MetodoDePago, Producto } from "../types/types";
+import type { UnidadesDeMedida } from "@/features/ProductosIntermedios/types/types";
+import type { TOrdenCompraSchema } from "../schemas/schemas";
 
 export const getProveedores = async (): Promise<ProveedorRegistro[]> => {
     try {
-        const response = await apiClient.get("/api/proveedores/compra_registro/");
+        const response = await apiClient.get("/api/compras/proveedores/compra_registro/");
         return response.data;
     } catch (error) {
         console.error("Error fetching proveedores:", error);
@@ -15,7 +17,7 @@ export const getProveedores = async (): Promise<ProveedorRegistro[]> => {
 
 export const getOrdenesCompras = async (): Promise<OrdenCompraTable[]> => {
     try {
-        const response = await apiClient.get("/api/compras/");
+        const response = await apiClient.get("/api/compras/ordenes-compra/");
         return response.data;
     } catch (error) {
         console.error("Error fetching compras:", error);
@@ -25,7 +27,7 @@ export const getOrdenesCompras = async (): Promise<OrdenCompraTable[]> => {
 
 export const getEstadosOrdenCompraRegistro = async (): Promise<EstadoOC[]> => {
     try {
-        const response = await apiClient.get("/api/estados-orden-compra/get_estados_registro/");
+        const response = await apiClient.get("/api/estados-orden-compra/get-estados-registro/");
         return response.data;
     } catch (error) {
         console.error("Error fetching estados orden compra registro:", error);
@@ -35,7 +37,7 @@ export const getEstadosOrdenCompraRegistro = async (): Promise<EstadoOC[]> => {
 
 export const getOrdenesComprasDetalles = async (id: number): Promise<OrdenCompra> => {
     try {
-        const response = await apiClient.get(`/api/compras/${id}/`);
+        const response = await apiClient.get(`/api/compras/ordenes-compra/${id}/`);
         return response.data;
     } catch (error) {
         console.error("Error fetching compras detalles:", error);
@@ -94,3 +96,23 @@ export const searchProductosOC = async (search: string): Promise<ProductosOCSear
         throw error;
     }
 };  
+
+export const getUnidadesMedida = async (): Promise<UnidadesDeMedida[]> => {
+    try {
+        const response = await apiClient.get("/api/unidades-medida/");
+        return response.data;
+    } catch (error) {
+        console.error("Error fetching unidades de medida:", error);
+        return [];
+    }
+};
+
+export const createOrdenCompra = async (params: TOrdenCompraSchema): Promise<OrdenCompra> => {
+    try {
+        const response = await apiClient.post("/api/compras/ordenes-compra/", params);
+        return response.data;
+    } catch (error) {
+        console.error("Error creating orden compra:", error);
+        throw error;
+    }
+};
