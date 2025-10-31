@@ -19,8 +19,9 @@ import {
 } from "@/components/ui/popover"
 
 import { useProductosSearchMutation } from "../hooks/mutations/mutations"
+import type { Producto } from "../types/types"
 
-export function ComprasFormSearch({ value, onChange }: { value?: string, onChange: (producto: any) => void }) {
+export function ComprasFormSearch({ value, onChange }: { value?: string, onChange: (producto: Producto) => void }) {
   const [open, setOpen] = useState(false)
   const [timer, setTimer] = useState<NodeJS.Timeout | null>(null)
   const { data: dataProductosOC, mutate: searchProductosOC } = useProductosSearchMutation()

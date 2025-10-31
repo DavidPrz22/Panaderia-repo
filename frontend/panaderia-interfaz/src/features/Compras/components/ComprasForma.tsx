@@ -26,6 +26,7 @@ import { PendingTubeSpinner } from "@/components/PendingTubeSpinner";
 
 import { ComprasFormSelect } from "./ComprasFormSelect";
 import { ComprasFormSearch } from "./ComprasFormSearch";
+import { ComprasFormTotals } from "./ComprasFormTotals";
 import { useGetParametros, useGetEstadosOrdenCompraRegistro, useGetBCVRate } from "../hooks/queries/queries";
 
 import { useForm } from "react-hook-form";
@@ -35,6 +36,12 @@ import { ComprasFormDatePicker } from "./ComprasFormDatePicker";
 import { toast } from "sonner";
 
 import { useCreateOCMutation } from "../hooks/mutations/mutations";
+import { useComprasFormLogic } from "../hooks/useComprasFormLogic";
+import { 
+  updateItemFromProducto, 
+  findProductoIndex,
+  createNewDetalleOC 
+} from "../utils/itemHandlers";
 
 interface ComprasFormProps {
   orden?: OrdenCompra;
@@ -54,7 +61,21 @@ export const ComprasForm = ({ orden, onClose }: ComprasFormProps) => {
         ? {
           }
         : {
-            
+          fecha_emision_oc: new Date().toISOString().split('T')[0],
+          fecha_entrega_esperada: new Date().toISOString().split('T')[0],
+          estado_oc: 1,
+          metodo_pago: 1,
+          subtotal_oc_usd: 0,
+          subtotal_oc_ves: 0,
+          monto_total_oc_usd: 0,
+          monto_total_oc_ves: 0,
+          monto_impuestos_oc_usd: 0,
+          monto_impuestos_oc_ves: 0,
+          tasa_cambio_aplicada: 0,
+          direccion_envio: undefined,
+          terminos_pago: undefined,
+          notas: undefined,
+          fecha_entrega_real: undefined,
           },
   });
 
@@ -85,36 +106,26 @@ export const ComprasForm = ({ orden, onClose }: ComprasFormProps) => {
   );
   const [subtotal, setSubtotal] = useState(0);
 
+  const formLogic = useComprasFormLogic({
+    setValue,
+    watch,
+    items,
+    setSubtotal,
+  });
+
+  const {
+    roundTo3,
+    calculateTotalFromItems,
+    updateItemCalculations,
+    updateFormDetalles,
+    resetAmounts,
+  } = formLogic;
+
   useEffect(() => {
     if (bcvRate) {
       setValue('tasa_cambio_aplicada', roundTo3(bcvRate.promedio))
     }
-  }, [bcvRate, setValue])
-
-
-  const calculateTotal = () => {
-    calculateTotalFromItems(items);
-  };
-
-  const roundTo3 = (n: number) => Math.round(n * 1000) / 1000;
-  
-  const calculateTotalFromItems = (itemsArray: DetalleOC[]) => {
-    const subtotalBeforeTaxes = itemsArray.reduce((sum, item) => sum + (item.costo_unitario_usd * item.cantidad_solicitada), 0);
-    const impuesto = itemsArray.reduce((sum, item) => sum + (item.costo_unitario_usd * item.cantidad_solicitada * item.porcentaje_impuesto / 100), 0);
-    const subtotal = subtotalBeforeTaxes + impuesto;
-    setSubtotal(subtotalBeforeTaxes);
-
-    setValue('monto_total_oc_usd', roundTo3(subtotal));
-    setValue('monto_total_oc_ves', roundTo3(subtotal * (Number(watch('tasa_cambio_aplicada')) || 0)));
-    setValue('monto_impuestos_oc_usd', roundTo3(impuesto));
-    setValue('monto_impuestos_oc_ves', roundTo3(impuesto * (Number(watch('tasa_cambio_aplicada')) || 0)));
-  }
-  const resetProductoItem = (item: DetalleOC) => {
-    item.materia_prima = 0;
-    item.materia_prima_nombre = "";
-    item.producto_reventa = 0;
-    item.producto_reventa_nombre = "";
-  }
+  }, [bcvRate, setValue, roundTo3])
 
   useEffect(() => {
     if (orden) {
@@ -124,23 +135,10 @@ export const ComprasForm = ({ orden, onClose }: ComprasFormProps) => {
   }, [])
 
   const addItem = () => {
-    const newItem: DetalleOC = {
-      id: items.length,
-      materia_prima: 0,
-      materia_prima_nombre: "",
-      producto_reventa: 0,
-      producto_reventa_nombre: "",
-      cantidad_solicitada: 0,
-      cantidad_recibida: 0,
-      unidad_medida_compra: 0,
-      unidad_medida_abrev: "",
-      costo_unitario_usd: 0,
-      subtotal_linea_usd: 0,
-      porcentaje_impuesto: 0,
-      impuesto_linea_usd: 0,
-    };
+    const newItem = createNewDetalleOC(items.length);
     setItems([...items, newItem]);
   };
+
   const removeItem = (id: number) => {
     const newItems = items.filter((i) => i.id !== id);
     const newProductos = watch('detalles')?.filter((p) => p.id !== id) || [];
@@ -154,25 +152,6 @@ export const ComprasForm = ({ orden, onClose }: ComprasFormProps) => {
       calculateTotalFromItems(newItems);
     }
   };
-  const resetAmounts = () => {
-    setSubtotal(0)
-    setValue('monto_impuestos_oc_usd', 0)
-    setValue('monto_total_oc_usd', 0)
-    setValue('monto_total_oc_ves', 0)
-    setValue('subtotal_oc_usd', 0)
-    setValue('subtotal_oc_ves', 0)
-  }
-  const calculateSubtotal = (item: DetalleOC, impuestoPorcentaje: number = 0) => {
-    const subtotal = item.costo_unitario_usd * item.cantidad_solicitada
-    const impuesto = calculateImpuesto(subtotal, impuestoPorcentaje)
-    return roundTo3(subtotal + impuesto)
-  }
-
-  const calculateImpuesto = (subtotal: number, impuestoPorcentaje: number = 0) => {
-    const impuesto = subtotal * impuestoPorcentaje / 100
-    return roundTo3(impuesto)
-  }
-  console.log(watch())
   const handleSubmitForm = async (data: TOrdenCompraSchema) => {
     console.log(data)
     return;
@@ -279,9 +258,22 @@ export const ComprasForm = ({ orden, onClose }: ComprasFormProps) => {
                   id="payment"
                   type="text"
                   value={watch("terminos_pago") ?? ""}
-                  className="focus-visible:ring-blue-200"
+                  className="focus-visible:ring-blue-200 bg-gray-50"
                   onChange={(e) => setValue("terminos_pago", e.target.value || undefined)}
                   placeholder="Terminos de Pago"
+                />
+              </div>
+
+              {/* Direccion de Envio */}
+              <div className="space-y-2">
+                <Label htmlFor="payment">Direccion de Envio (Opcional)</Label>
+                <Input
+                  id="payment"
+                  type="text"
+                  value={watch("direccion_envio") ?? ""}
+                  className="focus-visible:ring-blue-200 bg-gray-50"
+                  onChange={(e) => setValue("direccion_envio", e.target.value || undefined)}
+                  placeholder="Direccion de Envio"
                 />
               </div>
             </div>
@@ -313,47 +305,37 @@ export const ComprasForm = ({ orden, onClose }: ComprasFormProps) => {
                     {items.map((item) => (
                       <TableRow key={item.id}>
                         <TableCell>
-                          <ComprasFormSearch value={item.materia_prima_nombre || item.producto_reventa_nombre} onChange={
-                            (producto: Producto) => {
-                              const productoId = item.id
-                              resetProductoItem(item)
-                              
-                              if (producto.tipo === 'materia-prima') {
+                          <ComprasFormSearch 
+                            value={item.materia_prima_nombre || item.producto_reventa_nombre} 
+                            onChange={(producto: Producto) => {
+                              const productoId = item.id;
 
-                                item.materia_prima = producto.id
-                                item.materia_prima_nombre = producto.nombre
-                              } else {
-                                item.producto_reventa = producto.id
-                                item.producto_reventa_nombre = producto.nombre
+                              const isDuplicate = items.some((existingItem) => {
+                                if (existingItem.id === productoId) return false;
+                                
+                                if (producto.tipo === 'materia-prima') {
+                                  return existingItem.materia_prima === producto.id;
+                                } else {
+                                  return existingItem.producto_reventa === producto.id;
+                                }
+                              });
+
+                              if (isDuplicate) {
+                                toast.error("El Producto Ya Existe en la Orden");
+                                return;
                               }
-                              item.costo_unitario_usd = producto.precio_compra_usd
-                              item.unidad_medida_compra = producto.unidad_medida_compra.id
-                              item.unidad_medida_abrev = producto.unidad_medida_compra.abreviatura
-                              setItems([...items])
 
+                              const productoIndex = findProductoIndex(watch, productoId);
 
-                              const subtotal = calculateSubtotal(item)
-                              item.subtotal_linea_usd = subtotal
-                              const schemaValue: TOrdenCompraSchema['detalles'] = items
-                                .filter((item) => item.unidad_medida_compra !== undefined && item.unidad_medida_compra !== 0)
-                                .map((item)=>{
-                                          return {
-                                                  id: item.id,
-                                                  materia_prima: item.materia_prima,
-                                                  producto_reventa: item.producto_reventa,
-                                                  cantidad_solicitada: item.cantidad_solicitada,
-                                                  unidad_medida_compra: item.unidad_medida_compra!,
-                                                  costo_unitario_usd: item.costo_unitario_usd,
-                                                  subtotal_linea_usd: item.subtotal_linea_usd,
-                                                  porcentaje_impuesto: item.porcentaje_impuesto,
-                                                  impuesto_linea_usd: item.impuesto_linea_usd,
-                                                  }
-                                                })
-                            setValue('detalles', schemaValue )
-                            setValue(`detalles.${productoId}.subtotal_linea_usd`, subtotal)
-                            calculateTotal();
-                            }
-                          } />
+                              updateItemFromProducto(item, producto);
+                              setItems([...items]);
+
+                              const calculations = updateItemCalculations(item);
+                              
+                              updateFormDetalles(items, productoIndex, calculations);
+                              calculateTotalFromItems(items);
+                            }} 
+                          />
                         </TableCell>
                         <TableCell>
                           <Input
@@ -362,31 +344,27 @@ export const ComprasForm = ({ orden, onClose }: ComprasFormProps) => {
                             step="1"
                             className="focus-visible:ring-blue-200"
                             defaultValue={item.cantidad_solicitada}
-                            onChange={(e) =>
-                              {
+                            onChange={(e) => {
+                              const productoId = item.id;
+                              const value = Number(e.target.value);
+                              
+                              if (value < 0) {
+                                e.target.value = "0";
+                                toast.error("La Cantidad No Puede Ser Menor a 0");
+                                return;
+                              }
 
-                                const productoId = item.id
-                                const value = Number(e.target.value)
-                                if (value < 0) {
-                                  e.target.value = "0"
-                                  toast.error("La Cantidad No Puede Ser Menor a 0")
-                                  return
-                                }
-
-                                const productoIndex = watch("detalles")?.findIndex((p) => p.id === productoId)
-                                if (productoIndex !== -1) {
-                                  item.cantidad_solicitada = value;
-
-                                  const subtotal = calculateSubtotal(item, item.porcentaje_impuesto)
-                                  item.subtotal_linea_usd = subtotal
-
-                                  const impuesto = calculateImpuesto(subtotal, item.porcentaje_impuesto)
-                                  setValue(`detalles.${productoIndex}.cantidad_solicitada`, value, { shouldValidate: true })
-                                  setValue(`detalles.${productoIndex}.impuesto_linea_usd`, impuesto)
-                                  setValue(`detalles.${productoIndex}.subtotal_linea_usd`, subtotal)
-                                  calculateTotal();
-                                }
-                              }}
+                              const productoIndex = findProductoIndex(watch, productoId);
+                              if (productoIndex !== -1) {
+                                item.cantidad_solicitada = value;
+                                const calculations = updateItemCalculations(item);
+                                
+                                updateFormDetalles(items, productoIndex, calculations, {
+                                  cantidad_solicitada: value,
+                                });
+                                calculateTotalFromItems(items);
+                              }
+                            }}
                           />
                         </TableCell>
                         <TableCell className="text-sm">
@@ -403,25 +381,25 @@ export const ComprasForm = ({ orden, onClose }: ComprasFormProps) => {
                           {formatCurrency(item.costo_unitario_usd)}
                         </TableCell>
                         <TableCell className="text-sm">
-                              <Input 
-                              type="number" 
-                              min="0" step="0.1" 
-                              className="focus-visible:ring-blue-200"   
-                              defaultValue={item.porcentaje_impuesto} onChange={(e) => {
-                                const productoId = item.id
-                                const value = Number(e.target.value)
+                          <Input 
+                            type="number" 
+                            min="0" 
+                            step="0.1" 
+                            className="focus-visible:ring-blue-200"   
+                            defaultValue={item.porcentaje_impuesto} 
+                            onChange={(e) => {
+                              const productoId = item.id;
+                              const value = Number(e.target.value);
 
-                                const subtotal = calculateSubtotal(item, value)
-                                const impuesto = calculateImpuesto(subtotal, value)
-                                
-                                item.porcentaje_impuesto = value
-                                item.subtotal_linea_usd = subtotal
-                                item.impuesto_linea_usd = impuesto
-                                setValue(`detalles.${productoId}.porcentaje_impuesto`, value, { shouldValidate: true })
-                                setValue(`detalles.${productoId}.subtotal_linea_usd`, subtotal)
-                                setValue(`detalles.${productoId}.impuesto_linea_usd`, impuesto)
-                                calculateTotal();
-                              }} />
+                              const calculations = updateItemCalculations(item, value);
+                              const productoIndex = findProductoIndex(watch, productoId);
+                              
+                              updateFormDetalles(items, productoIndex, calculations, {
+                                porcentaje_impuesto: value,
+                              });
+                              calculateTotalFromItems(items);
+                            }} 
+                          />
                         </TableCell>
                         <TableCell className="font-medium">
                           {formatCurrency(item.subtotal_linea_usd)}
@@ -463,37 +441,14 @@ export const ComprasForm = ({ orden, onClose }: ComprasFormProps) => {
             </div>
 
             {/* Totals */}
-            <div className="border-t pt-4 flex justify-end">
-              <div className="grid grid-cols-2 gap-2">
-
-                <div className="space-y-2 w-60">
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Tasa de Cambio VES: </span>
-                    <span className="font-medium">{bcvRate?.promedio ? bcvRate.promedio.toFixed(2) : '0.00'}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="font-bold">Total en VES: </span>
-                    <span className="font-medium">{(Number(watch("monto_total_oc_ves")) || 0).toFixed(2)}</span>
-                  </div>
-                </div>
-
-                <div className="space-y-2 w-80">
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Subtotal:</span>
-                    <span className="font-medium">{formatCurrency(Number(subtotal) || 0)}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">+ Impuestos:</span>
-                    <span className="font-medium">{formatCurrency(Number(watch("monto_impuestos_oc_usd")) || 0)}</span>
-                  </div>
-                  <div className="flex justify-between text-xl font-bold border-t pt-2">
-                    <span>Total:</span>
-                    <span>{formatCurrency(Number(watch("monto_total_oc_usd")) || 0)}</span>
-                  </div>
-                </div>
-
-              </div>
-            </div>
+            <ComprasFormTotals
+              bcvRate={bcvRate?.promedio}
+              totalVes={Number(watch("monto_total_oc_ves")) || 0}
+              subtotalUsd={Number(subtotal) || 0}
+              addedCostsUsd={Number(watch("monto_impuestos_oc_usd")) || 0}
+              totalUsd={Number(watch("monto_total_oc_usd")) || 0}
+              formatCurrency={formatCurrency}
+            />
 
             {/* Actions */}
             <div className="flex gap-3 justify-end border-t pt-4">

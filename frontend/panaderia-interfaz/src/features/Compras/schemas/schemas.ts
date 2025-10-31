@@ -13,21 +13,27 @@ const detalleOC = z.object({
 });
 
 export const OrdenCompraSchema = z.object({
-    id: z.number(),
     proveedor: z.number(),
     fecha_emision_oc: z.string(),
     fecha_entrega_esperada: z.string(),
     fecha_entrega_real: z.string().optional(),
-    estado_oc: z.number(),
-    metodo_pago: z.number(),
-    subtotal_oc_usd: z.number(),
-    subtotal_oc_ves: z.number(),
-    monto_total_oc_usd: z.number(),
-    monto_total_oc_ves: z.number(),
-    monto_impuestos_oc_usd: z.number(),
-    monto_impuestos_oc_ves: z.number(),
-    tasa_cambio_aplicada: z.number(),
-    notas: z.string().optional(),
+    estado_oc: z.number().min(0, "El estado de la orden es requerido"),
+    metodo_pago: z.number().min(0, "El ID del método de pago es requerido"),
+    subtotal_oc_usd: z.number().min(0, "El subtotal de la orden es requerido"),
+    subtotal_oc_ves: z.number().min(0, "El subtotal de la orden en VES es requerido"),
+    monto_total_oc_usd: z.number().min(0, "El monto total de la orden es requerido"),
+    monto_total_oc_ves: z.number().min(0, "El monto total de la orden en VES es requerido"),
+    monto_impuestos_oc_usd: z.number().min(0, "El monto de impuestos de la orden es requerido"),
+    monto_impuestos_oc_ves: z.number().min(0, "El monto de impuestos de la orden en VES es requerido"),
+    tasa_cambio_aplicada: z.number().min(0, "La tasa de cambio es requerida"),
+    notas: z.string()
+    .refine((val) => !val || val.length >= 3, {
+        message: "Las notas no pueden tener menos de 3 caracteres",
+    })
+    .refine((val) => !val || val.length <= 250, {
+        message: "Las notas no pueden tener más de 250 caracteres",
+    })
+    .optional(),
     detalles: z.array(detalleOC),
     direccion_envio: z.string().optional(),
     terminos_pago: z.string().optional(),
