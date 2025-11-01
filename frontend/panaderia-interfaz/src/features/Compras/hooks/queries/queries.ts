@@ -25,5 +25,5 @@ export const useGetBCVRate = () => {
 };
 
 export const useGetOrdenesCompraDetalles = (id: number) => {
-    return useQuery(ordenesCompraDetallesQueryOptions(id));
+    return useQuery({...ordenesCompraDetallesQueryOptions(id), enabled: !!id});
 };

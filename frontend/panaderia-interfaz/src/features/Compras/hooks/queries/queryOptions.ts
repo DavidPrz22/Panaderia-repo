@@ -1,4 +1,4 @@
-import { getProveedores, getOrdenesCompras, getOrdenesComprasDetalles, getBCVRate , getAllEstadosOrdenCompra, getMetodosDePago, getEstadosOrdenCompraRegistro, getUnidadesMedida } from "../../api/api";
+import { getProveedores, getOrdenesComprasTable, getOrdenesComprasDetalles, getBCVRate , getAllEstadosOrdenCompra, getMetodosDePago, getEstadosOrdenCompraRegistro, getUnidadesMedida } from "../../api/api";
 
 export const proveedoresQueryOptions = {
     queryKey: ["proveedores"],
@@ -8,7 +8,7 @@ export const proveedoresQueryOptions = {
 
 export const ordenesCompraTableQueryOptions = {
     queryKey: ["ordenes-compra-table"],
-    queryFn: getOrdenesCompras,
+    queryFn: getOrdenesComprasTable,
     staleTime: Infinity,
 };
 

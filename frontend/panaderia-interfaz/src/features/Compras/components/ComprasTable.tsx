@@ -11,7 +11,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Pencil } from "lucide-react";
 
-interface OrdersTableProps {
+interface ComprasTableProps {
   ordenesCompra: OrdenCompraTable[];
   onEditOrder: (order: OrdenCompraTable) => void;
 }
@@ -20,7 +20,7 @@ import { PendingTubeSpinner } from "@/components/PendingTubeSpinner";
 import { useComprasContext } from "@/context/ComprasContext";
 
 
-export const OrdersTable = ({ ordenesCompra, onEditOrder }: OrdersTableProps) => {
+export const ComprasTable = ({ ordenesCompra, onEditOrder }: ComprasTableProps) => {
 
   const { compraSeleccionadaId, setCompraSeleccionadaId } = useComprasContext();
 
@@ -40,7 +40,7 @@ export const OrdersTable = ({ ordenesCompra, onEditOrder }: OrdersTableProps) =>
       day: "2-digit",
     });
   };
-
+  console.log("ordenesCompra", ordenesCompra)
   const handleOrdenSeleccionada = (id: number) => {
     setCompraSeleccionadaId(id);
   };
@@ -64,40 +64,47 @@ export const OrdersTable = ({ ordenesCompra, onEditOrder }: OrdersTableProps) =>
           </TableRow>
         </TableHeader>
         <TableBody>
-          {ordenesCompra.map((ordenCompra, index) => (
-            <TableRow key={ordenCompra.id} className={`hover:bg-gray-100 cursor-pointer ${index % 2 !== 0 ? "bg-gray-50" : ""}`} onClick={() => handleOrdenSeleccionada(ordenCompra.id)}>
-              <TableCell className="font-medium pl-3">{ordenCompra.id}</TableCell>
-              <TableCell>{ordenCompra.proveedor}</TableCell>
-              <TableCell>{formatDate(ordenCompra.fecha_emision_oc)}</TableCell>
-              <TableCell>
-                {ordenCompra.fecha_entrega_real
-                  ? formatDate(ordenCompra.fecha_entrega_real)
-                  : ordenCompra.fecha_entrega_esperada
-                  ? formatDate(ordenCompra.fecha_entrega_esperada)
-                  : "-"}
-              </TableCell>
-              <TableCell>
-                <OrdenesEstadoBadge estadoCompras={ordenCompra.estado_oc as EstadosOC} />
-              </TableCell>
-              <TableCell>{ordenCompra.metodo_pago}</TableCell>
-              <TableCell className="text-right font-medium">
-                {formatCurrency(ordenCompra.monto_total_oc_usd)}
-              </TableCell>
-              <TableCell onClick={(e) => e.stopPropagation()}>
-                <div className="flex gap-1 justify-center">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => onEditOrder(ordenCompra)}
-                    title="Editar"
-                  >
-                    <Pencil className="h-4 w-4" />
-                  </Button>
-                  
-                </div>
-              </TableCell>
-            </TableRow>
-          ))}
+          {
+            ordenesCompra.length > 0 ? (
+              ordenesCompra.map((ordenCompra, index) => (
+                <TableRow key={ordenCompra.id} className={`hover:bg-gray-100 cursor-pointer ${index % 2 !== 0 ? "bg-gray-50" : ""}`} onClick={() => handleOrdenSeleccionada(ordenCompra.id)}>
+                  <TableCell className="font-medium pl-3">{ordenCompra.id}</TableCell>
+                  <TableCell>{ordenCompra.proveedor}</TableCell>
+                  <TableCell>{formatDate(ordenCompra.fecha_emision_oc)}</TableCell>
+                  <TableCell>
+                    {ordenCompra.fecha_entrega_real
+                      ? formatDate(ordenCompra.fecha_entrega_real)
+                      : ordenCompra.fecha_entrega_esperada
+                      ? formatDate(ordenCompra.fecha_entrega_esperada)
+                      : "-"}
+                  </TableCell>
+                  <TableCell>
+                    <OrdenesEstadoBadge estadoCompras={ordenCompra.estado_oc as EstadosOC} />
+                  </TableCell>
+                  <TableCell>{ordenCompra.metodo_pago}</TableCell>
+                  <TableCell className="text-right font-medium">
+                    {formatCurrency(ordenCompra.monto_total_oc_usd)}
+                  </TableCell>
+                  <TableCell onClick={(e) => e.stopPropagation()}>
+                    <div className="flex gap-1 justify-center">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => onEditOrder(ordenCompra)}
+                        title="Editar"
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                      
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))
+            ) : (
+              <TableRow>
+                <TableCell colSpan={8} className="text-center text-lg font-semibold p-10">No hay ordenes de compra</TableCell>
+              </TableRow>
+            )}
         </TableBody>
       </Table>
     </div>

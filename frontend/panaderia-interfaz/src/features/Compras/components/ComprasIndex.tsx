@@ -21,7 +21,7 @@ import {
   useGetOrdenesCompraDetalles 
 } from "../hooks/queries/queries";
 import { DoubleSpinnerLoading } from "@/components/DoubleSpinnerLoading";
-import { OrdersTable } from "./ComprasTable";
+import { ComprasTable } from "./ComprasTable";
 import { ComprasForm } from "./ComprasForma";
 
 export const ComprasIndex = () => {
@@ -178,7 +178,7 @@ export const ComprasIndex = () => {
          {isFetchingOrdenesCompraTable ? (
           <DoubleSpinnerLoading extraClassName="size-20" />
         ) : (
-          <OrdersTable
+          <ComprasTable
             ordenesCompra={filteredOrders}
             onEditOrder={handleEditOrder}
           />

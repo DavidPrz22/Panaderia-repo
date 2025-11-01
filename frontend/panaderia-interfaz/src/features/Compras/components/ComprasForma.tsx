@@ -153,8 +153,6 @@ export const ComprasForm = ({ orden, onClose }: ComprasFormProps) => {
     }
   };
   const handleSubmitForm = async (data: TOrdenCompraSchema) => {
-    console.log(data)
-    return;
     try {
       if (isEdit && orden) {
     

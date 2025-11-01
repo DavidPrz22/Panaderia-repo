@@ -15,9 +15,9 @@ export const getProveedores = async (): Promise<ProveedorRegistro[]> => {
     }
 };
 
-export const getOrdenesCompras = async (): Promise<OrdenCompraTable[]> => {
+export const getOrdenesComprasTable = async (): Promise<OrdenCompraTable[]> => {
     try {
-        const response = await apiClient.get("/api/compras/ordenes-compra/");
+        const response = await apiClient.get("/api/compras/ordenes-compra/get_ordenes_table/");
         return response.data;
     } catch (error) {
         console.error("Error fetching compras:", error);

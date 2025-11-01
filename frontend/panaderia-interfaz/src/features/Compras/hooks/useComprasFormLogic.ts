@@ -40,8 +40,11 @@ export const useComprasFormLogic = ({
     );
     const subtotal = subtotalBeforeTaxes + impuesto;
     setSubtotal(subtotalBeforeTaxes);
-
+    
     const tasaCambio = Number(watch('tasa_cambio_aplicada')) || 0;
+    
+    setValue('subtotal_oc_usd', roundTo3(subtotalBeforeTaxes));
+    setValue('subtotal_oc_ves', roundTo3(subtotalBeforeTaxes * tasaCambio));
     
     setValue('monto_total_oc_usd', roundTo3(subtotal));
     setValue('monto_total_oc_ves', roundTo3(subtotal * tasaCambio));
