@@ -1,11 +1,11 @@
 import { Badge } from "@/components/ui/badge";
 import type { EstadosOC } from "../types/types";
 
-interface OrdenesEstadoBadgeProps {
+interface ComprasEstadoBadgeProps {
   estadoCompras: EstadosOC;
 }
 
-export const OrdenesEstadoBadge = ({ estadoCompras }: OrdenesEstadoBadgeProps) => {
+export const ComprasEstadoBadge = ({ estadoCompras }: ComprasEstadoBadgeProps) => {
   const variants: Record<EstadosOC, "default" | "secondary" | "destructive" | "outline"> = {
     "Borrador": "outline",
     "Enviada": "secondary",

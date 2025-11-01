@@ -107,7 +107,10 @@ export const getUnidadesMedida = async (): Promise<UnidadesDeMedida[]> => {
     }
 };
 
-export const createOrdenCompra = async (params: TOrdenCompraSchema): Promise<OrdenCompra> => {
+export type CreateOrdenCompraResponse = {
+    orden: OrdenCompra;
+}
+export const createOrdenCompra = async (params: TOrdenCompraSchema): Promise<CreateOrdenCompraResponse> => {
     try {
         const response = await apiClient.post("/api/compras/ordenes-compra/", params);
         return response.data;

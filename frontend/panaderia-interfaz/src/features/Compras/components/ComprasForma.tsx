@@ -42,6 +42,7 @@ import {
   findProductoIndex,
   createNewDetalleOC 
 } from "../utils/itemHandlers";
+import { useComprasContext } from "@/context/ComprasContext";
 
 interface ComprasFormProps {
   orden?: OrdenCompra;
@@ -49,6 +50,8 @@ interface ComprasFormProps {
 }
 
 export const ComprasForm = ({ orden, onClose }: ComprasFormProps) => {
+
+  const { setOrdenCompra, setShowOrdenCompraDetalles, setShowForm } = useComprasContext();
 
   const {
     handleSubmit,
@@ -101,7 +104,6 @@ export const ComprasForm = ({ orden, onClose }: ComprasFormProps) => {
       subtotal_linea_usd: p.subtotal_linea_usd,
       porcentaje_impuesto: p.porcentaje_impuesto,
       impuesto_linea_usd: p.impuesto_linea_usd,
-      notas: p.notas,
     })) || []
   );
   const [subtotal, setSubtotal] = useState(0);
@@ -159,15 +161,17 @@ export const ComprasForm = ({ orden, onClose }: ComprasFormProps) => {
         // await updateOrdenMutation({ id: orden.id, data });
         toast.success("Orden actualizada exitosamente");
       } else {
-        await createOCMutation(data);
+        const { orden } = await createOCMutation(data);
+        setOrdenCompra(orden);
+        setShowForm(false);
         toast.success("Orden creada exitosamente");
       }
-      onClose();
-    } catch {
+    } catch (error) {
+      console.error("Error creating orden compra:", error);
       toast.error(isEdit ? "Error al actualizar la orden" : "Error al crear la orden");
     }
   };
-
+  
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat("es-MX", {
       style: "currency",

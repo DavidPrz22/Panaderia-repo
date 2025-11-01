@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
 import type { OrdenCompraTable } from "../types/types";
-
+import { useEffect } from "react";
 import {
   Select,
   SelectContent,
@@ -23,9 +23,10 @@ import {
 import { DoubleSpinnerLoading } from "@/components/DoubleSpinnerLoading";
 import { ComprasTable } from "./ComprasTable";
 import { ComprasForm } from "./ComprasForma";
+import { ComprasDetalles } from "./ComprasDetalles";
 
 export const ComprasIndex = () => {
-    const { compraSeleccionadaId, showOrdenCompraDetalles, showForm, setShowForm, setShowOrdenCompraDetalles, setCompraSeleccionadaId } = useComprasContext();
+    const { compraSeleccionadaId, showOrdenCompraDetalles, ordenCompra,showForm, setShowForm, setShowOrdenCompraDetalles, setCompraSeleccionadaId } = useComprasContext();
   
   const { data: ordenesCompraTable = [], isFetching: isFetchingOrdenesCompraTable } = useGetOrdenesCompraTable();
       const { data: compraDetalles, isFetched } = useGetOrdenesCompraDetalles(compraSeleccionadaId!);
@@ -40,6 +41,12 @@ export const ComprasIndex = () => {
 //       setShowOrdenDetalles(true);
 //     }
 //   }, [ordenSeleccionadaId, isFetched, setShowOrdenDetalles, ordenDetalles, showForm]);
+
+  useEffect(() => {
+    if (ordenCompra && !showForm) {
+      setShowOrdenCompraDetalles(true);
+    }
+  }, [ordenCompra, showForm, setShowOrdenCompraDetalles]);
 
 
   // Filter orders based on search term and status
@@ -68,18 +75,17 @@ export const ComprasIndex = () => {
   };
 
 
-//   if (showOrdenDetalles) {
-//     return (
-//       <OrdenDetalles 
-//       orden={ordenDetalles!} 
-//       onClose={() => 
-//         {
-//           setShowOrdenDetalles(false);
-//           setOrdenSeleccionadaId(null);
-//         }}  
-//       />
-//     );
-//   }
+  if (showOrdenCompraDetalles && ordenCompra) {
+    return (
+      <ComprasDetalles 
+        ordenCompra={ordenCompra} 
+        onClose={() => {
+          setShowOrdenCompraDetalles(false);
+          setCompraSeleccionadaId(null);
+        }}  
+      />
+    );
+  }
 
   if (showForm) {
   

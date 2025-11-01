@@ -1,9 +1,9 @@
-import type { Orden } from "@/features/Ordenes/types/types";
+import type { OrdenCompra } from "@/features/Compras/types/types";
 import { createContext, useContext, useState } from "react";
   
   type ComprasContextType = {
-    compras: Orden[];
-    setCompras: (compras: Orden[]) => void;
+    ordenCompra: OrdenCompra | null;
+    setOrdenCompra: (ordenCompra: OrdenCompra | null) => void;
     compraSeleccionadaId: number | null;
     setCompraSeleccionadaId: (id: number | null) => void;
     showOrdenCompraDetalles: boolean;
@@ -32,7 +32,7 @@ import { createContext, useContext, useState } from "react";
     children: React.ReactNode;
   }) => {
     const [showForm, setShowForm] = useState(false);
-    const [compras, setCompras] = useState<Orden[]>([]);
+    const [ordenCompra, setOrdenCompra] = useState<OrdenCompra | null>(null);
     const [compraSeleccionadaId, setCompraSeleccionadaId] = useState<number | null>(null);
     const [showOrdenCompraDetalles, setShowOrdenCompraDetalles] = useState(false);
     const [showReferenciaPagoDialog, setShowReferenciaPagoDialog] = useState(false);
@@ -41,8 +41,8 @@ import { createContext, useContext, useState } from "react";
     return (
       <ComprasContext.Provider
         value={{
-          compras,
-          setCompras,
+          ordenCompra,
+          setOrdenCompra,
           compraSeleccionadaId,
           setCompraSeleccionadaId,
           showOrdenCompraDetalles,

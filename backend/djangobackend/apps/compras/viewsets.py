@@ -1,7 +1,7 @@
 from rest_framework import viewsets
 from apps.compras.models import Proveedores
 from apps.compras.models import OrdenesCompra
-from apps.compras.serializers import ProveedoresSerializer, CompraRegistroProveedoresSerializer, OrdenesCompraSerializer, OrdenesCompraTableSerializer, DetallesSerializer
+from apps.compras.serializers import ProveedoresSerializer, CompraRegistroProveedoresSerializer, OrdenesCompraSerializer, OrdenesCompraTableSerializer, FormattedResponseOCSerializer
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.db import transaction
@@ -62,7 +62,7 @@ class OrdenesCompraViewSet(viewsets.ModelViewSet):
             DetalleOrdenesCompra.objects.bulk_create(bulk_create_detalles)
             
             # Return response
-            orden_serializer = OrdenesCompraSerializer(orden)
+            orden_serializer = FormattedResponseOCSerializer(orden)
             return Response({
                 "orden": orden_serializer.data, 
             }, status=status.HTTP_201_CREATED)

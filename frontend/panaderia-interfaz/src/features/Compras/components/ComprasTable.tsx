@@ -1,5 +1,5 @@
 import type { EstadosOC, OrdenCompraTable  } from "../types/types";
-import { OrdenesEstadoBadge } from "./ComprasEstadoBadge";
+import { ComprasEstadoBadge } from "./ComprasEstadoBadge";
 import {
   Table,
   TableBody,
@@ -79,7 +79,7 @@ export const ComprasTable = ({ ordenesCompra, onEditOrder }: ComprasTableProps) 
                       : "-"}
                   </TableCell>
                   <TableCell>
-                    <OrdenesEstadoBadge estadoCompras={ordenCompra.estado_oc as EstadosOC} />
+                    <ComprasEstadoBadge estadoCompras={ordenCompra.estado_oc as EstadosOC} />
                   </TableCell>
                   <TableCell>{ordenCompra.metodo_pago}</TableCell>
                   <TableCell className="text-right font-medium">
