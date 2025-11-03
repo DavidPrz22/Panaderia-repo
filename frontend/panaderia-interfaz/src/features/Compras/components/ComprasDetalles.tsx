@@ -18,8 +18,9 @@ interface ComprasDetallesProps {
 }
 import type { EstadosOC } from "../types/types";
 import { ComprasFormTotals } from "./ComprasFormTotals";
-import { PDFDownloadLink } from '@react-pdf/renderer';
+import { usePDF } from '@react-pdf/renderer';
 import { OrdenCompraPDF } from "./OrdenCompraPDF";
+import { useMemo, useEffect } from "react";
 
 export const ComprasDetalles = ({ ordenCompra, onClose }: ComprasDetallesProps) => {
 
@@ -39,8 +40,43 @@ export const ComprasDetalles = ({ ordenCompra, onClose }: ComprasDetallesProps) 
       minute: "2-digit",
     });
   };
-;
-console.log("ordenCompra", ordenCompra);
+
+  // Use usePDF hook for better control over PDF generation
+  // Memoize the document to avoid re-rendering on every render
+  const pdfDocument = useMemo(
+    () => <OrdenCompraPDF ordenCompra={ordenCompra} />,
+    [ordenCompra]
+  );
+
+  const [instance] = usePDF({ document: pdfDocument });
+
+  // Debug logging
+  useEffect(() => {
+    if (instance.error) {
+      console.error('PDF Generation Error:', instance.error);
+    }
+    if (instance.url) {
+      console.log('PDF Generated Successfully:', instance.url);
+    }
+  }, [instance.error, instance.url]);
+
+  const handleDownloadPDF = () => {
+    if (instance.url) {
+      const link = document.createElement('a');
+      link.href = instance.url;
+      link.download = `orden-compra-${ordenCompra.id}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } else if (instance.error) {
+      console.error('Cannot download PDF:', instance.error);
+      alert('Error al generar el PDF. Por favor, intenta nuevamente.');
+    } else {
+      console.warn('PDF URL not available yet. Loading:', instance.loading);
+    }
+  };
+
+  console.log("ordenCompra", ordenCompra);
 //   const handleCancelOrder = async () => {
 //     try {
 //       const response = await cancelOrdenMutation(orden.id);
@@ -173,20 +209,28 @@ console.log("ordenCompra", ordenCompra);
 
             {/* Notes */}
             {ordenCompra.notas && (
-              <div className="flex justify-between border-t pt-4">
-                <div className="w-[90%]">
-                  <h3 className="font-semibold mb-2">Notas</h3>
-                  <p className="text-sm text-muted-foreground w-80">{ordenCompra.notas}</p>
-                </div>
-
-                <PDFDownloadLink document={<OrdenCompraPDF ordenCompra={ordenCompra} />} fileName={`orden-compra-${ordenCompra.id}.pdf`}>
-                  <Button variant="outline" className="cursor-pointer text-md">
-                    <FileDown className="size-5" />
-                    Descargar PDF
-                  </Button>
-                </PDFDownloadLink>
+              <div className="border-t pt-4">
+                <h3 className="font-semibold mb-2">Notas</h3>
+                <p className="text-sm text-muted-foreground">{ordenCompra.notas}</p>
               </div>
             )}
+
+            {/* PDF Download Button */}
+            <div className="flex justify-end border-t pt-4">
+              <Button 
+                variant="outline" 
+                className="cursor-pointer"
+                onClick={handleDownloadPDF}
+                disabled={instance.loading || !!instance.error}
+              >
+                <FileDown className="size-5" />
+                {instance.loading 
+                  ? 'Generando PDF...' 
+                  : instance.error 
+                    ? 'Error al generar PDF' 
+                    : 'Descargar PDF'}
+              </Button>
+            </div>
             
             
           </CardContent>
