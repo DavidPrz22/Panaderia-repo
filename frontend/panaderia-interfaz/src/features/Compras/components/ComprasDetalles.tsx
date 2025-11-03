@@ -2,7 +2,7 @@ import type { DetalleOC, OrdenCompra } from "../types/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ComprasEstadoBadge } from "./ComprasEstadoBadge";
 import { Button } from "@/components/ui/button";
-import { X } from "lucide-react";
+import { FileDown, X } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -18,7 +18,8 @@ interface ComprasDetallesProps {
 }
 import type { EstadosOC } from "../types/types";
 import { ComprasFormTotals } from "./ComprasFormTotals";
-
+import { PDFDownloadLink } from '@react-pdf/renderer';
+import { OrdenCompraPDF } from "./OrdenCompraPDF";
 
 export const ComprasDetalles = ({ ordenCompra, onClose }: ComprasDetallesProps) => {
 
@@ -77,10 +78,6 @@ console.log("ordenCompra", ordenCompra);
           <CardContent className="space-y-6 pt-6">
             {/* Order Info */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div>
-                <p className="text-sm text-muted-foreground">Proveedor</p>
-                <p className="font-medium">{ordenCompra.proveedor.nombre_proveedor}</p>
-              </div>
               <div>
                 <p className="text-sm text-muted-foreground">Fecha de Orden</p>
                 <p className="font-medium">{formatDate(ordenCompra.fecha_emision_oc)}</p>
@@ -176,11 +173,22 @@ console.log("ordenCompra", ordenCompra);
 
             {/* Notes */}
             {ordenCompra.notas && (
-              <div className="border-t pt-4">
-                <h3 className="font-semibold mb-2">Notas</h3>
-                <p className="text-sm text-muted-foreground">{ordenCompra.notas}</p>
+              <div className="flex justify-between border-t pt-4">
+                <div className="w-[90%]">
+                  <h3 className="font-semibold mb-2">Notas</h3>
+                  <p className="text-sm text-muted-foreground w-80">{ordenCompra.notas}</p>
+                </div>
+
+                <PDFDownloadLink document={<OrdenCompraPDF ordenCompra={ordenCompra} />} fileName={`orden-compra-${ordenCompra.id}.pdf`}>
+                  <Button variant="outline" className="cursor-pointer text-md">
+                    <FileDown className="size-5" />
+                    Descargar PDF
+                  </Button>
+                </PDFDownloadLink>
               </div>
             )}
+            
+            
           </CardContent>
         </Card>
       </div>
