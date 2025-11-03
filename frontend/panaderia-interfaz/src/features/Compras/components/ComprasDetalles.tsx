@@ -2,7 +2,7 @@ import type { DetalleOC, OrdenCompra } from "../types/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ComprasEstadoBadge } from "./ComprasEstadoBadge";
 import { Button } from "@/components/ui/button";
-import { FileDown, X } from "lucide-react";
+import { X } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -17,8 +17,6 @@ interface ComprasDetallesProps {
   onClose: () => void;
 }
 import type { EstadosOC } from "../types/types";
-import { PDFDownloadLink } from "@react-pdf/renderer";
-import { OrdenCompraPDF } from "./OrdenCompraPDF";
 
 
 export const ComprasDetalles = ({ ordenCompra, onClose }: ComprasDetallesProps) => {
@@ -29,9 +27,6 @@ export const ComprasDetalles = ({ ordenCompra, onClose }: ComprasDetallesProps) 
       currency: "USD",
     }).format(amount);
   };
-
-  
-
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("es-MX", {
@@ -62,16 +57,9 @@ export const ComprasDetalles = ({ ordenCompra, onClose }: ComprasDetallesProps) 
 //     }
 //   };
 
-
   return (
     <>
       <div className="flex items-center justify-center p-4">
-      <PDFDownloadLink document={<OrdenCompraPDF ordenCompra={ordenCompra} />} fileName="OrdenCompraPDF.pdf">
-        <Button>
-          <FileDown className="h-4 w-4" />
-          Descargar PDF
-        </Button>
-      </PDFDownloadLink>
         <Card className="w-full max-w-6xl">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4 border-b sticky top-0 bg-card z-10">
             <div className="flex items-center gap-3">
@@ -116,7 +104,7 @@ export const ComprasDetalles = ({ ordenCompra, onClose }: ComprasDetallesProps) 
 
             {/* Customer Details */}
             <div className="border-t pt-4">
-              <h3 className="font-semibold mb-2">Datos del Cliente</h3>
+              <h3 className="font-semibold mb-2">Datos del Proveedor</h3>
               <div className="grid grid-cols-2 gap-4">
                 {ordenCompra.proveedor.email_contacto && (
                   <div>
@@ -144,8 +132,6 @@ export const ComprasDetalles = ({ ordenCompra, onClose }: ComprasDetallesProps) 
                       <TableHead className="font-semibold text-center">Cantidad Solicitada</TableHead>
                       <TableHead className="font-semibold text-center">Unidad de Medida</TableHead>
                       <TableHead className="font-semibold text-right">Precio Unitario</TableHead>
-                      <TableHead className="font-semibold text-center">Impuesto</TableHead>
-                      <TableHead className="font-semibold text-center">Descuento</TableHead>
                       <TableHead className="font-semibold text-right">Subtotal</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -156,10 +142,7 @@ export const ComprasDetalles = ({ ordenCompra, onClose }: ComprasDetallesProps) 
                         <TableCell className="text-center">{item.cantidad_solicitada}</TableCell>
                         <TableCell className="text-center">{item.unidad_medida_abrev}</TableCell>
                         <TableCell className="text-right">{formatCurrency(item.costo_unitario_usd)}</TableCell>
-                        <TableCell className="text-center">{item.porcentaje_impuesto}%</TableCell>
-                        <TableCell className="text-right">{formatCurrency(item.impuesto_linea_usd)}</TableCell>
                         <TableCell className="text-right">{formatCurrency(item.subtotal_linea_usd)}</TableCell>
-                        <TableCell className="text-right">{formatCurrency(item.subtotal_linea_usd + item.impuesto_linea_usd)}</TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
@@ -171,26 +154,24 @@ export const ComprasDetalles = ({ ordenCompra, onClose }: ComprasDetallesProps) 
             <div className="border-t pt-4 flex justify-end gap-6">
 
               <div className="space-y-2 w-64">
+                <div className="flex justify-between text-lg font-bold  pt-2">
+                    <span>Total en Divisas:</span>
+                    <span>{formatCurrency(ordenCompra.monto_total_oc_usd)}</span>
+                </div>
+
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">Tasa de Cambio:</span>
                   <span className="font-medium">{ordenCompra.tasa_cambio_aplicada}</span>
                 </div>
+
                 <div className="flex justify-between text-sm">
                   <span className="font-bold">Total en VES:</span>
                   <span className="font-medium">{ordenCompra.monto_total_oc_ves}</span>
                 </div>
+                
               </div>
 
-              <div className="space-y-2 w-64">
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Impuestos:</span>
-                  <span className="font-medium">{formatCurrency(ordenCompra.monto_impuestos_oc_usd)}</span>
-                </div>
-                <div className="flex justify-between text-lg font-bold border-t pt-2">
-                  <span>Total:</span>
-                  <span>{formatCurrency(ordenCompra.monto_total_oc_usd)}</span>
-                </div>
-              </div>
+              
             </div>
 
             {/* Notes */}

@@ -1,6 +1,6 @@
 import { useComprasContext } from "@/context/ComprasContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { FileDown, Plus, Search } from "lucide-react";
+import { Plus, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
@@ -26,21 +26,22 @@ import { ComprasForm } from "./ComprasForma";
 import { ComprasDetalles } from "./ComprasDetalles";
 
 export const ComprasIndex = () => {
-    const { compraSeleccionadaId, showOrdenCompraDetalles, ordenCompra, showForm, setShowForm, setShowOrdenCompraDetalles, setCompraSeleccionadaId } = useComprasContext();
+    const { compraSeleccionadaId, showOrdenCompraDetalles, ordenCompra, setOrdenCompra, showForm, setShowForm, setShowOrdenCompraDetalles, setCompraSeleccionadaId } = useComprasContext();
   
   const { data: ordenesCompraTable = [], isFetching: isFetchingOrdenesCompraTable } = useGetOrdenesCompraTable();
-  const { data: compraDetalles, isFetched } = useGetOrdenesCompraDetalles(compraSeleccionadaId!);
+  const { data: { orden: compraDetalles } = { orden: undefined }, isFetched } = useGetOrdenesCompraDetalles(compraSeleccionadaId!);
 
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("Todos");
 
   const { data: estadosOrden } = useGetAllEstadosOrdenCompra();
 
-//   useEffect(() => {
-//     if (ordenSeleccionadaId && isFetched && ordenDetalles && !showForm) {
-//       setShowOrdenDetalles(true);
-//     }
-//   }, [ordenSeleccionadaId, isFetched, setShowOrdenDetalles, ordenDetalles, showForm]);
+  useEffect(() => {
+    if (compraSeleccionadaId && isFetched && compraDetalles && !showForm) {
+      setShowOrdenCompraDetalles(true);
+      setOrdenCompra(compraDetalles);
+    }
+  }, [compraSeleccionadaId, isFetched, setShowOrdenCompraDetalles, setOrdenCompra, compraDetalles, showForm]);
 
 
   useEffect(() => {

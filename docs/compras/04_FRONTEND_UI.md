@@ -416,13 +416,24 @@ ComprasIndex
             └─► OrdenCompraDetalles
                     │
                     ├─► Enviar Email → EmailDialog
+                    |-> Marca como Enviado
                     ├─► Descargar PDF
-                    ├─► Recepcionar → RecepcionForm
-                    │                      │
-                    │                      └─► Crear Compra + Lotes
-                    │
-                    └─► Registrar Pago → PagoProveedorForm
-```
+                        ├─► Recepcionar → RecepcionForm
+                        │                      │
+                        │                      └─► Crear Compra + Lotes
+                        │
+                        └─► Registrar Pago → PagoProveedorForm
+    ```
+    
+```python
+# Agregar en Django Admin o mediante migration/fixtures
+estados = [
+    {"nombre_estado": "Borrador", "descripcion": "OC en proceso de creación"},
+    {"nombre_estado": "Enviada", "descripcion": "OC enviada al proveedor"},
+    {"nombre_estado": "Recibida Parcial", "descripcion": "Parte de la mercancía ha sido recibida"},
+    {"nombre_estado": "Recibida Completa", "descripcion": "Toda la mercancía ha sido recibida"},
+    {"nombre_estado": "Cancelada", "descripcion": "OC cancelada"},
+]
 
 1. CREAR OC (Estado: "Borrador")
    └─ Formulario con proveedor, dirección, items, totales

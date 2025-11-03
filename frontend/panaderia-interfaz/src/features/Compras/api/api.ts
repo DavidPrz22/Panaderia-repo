@@ -5,6 +5,10 @@ import type { OrdenCompraTable, ProveedorRegistro, OrdenCompra, EstadoOC, Metodo
 import type { UnidadesDeMedida } from "@/features/ProductosIntermedios/types/types";
 import type { TOrdenCompraSchema } from "../schemas/schemas";
 
+export type OrdenCompraDetallesResponse = {
+    orden: OrdenCompra;
+}
+
 export const getProveedores = async (): Promise<ProveedorRegistro[]> => {
     try {
         const response = await apiClient.get("/api/compras/proveedores/compra_registro/");
@@ -35,9 +39,9 @@ export const getEstadosOrdenCompraRegistro = async (): Promise<EstadoOC[]> => {
     }
 };
 
-export const getOrdenesComprasDetalles = async (id: number): Promise<OrdenCompra> => {
+export const getOrdenesComprasDetalles = async (id: number): Promise<OrdenCompraDetallesResponse> => {
     try {
-        const response = await apiClient.get(`/api/compras/ordenes-compra/${id}/`);
+        const response = await apiClient.get(`/api/compras/ordenes-compra/${id}/detalles/`);
         return response.data;
     } catch (error) {
         console.error("Error fetching compras detalles:", error);
@@ -107,10 +111,8 @@ export const getUnidadesMedida = async (): Promise<UnidadesDeMedida[]> => {
     }
 };
 
-export type CreateOrdenCompraResponse = {
-    orden: OrdenCompra;
-}
-export const createOrdenCompra = async (params: TOrdenCompraSchema): Promise<CreateOrdenCompraResponse> => {
+
+export const createOrdenCompra = async (params: TOrdenCompraSchema): Promise<OrdenCompraDetallesResponse> => {
     try {
         const response = await apiClient.post("/api/compras/ordenes-compra/", params);
         return response.data;
