@@ -2,7 +2,7 @@ import type { DetalleOC, OrdenCompra } from "../types/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ComprasEstadoBadge } from "./ComprasEstadoBadge";
 import { Button } from "@/components/ui/button";
-import { X } from "lucide-react";
+import { FileDown, X } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -17,6 +17,8 @@ interface ComprasDetallesProps {
   onClose: () => void;
 }
 import type { EstadosOC } from "../types/types";
+import { PDFDownloadLink } from "@react-pdf/renderer";
+import { OrdenCompraPDF } from "./OrdenCompraPDF";
 
 
 export const ComprasDetalles = ({ ordenCompra, onClose }: ComprasDetallesProps) => {
@@ -64,6 +66,12 @@ export const ComprasDetalles = ({ ordenCompra, onClose }: ComprasDetallesProps) 
   return (
     <>
       <div className="flex items-center justify-center p-4">
+      <PDFDownloadLink document={<OrdenCompraPDF ordenCompra={ordenCompra} />} fileName="OrdenCompraPDF.pdf">
+        <Button>
+          <FileDown className="h-4 w-4" />
+          Descargar PDF
+        </Button>
+      </PDFDownloadLink>
         <Card className="w-full max-w-6xl">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4 border-b sticky top-0 bg-card z-10">
             <div className="flex items-center gap-3">

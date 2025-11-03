@@ -104,6 +104,7 @@ MIDDLEWARE = [
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",  # Your Vite frontend
     "http://localhost:5174",  # Your Vite frontend
+    "http://localhost:5556",  # Your Vite frontend
     "http://localhost:3000",  # React default port
 ]
 

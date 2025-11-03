@@ -22,7 +22,7 @@ import { useComprasContext } from "@/context/ComprasContext";
 
 export const ComprasTable = ({ ordenesCompra, onEditOrder }: ComprasTableProps) => {
 
-  const { compraSeleccionadaId, setCompraSeleccionadaId } = useComprasContext();
+  const { compraSeleccionadaId, setCompraSeleccionadaId, setOrdenCompra} = useComprasContext();
 
 //   const { isFetching: isFetchingOrdenDetalles } = useGetOrdenesDetalles(ordenSeleccionadaId!);
 
@@ -40,10 +40,9 @@ export const ComprasTable = ({ ordenesCompra, onEditOrder }: ComprasTableProps) 
       day: "2-digit",
     });
   };
-  console.log("ordenesCompra", ordenesCompra)
   const handleOrdenSeleccionada = (id: number) => {
     setCompraSeleccionadaId(id);
-  };
+    };
 
   return (
     <div className="border rounded-lg bg-card shadow-sm relative">
