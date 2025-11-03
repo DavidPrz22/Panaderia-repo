@@ -1,3 +1,5 @@
+import { useState } from "react";
+
 import type { DetalleOC, OrdenCompra } from "../types/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ComprasEstadoBadge } from "./ComprasEstadoBadge";
@@ -21,9 +23,12 @@ import { ComprasFormTotals } from "./ComprasFormTotals";
 import { usePDF } from '@react-pdf/renderer';
 import { OrdenCompraPDF } from "./OrdenCompraPDF";
 import { useMemo, useEffect } from "react";
+import { useMarcarEnviadaOCMutation } from "../hooks/mutations/mutations";
+import { toast } from "sonner";
 
 export const ComprasDetalles = ({ ordenCompra, onClose }: ComprasDetallesProps) => {
-
+  const [buttonsStates, setButtonsStates] = useState<EstadosOC>(ordenCompra.estado_oc.nombre_estado as EstadosOC);
+  const { mutateAsync: marcarEnviadaOCMutation, isPending: isLoadingMarcarEnviadaOCPending } = useMarcarEnviadaOCMutation();
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat("es-MX", {
       style: "currency",
@@ -76,7 +81,57 @@ export const ComprasDetalles = ({ ordenCompra, onClose }: ComprasDetallesProps) 
     }
   };
 
-  console.log("ordenCompra", ordenCompra);
+  const handleMarcarEnviadaOC = async (mutateAsync: () => Promise<{ message: string }>) => {
+    try {
+      const response = await mutateAsync();
+      if (response.message) {
+        toast.success(response.message);
+        setButtonsStates("Enviada");
+      }
+    } catch (error) {
+      console.error("Error marking order as sent:", error);
+      toast.error("Error marcando orden como enviada");
+    }
+  };
+
+  const handleButtonStates = (estado: EstadosOC) => {
+    switch (estado) {
+      case "Borrador":
+        return (
+          <>
+          <Button className="cursor-pointer bg-blue-600 text-white hover:bg-blue-700">
+            Enviar Email
+          </Button>
+          <Button 
+          className="cursor-pointer bg-amber-600 text-white hover:bg-amber-700"
+          onClick={() => handleMarcarEnviadaOC(() => marcarEnviadaOCMutation(ordenCompra.id))}
+          disabled={isLoadingMarcarEnviadaOCPending}
+          >
+            Marcar como Enviada
+          </Button>
+          </>
+        );
+      case "Enviada":
+        return (
+          <>
+            <Button variant="outline" className="cursor-pointer font-semibold">
+              Recibir
+            </Button>
+            <Button className="cursor-pointer bg-green-600 text-white font-semibold hover:bg-green-700">
+              Registrar Pago
+            </Button>
+          </>
+        );
+      case "Recibida Sin Pagar":
+        return (
+          <>
+          <Button className="cursor-pointer bg-green-600 text-white hover:bg-green-700">
+            Registrar Pago
+          </Button>
+          </>
+        );
+    }
+  };
 //   const handleCancelOrder = async () => {
 //     try {
 //       const response = await cancelOrdenMutation(orden.id);
@@ -101,14 +156,16 @@ export const ComprasDetalles = ({ ordenCompra, onClose }: ComprasDetallesProps) 
         <Card className="w-full max-w-6xl">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4 border-b sticky top-0 bg-card z-10">
             <div className="flex items-center gap-3">
-              <CardTitle className="text-2xl font-bold">{ordenCompra.id}</CardTitle>
+              <CardTitle className="text-2xl font-bold">Orden de Compra #{ordenCompra.id}</CardTitle>
               <ComprasEstadoBadge estadoCompras={ordenCompra.estado_oc ? ordenCompra.estado_oc.nombre_estado as EstadosOC : 'Borrador'} />
             </div>
             <div className="flex items-center gap-2">
-              
-              <Button variant="ghost" size="icon" onClick={onClose}>
-                <X className="h-4 w-4" />
-              </Button>
+              {handleButtonStates(buttonsStates)}
+              <div>
+                <Button variant="ghost" size="icon" onClick={onClose}>
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
           </CardHeader>
           <CardContent className="space-y-6 pt-6">
@@ -219,7 +276,7 @@ export const ComprasDetalles = ({ ordenCompra, onClose }: ComprasDetallesProps) 
             <div className="flex justify-end border-t pt-4">
               <Button 
                 variant="outline" 
-                className="cursor-pointer"
+                className="cursor-pointer px-5 py-6 font-semibold"
                 onClick={handleDownloadPDF}
                 disabled={instance.loading || !!instance.error}
               >

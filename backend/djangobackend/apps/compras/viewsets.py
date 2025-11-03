@@ -5,7 +5,7 @@ from apps.compras.serializers import ProveedoresSerializer, CompraRegistroProvee
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.db import transaction
-from apps.compras.models import DetalleOrdenesCompra
+from apps.compras.models import DetalleOrdenesCompra, EstadosOrdenCompra
 from rest_framework import status, serializers
 
 
@@ -66,6 +66,13 @@ class OrdenesCompraViewSet(viewsets.ModelViewSet):
             return Response({
                 "orden": orden_serializer.data, 
             }, status=status.HTTP_201_CREATED)
+
+    @action(detail=True, methods=['post'])
+    def marcar_enviada(self, request, pk=None):
+        orden = OrdenesCompra.objects.get(id=pk)
+        orden.estado_oc = EstadosOrdenCompra.objects.get(nombre_estado='Enviada')
+        orden.save()
+        return Response({'message': 'Orden marcada como enviada'}, status=status.HTTP_200_OK)
 
     @action(detail=True, methods=['get'])
     def detalles(self, request, pk=None):

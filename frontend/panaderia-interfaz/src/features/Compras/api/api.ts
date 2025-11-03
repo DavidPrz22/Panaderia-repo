@@ -121,3 +121,13 @@ export const createOrdenCompra = async (params: TOrdenCompraSchema): Promise<Ord
         throw error;
     }
 };
+
+export const marcarEnviadaOC = async (id: number): Promise<{ message: string }> => {
+    try {
+        const response = await apiClient.post(`/api/compras/ordenes-compra/${id}/marcar_enviada/`);
+        return response.data;
+    } catch (error) {
+        console.error("Error marking order as sent:", error);
+        throw error;
+    }
+};

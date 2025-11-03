@@ -432,6 +432,7 @@ estados = [
     {"nombre_estado": "Enviada", "descripcion": "OC enviada al proveedor"},
     {"nombre_estado": "Recibida Parcial", "descripcion": "Parte de la mercancía ha sido recibida"},
     {"nombre_estado": "Recibida Completa", "descripcion": "Toda la mercancía ha sido recibida"},
+    {"nombre_estado": "Recibida Sin Pagar", "descripcion": "Toda la mercancía no ha sido pagada"},
     {"nombre_estado": "Cancelada", "descripcion": "OC cancelada"},
 ]
 

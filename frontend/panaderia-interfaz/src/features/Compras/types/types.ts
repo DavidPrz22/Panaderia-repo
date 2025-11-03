@@ -6,7 +6,7 @@ export type Proveedor = {
   telefono_contacto?: string;
 };
 
-export type EstadosOC = 'Borrador' | 'Enviada' | 'Recibida Parcial' | 'Recibida Completa' | 'Cancelada';
+export type EstadosOC = 'Borrador' | 'Enviada' | 'Recibida Parcial' | 'Recibida Completa' | 'Recibida Sin Pagar' | 'Cancelada';
 
 export type ProveedorRegistro = {
     id: number;
