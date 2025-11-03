@@ -271,17 +271,8 @@ export const OrdenCompraPDF = ({ ordenCompra }: { ordenCompra: OrdenCompra }) =>
                 <Text style={[styles.tableCell, styles.colPrecio]}>
                   {formatCurrency(item.costo_unitario_usd)}
                 </Text>
-                <Text style={[styles.tableCell, styles.colImpuesto]}>
-                  {item.porcentaje_impuesto}%
-                </Text>
-                <Text style={[styles.tableCell, styles.colDescuento]}>
-                  {formatCurrency(item.impuesto_linea_usd)}
-                </Text>
                 <Text style={[styles.tableCell, styles.colSubtotal]}>
                   {formatCurrency(item.subtotal_linea_usd)}
-                </Text>
-                <Text style={[styles.tableCell, styles.colTotal]}>
-                  {formatCurrency(item.subtotal_linea_usd + item.impuesto_linea_usd)}
                 </Text>
               </View>
             ))}
@@ -302,10 +293,6 @@ export const OrdenCompraPDF = ({ ordenCompra }: { ordenCompra: OrdenCompra }) =>
           </View>
           
           <View style={styles.totalsColumn}>
-            <View style={styles.totalRow}>
-              <Text style={styles.totalLabel}>Impuestos:</Text>
-              <Text style={styles.totalValue}>{formatCurrency(ordenCompra.monto_impuestos_oc_usd)}</Text>
-            </View>
             <View style={styles.grandTotal}>
               <Text style={styles.grandTotalLabel}>Total:</Text>
               <Text style={styles.grandTotalValue}>{formatCurrency(ordenCompra.monto_total_oc_usd)}</Text>

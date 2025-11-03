@@ -159,31 +159,31 @@ export const ComprasIndex = () => {
           <Card>
             <CardContent className="pt-6">
               <div className="text-2xl font-bold">
-                {ordenesCompraTable?.filter((o) => o.estado_oc === "Pendiente").length}
+                {ordenesCompraTable?.filter((o) => o.estado_oc === "Borrador").length}
               </div>
-              <p className="text-sm text-muted-foreground">Pendientes</p>
+              <p className="text-sm text-muted-foreground">Borrador</p>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="pt-6">
               <div className="text-2xl font-bold">
-                {ordenesCompraTable?.filter((o) => o.estado_oc === "En Preparación").length}
+                {ordenesCompraTable?.filter((o) => o.estado_oc === "Enviada").length}
               </div>
-              <p className="text-sm text-muted-foreground">En Preparación</p>
+              <p className="text-sm text-muted-foreground">Enviada</p>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="pt-6">
               <div className="text-2xl font-bold">
-                {ordenesCompraTable?.filter((o) => o.estado_oc === "Completado").length}
+                {ordenesCompraTable?.filter((o) => o.estado_oc === "Recibida Completa").length}
               </div>
-              <p className="text-sm text-muted-foreground">Completados</p>
+              <p className="text-sm text-muted-foreground">Recibida Completa</p>
             </CardContent>
           </Card>
         </div>
 
         {/* Orders Table */}
-         {isFetchingOrdenesCompraTable ? (
+          {isFetchingOrdenesCompraTable ? (
           <DoubleSpinnerLoading extraClassName="size-20" />
         ) : (
           <ComprasTable
