@@ -71,9 +71,15 @@ export const componentesRecetaSearch = async (
   }
 };
 
-export const getProductionDetails = async (): Promise<ProductionDetails[]> => {
+type ProductionDetailsResponse = {
+  data: ProductionDetails[];
+  page: number;
+  total_count: number;
+  total_pages: number;
+}
+export const getProductionDetails = async (page: number): Promise<ProductionDetailsResponse> => {
   try {
-    const response = await apiClient.get(`/api/produccion-detalles/`);
+    const response = await apiClient.get(`/api/produccion-detalles/?page=${page}`);
     return response.data;
   } catch (error) {
     console.error("Error fetching production details:", error);

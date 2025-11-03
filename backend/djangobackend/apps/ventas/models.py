@@ -1,10 +1,11 @@
+from re import T
 from django.db import models
 from django.db.models import Q
 from django.core.exceptions import ValidationError
 from apps.users.models import User
 from apps.inventario.models import UnidadesDeMedida, ProductosElaborados, ProductosReventa, LotesProductosElaborados, LotesProductosReventa
-from apps.produccion.models import Produccion
-from apps.core.models import MetodosDePago
+from apps.core.models import MetodosDePago, EstadosOrdenVenta
+
 # Create your models here.
 class Clientes(models.Model):
     nombre_cliente = models.CharField(max_length=100, null=False, blank=False)
@@ -134,29 +135,32 @@ class OrdenVenta(models.Model):
     cliente = models.ForeignKey(Clientes, on_delete=models.CASCADE, null=False, blank=False)
     fecha_creacion_orden = models.DateField(null=False, blank=False)
     fecha_entrega_solicitada = models.DateField(null=False, blank=False)
-    fecha_entrega_definitiva = models.DateField(null=False, blank=False)
+    fecha_entrega_definitiva = models.DateField(null=True, blank=True)
     usuario_creador = models.ForeignKey(User, on_delete=models.CASCADE, null=False, blank=False)
     notas_generales = models.TextField(max_length=255, null=True, blank=True)
-    monto_descuento_usd = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, default=0)
-    monto_total_usd = models.DecimalField(max_digits=10, decimal_places=2, null=False, blank=False)
-    monto_total_ves = models.DecimalField(max_digits=10, decimal_places=2, null=False, blank=False)
-    tasa_cambio_aplicada = models.DecimalField(max_digits=10, decimal_places=2, null=False, blank=False)
+    monto_descuento_usd = models.DecimalField(max_digits=10, decimal_places=3, null=True, blank=True, default=0)
+    monto_impuestos_usd = models.DecimalField(max_digits=10, decimal_places=3, null=True, blank=True, default=0)
+    monto_total_usd = models.DecimalField(max_digits=10, decimal_places=3, null=False, blank=False)
+    monto_total_ves = models.DecimalField(max_digits=10, decimal_places=3, null=False, blank=False)
+    tasa_cambio_aplicada = models.DecimalField(max_digits=10, decimal_places=3, null=False, blank=False)
+    estado_orden = models.ForeignKey(EstadosOrdenVenta, on_delete=models.CASCADE, null=False, blank=False)
+    metodo_pago = models.ForeignKey(MetodosDePago, on_delete=models.CASCADE, null=True, blank=True)
 
     def __str__(self):
         return f"Orden de Venta #{self.id} - {self.cliente.nombre_cliente}"
 
 
 class DetallesOrdenVenta(models.Model):
-    produccion_asociada = models.ForeignKey(Produccion, on_delete=models.CASCADE, null=False, blank=False)
-    orden_venta_asociada = models.ForeignKey(OrdenVenta, on_delete=models.CASCADE, null=False, blank=False)
+    orden_venta_asociada = models.ForeignKey(OrdenVenta, on_delete=models.CASCADE, null=False, blank=False, related_name='productos')
     producto_elaborado = models.ForeignKey(ProductosElaborados, on_delete=models.CASCADE, null=True, blank=True)
     producto_reventa = models.ForeignKey(ProductosReventa, on_delete=models.CASCADE, null=True, blank=True)
-    cantidad_solicitada = models.DecimalField(max_digits=10, decimal_places=2, null=False, blank=False)
+    cantidad_solicitada = models.DecimalField(max_digits=10, decimal_places=3, null=False, blank=False)
     unidad_medida = models.ForeignKey(UnidadesDeMedida, on_delete=models.CASCADE, null=False, blank=False)
-    precio_unitario_usd = models.DecimalField(max_digits=10, decimal_places=2, null=False, blank=False)
-    subtotal_linea_usd = models.DecimalField(max_digits=10, decimal_places=2, null=False, blank=False)
-    notas = models.TextField(max_length=255, null=True, blank=True)
-    
+    precio_unitario_usd = models.DecimalField(max_digits=10, decimal_places=3, null=False, blank=False)
+    subtotal_linea_usd = models.DecimalField(max_digits=10, decimal_places=3, null=False, blank=False)
+    descuento_porcentaje = models.DecimalField(max_digits=10, decimal_places=3, null=True, blank=True)
+    impuesto_porcentaje = models.DecimalField(max_digits=10, decimal_places=3, null=True, blank=True)
+
     def __str__(self):
         return f"Detalle de Orden de Venta #{self.id} - {self.producto_elaborado.nombre if self.producto_elaborado else self.producto_reventa.nombre}"
 
@@ -168,6 +172,33 @@ class DetallesOrdenVenta(models.Model):
             )
         ]
 
+
+class OrdenConsumoLote(models.Model):
+    orden_venta_asociada = models.ForeignKey(OrdenVenta, on_delete=models.CASCADE, related_name="consumos")
+    detalle_orden_venta = models.ForeignKey(DetallesOrdenVenta, on_delete=models.CASCADE)
+    fecha_registro = models.DateTimeField(auto_now_add=True)
+    
+    def __str__(self):
+        return f"Consumo de Lote en Orden de Venta #{self.id}"
+
+
+class OrdenConsumoLoteDetalle(models.Model):
+    orden_consumo_lote = models.ForeignKey(OrdenConsumoLote, on_delete=models.CASCADE, related_name="detalle_lotes")
+    lote_producto_elaborado = models.ForeignKey(LotesProductosElaborados, null=True, blank=True, on_delete=models.PROTECT)
+    lote_producto_reventa = models.ForeignKey(LotesProductosReventa, null=True, blank=True, on_delete=models.PROTECT)
+    cantidad_consumida = models.DecimalField(max_digits=10, decimal_places=3)
+    costo_parcial_usd = models.DecimalField(max_digits=10, decimal_places=3, default=0)
+
+    def __str__(self):
+        return f"Lote Usado en Orden de Venta #{self.id}"
+
+    class Meta:
+        constraints = [
+            models.CheckConstraint(
+                check=(Q(lote_producto_elaborado__isnull=False) & Q(lote_producto_reventa__isnull=True)) | (Q(lote_producto_elaborado__isnull=True) & Q(lote_producto_reventa__isnull=False)),
+                name='detalle_orden_consumo_lote_un_solo_tipo_de_producto'
+            )
+        ]
 
 class Pagos(models.Model):
     venta_asociada = models.ForeignKey(Ventas, on_delete=models.CASCADE, null=True, blank=True)

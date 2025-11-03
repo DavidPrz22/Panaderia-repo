@@ -5,14 +5,17 @@ import {
   removeRecetaRelacionada,
   deleteProductoIntermedio,
   updateProductoIntermedio,
+  changeEstadoLoteProductosIntermedios,
 } from "../../api/api";
 import type { TProductosIntermediosSchema } from "../../schemas/schema";
 import {
   productosIntermediosDetallesQueryOptions,
   productosIntermediosQueryOptions,
+  lotesProductosIntermediosQueryOptions,
 } from "../queries/queryOptions";
 
 import { intermediosSearchOptions } from "@/features/Production/hooks/queries/ProductionQueryOptions";
+import { useProductosIntermediosContext } from "@/context/ProductosIntermediosContext";
 
 export const useGetRecetasSearchMutation = () => {
   return useMutation({
@@ -49,6 +52,22 @@ export const useRemoveRecetaRelacionadaMutation = () => {
     },
     onError: (error) => {
       console.log(error);
+    },
+  });
+};
+
+export const useChangeEstadoLoteProductosIntermedios = () => {
+  const queryClient = useQueryClient();
+  const { productoIntermedioId } = useProductosIntermediosContext();
+  return useMutation({
+    mutationFn: (id: number) => changeEstadoLoteProductosIntermedios(id),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({
+        queryKey: lotesProductosIntermediosQueryOptions(productoIntermedioId!).queryKey,
+      });
+      await queryClient.invalidateQueries({
+        queryKey: productosIntermediosQueryOptions.queryKey,
+      });
     },
   });
 };

@@ -18,10 +18,9 @@ export default function ProductosIntermediosLista() {
             "Nombre",
             "SKU",
             "Stock",
-            "Punto de reorden",
             "Unidad de producción",
-            "Categoria",
-            "Fecha de creación",
+            "Punto de reorden",
+            "Categoria"
           ]}
         />
         <PITableBody />

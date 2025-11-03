@@ -1,32 +1,15 @@
 import { DetailsField } from "@/components/DetailsField";
 import { DetailFieldValue } from "@/components/DetailFieldValue";
-import { useProductosIntermediosContext } from "@/context/ProductosIntermediosContext";
-import { RecetaFieldValue } from "./RecetaFieldValue";
-import { DeleteComponent } from "./DeleteComponent";
-import { useRemoveRecetaRelacionadaMutation } from "../hooks/mutations/productosIntermediosMutations";
-import type { ProductosIntermediosDetalles } from "../types/types";
+import type { ProductosReventaDetalles } from "../types/types";
 
 export const DetailsTable = ({
-  productoIntermediosDetalles,
+  productosReventaDetalles,
 }: {
-  productoIntermediosDetalles: ProductosIntermediosDetalles;
+  productosReventaDetalles: ProductosReventaDetalles;
 }) => {
-  const { deleteRecetaRelacionada, setDeleteRecetaRelacionada } =
-    useProductosIntermediosContext();
-  const {
-    mutateAsync: removeRecetaRelacionada,
-    isPending: isPendingRemoveRecetaRelacionada,
-  } = useRemoveRecetaRelacionadaMutation();
-
-  const handleDeleteRecetaRelacionada = async () => {
-    if (productoIntermediosDetalles?.id) {
-      await removeRecetaRelacionada(productoIntermediosDetalles.id);
-      setDeleteRecetaRelacionada(false);
-    }
-  };
   return (
     <div className="flex items-center gap-20">
-      <div className="grid grid-rows-9 grid-cols-1 gap-2">
+      <div className="grid grid-rows-12 grid-cols-1 gap-2">
         <DetailsField extraClass="min-h-[25px] flex items-center">
           Nombre del producto
         </DetailsField>
@@ -37,67 +20,95 @@ export const DetailsTable = ({
           SKU
         </DetailsField>
         <DetailsField extraClass="min-h-[25px] flex items-center">
-          Punto de reorden
-        </DetailsField>
-        <DetailsField extraClass="min-h-[25px] flex items-center">
-          Unidad de medida
-        </DetailsField>
-        <DetailsField extraClass="min-h-[25px] flex items-center">
           Categoría
         </DetailsField>
         <DetailsField extraClass="min-h-[25px] flex items-center">
-          Fecha de creación del registro
+          Proveedor preferido
+        </DetailsField>
+        <DetailsField extraClass="min-h-[25px] flex items-center">
+          Unidad base inventario
+        </DetailsField>
+        <DetailsField extraClass="min-h-[25px] flex items-center">
+          Unidad venta
+        </DetailsField>
+        <DetailsField extraClass="min-h-[25px] flex items-center">
+          Factor conversión
+        </DetailsField>
+        <DetailsField extraClass="min-h-[25px] flex items-center">
+          Stock actual
+        </DetailsField>
+        <DetailsField extraClass="min-h-[25px] flex items-center">
+          Precio venta USD
+        </DetailsField>
+        <DetailsField extraClass="min-h-[25px] flex items-center">
+          Costo última compra USD
+        </DetailsField>
+        <DetailsField extraClass="min-h-[25px] flex items-center">
+          Perecedero
+        </DetailsField>
+        <DetailsField extraClass="min-h-[25px] flex items-center">
+          Marca
+        </DetailsField>
+        <DetailsField extraClass="min-h-[25px] flex items-center">
+          Fecha creación
+        </DetailsField>
+        <DetailsField extraClass="min-h-[25px] flex items-center">
+          Fecha modificación
         </DetailsField>
         <DetailsField extraClass="min-h-[25px] flex items-center">
           Descripción
         </DetailsField>
-        <DetailsField extraClass="min-h-[25px] flex items-center">
-          Receta relacionada
-        </DetailsField>
       </div>
-      <div className="grid grid-rows-9 grid-cols-1 gap-2">
+      <div className="grid grid-rows-12 grid-cols-1 gap-2">
         <DetailFieldValue extraClass="min-h-[25px] ">
-          {productoIntermediosDetalles.nombre_producto}
+          {productosReventaDetalles.nombre_producto}
         </DetailFieldValue>
         <DetailFieldValue extraClass="min-h-[25px] ">
-          {productoIntermediosDetalles.id}
+          {productosReventaDetalles.id}
         </DetailFieldValue>
         <DetailFieldValue extraClass="min-h-[25px] ">
-          {productoIntermediosDetalles.SKU}
+          {productosReventaDetalles.SKU || "N/A"}
         </DetailFieldValue>
         <DetailFieldValue extraClass="min-h-[25px] ">
-          {productoIntermediosDetalles.stock_actual}
+          {productosReventaDetalles.categoria.nombre_categoria}
         </DetailFieldValue>
         <DetailFieldValue extraClass="min-h-[25px] ">
-          {
-            productoIntermediosDetalles.unidad_medida_nominal_producto
-              .nombre_completo
-          }
+          {productosReventaDetalles.proveedor_preferido?.nombre_proveedor || "N/A"}
         </DetailFieldValue>
         <DetailFieldValue extraClass="min-h-[25px] ">
-          {productoIntermediosDetalles.categoria_producto.nombre_categoria}
+          {productosReventaDetalles.unidad_base_inventario.nombre_completo}
         </DetailFieldValue>
         <DetailFieldValue extraClass="min-h-[25px] ">
-          {productoIntermediosDetalles.fecha_creacion_registro}
+          {productosReventaDetalles.unidad_venta.nombre_completo}
         </DetailFieldValue>
         <DetailFieldValue extraClass="min-h-[25px] ">
-          {productoIntermediosDetalles.descripcion || "No hay descripción"}
+          {Number(productosReventaDetalles.factor_conversion).toFixed(2)}
         </DetailFieldValue>
-        <RecetaFieldValue
-          recetaRelacionada={
-            productoIntermediosDetalles.receta_relacionada || false
-          }
-        />
+        <DetailFieldValue extraClass="min-h-[25px] ">
+          {productosReventaDetalles.stock_actual}
+        </DetailFieldValue>
+        <DetailFieldValue extraClass="min-h-[25px] ">
+          ${productosReventaDetalles.precio_venta_usd}
+        </DetailFieldValue>
+        <DetailFieldValue extraClass="min-h-[25px] ">
+          ${productosReventaDetalles.costo_ultima_compra_usd}
+        </DetailFieldValue>
+        <DetailFieldValue extraClass="min-h-[25px] ">
+          {productosReventaDetalles.pecedero ? "Sí" : "No"}
+        </DetailFieldValue>
+        <DetailFieldValue extraClass="min-h-[25px] ">
+          {productosReventaDetalles.marca || "N/A"}
+        </DetailFieldValue>
+        <DetailFieldValue extraClass="min-h-[25px] ">
+          {productosReventaDetalles.fecha_creacion_registro}
+        </DetailFieldValue>
+        <DetailFieldValue extraClass="min-h-[25px] ">
+          {productosReventaDetalles.fecha_modificacion_registro}
+        </DetailFieldValue>
+        <DetailFieldValue extraClass="min-h-[25px] ">
+          {productosReventaDetalles.descripcion || "No hay descripción"}
+        </DetailFieldValue>
       </div>
-      {deleteRecetaRelacionada && (
-        <DeleteComponent
-          cancelFunction={() => setDeleteRecetaRelacionada(false)}
-          deleteFunction={handleDeleteRecetaRelacionada}
-          isLoading={isPendingRemoveRecetaRelacionada}
-          title="Seguro que desea desvincular esta receta?"
-          buttonText="Desvincular"
-        />
-      )}
     </div>
   );
 };

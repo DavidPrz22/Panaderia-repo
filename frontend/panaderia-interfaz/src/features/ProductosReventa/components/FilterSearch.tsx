@@ -1,11 +1,11 @@
 import FilterButton from "./FilterButton";
 import ImportCSV from "@/components/ImportCSV";
 import NewButton from "@/components/NewButton";
-import SearchInput from "@/features/ProductosIntermedios/components/SearchInput";
-import { useProductosIntermediosContext } from "@/context/ProductosIntermediosContext";
+import SearchInput from "./SearchInput";
+import { useProductosReventaContext } from "@/context/ProductosReventaContext";
 
 export default function FilterSearch() {
-  const { setShowProductosIntermediosForm } = useProductosIntermediosContext();
+  const { setShowProductosReventaForm } = useProductosReventaContext();
   return (
     <div className="flex items-center px-8 justify-between">
       <SearchInput />
@@ -14,7 +14,7 @@ export default function FilterSearch() {
         <FilterButton />
         <NewButton
           onClick={() => {
-            setShowProductosIntermediosForm(true);
+            setShowProductosReventaForm(true);
           }}
         />
       </div>

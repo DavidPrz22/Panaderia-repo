@@ -108,7 +108,7 @@ class DetalleProduccionLote(models.Model):
 class DefinicionTransformacion(models.Model):
     nombre = models.CharField(max_length=255, null=False, blank=False)
     producto_elaborado_entrada = models.ForeignKey(ProductosElaborados, on_delete=models.CASCADE, null=False, blank=False, related_name='transformaciones_como_entrada')
-    cantidad_entrada= models.DecimalField(max_digits=10, decimal_places=2, null=False, blank=False, default=0)
+    cantidad_entrada = models.DecimalField(max_digits=10, decimal_places=2, null=False, blank=False, default=0)
     unidad_medida_entrada = models.ForeignKey(UnidadesDeMedida, on_delete=models.CASCADE, null=False, blank=False, related_name='transformaciones_unidad_entrada')
     producto_elaborado_salida = models.ForeignKey(ProductosElaborados, on_delete=models.CASCADE, null=False, blank=False, related_name='transformaciones_como_salida')
     unidad_medida_salida = models.ForeignKey(UnidadesDeMedida, on_delete=models.CASCADE, null=False, blank=False, related_name='transformaciones_unidad_salida')

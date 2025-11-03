@@ -1,17 +1,23 @@
 from rest_framework import viewsets, status
-from apps.inventario.models import MateriasPrimas, LotesMateriasPrimas, ProductosIntermedios, ProductosFinales, ProductosElaborados, LotesProductosElaborados
-from apps.produccion.models import Recetas, RecetasDetalles, RelacionesRecetas    
-from apps.inventario.serializers import ComponentesSearchSerializer, MateriaPrimaSerializer, LotesMateriaPrimaSerializer, ProductosIntermediosSerializer, ProductosFinalesSerializer, ProductosIntermediosDetallesSerializer, ProductosElaboradosSerializer, ProductosFinalesDetallesSerializer, ProductosFinalesSearchSerializer, ProductosIntermediosSearchSerializer, ProductosFinalesListaTransformacionSerializer, LotesProductosElaboradosSerializer
+from apps.inventario.models import MateriasPrimas, LotesMateriasPrimas, ProductosIntermedios, ProductosFinales, ProductosElaborados, LotesProductosElaborados, ProductosReventa, LotesProductosReventa, ComponentesStockManagement
+from apps.produccion.models import Recetas, RecetasDetalles, RelacionesRecetas
+from apps.inventario.serializers import ComponentesSearchSerializer, MateriaPrimaSerializer, LotesMateriaPrimaSerializer, ProductosIntermediosSerializer, ProductosFinalesSerializer, ProductosIntermediosDetallesSerializer, ProductosElaboradosSerializer, ProductosFinalesDetallesSerializer, ProductosFinalesSearchSerializer, ProductosIntermediosSearchSerializer, ProductosFinalesListaTransformacionSerializer, LotesProductosElaboradosSerializer, ProductosReventaSerializer, ProductosReventaDetallesSerializer, LotesProductosReventaSerializer
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from datetime import datetime
 from collections import defaultdict
 from apps.inventario.models import LotesStatus
 
-
 class MateriaPrimaViewSet(viewsets.ModelViewSet):
     queryset = MateriasPrimas.objects.all()
     serializer_class = MateriaPrimaSerializer
+
+    def retrieve(self, request, *args, **kwargs):
+        """Retrieve materia prima details after expiring old lots"""
+        # Expire all old lots before returning details
+        ComponentesStockManagement.expirar_todos_lotes_viejos()
+        
+        return super().retrieve(request, *args, **kwargs)
 
 
 class ComponenteSearchViewSet(viewsets.ReadOnlyModelViewSet):
@@ -79,6 +85,24 @@ class LotesMateriaPrimaViewSet(viewsets.ModelViewSet):
         if materia_prima:
             queryset = queryset.filter(materia_prima=materia_prima)
         return queryset
+
+    def list(self, request, *args, **kwargs):
+        """List lots after expiring old ones"""
+        # Get materia_prima parameter
+        materia_prima_id = request.query_params.get('materia_prima')
+        
+        # If filtering by materia prima, expire lots for that material
+        if materia_prima_id:
+            try:
+                materia_prima = MateriasPrimas.objects.get(id=materia_prima_id)
+                materia_prima.expirar_lotes_viejos()
+            except MateriasPrimas.DoesNotExist:
+                pass
+        else:
+            # Expire all lots if no filter
+            ComponentesStockManagement.expirar_todos_lotes_viejos()
+        
+        return super().list(request, *args, **kwargs)
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -223,7 +247,8 @@ class ProductosElaboradosViewSet(viewsets.ModelViewSet):
         except Recetas.DoesNotExist:
             return Response({"error": "No se encontró la receta asociada"}, status=status.HTTP_404_NOT_FOUND)
 
-        MateriasPrimas.expirar_todos_lotes_viejos()
+        # Expire all old lots before getting recipe data
+        ComponentesStockManagement.expirar_todos_lotes_viejos()
 
         detalles_receta_principal = RecetasDetalles.objects.filter(
             receta_id=receta_principal.id
@@ -231,6 +256,7 @@ class ProductosElaboradosViewSet(viewsets.ModelViewSet):
             'componente_materia_prima__unidad_medida_base',
             'componente_producto_intermedio__unidad_produccion'
         )
+
         subrecetas = []
         self._get_all_sub_recetas(receta_principal.id, subrecetas)
         # Derive unit-based production flags from product's unidad_produccion
@@ -257,14 +283,117 @@ class ProductosElaboradosViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=['get'], url_path='lotes')
     def lotes(self, request, *args, **kwargs):
         producto_id = kwargs.get('pk')
+        
+        # Expire old lots before returning lot information
+        try:
+            producto = ProductosElaborados.objects.get(id=producto_id)
+            # Use the expirar_todos_lotes_viejos for ProductosElaborados
+            ComponentesStockManagement.expirar_todos_lotes_viejos()
+        except ProductosElaborados.DoesNotExist:
+            pass
+        
         lotes = LotesProductosElaborados.objects.filter(producto_elaborado=producto_id)
         serializer = LotesProductosElaboradosSerializer(lotes, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-class LotesProductosElaboradosSerializer(viewsets.ModelViewSet):
+# class ProductosPedidoSearchViewSet(viewsets.ReadOnlyModelViewSet):
+#     queryset = ProductosElaborados.objects.all()
+
+#     def list(self, request, *args, **kwargs):
+#         param = request.query_params.get('search')
+#         if not param:
+#             return Response(
+#                 status=status.HTTP_400_BAD_REQUEST,
+#                 data={"error": "El parámetro 'search' es requerido"}
+#             )
+        
+#         # Get ProductosElaborados using .values()
+#         productos = ProductosElaborados.objects.filter(
+#             nombre_producto__icontains=param,
+#             es_intermediario=False  # Only final products
+#         ).values('id', 'nombre_producto', 'unidad_venta__nombre', 'SKU', 'precio_venta_usd')
+        
+#         # Get ProductosReventa using .values()
+#         productos_reventa = ProductosReventa.objects.filter(
+#             nombre_producto__icontains=param
+#         ).values('id', 'nombre_producto', 'unidad_venta__nombre', 'SKU', 'precio_venta_usd')
+        
+#         # Convert to list and add 'tipo' field
+#         productos_list = [
+#             {
+#                 'id': p['id'],
+#                 'nombre_producto': p['nombre_producto'],
+#                 'unidad_venta': p['unidad_venta__nombre'],
+#                 'SKU': p['SKU'],
+#                 'precio_venta_usd': p['precio_venta_usd'],
+#                 'tipo': 'producto-elaborado'
+#             }
+#             for p in productos
+#         ]
+        
+#         reventa_list = [
+#             {
+#                 'id': p['id'],
+#                 'nombre_producto': p['nombre_producto'],
+#                 'unidad_venta': p['unidad_venta__nombre'],
+#                 'SKU': p['SKU'],
+#                 'precio_venta_usd': p['precio_venta_usd'],
+#                 'tipo': 'producto-reventa'
+#             }
+#             for p in productos_reventa
+#         ]
+        
+#         # Combine and sort
+#         combined = productos_list + reventa_list
+#         combined.sort(key=lambda x: x['nombre_producto'].lower())
+        
+#         return Response({"productos": combined}, status=status.HTTP_200_OK)
+
+
+class LotesProductosElaboradosViewSet(viewsets.ModelViewSet):
     queryset = LotesProductosElaborados.objects.all()
+    serializer = LotesProductosElaboradosSerializer
     
+    def list(self, request, *args, **kwargs):
+        """List lots after expiring old ones"""
+        # Expire all old lots before returning list
+        ComponentesStockManagement.expirar_todos_lotes_viejos()
+        
+        return super().list(request, *args, **kwargs)
+    
+    @action(detail=True, methods=['get'], url_path='change-estado-lote')
+    def change_estado_lote(self, request, *args, **kwargs):
+        try:
+            lote_id = kwargs.get('pk')
+            lote = LotesProductosElaborados.objects.get(id=lote_id)
+            producto = lote.producto_elaborado
+            if lote.estado == 'DISPONIBLE':
+                if lote.fecha_caducidad > datetime.now().date():
+                    lote.estado = LotesStatus.INACTIVO
+                    lote.save(update_fields=['estado'])
+                    producto.actualizar_stock()
+                else:
+                    return Response(
+                        status=status.HTTP_400_BAD_REQUEST, 
+                        data={"error": "Este Lote ya caducó"}
+                    )
+            elif lote.estado == 'INACTIVO':
+
+                if lote.fecha_caducidad > datetime.now().date():
+                    lote.estado = LotesStatus.DISPONIBLE
+                    lote.save(update_fields=['estado'])
+                    producto.actualizar_stock()
+                else:
+                    return Response(
+                        status=status.HTTP_400_BAD_REQUEST, 
+                        data={"error": "Este Lote ya caducó"}
+                    )
+        
+            return Response({"message": "Estado del lote cambiado correctamente"}, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
 
 class ProductosIntermediosViewSet(viewsets.ModelViewSet):
     queryset = ProductosIntermedios.objects.all()
@@ -280,10 +409,24 @@ class ProductosIntermediosDetallesViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = ProductosIntermedios.objects.all()
     serializer_class = ProductosIntermediosDetallesSerializer
 
+    def retrieve(self, request, *args, **kwargs):
+        """Retrieve product details after expiring old lots"""
+        # Expire all old lots before returning details
+        ComponentesStockManagement.expirar_todos_lotes_viejos()
+        
+        return super().retrieve(request, *args, **kwargs)
+
 
 class ProductosFinalesDetallesViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = ProductosFinales.objects.all()
     serializer_class = ProductosFinalesDetallesSerializer
+
+    def retrieve(self, request, *args, **kwargs):
+        """Retrieve product details after expiring old lots"""
+        # Expire all old lots before returning details
+        ComponentesStockManagement.expirar_todos_lotes_viejos()
+        
+        return super().retrieve(request, *args, **kwargs)
 
 
 class ProductosFinalesSearchViewset(viewsets.ReadOnlyModelViewSet):
@@ -300,3 +443,94 @@ class ProductosIntermediosSearchViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = ProductosIntermedios.objects.all()
     serializer_class = ProductosIntermediosSearchSerializer
 
+
+class ProductosReventaViewSet(viewsets.ModelViewSet):
+    queryset = ProductosReventa.objects.all()
+    serializer_class = ProductosReventaSerializer
+
+
+class ProductosReventaDetallesViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = ProductosReventa.objects.all()
+    serializer_class = ProductosReventaDetallesSerializer
+
+    def retrieve(self, request, *args, **kwargs):
+        """Retrieve product details after expiring old lots"""
+        instance = self.get_object()
+        
+        # Expire old lots for this specific product before returning details
+        instance.expirar_lotes_viejos()
+        
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)
+
+
+class LotesProductosReventaViewSet(viewsets.ModelViewSet):
+    queryset = LotesProductosReventa.objects.all()
+    serializer_class = LotesProductosReventaSerializer
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        producto_reventa = self.request.query_params.get('producto_reventa')
+        if producto_reventa:
+            queryset = queryset.filter(producto_reventa=producto_reventa)
+        return queryset
+
+    def list(self, request, *args, **kwargs):
+        """List lots after expiring old ones"""
+        # Get producto_reventa parameter
+        producto_reventa_id = request.query_params.get('producto_reventa')
+        
+        # If filtering by product, expire lots for that product
+        if producto_reventa_id:
+            try:
+                producto = ProductosReventa.objects.get(id=producto_reventa_id)
+                producto.expirar_lotes_viejos()
+            except ProductosReventa.DoesNotExist:
+                pass
+        else:
+            # Expire all ProductosReventa lots if no filter
+            ProductosReventa.expirar_todos_lotes_viejos()
+        
+        return super().list(request, *args, **kwargs)
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        # Set stock_actual_lote equal to cantidad_recibida on creation
+        serializer.validated_data['stock_actual_lote'] = serializer.validated_data['cantidad_recibida']
+
+        # Save through perform_create
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+    
+    @action(detail=True, methods=['get'], url_path='change-estado-lote')
+    def change_estado_lote(self, request, *args, **kwargs):
+        try:
+            lote_id = kwargs.get('pk')
+            lote = LotesProductosReventa.objects.get(id=lote_id)
+            if lote.estado == 'DISPONIBLE':
+                if lote.fecha_caducidad > datetime.now().date():
+                    lote.estado = LotesStatus.INACTIVO
+                    lote.save(update_fields=['estado'])
+                    # Stock will be automatically updated by the signal
+                else:
+                    return Response(
+                        status=status.HTTP_400_BAD_REQUEST, 
+                        data={"error": "Este Lote ya caducó"}
+                    )
+            elif lote.estado == 'INACTIVO':
+                if lote.fecha_caducidad > datetime.now().date():
+                    lote.estado = LotesStatus.DISPONIBLE
+                    lote.save(update_fields=['estado'])
+                    # Stock will be automatically updated by the signal
+                else:
+                    return Response(
+                        status=status.HTTP_400_BAD_REQUEST, 
+                        data={"error": "Este Lote ya caducó"}
+                    )
+        
+            return Response({"message": "Estado del lote cambiado correctamente"}, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)

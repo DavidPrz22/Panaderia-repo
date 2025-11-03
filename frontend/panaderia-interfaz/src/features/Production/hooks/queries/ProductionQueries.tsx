@@ -23,7 +23,8 @@ export const useComponentsProductionQuery = () => {
 };
 
 export const useProductionDetailsQuery = () => {
+  const { detailPage } = useProductionContext();
   return useQuery({
-    ...productionDetailsOptions(),
+    ...productionDetailsOptions(detailPage),
   });
 };

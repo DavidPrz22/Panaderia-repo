@@ -5,9 +5,12 @@ import { LandingPage } from "./pages/LandingPage";
 import MateriaPrimaPage from "./pages/MateriaPrimaPage";
 import { AuthProvider, useAuth, withAuth } from "./context/AuthContext";
 import ProductosIntermediosPage from "./pages/ProductosIntermediosPage";
+import ProductosReventaPage from "./pages/ProductosReventaPage";
 import RecetasPage from "./pages/RecetasPage";
 import ProductosFinalesPage from "./pages/ProductosFinalesPage";
 import ProductionPage from "./pages/ProductionPage";
+import OrdenesPage from "./pages/OrdenesPage";
+import ComprasPage from "./pages/ComprasPage";
 import TransformacionPage from "./pages/TransformacionPage";
 
 const ProtectedLandingPage = withAuth(LandingPage);
@@ -16,6 +19,10 @@ const ProtectedProductosIntermediosPage = withAuth(ProductosIntermediosPage);
 const ProtectedProductosFinalesPage = withAuth(ProductosFinalesPage);
 const ProtectedProductionPage = withAuth(ProductionPage);
 const ProtectedRecetasPage = withAuth(RecetasPage);
+const ProtectedProductosReventaPage = withAuth(ProductosReventaPage);
+const ProtectedComprasPage = withAuth(ComprasPage);
+// const ProtectedOrdenesPage = withAuth(OrdenesPage);
+
 const ProtectedTransformacionPage = withAuth(TransformacionPage);
 
 function Logout() {
@@ -42,6 +49,10 @@ function App() {
             path="/dashboard/productos-intermedios"
             element={<ProtectedProductosIntermediosPage />}
           />
+          <Route
+            path="/dashboard/productos-reventa"
+            element={<ProtectedProductosReventaPage />}
+          />
           <Route 
             path="/dashboard/recetas" 
             element={<ProtectedRecetasPage />} 
@@ -53,6 +64,14 @@ function App() {
           <Route 
           path="/dashboard/produccion" 
           element={<ProtectedProductionPage />} 
+          />
+          <Route 
+          path="/dashboard/pedidos" 
+          element={<OrdenesPage />} 
+          />
+          <Route 
+          path="/dashboard/compras" 
+          element={<ProtectedComprasPage />} 
           />
           <Route
           path="/dashboard/transformacion"
