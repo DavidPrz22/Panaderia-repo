@@ -38,8 +38,6 @@ class DetallesSerializer(serializers.ModelSerializer):
             'unidad_medida_compra',
             'costo_unitario_usd',
             'subtotal_linea_usd',
-            'porcentaje_impuesto',
-            'impuesto_linea_usd',
         ]
 
 class DetallesResponseSerializer(serializers.ModelSerializer):
@@ -61,8 +59,6 @@ class DetallesResponseSerializer(serializers.ModelSerializer):
             'unidad_medida_abrev',
             'costo_unitario_usd',
             'subtotal_linea_usd',
-            'porcentaje_impuesto',
-            'impuesto_linea_usd',
         ]
 
 
@@ -83,10 +79,6 @@ class FormattedResponseOCSerializer(serializers.ModelSerializer):
             'estado_oc',
             'monto_total_oc_usd',
             'monto_total_oc_ves',
-            'subtotal_oc_usd',
-            'subtotal_oc_ves',
-            'monto_impuestos_oc_usd',
-            'monto_impuestos_oc_ves',
             'tasa_cambio_aplicada',
             'direccion_envio',
             'notas',
@@ -106,11 +98,7 @@ class OrdenesCompraSerializer(serializers.ModelSerializer):
             'fecha_entrega_real',
             'estado_oc',
             'monto_total_oc_usd',
-            'monto_total_oc_ves',
-            'subtotal_oc_usd',
-            'subtotal_oc_ves',
-            'monto_impuestos_oc_usd',
-            'monto_impuestos_oc_ves',
+            'monto_total_oc_ves',   
             'tasa_cambio_aplicada',
             'direccion_envio',
             'notas',

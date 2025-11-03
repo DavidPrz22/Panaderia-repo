@@ -51,7 +51,7 @@ interface ComprasFormProps {
 
 export const ComprasForm = ({ orden, onClose }: ComprasFormProps) => {
 
-  const { setOrdenCompra, setShowOrdenCompraDetalles, setShowForm } = useComprasContext();
+  const { setOrdenCompra, setShowForm } = useComprasContext();
 
   const {
     handleSubmit,
@@ -68,12 +68,8 @@ export const ComprasForm = ({ orden, onClose }: ComprasFormProps) => {
           fecha_entrega_esperada: new Date().toISOString().split('T')[0],
           estado_oc: 1,
           metodo_pago: 1,
-          subtotal_oc_usd: 0,
-          subtotal_oc_ves: 0,
           monto_total_oc_usd: 0,
           monto_total_oc_ves: 0,
-          monto_impuestos_oc_usd: 0,
-          monto_impuestos_oc_ves: 0,
           tasa_cambio_aplicada: 0,
           direccion_envio: undefined,
           terminos_pago: undefined,
@@ -102,17 +98,13 @@ export const ComprasForm = ({ orden, onClose }: ComprasFormProps) => {
       unidad_medida_abrev: p.unidad_medida_abrev,
       costo_unitario_usd: p.costo_unitario_usd,
       subtotal_linea_usd: p.subtotal_linea_usd,
-      porcentaje_impuesto: p.porcentaje_impuesto,
-      impuesto_linea_usd: p.impuesto_linea_usd,
     })) || []
   );
-  const [subtotal, setSubtotal] = useState(0);
 
   const formLogic = useComprasFormLogic({
     setValue,
     watch,
     items,
-    setSubtotal,
   });
 
   const {
@@ -298,7 +290,6 @@ export const ComprasForm = ({ orden, onClose }: ComprasFormProps) => {
                       <TableHead className="font-semibold w-24">Cantidad *</TableHead>
                       <TableHead className="font-semibold w-20">UdM</TableHead>
                       <TableHead className="font-semibold w-28">Costo UdM</TableHead>
-                      <TableHead className="font-semibold w-28">Impuesto %</TableHead>
                       <TableHead className="font-semibold w-28">Subtotal</TableHead>
                       <TableHead className="font-semibold w-16"></TableHead>
                     </TableRow>
@@ -359,9 +350,9 @@ export const ComprasForm = ({ orden, onClose }: ComprasFormProps) => {
                               const productoIndex = findProductoIndex(watch, productoId);
                               if (productoIndex !== -1) {
                                 item.cantidad_solicitada = value;
-                                const calculations = updateItemCalculations(item);
+                                const subtotal = updateItemCalculations(item);
                                 
-                                updateFormDetalles(items, productoIndex, calculations, {
+                                updateFormDetalles(items, productoIndex, subtotal, {
                                   cantidad_solicitada: value,
                                 });
                                 calculateTotalFromItems(items);
@@ -381,27 +372,6 @@ export const ComprasForm = ({ orden, onClose }: ComprasFormProps) => {
                           </TableCell>
                         <TableCell className="text-sm">
                           {formatCurrency(item.costo_unitario_usd)}
-                        </TableCell>
-                        <TableCell className="text-sm">
-                          <Input 
-                            type="number" 
-                            min="0" 
-                            step="0.1" 
-                            className="focus-visible:ring-blue-200"   
-                            defaultValue={item.porcentaje_impuesto} 
-                            onChange={(e) => {
-                              const productoId = item.id;
-                              const value = Number(e.target.value);
-
-                              const calculations = updateItemCalculations(item, value);
-                              const productoIndex = findProductoIndex(watch, productoId);
-                              
-                              updateFormDetalles(items, productoIndex, calculations, {
-                                porcentaje_impuesto: value,
-                              });
-                              calculateTotalFromItems(items);
-                            }} 
-                          />
                         </TableCell>
                         <TableCell className="font-medium">
                           {formatCurrency(item.subtotal_linea_usd)}
@@ -446,8 +416,6 @@ export const ComprasForm = ({ orden, onClose }: ComprasFormProps) => {
             <ComprasFormTotals
               bcvRate={bcvRate?.promedio}
               totalVes={Number(watch("monto_total_oc_ves")) || 0}
-              subtotalUsd={Number(subtotal) || 0}
-              addedCostsUsd={Number(watch("monto_impuestos_oc_usd")) || 0}
               totalUsd={Number(watch("monto_total_oc_usd")) || 0}
               formatCurrency={formatCurrency}
             />

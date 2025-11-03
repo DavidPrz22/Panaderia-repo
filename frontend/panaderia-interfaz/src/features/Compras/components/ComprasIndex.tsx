@@ -45,10 +45,10 @@ export const ComprasIndex = () => {
 
 
   useEffect(() => {
-    if (ordenCompra && !showForm) {
+    if (ordenCompra && compraSeleccionadaId && !showForm) {
       setShowOrdenCompraDetalles(true);
     }
-  }, [ordenCompra, showForm, setShowOrdenCompraDetalles]);
+  }, [ordenCompra, showForm, setShowOrdenCompraDetalles, compraSeleccionadaId]);
 
 
   // Filter orders based on search term and status

@@ -17,6 +17,7 @@ interface ComprasDetallesProps {
   onClose: () => void;
 }
 import type { EstadosOC } from "../types/types";
+import { ComprasFormTotals } from "./ComprasFormTotals";
 
 
 export const ComprasDetalles = ({ ordenCompra, onClose }: ComprasDetallesProps) => {
@@ -38,7 +39,7 @@ export const ComprasDetalles = ({ ordenCompra, onClose }: ComprasDetallesProps) 
     });
   };
 ;
-
+console.log("ordenCompra", ordenCompra);
 //   const handleCancelOrder = async () => {
 //     try {
 //       const response = await cancelOrdenMutation(orden.id);
@@ -102,22 +103,37 @@ export const ComprasDetalles = ({ ordenCompra, onClose }: ComprasDetallesProps) 
               )}
             </div>
 
-            {/* Customer Details */}
+            {/* Proveedor Details */}
             <div className="border-t pt-4">
               <h3 className="font-semibold mb-2">Datos del Proveedor</h3>
               <div className="grid grid-cols-2 gap-4">
-                {ordenCompra.proveedor.email_contacto && (
-                  <div>
-                    <p className="text-sm text-muted-foreground">Email</p>
-                    <p className="text-sm">{ordenCompra.proveedor.email_contacto}</p>
-                  </div>
-                )}
-                {ordenCompra.proveedor.telefono_contacto && (
-                  <div>
-                    <p className="text-sm text-muted-foreground">Teléfono</p>
-                    <p className="text-sm">{ordenCompra.proveedor.telefono_contacto}</p>
-                  </div>
-                )}
+                {ordenCompra.proveedor.nombre_proveedor && (
+                    <div>
+                      <p className="text-sm text-muted-foreground">Nombre del Proveedor</p>
+                      <p className="text-sm">{ordenCompra.proveedor.nombre_proveedor}</p>
+                    </div>
+                  )}
+
+                  {ordenCompra.proveedor.nombre_comercial && (
+                    <div>
+                      <p className="text-sm text-muted-foreground">Nombre Comercial</p>
+                      <p className="text-sm">{ordenCompra.proveedor.nombre_comercial}</p>
+                    </div>
+                  )}
+
+                  {ordenCompra.proveedor.email_contacto && (
+                    <div>
+                      <p className="text-sm text-muted-foreground">Email</p>
+                      <p className="text-sm">{ordenCompra.proveedor.email_contacto}</p>
+                    </div>
+                  )}
+
+                  {ordenCompra.proveedor.telefono_contacto && (
+                    <div>
+                      <p className="text-sm text-muted-foreground">Teléfono</p>
+                      <p className="text-sm">{ordenCompra.proveedor.telefono_contacto}</p>
+                    </div>
+                  )}
               </div>
             </div>
 
@@ -151,28 +167,12 @@ export const ComprasDetalles = ({ ordenCompra, onClose }: ComprasDetallesProps) 
             </div>
 
             {/* Totals */}
-            <div className="border-t pt-4 flex justify-end gap-6">
-
-              <div className="space-y-2 w-64">
-                <div className="flex justify-between text-lg font-bold  pt-2">
-                    <span>Total en Divisas:</span>
-                    <span>{formatCurrency(ordenCompra.monto_total_oc_usd)}</span>
-                </div>
-
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Tasa de Cambio:</span>
-                  <span className="font-medium">{ordenCompra.tasa_cambio_aplicada}</span>
-                </div>
-
-                <div className="flex justify-between text-sm">
-                  <span className="font-bold">Total en VES:</span>
-                  <span className="font-medium">{ordenCompra.monto_total_oc_ves}</span>
-                </div>
-                
-              </div>
-
-              
-            </div>
+            <ComprasFormTotals
+              bcvRate={Number(ordenCompra.tasa_cambio_aplicada)}
+              totalVes={Number(ordenCompra.monto_total_oc_ves)}
+              totalUsd={Number(ordenCompra.monto_total_oc_usd)}
+              formatCurrency={formatCurrency}
+            />
 
             {/* Notes */}
             {ordenCompra.notas && (

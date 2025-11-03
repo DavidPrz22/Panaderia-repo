@@ -67,8 +67,6 @@ export type DetalleOC = {
   unidad_medida_abrev?: string;
   costo_unitario_usd: number;
   subtotal_linea_usd: number;
-  porcentaje_impuesto: number;
-  impuesto_linea_usd: number;
 };
 
 export type OrdenCompra = {
@@ -79,10 +77,6 @@ export type OrdenCompra = {
   fecha_entrega_esperada: string;
   fecha_entrega_real?: string;
   estado_oc: EstadoOC;
-  subtotal_oc_usd: number;
-  subtotal_oc_ves: number;
-  monto_impuestos_oc_usd: number;
-  monto_impuestos_oc_ves: number;
   monto_total_oc_usd: number;
   monto_total_oc_ves: number;
   metodo_pago: { id: number; nombre_metodo: string };
