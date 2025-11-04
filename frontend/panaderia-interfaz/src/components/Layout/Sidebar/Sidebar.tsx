@@ -94,6 +94,7 @@ export default function Sidebar() {
                   icon: ReventaIcon,
                   title: "Reventa",
                   id: "reventa",
+                  link: "/dashboard/productos-reventa",
                 },
               ]}
               onclick={handleClick}
@@ -115,6 +116,7 @@ export default function Sidebar() {
                   icon: PedidosIcon,
                   title: "Pedidos",
                   id: "pedidos",
+                  link: "/dashboard/pedidos",
                 },
                 {
                   icon: PuntoVentaIcon,
@@ -152,14 +154,19 @@ export default function Sidebar() {
             >
               Transformación
             </SidebarCard>
-
-            <SidebarCard icon={ComprasIcon} onclick={handleClick} id="compras">
+            <SidebarCard 
+              icon={ComprasIcon} 
+              onclick={handleClick} 
+              id="compras"
+              link="/dashboard/compras"
+            >
               Compras
             </SidebarCard>
             <SidebarCard
               icon={ReportesIcon}
               onclick={handleClick}
               id="reportes"
+              link="/dashboard/shadcn"
             >
               Reportes
             </SidebarCard>

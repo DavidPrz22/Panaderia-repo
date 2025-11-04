@@ -26,10 +26,10 @@ export const componentsProductionOptions = (id: number) => {
   };
 };
 
-export const productionDetailsOptions = () => {
+export const productionDetailsOptions = (page: number) => {
   return queryOptions({
-    queryKey: ["productionDetails"],
-    queryFn: getProductionDetails,
+    queryKey: ["productionDetails", page],
+    queryFn: () => getProductionDetails(page),
     staleTime: Infinity,
   });
 };

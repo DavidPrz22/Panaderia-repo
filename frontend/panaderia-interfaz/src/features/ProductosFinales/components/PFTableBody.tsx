@@ -38,6 +38,9 @@ export const PFTableBody = () => {
     );
   }
 
+  // Sort by id ascending
+  displayData = displayData.sort((a, b) => a.id - b.id);
+
   const anyFilterActive =
     productosFinalesSearchTerm.length > 0 ||
     selectedUnidadesVenta.length > 0 ||

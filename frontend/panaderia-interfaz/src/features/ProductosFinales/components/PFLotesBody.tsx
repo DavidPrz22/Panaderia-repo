@@ -33,10 +33,10 @@ export const PFLotesBody = ({ data, isLoading }: { data: LotesProductosFinales[]
 
     return (
         <div className="rounded-b-lg">
-            {data.map((item) => (
+            {data.map((item, index) => (
                 <div 
                     key={`${item.fecha_produccion}-${item.fecha_caducidad}`}
-                    className="p-4 grid grid-cols-6 border-t border-gray-300 hover:bg-gray-100 cursor-pointer font-[Roboto] text-sm"
+                    className={`p-4 grid grid-cols-6 border-t border-gray-300 hover:bg-gray-100 cursor-pointer font-[Roboto] text-sm`}
                     onClick={() => handleOnClick(item)}
                 >
                     <div>{item.cantidad_inicial_lote}</div>

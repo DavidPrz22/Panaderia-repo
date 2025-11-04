@@ -44,7 +44,7 @@ REST_FRAMEWORK = {
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
     'DEFAULT_PERMISSION_CLASSES': (
-        'rest_framework.permissions.IsAuthenticated',
+        'rest_framework.permissions.IsAuthenticated', # TODO: Change to IsAuthenticated
     ),
 }
 
@@ -105,6 +105,7 @@ MIDDLEWARE = [
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",  # Your Vite frontend
     "http://localhost:5174",  # Your Vite frontend
+    "http://localhost:5556",  # Your Vite frontend
     "http://localhost:3000",  # React default port
 ]
 

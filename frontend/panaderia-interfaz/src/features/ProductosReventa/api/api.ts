@@ -1,133 +1,166 @@
 import apiClient from "@/api/client";
-import type { TProductosIntermediosSchema } from "../schemas/schema";
+import type { TProductosReventaSchema, TLoteProductosReventaSchema } from "../schemas/schema";
 import type {
-  CategoriaProductoIntermedio,
-  ProductosIntermedios,
-  ProductosIntermediosDetalles,
-  recetasSearchItem,
+  CategoriaProductosReventa,
+  ProductosReventa,
+  ProductosReventaDetalles,
+  LotesProductosReventa,
   UnidadesDeMedida,
+  Proveedor,
 } from "../types/types";
-
-export const createProductoIntermedio = async (
-  productoIntermedio: TProductosIntermediosSchema,
-) => {
-  const response = await apiClient.post(
-    "/productos-intermedios/",
-    productoIntermedio,
-  );
-  return response.data;
-};
-
-export const getRecetasSearch = async (
-  search: string,
-): Promise<recetasSearchItem[]> => {
-  try {
-    const response = await apiClient.get(
-      `/api/recetas-search/list_recetas/?search=${search}`,
-    );
-    return response.data;
-  } catch (error) {
-    console.error(error);
-    return [];
-  }
-};
 
 export const getUnidadesMedida = async (): Promise<UnidadesDeMedida[]> => {
   try {
     const response = await apiClient.get("/api/unidades-medida/");
     return response.data;
   } catch (error) {
-    console.error(error);
+    console.error("Error fetching unidades de medida:", error);
     return [];
   }
 };
 
-export const getCategoriasProductoIntermedio = async (): Promise<
-  CategoriaProductoIntermedio[]
+export const getCategoriasProductosReventa = async (): Promise<
+  CategoriaProductosReventa[]
 > => {
   try {
-    const response = await apiClient.get(
-      "/api/categorias-producto-intermedio/",
-    );
+    const response = await apiClient.get("/api/categorias-productos-reventa/");
     return response.data;
   } catch (error) {
-    console.error(error);
+    console.error("Error fetching categorias productos reventa:", error);
     return [];
   }
 };
 
-export const createProductosIntermedios = async (
-  data: TProductosIntermediosSchema,
-) => {
+export const getProveedores = async (): Promise<Proveedor[]> => {
   try {
-    const response = await apiClient.post("/api/productosintermedios/", data);
+    const response = await apiClient.get("/api/proveedores/");
     return response.data;
   } catch (error) {
-    console.error(error);
-    return null;
-  }
-};
-
-export const getProductosIntermedios = async (): Promise<
-  ProductosIntermedios[]
-> => {
-  try {
-    const response = await apiClient.get("/api/productosintermedios/");
-    return response.data;
-  } catch (error) {
-    console.error(error);
+    console.error("Error fetching proveedores:", error);
     return [];
   }
 };
 
-export const getProductosIntermediosDetalles = async (
-  id: number,
-): Promise<ProductosIntermediosDetalles | null> => {
+export const getProductosReventa = async (): Promise<ProductosReventa[]> => {
   try {
-    const response = await apiClient.get(
-      `/api/productosintermedios-detalles/${id}/`,
-    );
+    const response = await apiClient.get("/api/productosreventa/");
     return response.data;
   } catch (error) {
-    console.error(error);
+    console.error("Error fetching productos reventa:", error);
+    return [];
+  }
+};
+
+export const getProductosReventaDetalles = async (
+  id: number,
+): Promise<ProductosReventaDetalles | null> => {
+  try {
+    const response = await apiClient.get(`/api/productosreventa-detalles/${id}/`);
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching producto reventa detalles:", error);
     return null;
   }
 };
 
-export const updateProductoIntermedio = async (
-  id: number,
-  data: TProductosIntermediosSchema,
+export const createProductosReventa = async (
+  data: TProductosReventaSchema,
 ) => {
   try {
-    const response = await apiClient.put(
-      `/api/productosintermedios/${id}/`,
-      data,
-    );
+    const response = await apiClient.post("/api/productosreventa/", data);
     return response.data;
   } catch (error) {
-    console.error(error);
-    return null;
+    console.error("Error creating producto reventa:", error);
+    throw error;
   }
 };
 
-export const deleteProductoIntermedio = async (id: number) => {
+export const updateProductosReventa = async (
+  id: number,
+  data: TProductosReventaSchema,
+) => {
   try {
-    const response = await apiClient.delete(`/api/productosintermedios/${id}/`);
+    const response = await apiClient.put(`/api/productosreventa/${id}/`, data);
     return response.data;
   } catch (error) {
-    console.error(error);
-    return null;
+    console.error("Error updating producto reventa:", error);
+    throw error;
   }
 };
 
-export const removeRecetaRelacionada = async (id: number) => {
+export const deleteProductosReventa = async (id: number) => {
   try {
-    const response = await apiClient.post(
-      `/api/productoselaborados/${id}/clear-receta-relacionada/`,
-    );
+    const response = await apiClient.delete(`/api/productosreventa/${id}/`);
     return response.data;
   } catch (error) {
-    console.error(error);
+    console.error("Error deleting producto reventa:", error);
+    throw error;
+  }
+};
+
+export const getLotesProductosReventa = async (id: number): Promise<LotesProductosReventa[]> => {
+  try {
+    const response = await apiClient.get(`/api/lotes-productos-reventa/?producto_reventa=${id}`);
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching lotes productos reventa:", error);
+    return [];
+  }
+};
+
+export const createLoteProductosReventa = async (
+  data: Omit<TLoteProductosReventaSchema, 'fecha_recepcion' | 'fecha_caducidad'> & {
+    fecha_recepcion: string;
+    fecha_caducidad: string;
+    producto_reventa: number;
+    stock_actual_lote: number;
+    detalle_oc: null;
+  },
+) => {
+  try {
+    const response = await apiClient.post("/api/lotes-productos-reventa/", data);
+    return response.data;
+  } catch (error) {
+    console.error("Error creating lote productos reventa:", error);
+    throw error;
+  }
+};
+
+export const updateLoteProductosReventa = async (
+  id: number,
+  data: Omit<TLoteProductosReventaSchema, 'fecha_recepcion' | 'fecha_caducidad'> & {
+    fecha_recepcion: string;
+    fecha_caducidad: string;
+    producto_reventa: number;
+    stock_actual_lote: number;
+    detalle_oc: null;
+  },
+) => {
+  try {
+    const response = await apiClient.put(`/api/lotes-productos-reventa/${id}/`, data);
+    return response.data;
+  } catch (error) {
+    console.error("Error updating lote productos reventa:", error);
+    throw error;
+  }
+};
+
+export const deleteLoteProductosReventa = async (id: number) => {
+  try {
+    const response = await apiClient.delete(`/api/lotes-productos-reventa/${id}/`);
+    return response.data;
+  } catch (error) {
+    console.error("Error deleting lote productos reventa:", error);
+    throw error;
+  }
+};
+
+export const changeEstadoLoteProductosReventa = async (id: number) => {
+  try {
+    const response = await apiClient.get(`/api/lotes-productos-reventa/${id}/change-estado-lote/`);
+    return response.data;
+  } catch (error) {
+    console.error("Error changing estado lote productos reventa:", error);
     return null;
   }
 };

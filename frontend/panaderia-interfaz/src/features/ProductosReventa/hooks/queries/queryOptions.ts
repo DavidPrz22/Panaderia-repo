@@ -1,8 +1,10 @@
 import {
-  getCategoriasProductoIntermedio,
-  getProductosIntermedios,
-  getProductosIntermediosDetalles,
+  getCategoriasProductosReventa,
+  getLotesProductosReventa,
+  getProductosReventa,
+  getProductosReventaDetalles,
   getUnidadesMedida,
+  getProveedores,
 } from "../../api/api";
 
 export const unidadesMedidaQueryOptions = {
@@ -11,20 +13,32 @@ export const unidadesMedidaQueryOptions = {
   staleTime: Infinity,
 };
 
-export const categoriasProductoIntermedioQueryOptions = {
-  queryKey: ["categorias-producto-intermedio"],
-  queryFn: getCategoriasProductoIntermedio,
+export const categoriasProductosReventaQueryOptions = {
+  queryKey: ["categorias-productos-reventa"],
+  queryFn: getCategoriasProductosReventa,
   staleTime: Infinity,
 };
 
-export const productosIntermediosQueryOptions = {
-  queryKey: ["productos-intermedios"],
-  queryFn: getProductosIntermedios,
+export const proveedoresQueryOptions = {
+  queryKey: ["proveedores"],
+  queryFn: getProveedores,
   staleTime: Infinity,
 };
 
-export const productosIntermediosDetallesQueryOptions = (id: number) => ({
-  queryKey: ["productos-intermedios-detalles", id],
-  queryFn: () => getProductosIntermediosDetalles(id),
+export const productosReventaQueryOptions = {
+  queryKey: ["productos-reventa"],
+  queryFn: getProductosReventa,
+  staleTime: Infinity,
+};
+
+export const productosReventaDetallesQueryOptions = (id: number) => ({
+  queryKey: ["productos-reventa-detalles", id],
+  queryFn: () => getProductosReventaDetalles(id),
+  staleTime: Infinity,
+});
+
+export const lotesProductosReventaQueryOptions = (id: number) => ({
+  queryKey: ["lotes-productos-reventa", id],
+  queryFn: () => getLotesProductosReventa(id),
   staleTime: Infinity,
 });

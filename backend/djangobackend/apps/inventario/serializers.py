@@ -1,6 +1,6 @@
 from rest_framework import serializers
-from .models import MateriasPrimas, LotesMateriasPrimas, ProductosIntermedios, ProductosFinales, ProductosElaborados, LotesProductosElaborados
-from apps.core.models import UnidadesDeMedida, CategoriasMateriaPrima, CategoriasProductosElaborados
+from .models import MateriasPrimas, LotesMateriasPrimas, ProductosIntermedios, ProductosFinales, ProductosElaborados, LotesProductosElaborados, ProductosReventa, LotesProductosReventa
+from apps.core.models import UnidadesDeMedida, CategoriasMateriaPrima, CategoriasProductosElaborados, CategoriasProductosReventa
 from apps.compras.serializers import ProveedoresSerializer
 from apps.compras.models import Proveedores
 from apps.produccion.models import Recetas
@@ -77,6 +77,35 @@ class LotesMateriaPrimaSerializer(serializers.ModelSerializer):
             'detalle_oc', 
             'estado',
         ]
+
+    def validate(self, data):
+        """Validate dates for lot registration."""
+        fecha_recepcion = data.get('fecha_recepcion')
+        fecha_caducidad = data.get('fecha_caducidad')
+
+        # Import datetime here to avoid circular imports
+        from datetime import date
+
+        # Validate that fecha_recepcion is not in the future
+        if fecha_recepcion and fecha_recepcion > date.today():
+            raise serializers.ValidationError({
+                'fecha_recepcion': 'La fecha de recepción no puede ser una fecha futura.'
+            })
+
+        # Validate that fecha_caducidad is after fecha_recepcion
+        if fecha_recepcion and fecha_caducidad:
+            if fecha_caducidad <= fecha_recepcion:
+                raise serializers.ValidationError({
+                    'fecha_caducidad': 'La fecha de caducidad debe ser posterior a la fecha de recepción.'
+                })
+
+            # Optional: Warn if dates are too close (less than 1 day apart)
+            if (fecha_caducidad - fecha_recepcion).days < 1:
+                raise serializers.ValidationError({
+                    'fecha_caducidad': 'La fecha de caducidad debe ser al menos 1 día después de la fecha de recepción.'
+                })
+
+        return data
 
 
 class MateriaPrimaSerializer(serializers.ModelSerializer):
@@ -514,6 +543,8 @@ class ProductosIntermediosDetallesSerializer(serializers.ModelSerializer):
 
 
 class LotesProductosElaboradosSerializer(serializers.ModelSerializer):
+    fecha_produccion = serializers.DateField(format="%Y-%m-%d", input_formats=["%Y-%m-%d", "iso-8601"])
+    fecha_caducidad = serializers.DateField(format="%Y-%m-%d", input_formats=["%Y-%m-%d", "iso-8601"])
     peso_promedio_por_unidad = serializers.SerializerMethodField()
     volumen_promedio_por_unidad = serializers.SerializerMethodField()
     costo_unitario_usd = serializers.SerializerMethodField()
@@ -535,6 +566,35 @@ class LotesProductosElaboradosSerializer(serializers.ModelSerializer):
             "volumen_promedio_por_unidad",
             "costo_unitario_usd",
         ]
+
+    def validate(self, data):
+        """Validate dates for lot registration."""
+        fecha_produccion = data.get('fecha_produccion')
+        fecha_caducidad = data.get('fecha_caducidad')
+
+        # Import datetime here to avoid circular imports
+        from datetime import date
+
+        # Validate that fecha_produccion is not in the future
+        if fecha_produccion and fecha_produccion > date.today():
+            raise serializers.ValidationError({
+                'fecha_produccion': 'La fecha de producción no puede ser una fecha futura.'
+            })
+
+        # Validate that fecha_caducidad is after fecha_produccion
+        if fecha_produccion and fecha_caducidad:
+            if fecha_caducidad <= fecha_produccion:
+                raise serializers.ValidationError({
+                    'fecha_caducidad': 'La fecha de caducidad debe ser posterior a la fecha de producción.'
+                })
+
+            # Optional: Warn if dates are too close (less than 1 day apart)
+            if (fecha_caducidad - fecha_produccion).days < 1:
+                raise serializers.ValidationError({
+                    'fecha_caducidad': 'La fecha de caducidad debe ser al menos 1 día después de la fecha de producción.'
+                })
+
+        return data
 
     def get_peso_promedio_por_unidad(self, obj):
         return obj.peso_promedio_por_unidad
@@ -564,3 +624,226 @@ class ProductosIntermediosSearchSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProductosIntermedios
         fields = ['id', 'nombre_producto', 'unidad_medida']
+
+
+class ProductosReventaSerializer(serializers.ModelSerializer):
+    # Read-only fields for displaying related object names
+    categoria_nombre = serializers.CharField(source='categoria.nombre_categoria', read_only=True)
+    unidad_base_inventario_nombre = serializers.CharField(source='unidad_base_inventario.nombre_completo', read_only=True)
+    unidad_venta_nombre = serializers.CharField(source='unidad_venta.nombre_completo', read_only=True)
+    proveedor_preferido_nombre = serializers.CharField(source='proveedor_preferido.nombre_proveedor', read_only=True)
+
+    # Write-only fields for create/update operations
+    categoria = serializers.PrimaryKeyRelatedField(
+        queryset=CategoriasProductosReventa.objects.all(), write_only=True
+    )
+    unidad_base_inventario = serializers.PrimaryKeyRelatedField(
+        queryset=UnidadesDeMedida.objects.all(), write_only=True
+    )
+    unidad_venta = serializers.PrimaryKeyRelatedField(
+        queryset=UnidadesDeMedida.objects.all(), write_only=True
+    )
+    proveedor_preferido = serializers.PrimaryKeyRelatedField(
+        queryset=Proveedores.objects.all(), write_only=True, required=False, allow_null=True
+    )
+
+    class Meta:
+        model = ProductosReventa
+        fields = [
+            'id',
+            'nombre_producto',
+            'descripcion',
+            'SKU',
+            'categoria',
+            'categoria_nombre',
+            'marca',
+            'proveedor_preferido',
+            'proveedor_preferido_nombre',
+            'unidad_base_inventario',
+            'unidad_base_inventario_nombre',
+            'unidad_venta',
+            'unidad_venta_nombre',
+            'factor_conversion',
+            'precio_venta_usd',
+            'stock_actual',
+            'costo_ultima_compra_usd',
+            'pecedero',
+            'fecha_creacion_registro',
+            'fecha_modificacion_registro',
+        ]
+        read_only_fields = [
+            'id',
+            'stock_actual',
+            'fecha_creacion_registro',
+            'fecha_modificacion_registro',
+        ]
+
+    def create(self, validated_data):
+        # Set default values for fields not provided in the form
+        validated_data['stock_actual'] = 0
+        validated_data['costo_ultima_compra_usd'] = 0
+
+        return super().create(validated_data)
+
+    def to_representation(self, instance):
+        """Customize the output representation."""
+        data = super().to_representation(instance)
+
+        # Remove write_only fields from output
+        write_only_fields = ['categoria', 'unidad_base_inventario', 'unidad_venta', 'proveedor_preferido']
+        for field in write_only_fields:
+            data.pop(field, None)
+
+        # Handle optional proveedor_preferido
+        if not instance.proveedor_preferido:
+            data['proveedor_preferido_nombre'] = None
+
+        return data
+
+
+class LotesProductosReventaSerializer(serializers.ModelSerializer):
+    fecha_recepcion = serializers.DateField(format="%Y-%m-%d", input_formats=["%Y-%m-%d", "iso-8601"])
+    fecha_caducidad = serializers.DateField(format="%Y-%m-%d", input_formats=["%Y-%m-%d", "iso-8601"])
+    proveedor = ProveedoresSerializer(read_only=True)
+    proveedor_id = serializers.PrimaryKeyRelatedField(
+        source='proveedor',
+        queryset=Proveedores.objects.all(),
+        write_only=True
+    )
+
+    class Meta:
+        model = LotesProductosReventa
+        fields = [
+            'id',
+            'producto_reventa',
+            'fecha_recepcion',
+            'fecha_caducidad',
+            'cantidad_recibida',
+            'stock_actual_lote',
+            'coste_unitario_lote_usd',
+            'detalle_oc',
+            'proveedor',
+            'proveedor_id',
+            'estado',
+        ]
+
+    def validate(self, data):
+        """Validate dates for lot registration."""
+        fecha_recepcion = data.get('fecha_recepcion')
+        fecha_caducidad = data.get('fecha_caducidad')
+
+        # Import datetime here to avoid circular imports
+        from datetime import date, timedelta
+
+        # Validate that fecha_recepcion is not in the future
+        if fecha_recepcion and fecha_recepcion > date.today():
+            raise serializers.ValidationError({
+                'fecha_recepcion': 'La fecha de recepción no puede ser una fecha futura.'
+            })
+
+        # Validate that fecha_caducidad is after fecha_recepcion
+        if fecha_recepcion and fecha_caducidad:
+            if fecha_caducidad <= fecha_recepcion:
+                raise serializers.ValidationError({
+                    'fecha_caducidad': 'La fecha de caducidad debe ser posterior a la fecha de recepción.'
+                })
+
+            # Optional: Warn if dates are too close (less than 1 day apart)
+            if (fecha_caducidad - fecha_recepcion).days < 1:
+                raise serializers.ValidationError({
+                    'fecha_caducidad': 'La fecha de caducidad debe ser al menos 1 día después de la fecha de recepción.'
+                })
+
+        return data
+
+
+class ProductosReventaDetallesSerializer(serializers.ModelSerializer):
+    categoria = serializers.SerializerMethodField()
+    proveedor_preferido = serializers.SerializerMethodField()
+    unidad_base_inventario = serializers.SerializerMethodField()
+    unidad_venta = serializers.SerializerMethodField()
+    convert_inventory_to_sale_units = serializers.SerializerMethodField()
+    convert_sale_to_inventory_units = serializers.SerializerMethodField()
+
+    class Meta:
+        model = ProductosReventa
+        fields = [
+            'id',
+            'nombre_producto',
+            'descripcion',
+            'SKU',
+            'categoria',
+            'marca',
+            'proveedor_preferido',
+            'unidad_base_inventario',
+            'unidad_venta',
+            'factor_conversion',
+            'stock_actual',
+            'precio_venta_usd',
+            'costo_ultima_compra_usd',
+            'pecedero',
+            'fecha_creacion_registro',
+            'fecha_modificacion_registro',
+            'convert_inventory_to_sale_units',
+            'convert_sale_to_inventory_units',
+        ]
+
+    def get_categoria(self, obj):
+        categoria = CategoriasProductosReventa.objects.get(id=obj.categoria.id)
+        return {
+            'id': categoria.id,
+            'nombre_categoria': categoria.nombre_categoria,
+        }
+
+    def get_proveedor_preferido(self, obj):
+        if obj.proveedor_preferido:
+            proveedor = Proveedores.objects.get(id=obj.proveedor_preferido.id)
+            return {
+                'id': proveedor.id,
+                'nombre_proveedor': proveedor.nombre_proveedor,
+            }
+        return None
+
+    def get_unidad_base_inventario(self, obj):
+        unidad = UnidadesDeMedida.objects.get(id=obj.unidad_base_inventario.id)
+        return {
+            'id': unidad.id,
+            'nombre_completo': unidad.nombre_completo,
+            'abreviatura': unidad.abreviatura,
+        }
+
+    def get_unidad_venta(self, obj):
+        unidad = UnidadesDeMedida.objects.get(id=obj.unidad_venta.id)
+        return {
+            'id': unidad.id,
+            'nombre_completo': unidad.nombre_completo,
+            'abreviatura': unidad.abreviatura,
+        }
+
+    def get_convert_inventory_to_sale_units(self, obj):
+        # Since it's a method that takes parameter, return the factor as example
+        return f"Divide by {obj.factor_conversion}"
+
+    def get_convert_sale_to_inventory_units(self, obj):
+        # Since it's a method that takes parameter, return the factor as example
+        return f"Multiply by {obj.factor_conversion}"
+
+
+# class ProductosReventaPedidoSearchSerializer(serializers.ModelSerializer):
+#     tipo = serializers.SerializerMethodField()
+#     class Meta:
+#         model = ProductosReventa
+#         fields = ['id', 'nombre_producto', 'unidad_venta', 'SKU', 'precio_venta_usd', 'tipo']
+
+#     def get_tipo(self, obj):
+#         return 'producto-reventa'
+
+
+# class ProductosElaboradosPedidoSearchSerializer(serializers.ModelSerializer):
+#     tipo = serializers.SerializerMethodField()
+#     class Meta:
+#         model = ProductosElaborados
+#         fields = ['id', 'nombre_producto', 'unidad_venta', 'SKU', 'precio_venta_usd', 'tipo']
+
+#     def get_tipo(self, obj):
+#         return 'producto-elaborado'

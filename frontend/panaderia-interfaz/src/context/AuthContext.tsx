@@ -55,6 +55,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
   // Check if user is authenticated
   const isAuthenticated = useCallback(() => {
+    console.log(accessToken)
     if (!accessToken) return false;
 
     try {
@@ -229,7 +230,6 @@ export const withAuth = <P extends object>(
 // Hook for components that require authentication
 export const useRequireAuth = () => {
   const { isAuthenticated, user } = useAuth();
-
   if (!isAuthenticated) {
     throw new Error("Authentication required");
   }

@@ -1,3 +1,4 @@
+from apps.users.models import User
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -10,6 +11,7 @@ from django.db.models import Q
 from django.core.exceptions import ValidationError
 from apps.produccion.services import ProductionValidationService, StockConsumptionService, ProductionService
 from decimal import Decimal
+from django.utils import timezone
 
 class RecetasViewSet(viewsets.ModelViewSet):
     queryset = Recetas.objects.all()
@@ -292,6 +294,7 @@ class RecetasSearchViewSet(viewsets.ReadOnlyModelViewSet):
         serializer = self.get_serializer(recetas, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+
 class ProduccionesViewSet(viewsets.ModelViewSet):
     queryset = Produccion.objects.all()
     serializer_class = ProduccionSerializer
@@ -340,7 +343,7 @@ class ProduccionesViewSet(viewsets.ModelViewSet):
                     producto=producto,
                     cantidad_produccion=serializer.validated_data['cantidadProduction'],
                     fecha_expiracion=serializer.validated_data['fechaExpiracion'],
-                    user=request.user,
+                    user=User.objects.get(id=1), # TODO: Change this to the current user
                     unidad_medida=producto.unidad_produccion
                 )
 
@@ -391,3 +394,22 @@ class ProduccionesViewSet(viewsets.ModelViewSet):
 class ProduccionDetallesViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Produccion.objects.all()
     serializer_class = ProduccionDetallesSerializer
+
+    def list(self, request, *args, **kwargs):
+        
+        offset = 10
+        page = int(request.query_params.get('page', 1))
+        start = (page - 1) * offset
+        end = start + offset
+
+        queryset = Produccion.objects.order_by('-fecha_produccion', '-id')[start:end]
+        serializer = self.get_serializer(queryset, many=True)
+        
+        total_count = Produccion.objects.count()
+        
+        return Response({
+            "data": serializer.data, 
+            "page": page,
+            "total_count": total_count,
+            "total_pages": (total_count + offset - 1) // offset
+        })

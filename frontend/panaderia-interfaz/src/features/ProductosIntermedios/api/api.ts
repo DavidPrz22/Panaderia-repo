@@ -143,3 +143,13 @@ export const getLotesProductosIntermedios = async (id: number): Promise<LotesPro
     return [];
   }
 };
+
+export const changeEstadoLoteProductosIntermedios = async (id: number) => {
+  try {
+    const response = await apiClient.get(`/api/lotes-productos-elaborados/${id}/change-estado-lote/`);
+    return response.data;
+  } catch (error) {
+    console.error(error);
+    return null;
+  }
+};
