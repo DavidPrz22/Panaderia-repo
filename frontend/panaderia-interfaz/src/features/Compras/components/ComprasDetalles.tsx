@@ -14,6 +14,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
+import { ComprasEmailModal } from "./ComprasEmailModal";
+
 interface ComprasDetallesProps {
   ordenCompra: OrdenCompra;
   onClose: () => void;
@@ -99,9 +101,7 @@ export const ComprasDetalles = ({ ordenCompra, onClose }: ComprasDetallesProps) 
       case "Borrador":
         return (
           <>
-          <Button className="cursor-pointer bg-blue-600 text-white hover:bg-blue-700">
-            Enviar Email
-          </Button>
+          <ComprasEmailModal />
           <Button 
           className="cursor-pointer bg-amber-600 text-white hover:bg-amber-700"
           onClick={() => handleMarcarEnviadaOC(() => marcarEnviadaOCMutation(ordenCompra.id))}

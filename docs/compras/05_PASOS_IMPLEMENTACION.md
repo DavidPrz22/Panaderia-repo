@@ -169,40 +169,40 @@ path('api/compras/', include('apps.compras.urls')),
 ### FASE 6: Formulario de Orden de Compra (2 días)
 
 #### ✅ Paso 6.1: Formulario Base
-- [ ] Crear `components/OrdenCompraForm.tsx`
-- [ ] Implementar selección de proveedor
-- [ ] Implementar campos de fechas
-- [ ] Implementar campo de dirección
-- [ ] Implementar campo de método de pago
+- [ x ] Crear `components/OrdenCompraForm.tsx`
+- [ x ] Implementar selección de proveedor
+- [ x ] Implementar campos de fechas
+- [ x ] Implementar campo de dirección
+- [ x ] Implementar campo de método de pago
 
 #### ✅ Paso 6.2: Tabla de Productos
-- [ ] Implementar buscador de productos (MP + PR)
-- [ ] Tabla dinámica de items
-- [ ] Cálculo automático de subtotales
-- [ ] Cálculo de totales generales
-- [ ] Validaciones de formulario
+- [ x ] Implementar buscador de productos (MP + PR)
+- [ x ] Tabla dinámica de items
+- [ x ] Cálculo automático de subtotales
+- [ x ] Cálculo de totales generales
+- [ x ] Validaciones de formulario
 
 #### ✅ Paso 6.3: Guardar y Editar
-- [ ] Implementar lógica de creación
-- [ ] Implementar lógica de edición
-- [ ] Manejo de errores y mensajes toast
-- [ ] Probar crear OC completa desde UI
+- [ x ] Implementar lógica de creación
+- [ x ] Implementar lógica de edición
+- [ x ] Manejo de errores y mensajes toast
+- [ x ] Probar crear OC completa desde UI
 
 ---
 
 ### FASE 7: Detalles y Acciones (2 días)
 
 #### ✅ Paso 7.1: Vista de Detalles
-- [ ] Crear `components/OrdenCompraDetalles.tsx`
-- [ ] Mostrar información completa de OC
-- [ ] Mostrar tabla de productos
-- [ ] Mostrar totales
+- [ x ] Crear `components/OrdenCompraDetalles.tsx`
+- [ x ] Mostrar información completa de OC
+- [ x ] Mostrar tabla de productos
+- [ x ] Mostrar totales
 
 #### ✅ Paso 7.2: Acciones por Estado
-- [ ] Implementar botones condicionales según estado
-- [ ] Botón "Marcar como Enviada"
+- [ x ] Implementar botones condicionales según estado
+- [ x ] Botón "Marcar como Enviada"
 - [ ] Botón "Enviar Email" → Dialog
-- [ ] Botón "Descargar PDF"
+- [ x ] Botón "Descargar PDF"
 - [ ] Botón "Recepcionar" → Form
 - [ ] Botón "Cancelar"
 
