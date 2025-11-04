@@ -8,14 +8,16 @@ import { TransformacionProvider } from "@/context/TransformacionContext";
 export default function TransformacionPage() {
     return (
     <TransformacionProvider>
-        <HeaderBar />
-    <div className="flex">
         <Sidebar />
-        <main className="flex-1 p-4">
-            <Principal />
-            <Seleccion />
-        </main>
-    </div>
+        <HeaderBar />
+        <div className="flex min-h-screen">
+            <div className="flex-1 ml-[var(--sidebar-width)] pt-[var(--header-height)]">
+                <main className="pt-4 pb-6 h-full overflow-auto max-h-[calc(100vh-var(--header-height))]">
+                    <Principal />
+                    <Seleccion />
+                </main>
+            </div>
+        </div>
     </TransformacionProvider>
     );
 }

@@ -59,13 +59,14 @@ export const SearchInput: React.FC<SearchInputProps> = ({
                     value={selectedResult ? selectedResult.nombre_producto : query}
                     onChange={handleInputChange}
                     placeholder={placeholder}
-                    className={`mt-4 border border-gray-300 text-sm text-gray-500 w-85 rounded-md p-2 ${className}`}
+                    className={`border border-gray-300 text-sm text-gray-500 w-full rounded-md p-2 pr-8 ${className}`}
                     disabled={!!selectedResult} // Deshabilitar input si hay una selección
                 />
                 {selectedResult && (
                     <button
                         onClick={handleClear}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 mt-2 text-gray-500 hover:text-gray-800"
+                        className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-800 z-10"
+                        aria-label="limpiar-seleccion"
                     >
                         <img src={CerrarIcon} alt="Limpiar" className="h-4 w-4" />
                     </button>
