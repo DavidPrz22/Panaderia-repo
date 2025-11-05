@@ -88,3 +88,25 @@ export type OrdenCompra = {
   fecha_email_enviado?: string;
   terminos_pago?: string;
 };
+
+export type LoteRecepcion = {
+  id: string;
+  cantidad: number;
+  fecha_caducidad: string;
+};
+
+export type ComponentesUIRecepcion = {
+  linea_oc: DetalleOC;
+  lotes: LoteRecepcion[];
+  cantidad_total_recibida: number;
+};
+
+export type DetalleRecepcion = {
+  detalle_oc_id: number;
+  lotes: LoteRecepcion[];
+};
+
+export type RecepcionForm = {
+  orden_compra_id: number;
+  detalles: DetalleRecepcion[];
+};

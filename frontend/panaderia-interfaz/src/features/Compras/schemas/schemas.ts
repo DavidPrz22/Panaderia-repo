@@ -10,6 +10,7 @@ const detalleOC = z.object({
     subtotal_linea_usd: z.number(),
 });
 
+
 export const OrdenCompraSchema = z.object({
     proveedor: z.number(),
     fecha_emision_oc: z.string(),
@@ -33,4 +34,22 @@ export const OrdenCompraSchema = z.object({
     terminos_pago: z.string().optional(),
 });
 
+const loteRecepcion = z.object({
+    id: z.string(),
+    cantidad: z.number(),
+    fecha_caducidad: z.string(),
+});
+
+const detalleRecepcionSchema = z.object({
+    detalle_oc_id: z.number(),
+    lotes: z.array(loteRecepcion),
+});
+
+
+export const RecepcionFormSchema = z.object({
+    orden_compra_id: z.number(),
+    detalles: z.array(detalleRecepcionSchema),
+});
+
 export type TOrdenCompraSchema = z.infer<typeof OrdenCompraSchema>;
+export type TRecepcionFormSchema = z.infer<typeof RecepcionFormSchema>;
