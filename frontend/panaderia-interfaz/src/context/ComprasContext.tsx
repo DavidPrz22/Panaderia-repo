@@ -14,6 +14,8 @@ import { createContext, useContext, useState } from "react";
     setShowCancelDialog: (show: boolean) => void;
     showForm: boolean;
     setShowForm: (show: boolean) => void;
+    showRecepcionForm: boolean;
+    setShowRecepcionForm: (show: boolean) => void;
   };
   
   const ComprasContext = createContext<ComprasContextType | null>(null);
@@ -37,7 +39,7 @@ import { createContext, useContext, useState } from "react";
     const [showOrdenCompraDetalles, setShowOrdenCompraDetalles] = useState(false);
     const [showReferenciaPagoDialog, setShowReferenciaPagoDialog] = useState(false);
     const [showCancelDialog, setShowCancelDialog] = useState(false);
-    
+    const [showRecepcionForm, setShowRecepcionForm] = useState(false);
     return (
       <ComprasContext.Provider
         value={{
@@ -53,6 +55,8 @@ import { createContext, useContext, useState } from "react";
           setShowCancelDialog,
           showForm,
           setShowForm,
+          showRecepcionForm,
+          setShowRecepcionForm,
         }}
       >
         {children}

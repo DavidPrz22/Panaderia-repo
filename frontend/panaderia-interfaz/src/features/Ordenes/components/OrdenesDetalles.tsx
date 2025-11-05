@@ -138,7 +138,7 @@ export const OrdenDetalles = ({ orden, onClose }: OrderDetailsProps) => {
   };
   return (
     <>
-      <div className="flex items-center justify-center p-4">
+      <div className="flex items-center justify-center mx-8 py-5">
         <Card className="w-full max-w-6xl">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4 border-b sticky top-0 bg-card z-10">
             <div className="flex items-center gap-3">

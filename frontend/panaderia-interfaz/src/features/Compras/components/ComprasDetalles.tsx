@@ -27,10 +27,16 @@ import { OrdenCompraPDF } from "./OrdenCompraPDF";
 import { useMemo, useEffect } from "react";
 import { useMarcarEnviadaOCMutation } from "../hooks/mutations/mutations";
 import { toast } from "sonner";
+import { useComprasContext } from "@/context/ComprasContext";
 
 export const ComprasDetalles = ({ ordenCompra, onClose }: ComprasDetallesProps) => {
+
+
   const [buttonsStates, setButtonsStates] = useState<EstadosOC>(ordenCompra.estado_oc.nombre_estado as EstadosOC);
   const { mutateAsync: marcarEnviadaOCMutation, isPending: isLoadingMarcarEnviadaOCPending } = useMarcarEnviadaOCMutation();
+  const { setShowRecepcionForm, setShowOrdenCompraDetalles } = useComprasContext();
+
+
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat("es-MX", {
       style: "currency",
@@ -114,7 +120,10 @@ export const ComprasDetalles = ({ ordenCompra, onClose }: ComprasDetallesProps) 
       case "Enviada":
         return (
           <>
-            <Button variant="outline" className="cursor-pointer font-semibold">
+            <Button variant="outline" className="cursor-pointer font-semibold" onClick={() => {
+              setShowRecepcionForm(true);
+              setShowOrdenCompraDetalles(false);
+            }}>
               Recibir
             </Button>
             <Button className="cursor-pointer bg-green-600 text-white font-semibold hover:bg-green-700">
@@ -152,7 +161,7 @@ export const ComprasDetalles = ({ ordenCompra, onClose }: ComprasDetallesProps) 
 
   return (
     <>
-      <div className="flex items-center justify-center p-4">
+      <div className="flex items-center justify-center mx-8 py-5">
         <Card className="w-full max-w-6xl">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4 border-b sticky top-0 bg-card z-10">
             <div className="flex items-center gap-3">

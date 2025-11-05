@@ -172,7 +172,7 @@ export const ComprasForm = ({ orden, onClose }: ComprasFormProps) => {
   };
 
   return (
-    <div className="p-6 relative">
+    <div className="mx-8 py-5 relative">
       {(isCreatingOCMutation) && (
         <PendingTubeSpinner size={20} extraClass="absolute top-0 left-0 w-full h-full flex justify-center items-center bg-white opacity-50 z-50" />
       )}

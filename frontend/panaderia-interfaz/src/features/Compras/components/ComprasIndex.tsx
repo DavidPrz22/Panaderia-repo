@@ -23,9 +23,10 @@ import { DoubleSpinnerLoading } from "@/components/DoubleSpinnerLoading";
 import { ComprasTable } from "./ComprasTable";
 import { ComprasForm } from "./ComprasForma";
 import { ComprasDetalles } from "./ComprasDetalles";
+import { ComprasRecepcion } from "./ComprasRecepcionTabla";
 
 export const ComprasIndex = () => {
-    const { compraSeleccionadaId, showOrdenCompraDetalles, ordenCompra, setOrdenCompra, showForm, setShowForm, setShowOrdenCompraDetalles, setCompraSeleccionadaId } = useComprasContext();
+    const { compraSeleccionadaId, showOrdenCompraDetalles, ordenCompra, setOrdenCompra, showForm, setShowForm, setShowOrdenCompraDetalles, setCompraSeleccionadaId, showRecepcionForm, setShowRecepcionForm } = useComprasContext();
   
   const { data: ordenesCompraTable = [], isFetching: isFetchingOrdenesCompraTable } = useGetOrdenesCompraTable();
   const { data: { orden: compraDetalles } = { orden: undefined }, isFetched } = useGetOrdenesCompraDetalles(compraSeleccionadaId!);
@@ -75,6 +76,17 @@ export const ComprasIndex = () => {
     setShowForm(true);
   };
 
+  if (showRecepcionForm && ordenCompra) {
+    return (
+      <ComprasRecepcion  
+        ordenCompra={ordenCompra} 
+        onClose={() => {
+          setShowRecepcionForm(false);
+          setShowOrdenCompraDetalles(true);
+        }}
+      />
+    );
+  }
 
   if (showOrdenCompraDetalles && ordenCompra) {
     return (
@@ -105,7 +117,7 @@ export const ComprasIndex = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background p-6">
+    <div className="min-h-screen bg-background mx-8 py-5">
       <div className="max-w-7xl mx-auto space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">

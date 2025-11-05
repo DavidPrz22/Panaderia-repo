@@ -94,7 +94,6 @@ export const OrderForm = ({ order, onClose }: OrderFormProps) => {
   const [{ data: clientes }, { data: metodosDePago }] = useGetParametros();
   const { data: estadosOrden } = useGetEstadosOrdenRegistro();
   const { data: bcvRate } = useGetBCVRate();
-  console.log( watch())
   const { mutateAsync: createOrdenMutation, isPending: isCreatingOrden } = useCreateOrdenMutation();
   const { mutateAsync: updateOrdenMutation, isPending: isUpdatingOrden } = useUpdateOrdenMutation();
 
@@ -236,7 +235,7 @@ export const OrderForm = ({ order, onClose }: OrderFormProps) => {
   };
 
   return (
-    <div className="p-6 relative">
+    <div className="mx-8 py-5 relative">
       {(isCreatingOrden || isUpdatingOrden) && (
         <PendingTubeSpinner size={20} extraClass="absolute top-0 left-0 w-full h-full flex justify-center items-center bg-white opacity-50 z-50" />
       )}
