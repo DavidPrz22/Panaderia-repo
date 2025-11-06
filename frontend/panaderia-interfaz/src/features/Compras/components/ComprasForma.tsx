@@ -191,7 +191,7 @@ export const ComprasForm = ({ orden, onClose }: ComprasFormProps) => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {/* Cliente */}
               <div className="space-y-2">
-                <Label htmlFor="cliente">Cliente *</Label>
+                <Label htmlFor="cliente">Proveedor *</Label>
                 <ComprasFormSelect id="cliente" value={watch("proveedor") ? watch("proveedor").toString() : ""} onChange={(v: string) => {
                   setValue("proveedor", Number(v))
                   }} placeholder="Selecciona un cliente">
