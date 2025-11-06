@@ -1,4 +1,4 @@
-import type { EstadosOC, OrdenCompraTable  } from "../types/types";
+import type { EstadosOC, OrdenCompraTable } from "../types/types";
 import { ComprasEstadoBadge } from "./ComprasEstadoBadge";
 import {
   Table,
@@ -20,12 +20,15 @@ import { PendingTubeSpinner } from "@/components/PendingTubeSpinner";
 import { useComprasContext } from "@/context/ComprasContext";
 import { useGetOrdenesCompraDetalles } from "../hooks/queries/queries";
 
-
-export const ComprasTable = ({ ordenesCompra, onEditOrder }: ComprasTableProps) => {
-
+export const ComprasTable = ({
+  ordenesCompra,
+  onEditOrder,
+}: ComprasTableProps) => {
   const { compraSeleccionadaId, setCompraSeleccionadaId } = useComprasContext();
 
-  const { isFetching: isFetchingOrdenDetalles } = useGetOrdenesCompraDetalles(compraSeleccionadaId!);
+  const { isFetching: isFetchingOrdenDetalles } = useGetOrdenesCompraDetalles(
+    compraSeleccionadaId!,
+  );
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat("es-MX", {
@@ -43,12 +46,15 @@ export const ComprasTable = ({ ordenesCompra, onEditOrder }: ComprasTableProps) 
   };
   const handleOrdenSeleccionada = (id: number) => {
     setCompraSeleccionadaId(id);
-    };
+  };
 
   return (
     <div className="border rounded-lg bg-card shadow-sm relative">
       {isFetchingOrdenDetalles && (
-        <PendingTubeSpinner size={20} extraClass="absolute top-0 left-0 w-full h-full flex justify-center items-center bg-white opacity-50 z-50" />
+        <PendingTubeSpinner
+          size={20}
+          extraClass="absolute top-0 left-0 w-full h-full flex justify-center items-center bg-white opacity-50 z-50"
+        />
       )}
       <Table>
         <TableHeader className="bg-(--table-header-bg)">
@@ -64,47 +70,60 @@ export const ComprasTable = ({ ordenesCompra, onEditOrder }: ComprasTableProps) 
           </TableRow>
         </TableHeader>
         <TableBody>
-          {
-            ordenesCompra.length > 0 ? (
-              ordenesCompra.map((ordenCompra, index) => (
-                <TableRow key={ordenCompra.id} className={`hover:bg-gray-100 cursor-pointer ${index % 2 !== 0 ? "bg-gray-50" : ""}`} onClick={() => handleOrdenSeleccionada(ordenCompra.id)}>
-                  <TableCell className="font-medium pl-3">{ordenCompra.id}</TableCell>
-                  <TableCell>{ordenCompra.proveedor}</TableCell>
-                  <TableCell>{formatDate(ordenCompra.fecha_emision_oc)}</TableCell>
-                  <TableCell>
-                    {ordenCompra.fecha_entrega_real
-                      ? formatDate(ordenCompra.fecha_entrega_real)
-                      : ordenCompra.fecha_entrega_esperada
+          {ordenesCompra.length > 0 ? (
+            ordenesCompra.map((ordenCompra, index) => (
+              <TableRow
+                key={ordenCompra.id}
+                className={`hover:bg-gray-100 cursor-pointer ${index % 2 !== 0 ? "bg-gray-50" : ""}`}
+                onClick={() => handleOrdenSeleccionada(ordenCompra.id)}
+              >
+                <TableCell className="font-medium pl-3">
+                  {ordenCompra.id}
+                </TableCell>
+                <TableCell>{ordenCompra.proveedor}</TableCell>
+                <TableCell>
+                  {formatDate(ordenCompra.fecha_emision_oc)}
+                </TableCell>
+                <TableCell>
+                  {ordenCompra.fecha_entrega_real
+                    ? formatDate(ordenCompra.fecha_entrega_real)
+                    : ordenCompra.fecha_entrega_esperada
                       ? formatDate(ordenCompra.fecha_entrega_esperada)
                       : "-"}
-                  </TableCell>
-                  <TableCell>
-                    <ComprasEstadoBadge estadoCompras={ordenCompra.estado_oc as EstadosOC} />
-                  </TableCell>
-                  <TableCell>{ordenCompra.metodo_pago}</TableCell>
-                  <TableCell className="text-right font-medium">
-                    {formatCurrency(ordenCompra.monto_total_oc_usd)}
-                  </TableCell>
-                  <TableCell onClick={(e) => e.stopPropagation()}>
-                    <div className="flex gap-1 justify-center">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => onEditOrder(ordenCompra)}
-                        title="Editar"
-                      >
-                        <Pencil className="h-4 w-4" />
-                      </Button>
-                      
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell colSpan={8} className="text-center text-lg font-semibold p-10">No hay ordenes de compra</TableCell>
+                </TableCell>
+                <TableCell>
+                  <ComprasEstadoBadge
+                    estadoCompras={ordenCompra.estado_oc as EstadosOC}
+                  />
+                </TableCell>
+                <TableCell>{ordenCompra.metodo_pago}</TableCell>
+                <TableCell className="text-right font-medium">
+                  {formatCurrency(ordenCompra.monto_total_oc_usd)}
+                </TableCell>
+                <TableCell onClick={(e) => e.stopPropagation()}>
+                  <div className="flex gap-1 justify-center">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => onEditOrder(ordenCompra)}
+                      title="Editar"
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </TableCell>
               </TableRow>
-            )}
+            ))
+          ) : (
+            <TableRow>
+              <TableCell
+                colSpan={8}
+                className="text-center text-lg font-semibold p-10"
+              >
+                No hay ordenes de compra
+              </TableCell>
+            </TableRow>
+          )}
         </TableBody>
       </Table>
     </div>

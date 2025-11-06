@@ -6,14 +6,22 @@ interface TotalRowProps {
   className?: string;
 }
 
-const TotalRow = ({ label, value, isBold = false, isLarge = false, className = "" }: TotalRowProps) => {
+const TotalRow = ({
+  label,
+  value,
+  isBold = false,
+  isLarge = false,
+  className = "",
+}: TotalRowProps) => {
   const textSize = isLarge ? "text-xl" : "text-base";
   const fontWeight = isBold ? "font-bold" : "font-medium";
   const labelColor = isBold ? "" : "text-muted-foreground";
-  
+
   return (
     <div className={`flex justify-between ${textSize} ${className}`}>
-      <span className={`${labelColor} ${isBold ? 'font-bold' : ''}`}>{label}</span>
+      <span className={`${labelColor} ${isBold ? "font-bold" : ""}`}>
+        {label}
+      </span>
       <span className={fontWeight}>{value}</span>
     </div>
   );
@@ -57,7 +65,7 @@ export const ComprasFormTotals = ({
   const vesSection = [
     {
       label: "Tasa de Cambio VES:",
-      value: bcvRate ? bcvRate.toFixed(2) : '0.00',
+      value: bcvRate ? bcvRate.toFixed(2) : "0.00",
     },
     {
       label: "Total en VES:",
@@ -84,4 +92,3 @@ export const ComprasFormTotals = ({
     </div>
   );
 };
-

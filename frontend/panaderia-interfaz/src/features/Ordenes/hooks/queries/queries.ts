@@ -1,32 +1,39 @@
 import { useQueries, useQuery } from "@tanstack/react-query";
-import { clientesQueryOptions, metodosDePagoQueryOptions, getAllEstadosOrdenVentaQueryOptions, estadosOrdenRegistroQueryOptions, bcvRateQueryOptions, ordenesDetallesQueryOptions } from "./queryOptions";
+import {
+  clientesQueryOptions,
+  metodosDePagoQueryOptions,
+  getAllEstadosOrdenVentaQueryOptions,
+  estadosOrdenRegistroQueryOptions,
+  bcvRateQueryOptions,
+  ordenesDetallesQueryOptions,
+} from "./queryOptions";
 import { ordenesTableQueryOptions } from "./queryOptions";
 
 export const useGetParametros = () => {
-    return useQueries({
-        queries: [clientesQueryOptions, metodosDePagoQueryOptions],
-    });
+  return useQueries({
+    queries: [clientesQueryOptions, metodosDePagoQueryOptions],
+  });
 };
 
 export const useGetAllEstadosOrdenVenta = () => {
-    return useQuery(getAllEstadosOrdenVentaQueryOptions);
+  return useQuery(getAllEstadosOrdenVentaQueryOptions);
 };
 
 export const useGetEstadosOrdenRegistro = () => {
-    return useQuery(estadosOrdenRegistroQueryOptions);
+  return useQuery(estadosOrdenRegistroQueryOptions);
 };
 
 export const useGetBCVRate = () => {
-    return useQuery(bcvRateQueryOptions);
+  return useQuery(bcvRateQueryOptions);
 };
 
 export const useGetOrdenesTable = () => {
-    return useQuery(ordenesTableQueryOptions);
+  return useQuery(ordenesTableQueryOptions);
 };
 
 export const useGetOrdenesDetalles = (id: number) => {
-    return useQuery({
-        ...ordenesDetallesQueryOptions(id),
-        enabled: !!id,
-    });
+  return useQuery({
+    ...ordenesDetallesQueryOptions(id),
+    enabled: !!id,
+  });
 };

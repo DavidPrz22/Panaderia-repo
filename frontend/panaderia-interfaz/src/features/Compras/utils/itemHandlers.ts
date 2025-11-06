@@ -11,15 +11,15 @@ export const resetProductoItem = (item: DetalleOC) => {
 
 export const updateItemFromProducto = (item: DetalleOC, producto: Producto) => {
   resetProductoItem(item);
-  
-  if (producto.tipo === 'materia-prima') {
+
+  if (producto.tipo === "materia-prima") {
     item.materia_prima = producto.id;
     item.materia_prima_nombre = producto.nombre;
   } else {
     item.producto_reventa = producto.id;
     item.producto_reventa_nombre = producto.nombre;
   }
-  
+
   item.costo_unitario_usd = producto.precio_compra_usd;
   item.unidad_medida_compra = producto.unidad_medida_compra.id;
   item.unidad_medida_abrev = producto.unidad_medida_compra.abreviatura;
@@ -27,7 +27,7 @@ export const updateItemFromProducto = (item: DetalleOC, producto: Producto) => {
 
 export const findProductoIndex = (
   watch: UseFormWatch<TOrdenCompraSchema>,
-  productoId: number
+  productoId: number,
 ): number => {
   return watch("detalles")?.findIndex((p) => p.id === productoId) ?? -1;
 };
@@ -47,4 +47,3 @@ export const createNewDetalleOC = (id: number): DetalleOC => ({
   porcentaje_impuesto: 0,
   impuesto_linea_usd: 0,
 });
-
