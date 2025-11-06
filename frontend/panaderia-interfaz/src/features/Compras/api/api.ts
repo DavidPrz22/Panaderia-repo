@@ -9,7 +9,7 @@ import type {
   Producto,
 } from "../types/types";
 import type { UnidadesDeMedida } from "@/features/ProductosIntermedios/types/types";
-import type { TOrdenCompraSchema } from "../schemas/schemas";
+import type { TOrdenCompraSchema, TRecepcionFormSchema } from "../schemas/schemas";
 
 export type OrdenCompraDetallesResponse = {
   orden: OrdenCompra;
@@ -158,6 +158,20 @@ export const marcarEnviadaOC = async (
     return response.data;
   } catch (error) {
     console.error("Error marking order as sent:", error);
+    throw error;
+  }
+};
+
+
+export const crearRecepcionOC = async (params: TRecepcionFormSchema): Promise<{ message: string }> => {
+  try {
+    const response = await apiClient.post(
+      "/api/compras/compras/",
+      params,
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Error creating reception:", error);
     throw error;
   }
 };

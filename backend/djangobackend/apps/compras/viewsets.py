@@ -1,11 +1,11 @@
 from rest_framework import viewsets
 from apps.compras.models import Proveedores
 from apps.compras.models import OrdenesCompra
-from apps.compras.serializers import ProveedoresSerializer, CompraRegistroProveedoresSerializer, OrdenesCompraSerializer, OrdenesCompraTableSerializer, FormattedResponseOCSerializer
+from apps.compras.serializers import ProveedoresSerializer, CompraRegistroProveedoresSerializer, OrdenesCompraSerializer, OrdenesCompraTableSerializer, FormattedResponseOCSerializer, RecepcionCompraSerializer
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.db import transaction
-from apps.compras.models import DetalleOrdenesCompra, EstadosOrdenCompra
+from apps.compras.models import DetalleOrdenesCompra, EstadosOrdenCompra, Compras
 from rest_framework import status, serializers
 
 
@@ -91,3 +91,16 @@ class OrdenesCompraViewSet(viewsets.ModelViewSet):
         serializer = OrdenesCompraTableSerializer(queryset, many=True)
         return Response(serializer.data)
 
+
+class ComprasViewSet(viewsets.ModelViewSet):
+    queryset = Compras.objects.all()
+    serializer_class = RecepcionCompraSerializer
+
+    def create(self, request, *args, **kwargs):
+        with transaction.atomic():
+            serializer = RecepcionCompraSerializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+
+            orden_compra = OrdenesCompra.objects.get(id=serializer.validated_data['orden_compra_id'])
+
+            return Response({'message': 'Compra creada exitosamente'}, status=status.HTTP_201_CREATED)

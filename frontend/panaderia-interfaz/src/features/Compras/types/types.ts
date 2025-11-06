@@ -96,7 +96,7 @@ export type OrdenCompra = {
 };
 
 export type LoteRecepcion = {
-  id: string;
+  id: number;
   cantidad: number;
   fecha_caducidad: string;
 };

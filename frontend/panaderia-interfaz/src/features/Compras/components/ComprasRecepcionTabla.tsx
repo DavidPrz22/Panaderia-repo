@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Plus, Package, Trash2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import type { DetalleOC, OrdenCompra } from "../types/types";
+import type { DetalleOC, LoteRecepcion, OrdenCompra } from "../types/types";
 import { CalendarClock as CalendarIcon } from "lucide-react";
 import { ComprasFormDatePicker } from "./ComprasFormDatePicker";
 import type { ComponentesUIRecepcion } from "../types/types";
@@ -12,6 +12,8 @@ import {
 } from "../schemas/schemas";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useCrearRecepcionOCMutation } from "../hooks/mutations/mutations";
+import { toast } from "sonner";
 
 export function ComprasRecepcion({
   ordenCompra,
@@ -20,32 +22,37 @@ export function ComprasRecepcion({
   ordenCompra: OrdenCompra;
   onClose: () => void;
 }) {
+  const { mutateAsync: crearRecepcionOC } = useCrearRecepcionOCMutation();
   const { handleSubmit, watch, setValue } = useForm<TRecepcionFormSchema>({
     resolver: zodResolver(RecepcionFormSchema),
     defaultValues: {
       orden_compra_id: ordenCompra.id,
       detalles: ordenCompra.detalles.map((detalle) => ({
         detalle_oc_id: detalle.id,
-        lotes: [{ id: "1", cantidad: 0, fecha_caducidad: "" }],
+        lotes: [{ id: 1, cantidad: 0, fecha_caducidad: "" }],
+        cantidad_total_recibida: Number(detalle.cantidad_solicitada),
       })),
+      recibido_parcialmente: false,
     },
   });
 
   const [receptions, setReceptions] = useState<ComponentesUIRecepcion[]>(
     ordenCompra.detalles.map((line) => ({
       linea_oc: line,
-      lotes: [{ id: "1", cantidad: 0, fecha_caducidad: "" }],
+      lotes: [{ id: 1, cantidad: 0, fecha_caducidad: "" }],
       cantidad_total_recibida: line.cantidad_solicitada,
     })),
   );
 
   const handleAddLot = (lineId: number) => {
+
+    const newLotNumber = (
+      ((watch("detalles").find((detalle) => detalle.detalle_oc_id === lineId))?.lotes.length || 0) + 1
+    );
+
     setReceptions((prev) =>
       prev.map((reception) => {
         if (reception.linea_oc.id === lineId) {
-          const newLotNumber = (
-            Math.max(...reception.lotes.map((l) => Number(l.id)), 0) + 1
-          ).toString();
           return {
             ...reception,
             lotes: [
@@ -57,57 +64,128 @@ export function ComprasRecepcion({
         return reception;
       }),
     );
+
+    const detalle_oc_index = watch("detalles").findIndex((detalle) => detalle.detalle_oc_id === lineId);
+
+    setValue(`detalles.${detalle_oc_index}.lotes`, [
+      ...watch(`detalles.${detalle_oc_index}.lotes`) || [],
+      { id: newLotNumber, cantidad: 0, fecha_caducidad: "" },
+    ]);
+    setValue(`detalles.${detalle_oc_index}.cantidad_total_recibida`, 0);
   };
 
-  const handleRemoveLot = (lineId: number, lotId: string) => {
-    setReceptions((prev) =>
-      prev.map((reception) => {
-        if (reception.linea_oc.id === lineId) {
-          const updatedLots = reception.lotes.filter((lot) => lot.id !== lotId);
-          return {
-            ...reception,
-            lotes:
-              updatedLots.length > 0
-                ? updatedLots
-                : [{ id: "1", cantidad: 0, fecha_caducidad: "" }],
-            cantidad_total_recibida: updatedLots.reduce(
-              (sum, lot) => sum + (Number(lot.cantidad) || 0),
-              0,
-            ),
-          };
-        }
-        return reception;
-      }),
-    );
+  const handleRemoveLot = (lineId: number, lotId: number) => {
+    let updatedLots: LoteRecepcion[] = [];
+    let updatedCantidadTotalRecibida = 0;
+
+    const newReceptions = receptions.map((reception) => {
+      if (reception.linea_oc.id === lineId) {
+        updatedLots = reception.lotes.filter((lot) => lot.id !== lotId);
+        updatedCantidadTotalRecibida = updatedLots.reduce(
+          (sum, lot) => sum + (Number(lot.cantidad) || 0),
+          0,
+        );
+        return {
+          ...reception,
+          lotes:
+            updatedLots.length > 0
+              ? updatedLots
+              : [{ id: 1, cantidad: 0, fecha_caducidad: "" }],
+          cantidad_total_recibida: updatedCantidadTotalRecibida,
+        };
+      }
+      return reception;
+    });
+    setReceptions(newReceptions);
+    
+    // Sync form state with updated lots
+    updateFormDetalles(lineId, updatedLots.length > 0 ? updatedLots : [{ id: 1, cantidad: 0, fecha_caducidad: "" }], updatedCantidadTotalRecibida);
   };
 
-  const handleLotChange = (
-    lineId: number,
-    lotId: string,
-    field: "cantidad" | "fecha_caducidad",
+  const updateFormDetalles = (
+    detalle_oc_id: number, 
+    lotes : LoteRecepcion[], 
+    updatedCantidadTotalRecibida : number,
+  ) => {
+    const detalle_oc_index = watch("detalles").findIndex((detalle) => detalle.detalle_oc_id === detalle_oc_id);
+    setValue(`detalles.${detalle_oc_index}.lotes`, lotes || []);
+    setValue(`detalles.${detalle_oc_index}.cantidad_total_recibida`, updatedCantidadTotalRecibida);
+  };
+
+  const updateReceptions = (
+    lineId: number, 
+    lotId: number, 
+    field: "cantidad" | "fecha_caducidad", 
     value: string | number,
   ) => {
-    setReceptions((prev) =>
-      prev.map((reception) => {
-        if (reception.linea_oc.id === lineId) {
-          const updatedLots = reception.lotes.map((lot) => {
+    // Validate negative quantities - return current state if invalid
+    if (field === "cantidad" && typeof value === "number" && value < 0) {
+      const currentReception = receptions.find(r => r.linea_oc.id === lineId);
+      if (currentReception) {
+        return { 
+          updatedLots: currentReception.lotes, 
+          updatedCantidadTotalRecibida: currentReception.cantidad_total_recibida 
+        };
+      }
+      return { updatedLots: [], updatedCantidadTotalRecibida: 0 };
+    }
+  
+    let updatedLots: LoteRecepcion[] = [];
+    let updatedCantidadTotalRecibida = 0;
+
+    const newReceptions = receptions.map((reception) => {
+        if (reception.linea_oc.id === lineId) { 
+          updatedLots = reception.lotes.map((lot) => {
             if (lot.id === lotId) {
               return { ...lot, [field]: value };
             }
             return lot;
           });
+          updatedCantidadTotalRecibida = updatedLots.reduce(
+            (sum, lot) => sum + (Number(lot.cantidad) || 0),
+            0,
+          );
           return {
             ...reception,
-            lots: updatedLots,
-            cantidad_total_recibida: updatedLots.reduce(
-              (sum, lot) => sum + (Number(lot.cantidad) || 0),
-              0,
-            ),
+            lotes: updatedLots,
+            cantidad_total_recibida: updatedCantidadTotalRecibida,
           };
         }
         return reception;
-      }),
-    );
+    });
+  
+    setReceptions(newReceptions);
+    return { updatedLots, updatedCantidadTotalRecibida };
+  };
+
+  const checkPartiallyReceived = (lineId: number, updatedCantidadTotalRecibida: number) => {
+    if (updatedCantidadTotalRecibida < ( ordenCompra.detalles.find((detalle) => detalle.id === lineId)?.cantidad_solicitada || 0)) {
+      setValue("recibido_parcialmente", true);
+    } else {
+      setValue("recibido_parcialmente", false);
+    }
+  };
+
+  /**
+   * Handles changes to lot fields (cantidad or fecha_caducidad)
+   * Updates both UI state (receptions) and form state (react-hook-form)
+   */
+  const handleLotChange = (
+    lineId: number,
+    lotId: number,
+    field: "cantidad" | "fecha_caducidad",
+    value: string | number,
+  ) => {
+    // Update UI state and get the updated values
+    const {
+      updatedLots, 
+      updatedCantidadTotalRecibida,
+    } = updateReceptions(lineId, lotId, field, value);
+
+    // Sync changes with react-hook-form state
+    updateFormDetalles(lineId, updatedLots, updatedCantidadTotalRecibida);
+
+    checkPartiallyReceived(lineId, updatedCantidadTotalRecibida);
   };
 
   const getReceivedBadgeColor = (
@@ -119,6 +197,7 @@ export function ComprasRecepcion({
       return "bg-green-100 text-green-700";
     return "bg-orange-100 text-orange-700";
   };
+
 
   const getTotalAllReceptions = () => {
     return receptions.reduce((sum, r) => sum + r.cantidad_total_recibida, 0);
@@ -134,8 +213,14 @@ export function ComprasRecepcion({
     return "Producto desconocido";
   };
 
-  const handleSubmitReception = (data: TRecepcionFormSchema) => {
-    console.log(data);
+  const handleSubmitReception = async (data: TRecepcionFormSchema) => {
+    try {
+      await crearRecepcionOC(data);
+      toast.success("Recepción creada exitosamente");
+    } catch (error) {
+      console.error("Error creating reception:", error);
+      toast.error("Error al crear la recepción");
+    }
   };
 
   return (
@@ -146,8 +231,13 @@ export function ComprasRecepcion({
             <div className="flex items-center justify-between gap-2">
               <div className="flex items-center gap-2">
                 <Package className="h-5 w-5 text-gray-700" />
-                <h2 className="text-xl font-bold text-gray-900">
-                  Mercancías a Recepcionar #{ordenCompra.id}
+                <h2 className="text-xl font-bold text-gray-900 flex items-center gap-4">
+                  Mercancías a Recepcionar #{ordenCompra.id} 
+                  {watch("recibido_parcialmente") ? (
+                    <span className="text-sm text-amber-500">
+                      (Recibido parcialmente)
+                    </span>
+                  ) : null}
                 </h2>
               </div>
               <Button variant="ghost" size="icon" onClick={() => onClose()}>
@@ -236,7 +326,6 @@ export function ComprasRecepcion({
                                 max={reception.linea_oc.cantidad_solicitada}
                                 step="1"
                                 defaultValue={lot.cantidad}
-                                value={lot.cantidad || ""}
                                 onChange={(e) =>
                                   handleLotChange(
                                     reception.linea_oc.id,

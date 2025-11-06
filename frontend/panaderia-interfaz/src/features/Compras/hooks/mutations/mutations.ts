@@ -3,8 +3,9 @@ import {
   searchProductosOC,
   createOrdenCompra,
   marcarEnviadaOC,
+  crearRecepcionOC,
 } from "../../api/api";
-import type { TOrdenCompraSchema } from "../../schemas/schemas";
+import type { TOrdenCompraSchema, TRecepcionFormSchema } from "../../schemas/schemas";
 import { ordenesCompraTableQueryOptions } from "../queries/queryOptions";
 import { ordenesCompraDetallesQueryOptions } from "@/features/Compras/hooks/queries/queryOptions";
 
@@ -43,6 +44,24 @@ export const useMarcarEnviadaOCMutation = () => {
     },
     onError: (error) => {
       console.error("Error marking order as sent:", error);
+    },
+  });
+};
+
+export const useCrearRecepcionOCMutation = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (params: TRecepcionFormSchema) => crearRecepcionOC(params),
+    onSuccess: (_, params) => {
+      queryClient.invalidateQueries({
+        queryKey: ordenesCompraTableQueryOptions.queryKey,
+      });
+      queryClient.invalidateQueries({
+        queryKey: ordenesCompraDetallesQueryOptions(params.orden_compra_id).queryKey,
+      });
+    },
+    onError: (error) => {
+      console.error("Error creating reception:", error);
     },
   });
 };

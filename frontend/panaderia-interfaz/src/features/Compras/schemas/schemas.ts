@@ -39,7 +39,7 @@ export const OrdenCompraSchema = z.object({
 });
 
 const loteRecepcion = z.object({
-  id: z.string(),
+  id: z.number(),
   cantidad: z.number(),
   fecha_caducidad: z.string(),
 });
@@ -47,11 +47,13 @@ const loteRecepcion = z.object({
 const detalleRecepcionSchema = z.object({
   detalle_oc_id: z.number(),
   lotes: z.array(loteRecepcion),
+  cantidad_total_recibida: z.number(),
 });
 
 export const RecepcionFormSchema = z.object({
   orden_compra_id: z.number(),
   detalles: z.array(detalleRecepcionSchema),
+  recibido_parcialmente: z.boolean(),
 });
 
 export type TOrdenCompraSchema = z.infer<typeof OrdenCompraSchema>;

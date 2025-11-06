@@ -1,8 +1,8 @@
 from rest_framework import serializers
 from apps.compras.models import Proveedores
-from apps.compras.models import OrdenesCompra
-from apps.compras.models import DetalleOrdenesCompra
+from apps.compras.models import OrdenesCompra, Compras,DetalleOrdenesCompra
 from apps.core.serializers import EstadosOrdenCompraSerializer, MetodosDePagoSerializer
+
 
 class ProveedoresSerializer(serializers.ModelSerializer):
     class Meta:
@@ -19,6 +19,7 @@ class ProveedoresSerializer(serializers.ModelSerializer):
                     'notas'
                 ]
 
+
 class CompraRegistroProveedoresSerializer(serializers.ModelSerializer):
     class Meta:
         model = Proveedores
@@ -26,6 +27,7 @@ class CompraRegistroProveedoresSerializer(serializers.ModelSerializer):
                     'id', 
                     'nombre_proveedor'
                 ]
+
 
 class DetallesSerializer(serializers.ModelSerializer):
     class Meta:
@@ -39,6 +41,7 @@ class DetallesSerializer(serializers.ModelSerializer):
             'costo_unitario_usd',
             'subtotal_linea_usd',
         ]
+
 
 class DetallesResponseSerializer(serializers.ModelSerializer):
     materia_prima_nombre = serializers.CharField(source='materia_prima.nombre', read_only=True)
@@ -87,6 +90,7 @@ class FormattedResponseOCSerializer(serializers.ModelSerializer):
             'metodo_pago',
         ]
 
+
 class OrdenesCompraSerializer(serializers.ModelSerializer):
     detalles = DetallesSerializer(many=True)
     class Meta:
@@ -107,6 +111,7 @@ class OrdenesCompraSerializer(serializers.ModelSerializer):
             'metodo_pago',
         ]
 
+
 class OrdenesCompraTableSerializer(serializers.ModelSerializer):
     proveedor = serializers.CharField(source='proveedor.nombre_proveedor')
     estado_oc = serializers.CharField(source='estado_oc.nombre_estado')
@@ -125,3 +130,24 @@ class OrdenesCompraTableSerializer(serializers.ModelSerializer):
             'metodo_pago',
             'monto_total_oc_usd',
         ]
+
+
+## SERIALIZERS PARA LA RECEPCION DE COMPRA
+
+class LoteRecepcionSerializer(serializers.Serializer):
+    """Para recibir datos de lotes en la recepción"""
+    id = serializers.IntegerField()
+    cantidad = serializers.DecimalField(max_digits=10, decimal_places=2)
+    fecha_caducidad = serializers.DateField()
+
+
+class DetalleRecepcionSerializer(serializers.Serializer):
+    detalle_oc_id = serializers.IntegerField()
+    lotes = LoteRecepcionSerializer(many=True)
+    cantidad_total_recibida = serializers.DecimalField(max_digits=10, decimal_places=2)
+
+
+class RecepcionCompraSerializer(serializers.Serializer):
+    orden_compra_id = serializers.IntegerField()
+    detalles = DetalleRecepcionSerializer(many=True)
+    recibido_parcialmente = serializers.BooleanField()
