@@ -11,6 +11,7 @@ export const ComprasEstadoBadge = ({ estadoCompras }: ComprasEstadoBadgeProps) =
     "Enviada": "secondary",
     "Recibida Parcial": "default",
     "Recibida Completa": "default",
+    "Recibida Sin Pagar": "default",
     "Cancelada": "destructive",
   };
 
@@ -19,6 +20,7 @@ export const ComprasEstadoBadge = ({ estadoCompras }: ComprasEstadoBadgeProps) =
     "Enviada": "bg-blue-500 text-white",
     "Recibida Parcial": "bg-green-500 text-white",
     "Recibida Completa": "bg-green-500 text-white",
+    "Recibida Sin Pagar": "bg-amber-500 text-white",
     "Cancelada": "bg-red-500 text-white",
   };
 

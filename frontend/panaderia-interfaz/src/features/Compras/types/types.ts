@@ -6,7 +6,7 @@ export type Proveedor = {
   telefono_contacto?: string;
 };
 
-export type EstadosOC = 'Borrador' | 'Enviada' | 'Recibida Parcial' | 'Recibida Completa' | 'Cancelada';
+export type EstadosOC = 'Borrador' | 'Enviada' | 'Recibida Parcial' | 'Recibida Completa' | 'Recibida Sin Pagar' | 'Cancelada';
 
 export type ProveedorRegistro = {
     id: number;
@@ -67,8 +67,6 @@ export type DetalleOC = {
   unidad_medida_abrev?: string;
   costo_unitario_usd: number;
   subtotal_linea_usd: number;
-  porcentaje_impuesto: number;
-  impuesto_linea_usd: number;
 };
 
 export type OrdenCompra = {
@@ -79,10 +77,6 @@ export type OrdenCompra = {
   fecha_entrega_esperada: string;
   fecha_entrega_real?: string;
   estado_oc: EstadoOC;
-  subtotal_oc_usd: number;
-  subtotal_oc_ves: number;
-  monto_impuestos_oc_usd: number;
-  monto_impuestos_oc_ves: number;
   monto_total_oc_usd: number;
   monto_total_oc_ves: number;
   metodo_pago: { id: number; nombre_metodo: string };
@@ -93,4 +87,26 @@ export type OrdenCompra = {
   email_enviado: boolean;
   fecha_email_enviado?: string;
   terminos_pago?: string;
+};
+
+export type LoteRecepcion = {
+  id: string;
+  cantidad: number;
+  fecha_caducidad: string;
+};
+
+export type ComponentesUIRecepcion = {
+  linea_oc: DetalleOC;
+  lotes: LoteRecepcion[];
+  cantidad_total_recibida: number;
+};
+
+export type DetalleRecepcion = {
+  detalle_oc_id: number;
+  lotes: LoteRecepcion[];
+};
+
+export type RecepcionForm = {
+  orden_compra_id: number;
+  detalles: DetalleRecepcion[];
 };

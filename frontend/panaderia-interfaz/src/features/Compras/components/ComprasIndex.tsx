@@ -1,6 +1,6 @@
 import { useComprasContext } from "@/context/ComprasContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { FileDown, Plus, Search } from "lucide-react";
+import { Plus, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
@@ -13,7 +13,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-// import { DoubleSpinnerLoading } from "@/components/DoubleSpinnerLoading";
 
 import { 
   useGetAllEstadosOrdenCompra, 
@@ -24,30 +23,32 @@ import { DoubleSpinnerLoading } from "@/components/DoubleSpinnerLoading";
 import { ComprasTable } from "./ComprasTable";
 import { ComprasForm } from "./ComprasForma";
 import { ComprasDetalles } from "./ComprasDetalles";
+import { ComprasRecepcion } from "./ComprasRecepcionTabla";
 
 export const ComprasIndex = () => {
-    const { compraSeleccionadaId, showOrdenCompraDetalles, ordenCompra, showForm, setShowForm, setShowOrdenCompraDetalles, setCompraSeleccionadaId } = useComprasContext();
+    const { compraSeleccionadaId, showOrdenCompraDetalles, ordenCompra, setOrdenCompra, showForm, setShowForm, setShowOrdenCompraDetalles, setCompraSeleccionadaId, showRecepcionForm, setShowRecepcionForm } = useComprasContext();
   
   const { data: ordenesCompraTable = [], isFetching: isFetchingOrdenesCompraTable } = useGetOrdenesCompraTable();
-  const { data: compraDetalles, isFetched } = useGetOrdenesCompraDetalles(compraSeleccionadaId!);
+  const { data: { orden: compraDetalles } = { orden: undefined }, isFetched } = useGetOrdenesCompraDetalles(compraSeleccionadaId!);
 
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("Todos");
 
   const { data: estadosOrden } = useGetAllEstadosOrdenCompra();
 
-//   useEffect(() => {
-//     if (ordenSeleccionadaId && isFetched && ordenDetalles && !showForm) {
-//       setShowOrdenDetalles(true);
-//     }
-//   }, [ordenSeleccionadaId, isFetched, setShowOrdenDetalles, ordenDetalles, showForm]);
+  useEffect(() => {
+    if (compraSeleccionadaId && isFetched && compraDetalles && !showForm) {
+      setShowOrdenCompraDetalles(true);
+      setOrdenCompra(compraDetalles);
+    }
+  }, [compraSeleccionadaId, isFetched, setShowOrdenCompraDetalles, setOrdenCompra, compraDetalles, showForm]);
 
 
   useEffect(() => {
-    if (ordenCompra && !showForm) {
+    if (ordenCompra && compraSeleccionadaId && !showForm) {
       setShowOrdenCompraDetalles(true);
     }
-  }, [ordenCompra, showForm, setShowOrdenCompraDetalles]);
+  }, [ordenCompra, showForm, setShowOrdenCompraDetalles, compraSeleccionadaId]);
 
 
   // Filter orders based on search term and status
@@ -75,6 +76,17 @@ export const ComprasIndex = () => {
     setShowForm(true);
   };
 
+  if (showRecepcionForm && ordenCompra) {
+    return (
+      <ComprasRecepcion  
+        ordenCompra={ordenCompra} 
+        onClose={() => {
+          setShowRecepcionForm(false);
+          setShowOrdenCompraDetalles(true);
+        }}
+      />
+    );
+  }
 
   if (showOrdenCompraDetalles && ordenCompra) {
     return (
@@ -105,7 +117,7 @@ export const ComprasIndex = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background p-6">
+    <div className="min-h-screen bg-background mx-8 py-5">
       <div className="max-w-7xl mx-auto space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
@@ -158,31 +170,31 @@ export const ComprasIndex = () => {
           <Card>
             <CardContent className="pt-6">
               <div className="text-2xl font-bold">
-                {ordenesCompraTable?.filter((o) => o.estado_oc === "Pendiente").length}
+                {ordenesCompraTable?.filter((o) => o.estado_oc === "Borrador").length}
               </div>
-              <p className="text-sm text-muted-foreground">Pendientes</p>
+              <p className="text-sm text-muted-foreground">Borrador</p>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="pt-6">
               <div className="text-2xl font-bold">
-                {ordenesCompraTable?.filter((o) => o.estado_oc === "En Preparación").length}
+                {ordenesCompraTable?.filter((o) => o.estado_oc === "Enviada").length}
               </div>
-              <p className="text-sm text-muted-foreground">En Preparación</p>
+              <p className="text-sm text-muted-foreground">Enviada</p>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="pt-6">
               <div className="text-2xl font-bold">
-                {ordenesCompraTable?.filter((o) => o.estado_oc === "Completado").length}
+                {ordenesCompraTable?.filter((o) => o.estado_oc === "Recibida Completa").length}
               </div>
-              <p className="text-sm text-muted-foreground">Completados</p>
+              <p className="text-sm text-muted-foreground">Recibida Completa</p>
             </CardContent>
           </Card>
         </div>
 
         {/* Orders Table */}
-         {isFetchingOrdenesCompraTable ? (
+          {isFetchingOrdenesCompraTable ? (
           <DoubleSpinnerLoading extraClassName="size-20" />
         ) : (
           <ComprasTable

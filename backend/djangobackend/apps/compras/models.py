@@ -28,14 +28,9 @@ class OrdenesCompra(models.Model):
     estado_oc = models.ForeignKey(EstadosOrdenCompra, on_delete=models.CASCADE, null=False, blank=False)
     monto_total_oc_usd = models.DecimalField(max_digits=10, decimal_places=3, default=0)
     monto_total_oc_ves = models.DecimalField(max_digits=10, decimal_places=3, default=0)
-    monto_impuestos_oc_usd = models.DecimalField(max_digits=10, decimal_places=3, default=0)
-    monto_impuestos_oc_ves = models.DecimalField(max_digits=10, decimal_places=3, default=0)
-    subtotal_oc_usd = models.DecimalField(max_digits=10, decimal_places=3, default=0)
-    subtotal_oc_ves = models.DecimalField(max_digits=10, decimal_places=3, default=0)
     metodo_pago = models.ForeignKey(MetodosDePago, on_delete=models.CASCADE, null=False, blank=False)
     tasa_cambio_aplicada = models.DecimalField(max_digits=10, decimal_places=3, default=0)
     direccion_envio = models.TextField(max_length=255, null=True, blank=True)
-    
     fecha_envio_oc = models.DateField(null=True, blank=True)
     email_enviado = models.EmailField(max_length=100, null=True, blank=True)
     terminos_pago = models.CharField(max_length=100, null=True, blank=True)
@@ -55,9 +50,7 @@ class DetalleOrdenesCompra(models.Model):
     unidad_medida_compra = models.ForeignKey(UnidadesDeMedida, on_delete=models.CASCADE, null=False, blank=False)
     costo_unitario_usd = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     subtotal_linea_usd = models.DecimalField(max_digits=10, decimal_places=2, default=0)
-    porcentaje_impuesto = models.DecimalField(max_digits=10, decimal_places=2, default=0)
-    impuesto_linea_usd = models.DecimalField(max_digits=10, decimal_places=2, default=0)
-    
+
     def __str__(self):
         if self.materia_prima:
             return f"Detalle OC {self.id} - {self.materia_prima.nombre}"

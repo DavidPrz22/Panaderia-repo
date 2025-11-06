@@ -2,3 +2,4 @@
 export { default as TubeSpinner } from "./tubespinner.svg";
 export { default as TubeSpinnerWhite } from "./tubespinnerWhite.svg";
 export { default as DoubleSpinner } from "./doublespinner.svg";
+export { default as PanaderiaLogo } from "./PanaderiaLogo.png";

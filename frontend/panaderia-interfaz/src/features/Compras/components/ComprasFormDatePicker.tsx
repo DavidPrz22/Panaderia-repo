@@ -7,11 +7,14 @@ import { Calendar } from "@/components/ui/calendar";
 import { format, parse } from "date-fns";
 import { es } from "date-fns/locale";
 
-export const ComprasFormDatePicker = ({ label, value, onChange, optional }: { label: string, value: string, onChange: (value: string) => void, optional?: boolean }) => {
+export const ComprasFormDatePicker = ({ label, value, onChange, optional, icon }: { label: string, value: string, onChange: (value: string) => void, optional?: boolean, icon?: React.ReactNode }) => {
   const parsedValue = value ? parse(value, "yyyy-MM-dd", new Date()) : undefined;
   return (
     <div className="space-y-2">
-                <Label>{label} {optional ? "(Opcional)" : "*"}</Label>
+                <Label>
+                  {icon && icon}
+                  {label} {optional ? "(Opcional)" : "*"}
+                </Label>
                 <Popover>
                   <PopoverTrigger asChild>
                     <Button
