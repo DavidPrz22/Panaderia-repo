@@ -21,7 +21,7 @@ export default function HeaderBar() {
 
   return (
     <div
-      className={`fixed flex font-[Roboto] items-center justify-between top-0 py-3 px-8 bg-white z-[149] left-(--sidebar-width) w-[calc(100%-var(--sidebar-width))] max-h-(--header-height) transition-shadow duration-200 ${
+      className={`fixed flex font-[Roboto] items-center justify-between top-0 py-3 px-8 bg-white z-[149] left-[var(--sidebar-width)] w-[calc(100%-var(--sidebar-width))] max-h-[var(--header-height)] transition-shadow duration-200 ${
         isScrolled ? "shadow-sm" : "border-b border-gray-200"
       }`}
     >

@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, type ReactNode } from 'react';
-import type { Transformacion } from '@/features/Transformation/types/types';
+import type { searchResponse, Transformacion } from '@/features/Transformation/types/types';
+import { useRef } from 'react';
 
 export type TransformacionForm = {
     nombre_transformacion: string;
@@ -9,7 +10,10 @@ export type TransformacionForm = {
     fecha_creacion?: Date;
 };
 
+
+
 type TransformacionContextType = {
+        productsOrigenRef: React.RefObject<HTMLInputElement | null>;
         isOpen: boolean; 
         setIsOpen: (isOpen: boolean) => void;
         isRegistroOpen: boolean;
@@ -32,12 +36,26 @@ type TransformacionContextType = {
         setEditingTransformacion: (transformacion: Transformacion | null) => void;
         formData: TransformacionForm | undefined; 
         setFormData: React.Dispatch<React.SetStateAction<TransformacionForm | undefined>>;
-
- };
+        suggestions: searchResponse; // ✅ Tipo específico en lugar de any[]
+        setSuggestions: React.Dispatch<React.SetStateAction<searchResponse>>;
+        showSuggestions: boolean;
+        setShowSuggestions: React.Dispatch<React.SetStateAction<boolean>>;
+        searchQuery: string | null;
+        setSearchQuery: (searchQuery: string | null) => void;
+        selectedTransf: boolean;
+        setSelectedTransf: (selectedTransf: boolean) => void;
+        isFocusedTransf: boolean;
+        setIsFocusedTransf: (isFocusedTransf: boolean) => void;
+        mostrarSearch: boolean;
+        setMostrarSearch: (mostrarSearch: boolean) => void;
+        productId: number | null;
+        setProductId: (productId: number | null) => void;
+    };
 
 export const TransformacionContextProvider = createContext<TransformacionContextType | null>(null);
 
 export function TransformacionProvider({ children }: { children: ReactNode }) {
+    const productsOrigenRef = useRef<HTMLInputElement | null>(null);
     const [isOpen, setIsOpen] = useState(false);
     const [isRegistroOpen, setIsRegistroOpen] = useState(false);
     const [nombre, setNombre] = useState('');
@@ -49,12 +67,20 @@ export function TransformacionProvider({ children }: { children: ReactNode }) {
     const [transformacion, setTransformacion] = useState<Transformacion[]>([]);
     const [editingTransformacion, setEditingTransformacion] = useState<Transformacion | null>(null);
     const [formData, setFormData] = useState<TransformacionForm | undefined>(undefined);
+    const [suggestions, setSuggestions] = useState<searchResponse>({ results: [] }); // ✅ Tipo específico
+    const [showSuggestions, setShowSuggestions] = useState(false);
+    const [searchQuery, setSearchQuery] = useState<string | null>(null);
+    const [selectedTransf, setSelectedTransf] = useState<boolean>(false);
+    const [isFocusedTransf, setIsFocusedTransf] = useState<boolean>(false);
+    const [mostrarSearch, setMostrarSearch] = useState<boolean>(false);
+    const [productId, setProductId] = useState<number | null>(null);
     
 
 
 return (
     <TransformacionContextProvider.Provider
         value={{
+            productsOrigenRef,
             isOpen,
             setIsOpen,
             isRegistroOpen,
@@ -77,6 +103,20 @@ return (
             setEditingTransformacion,
             formData,
             setFormData,
+            suggestions,
+            setSuggestions,
+            showSuggestions,
+            setShowSuggestions,
+            searchQuery,
+            setSearchQuery,
+            selectedTransf, 
+            setSelectedTransf,
+            isFocusedTransf,
+            setIsFocusedTransf,
+            mostrarSearch,
+            setMostrarSearch,
+            productId,
+            setProductId,
             
         }}
         >

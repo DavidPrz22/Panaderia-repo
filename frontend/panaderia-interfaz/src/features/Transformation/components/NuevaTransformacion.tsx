@@ -1,4 +1,5 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
+import { useNavigate } from 'react-router-dom';
 import { useTransformacionContext } from "@/context/TransformacionContext";
 import { createTransformacion } from "../api/api";
 import { CerrarIcon } from "@/assets/DashboardAssets";
@@ -40,6 +41,9 @@ export const NuevaTransformacion = () => {
     limpiarFormulario();
   }, []); // Al montar el componente, limpia
 
+    const navigate = useNavigate();
+    const timeoutRef = useRef<number | null>(null);
+
     const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
@@ -57,7 +61,12 @@ export const NuevaTransformacion = () => {
         const response = await createTransformacion(data);
         console.log('Transformación creada', response.data);
         setSuccess(true);
-        limpiarFormulario();
+        // After a short delay show success message then close modal, clear form and navigate back
+        timeoutRef.current = window.setTimeout(() => {
+            limpiarFormulario();
+            setIsOpen(false);
+            navigate('/dashboard/transformacion');
+        }, 1000);
     
     } catch (error) {
         setError(error.message || "Error al crear la transformación");
@@ -65,6 +74,15 @@ export const NuevaTransformacion = () => {
         setLoading(false);
     }
     };
+
+    // cleanup timeout if component unmounts
+    useEffect(() => {
+        return () => {
+            if (timeoutRef.current) {
+                clearTimeout(timeoutRef.current);
+            }
+        };
+    }, []);
 
     return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">

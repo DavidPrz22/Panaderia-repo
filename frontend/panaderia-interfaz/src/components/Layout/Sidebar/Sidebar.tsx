@@ -53,7 +53,7 @@ export default function Sidebar() {
   return (
     <>
       <div
-        className={`flex flex-col h-screen bg-blue-900 w-(--sidebar-width) fixed top-0 left-0`}
+        className={`flex flex-col h-screen bg-blue-900 w-[var(--sidebar-width)] fixed top-0 left-0`}
       >
         <SidbarTitle />
         <div className="flex flex-col justify-between h-full p-2 overflow-y-auto">
@@ -110,6 +110,7 @@ export default function Sidebar() {
                   icon: ClientesIcon,
                   title: "Clientes",
                   id: "clientes",
+                  link: "/dashboard/clientes",
                 },
                 {
                   icon: PedidosIcon,
