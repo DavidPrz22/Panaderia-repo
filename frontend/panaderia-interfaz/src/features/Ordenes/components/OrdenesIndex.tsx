@@ -18,17 +18,28 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useGetAllEstadosOrdenVenta } from "../hooks/queries/queries";
-import { useGetOrdenesDetalles, useGetOrdenesTable } from "../hooks/queries/queries";
+import {
+  useGetOrdenesDetalles,
+  useGetOrdenesTable,
+} from "../hooks/queries/queries";
 import { useOrdenesContext } from "@/context/OrdenesContext";
 import { DoubleSpinnerLoading } from "@/components/DoubleSpinnerLoading";
 
-
 const OrdenesIndex = () => {
+  const {
+    ordenSeleccionadaId,
+    showOrdenDetalles,
+    showForm,
+    setShowForm,
+    setShowOrdenDetalles,
+    setOrdenSeleccionadaId,
+  } = useOrdenesContext();
 
-  const { ordenSeleccionadaId, showOrdenDetalles, showForm, setShowForm, setShowOrdenDetalles, setOrdenSeleccionadaId } = useOrdenesContext();
-  
-  const { data: ordenesTable, isFetching: isFetchingOrdenesTable } = useGetOrdenesTable();
-  const { data: ordenDetalles, isFetched } = useGetOrdenesDetalles(ordenSeleccionadaId!);
+  const { data: ordenesTable, isFetching: isFetchingOrdenesTable } =
+    useGetOrdenesTable();
+  const { data: ordenDetalles, isFetched } = useGetOrdenesDetalles(
+    ordenSeleccionadaId!,
+  );
 
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("Todos");
@@ -39,19 +50,28 @@ const OrdenesIndex = () => {
     if (ordenSeleccionadaId && isFetched && ordenDetalles && !showForm) {
       setShowOrdenDetalles(true);
     }
-  }, [ordenSeleccionadaId, isFetched, setShowOrdenDetalles, ordenDetalles, showForm]);
-
+  }, [
+    ordenSeleccionadaId,
+    isFetched,
+    setShowOrdenDetalles,
+    ordenDetalles,
+    showForm,
+  ]);
 
   // Filter orders based on search term and status
   const filteredOrders = (ordenesTable || []).filter((order) => {
     // Search filter: match order ID or client name
-    const matchesSearch = searchTerm === "" || 
+    const matchesSearch =
+      searchTerm === "" ||
       order.id.toString().includes(searchTerm) ||
       order.cliente.toLowerCase().includes(searchTerm.toLowerCase());
 
     // Status filter
-    const matchesStatus = statusFilter === "Todos" ||
-      order.estado_orden === estadosOrden?.find(e => e.id.toString() === statusFilter)?.nombre_estado;
+    const matchesStatus =
+      statusFilter === "Todos" ||
+      order.estado_orden ===
+        estadosOrden?.find((e) => e.id.toString() === statusFilter)
+          ?.nombre_estado;
 
     return matchesSearch && matchesStatus;
   });
@@ -67,32 +87,29 @@ const OrdenesIndex = () => {
     setShowForm(true);
   };
 
-
   if (showOrdenDetalles) {
     return (
-      <OrdenDetalles 
-      orden={ordenDetalles!} 
-      onClose={() => 
-        {
+      <OrdenDetalles
+        orden={ordenDetalles!}
+        onClose={() => {
           setShowOrdenDetalles(false);
           setOrdenSeleccionadaId(null);
-        }}  
+        }}
       />
     );
   }
 
   if (showForm) {
-  
     if (!ordenSeleccionadaId || ordenDetalles) {
       const ordenToEdit = ordenSeleccionadaId ? ordenDetalles : undefined;
       return (
-            <OrderForm
-              order={ordenToEdit}
-              onClose={() => {
-                  setShowForm(false);
-                  setOrdenSeleccionadaId(null);
-              }}
-            />
+        <OrderForm
+          order={ordenToEdit}
+          onClose={() => {
+            setShowForm(false);
+            setOrdenSeleccionadaId(null);
+          }}
+        />
       );
     }
   }
@@ -103,10 +120,17 @@ const OrdenesIndex = () => {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Órdenes de Venta</h1>
-            <p className="text-muted-foreground">Gestiona las órdenes de tus clientes</p>
+            <h1 className="text-3xl font-bold tracking-tight">
+              Órdenes de Venta
+            </h1>
+            <p className="text-muted-foreground">
+              Gestiona las órdenes de tus clientes
+            </p>
           </div>
-          <Button className="gap-2 bg-blue-600 text-white hover:bg-blue-700 cursor-pointer" onClick={handleNewOrder}>
+          <Button
+            className="gap-2 bg-blue-600 text-white hover:bg-blue-700 cursor-pointer"
+            onClick={handleNewOrder}
+          >
             <Plus className="h-4 w-4" />
             Nueva Orden
           </Button>
@@ -134,7 +158,9 @@ const OrdenesIndex = () => {
               <SelectContent>
                 <SelectItem value="Todos">Todos</SelectItem>
                 {estadosOrden?.map((estado) => (
-                  <SelectItem key={estado.id} value={estado.id.toString()}>{estado.nombre_estado}</SelectItem>
+                  <SelectItem key={estado.id} value={estado.id.toString()}>
+                    {estado.nombre_estado}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
@@ -151,7 +177,10 @@ const OrdenesIndex = () => {
           <Card>
             <CardContent className="pt-6">
               <div className="text-2xl font-bold">
-                {ordenesTable?.filter((o) => o.estado_orden === "Pendiente").length}
+                {
+                  ordenesTable?.filter((o) => o.estado_orden === "Pendiente")
+                    .length
+                }
               </div>
               <p className="text-sm text-muted-foreground">Pendientes</p>
             </CardContent>
@@ -159,7 +188,11 @@ const OrdenesIndex = () => {
           <Card>
             <CardContent className="pt-6">
               <div className="text-2xl font-bold">
-                {ordenesTable?.filter((o) => o.estado_orden === "En Preparación").length}
+                {
+                  ordenesTable?.filter(
+                    (o) => o.estado_orden === "En Preparación",
+                  ).length
+                }
               </div>
               <p className="text-sm text-muted-foreground">En Preparación</p>
             </CardContent>
@@ -167,7 +200,10 @@ const OrdenesIndex = () => {
           <Card>
             <CardContent className="pt-6">
               <div className="text-2xl font-bold">
-                {ordenesTable?.filter((o) => o.estado_orden === "Completado").length}
+                {
+                  ordenesTable?.filter((o) => o.estado_orden === "Completado")
+                    .length
+                }
               </div>
               <p className="text-sm text-muted-foreground">Completados</p>
             </CardContent>
@@ -178,12 +214,8 @@ const OrdenesIndex = () => {
         {isFetchingOrdenesTable ? (
           <DoubleSpinnerLoading extraClassName="size-20" />
         ) : (
-          <OrdersTable
-            orders={filteredOrders}
-            onEditOrder={handleEditOrder}
-          />
+          <OrdersTable orders={filteredOrders} onEditOrder={handleEditOrder} />
         )}
-
       </div>
     </div>
   );

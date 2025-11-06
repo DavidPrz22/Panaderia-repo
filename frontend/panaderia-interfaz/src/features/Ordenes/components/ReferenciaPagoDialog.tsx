@@ -1,5 +1,11 @@
 import { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -18,11 +24,10 @@ export const ReferenciaPagoDialog = ({
   onConfirm,
   paymentMethod,
 }: ReferenciaPagoDialogProps) => {
-    const { ordenSeleccionadaId } = useOrdenesContext();
-    const [reference, setReference] = useState("");
+  const { ordenSeleccionadaId } = useOrdenesContext();
+  const [reference, setReference] = useState("");
 
   const handleConfirm = () => {
-
     if (reference.trim()) {
       onConfirm(ordenSeleccionadaId!, reference);
       setReference("");
@@ -42,12 +47,14 @@ export const ReferenciaPagoDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent 
+      <DialogContent
         className="z-[var(--z-index-over-header-bar)]"
         overlayClassName="z-[var(--z-index-over-header-bar)]"
       >
         <DialogHeader>
-          <DialogTitle>Confirmar Pago - {paymentMethod.nombre_metodo}</DialogTitle>
+          <DialogTitle>
+            Confirmar Pago - {paymentMethod.nombre_metodo}
+          </DialogTitle>
         </DialogHeader>
         <div className="space-y-4 py-4">
           <div className="space-y-2">
@@ -66,7 +73,11 @@ export const ReferenciaPagoDialog = ({
           <Button variant="outline" onClick={onClose}>
             Cancelar
           </Button>
-          <Button onClick={handleConfirm} disabled={!reference.trim()} className="gap-2 bg-blue-600 text-white hover:bg-blue-700 cursor-pointer">
+          <Button
+            onClick={handleConfirm}
+            disabled={!reference.trim()}
+            className="gap-2 bg-blue-600 text-white hover:bg-blue-700 cursor-pointer"
+          >
             Confirmar Orden
           </Button>
         </DialogFooter>

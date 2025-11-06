@@ -34,7 +34,9 @@ export const OrderStatusDialog = ({
   onOpenChange,
   onStatusChange,
 }: OrderStatusDialogProps) => {
-  const [newStatus, setNewStatus] = useState<Estados>(order.estado_orden.nombre_estado as Estados);
+  const [newStatus, setNewStatus] = useState<Estados>(
+    order.estado_orden.nombre_estado as Estados,
+  );
 
   const handleSubmit = () => {
     if (newStatus === order.estado_orden.nombre_estado) {
@@ -50,10 +52,10 @@ export const OrderStatusDialog = ({
 
   const getStatusDescription = (status: Estados): string => {
     const descriptions: Record<Estados, string> = {
-      "Pendiente": "La orden está esperando confirmación",
+      Pendiente: "La orden está esperando confirmación",
       "En Proceso": "Los productos están siendo preparados",
-      "Completado": "La orden ha sido completada",
-      "Cancelado": "La orden ha sido cancelada",
+      Completado: "La orden ha sido completada",
+      Cancelado: "La orden ha sido cancelada",
     };
     return descriptions[status];
   };
@@ -78,7 +80,10 @@ export const OrderStatusDialog = ({
 
           <div className="space-y-2">
             <Label htmlFor="new-status">Nuevo Estado</Label>
-            <Select value={newStatus} onValueChange={(v) => setNewStatus(v as Estados)}>
+            <Select
+              value={newStatus}
+              onValueChange={(v) => setNewStatus(v as Estados)}
+            >
               <SelectTrigger id="new-status">
                 <SelectValue />
               </SelectTrigger>
@@ -86,12 +91,16 @@ export const OrderStatusDialog = ({
                 <SelectItem value="Pendiente">Pendiente</SelectItem>
                 <SelectItem value="Confirmado">Confirmado</SelectItem>
                 <SelectItem value="En Preparación">En Preparación</SelectItem>
-                <SelectItem value="Listo para Entrega">Listo para Entrega</SelectItem>
+                <SelectItem value="Listo para Entrega">
+                  Listo para Entrega
+                </SelectItem>
                 <SelectItem value="Entregado">Entregado</SelectItem>
                 <SelectItem value="Cancelado">Cancelado</SelectItem>
               </SelectContent>
             </Select>
-            <p className="text-xs text-muted-foreground">{getStatusDescription(newStatus)}</p>
+            <p className="text-xs text-muted-foreground">
+              {getStatusDescription(newStatus)}
+            </p>
           </div>
         </div>
 

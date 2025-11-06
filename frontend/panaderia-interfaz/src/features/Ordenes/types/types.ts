@@ -1,19 +1,19 @@
 export type Cliente = {
   id: number;
   nombre_cliente: string;
-}
+};
 
 export type MetodoPago = {
   id: number;
   nombre_metodo: string;
-}
+};
 
 export type EstadoOrden = {
   id: number;
   nombre_estado: string;
-}
+};
 
-export type Estados = 'Pendiente' | 'En Proceso' | 'Completado' | 'Cancelado';
+export type Estados = "Pendiente" | "En Proceso" | "Completado" | "Cancelado";
 
 export type Producto = {
   id: number;
@@ -22,16 +22,16 @@ export type Producto = {
   precio_venta_usd: number;
   stock_actual: number;
   unidad_venta: string;
-  tipo: 'producto-final' | 'producto-reventa';
-}
+  tipo: "producto-final" | "producto-reventa";
+};
 
 type productoOrden = {
   id: number | null;
   SKU: string;
   stock?: number;
   nombre_producto: string;
-  tipo_producto: 'producto-final' | 'producto-reventa' | null;
-}
+  tipo_producto: "producto-final" | "producto-reventa" | null;
+};
 
 export interface OrderLineItem {
   producto: productoOrden;
@@ -49,7 +49,11 @@ export interface OrderLineItemForm {
   producto: productoOrden;
   stock: number;
   cantidad_solicitada: number;
-  unidad_medida_venta: { id: number; abreviatura: string; nombre_completo?: string };
+  unidad_medida_venta: {
+    id: number;
+    abreviatura: string;
+    nombre_completo?: string;
+  };
   precio_unitario_usd: number;
   descuento_porcentaje: number;
   impuesto_porcentaje: number;
@@ -62,7 +66,7 @@ export type ClienteDetalles = {
   telefono: string;
   email: string;
   rif_cedula: string;
-}
+};
 
 export interface Orden {
   id: number;
@@ -85,7 +89,6 @@ export interface Orden {
   referencia_pago?: string;
 }
 
-
 export type OrdenTable = {
   id: number;
   cliente: string;
@@ -95,7 +98,7 @@ export type OrdenTable = {
   estado_orden: string;
   metodo_pago: string;
   total: number;
-}
+};
 
 export type OrdenProductoSearch = {
   id: number;
@@ -107,16 +110,16 @@ export type OrdenProductoSearch = {
   nombre_producto: string;
   precio_venta_usd: number;
   stock_actual: number;
-  tipo: 'producto-final' | 'producto-reventa';
-}
+  tipo: "producto-final" | "producto-reventa";
+};
 
 export type OrdenProductosSearch = {
   productos: OrdenProductoSearch[];
-}
+};
 
 export type CancelOrdenResponse = {
   message: string;
   warning?: string;
   lotes_expirados?: any;
   error?: string;
-}
+};

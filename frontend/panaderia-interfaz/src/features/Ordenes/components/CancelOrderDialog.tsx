@@ -1,4 +1,13 @@
-import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction } from "@/components/ui/alert-dialog";
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogCancel,
+  AlertDialogAction,
+} from "@/components/ui/alert-dialog";
 
 interface CancelOrderDialogProps {
   open: boolean;
@@ -8,23 +17,32 @@ interface CancelOrderDialogProps {
   isLoadingCancelOrdenMutation: boolean;
 }
 
-export const CancelOrderDialog = ({ open, onOpenChange, onConfirm, orderId, isLoadingCancelOrdenMutation }: CancelOrderDialogProps) => {
+export const CancelOrderDialog = ({
+  open,
+  onOpenChange,
+  onConfirm,
+  orderId,
+  isLoadingCancelOrdenMutation,
+}: CancelOrderDialogProps) => {
   return (
-    <AlertDialog open={open} onOpenChange={onOpenChange} >
+    <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>¿Cancelar orden {orderId}?</AlertDialogTitle>
           <AlertDialogDescription>
-            Esta acción cancelará la orden. Los productos asignados serán liberados al stock.
-            ¿Estás seguro de que deseas continuar?
+            Esta acción cancelará la orden. Los productos asignados serán
+            liberados al stock. ¿Estás seguro de que deseas continuar?
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel onClick={() => onOpenChange(false)} className="cursor-pointer">
+          <AlertDialogCancel
+            onClick={() => onOpenChange(false)}
+            className="cursor-pointer"
+          >
             No, mantener orden
           </AlertDialogCancel>
-          <AlertDialogAction 
-            onClick={onConfirm} 
+          <AlertDialogAction
+            onClick={onConfirm}
             className="bg-destructive text-white hover:bg-destructive/90"
             disabled={isLoadingCancelOrdenMutation}
           >
@@ -35,4 +53,3 @@ export const CancelOrderDialog = ({ open, onOpenChange, onConfirm, orderId, isLo
     </AlertDialog>
   );
 };
-

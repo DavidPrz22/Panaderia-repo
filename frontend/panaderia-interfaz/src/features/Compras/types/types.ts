@@ -6,12 +6,18 @@ export type Proveedor = {
   telefono_contacto?: string;
 };
 
-export type EstadosOC = 'Borrador' | 'Enviada' | 'Recibida Parcial' | 'Recibida Completa' | 'Recibida Sin Pagar' | 'Cancelada';
+export type EstadosOC =
+  | "Borrador"
+  | "Enviada"
+  | "Recibida Parcial"
+  | "Recibida Completa"
+  | "Recibida Sin Pagar"
+  | "Cancelada";
 
 export type ProveedorRegistro = {
-    id: number;
-    nombre_proveedor: string;
-}
+  id: number;
+  nombre_proveedor: string;
+};
 
 export type EstadoOC = {
   id: number;
@@ -29,8 +35,8 @@ export type Producto = {
   nombre: string;
   precio_compra_usd: number;
   unidad_medida_compra: { id: number; abreviatura: string };
-  tipo: 'materia-prima' | 'producto-reventa';
-}
+  tipo: "materia-prima" | "producto-reventa";
+};
 
 export type OrdenCompraTable = {
   id: number;
@@ -41,7 +47,7 @@ export type OrdenCompraTable = {
   estado_oc: string;
   metodo_pago: string;
   monto_total_oc_usd: number;
-}
+};
 
 export type PagoProveedor = {
   id: number;

@@ -14,10 +14,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-import { 
-  useGetAllEstadosOrdenCompra, 
+import {
+  useGetAllEstadosOrdenCompra,
   useGetOrdenesCompraTable,
-  useGetOrdenesCompraDetalles 
+  useGetOrdenesCompraDetalles,
 } from "../hooks/queries/queries";
 import { DoubleSpinnerLoading } from "@/components/DoubleSpinnerLoading";
 import { ComprasTable } from "./ComprasTable";
@@ -26,10 +26,25 @@ import { ComprasDetalles } from "./ComprasDetalles";
 import { ComprasRecepcion } from "./ComprasRecepcionTabla";
 
 export const ComprasIndex = () => {
-    const { compraSeleccionadaId, showOrdenCompraDetalles, ordenCompra, setOrdenCompra, showForm, setShowForm, setShowOrdenCompraDetalles, setCompraSeleccionadaId, showRecepcionForm, setShowRecepcionForm } = useComprasContext();
-  
-  const { data: ordenesCompraTable = [], isFetching: isFetchingOrdenesCompraTable } = useGetOrdenesCompraTable();
-  const { data: { orden: compraDetalles } = { orden: undefined }, isFetched } = useGetOrdenesCompraDetalles(compraSeleccionadaId!);
+  const {
+    compraSeleccionadaId,
+    showOrdenCompraDetalles,
+    ordenCompra,
+    setOrdenCompra,
+    showForm,
+    setShowForm,
+    setShowOrdenCompraDetalles,
+    setCompraSeleccionadaId,
+    showRecepcionForm,
+    setShowRecepcionForm,
+  } = useComprasContext();
+
+  const {
+    data: ordenesCompraTable = [],
+    isFetching: isFetchingOrdenesCompraTable,
+  } = useGetOrdenesCompraTable();
+  const { data: { orden: compraDetalles } = { orden: undefined }, isFetched } =
+    useGetOrdenesCompraDetalles(compraSeleccionadaId!);
 
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("Todos");
@@ -41,8 +56,14 @@ export const ComprasIndex = () => {
       setShowOrdenCompraDetalles(true);
       setOrdenCompra(compraDetalles);
     }
-  }, [compraSeleccionadaId, isFetched, setShowOrdenCompraDetalles, setOrdenCompra, compraDetalles, showForm]);
-
+  }, [
+    compraSeleccionadaId,
+    isFetched,
+    setShowOrdenCompraDetalles,
+    setOrdenCompra,
+    compraDetalles,
+    showForm,
+  ]);
 
   useEffect(() => {
     if (ordenCompra && compraSeleccionadaId && !showForm) {
@@ -50,17 +71,20 @@ export const ComprasIndex = () => {
     }
   }, [ordenCompra, showForm, setShowOrdenCompraDetalles, compraSeleccionadaId]);
 
-
   // Filter orders based on search term and status
-  const filteredOrders = (ordenesCompraTable).filter((order) => {
+  const filteredOrders = ordenesCompraTable.filter((order) => {
     // Search filter: match order ID or provider name
-    const matchesSearch = searchTerm === "" || 
+    const matchesSearch =
+      searchTerm === "" ||
       order.id.toString().includes(searchTerm) ||
       order.proveedor.toLowerCase().includes(searchTerm.toLowerCase());
 
     // Status filter
-    const matchesStatus = statusFilter === "Todos" ||
-      order.estado_oc === estadosOrden?.find(e => e.id.toString() === statusFilter)?.nombre_estado;
+    const matchesStatus =
+      statusFilter === "Todos" ||
+      order.estado_oc ===
+        estadosOrden?.find((e) => e.id.toString() === statusFilter)
+          ?.nombre_estado;
 
     return matchesSearch && matchesStatus;
   });
@@ -78,8 +102,8 @@ export const ComprasIndex = () => {
 
   if (showRecepcionForm && ordenCompra) {
     return (
-      <ComprasRecepcion  
-        ordenCompra={ordenCompra} 
+      <ComprasRecepcion
+        ordenCompra={ordenCompra}
         onClose={() => {
           setShowRecepcionForm(false);
           setShowOrdenCompraDetalles(true);
@@ -90,28 +114,27 @@ export const ComprasIndex = () => {
 
   if (showOrdenCompraDetalles && ordenCompra) {
     return (
-      <ComprasDetalles 
-        ordenCompra={ordenCompra} 
+      <ComprasDetalles
+        ordenCompra={ordenCompra}
         onClose={() => {
           setShowOrdenCompraDetalles(false);
           setCompraSeleccionadaId(null);
-        }}  
+        }}
       />
     );
   }
 
   if (showForm) {
-  
     if (!compraSeleccionadaId || compraDetalles) {
       const compraToEdit = compraSeleccionadaId ? compraDetalles : undefined;
       return (
-            <ComprasForm
-              orden={compraToEdit}
-              onClose={() => {
-                  setShowForm(false);
-                  setCompraSeleccionadaId(null);
-              }}
-            />
+        <ComprasForm
+          orden={compraToEdit}
+          onClose={() => {
+            setShowForm(false);
+            setCompraSeleccionadaId(null);
+          }}
+        />
       );
     }
   }
@@ -122,10 +145,17 @@ export const ComprasIndex = () => {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Órdenes de Compra</h1>
-            <p className="text-muted-foreground">Gestiona las órdenes de compra a proveedores</p>
+            <h1 className="text-3xl font-bold tracking-tight">
+              Órdenes de Compra
+            </h1>
+            <p className="text-muted-foreground">
+              Gestiona las órdenes de compra a proveedores
+            </p>
           </div>
-          <Button className="gap-2 bg-blue-600 text-white hover:bg-blue-700 cursor-pointer" onClick={handleNewOrder}>
+          <Button
+            className="gap-2 bg-blue-600 text-white hover:bg-blue-700 cursor-pointer"
+            onClick={handleNewOrder}
+          >
             <Plus className="h-4 w-4" />
             Nueva Orden
           </Button>
@@ -153,7 +183,9 @@ export const ComprasIndex = () => {
               <SelectContent>
                 <SelectItem value="Todos">Todos</SelectItem>
                 {estadosOrden?.map((estado) => (
-                  <SelectItem key={estado.id} value={estado.id.toString()}>{estado.nombre_estado}</SelectItem>
+                  <SelectItem key={estado.id} value={estado.id.toString()}>
+                    {estado.nombre_estado}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
@@ -163,14 +195,19 @@ export const ComprasIndex = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <Card>
             <CardContent className="pt-6">
-              <div className="text-2xl font-bold">{ordenesCompraTable?.length}</div>
+              <div className="text-2xl font-bold">
+                {ordenesCompraTable?.length}
+              </div>
               <p className="text-sm text-muted-foreground">Total Órdenes</p>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="pt-6">
               <div className="text-2xl font-bold">
-                {ordenesCompraTable?.filter((o) => o.estado_oc === "Borrador").length}
+                {
+                  ordenesCompraTable?.filter((o) => o.estado_oc === "Borrador")
+                    .length
+                }
               </div>
               <p className="text-sm text-muted-foreground">Borrador</p>
             </CardContent>
@@ -178,7 +215,10 @@ export const ComprasIndex = () => {
           <Card>
             <CardContent className="pt-6">
               <div className="text-2xl font-bold">
-                {ordenesCompraTable?.filter((o) => o.estado_oc === "Enviada").length}
+                {
+                  ordenesCompraTable?.filter((o) => o.estado_oc === "Enviada")
+                    .length
+                }
               </div>
               <p className="text-sm text-muted-foreground">Enviada</p>
             </CardContent>
@@ -186,7 +226,11 @@ export const ComprasIndex = () => {
           <Card>
             <CardContent className="pt-6">
               <div className="text-2xl font-bold">
-                {ordenesCompraTable?.filter((o) => o.estado_oc === "Recibida Completa").length}
+                {
+                  ordenesCompraTable?.filter(
+                    (o) => o.estado_oc === "Recibida Completa",
+                  ).length
+                }
               </div>
               <p className="text-sm text-muted-foreground">Recibida Completa</p>
             </CardContent>
@@ -194,15 +238,14 @@ export const ComprasIndex = () => {
         </div>
 
         {/* Orders Table */}
-          {isFetchingOrdenesCompraTable ? (
+        {isFetchingOrdenesCompraTable ? (
           <DoubleSpinnerLoading extraClassName="size-20" />
         ) : (
           <ComprasTable
             ordenesCompra={filteredOrders}
             onEditOrder={handleEditOrder}
           />
-        )} 
-
+        )}
       </div>
     </div>
   );
