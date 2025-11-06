@@ -15,8 +15,7 @@ class Transformacion(models.Model):
         return f"Transformación {self.id}: {self.producto_origen.nombre} a {self.producto_destino.nombre}"
 
 class EjecutarTransformacion(models.Model):
-    id = models.AutoField(primary_key=True)
-    nombre_transformacion = models.CharField(max_length=255, null=False, blank=False)
+    transformacion = models.ForeignKey(Transformacion, on_delete=models.CASCADE, related_name='ejecuciones')
     producto_origen = models.ForeignKey('inventario.ProductosElaborados', on_delete=models.CASCADE, related_name='ejecutar_transformacion_producto_origen')
     producto_destino = models.ForeignKey('inventario.ProductosElaborados', on_delete=models.CASCADE, related_name='ejecutar_transformacion_producto_destino')
     fecha_ejecucion = models.DateTimeField(auto_now_add=True)
