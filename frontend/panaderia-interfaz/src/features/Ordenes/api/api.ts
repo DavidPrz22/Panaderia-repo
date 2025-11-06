@@ -5,7 +5,7 @@ import type { TOrderSchema } from "../schema/schema";
 
 export const getClientes = async () : Promise<Cliente[]> => {
     try {
-        const response = await apiClient.get("/api/clientes/");
+        const response = await apiClient.get("/api/cliente/");
         return response.data;
     } catch (error) {
         console.error("Error fetching clientes:", error);
