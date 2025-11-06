@@ -18,13 +18,14 @@ interface ComprasTableProps {
 // import { useGetOrdenesDetalles } from "../hooks/queries/queries";
 import { PendingTubeSpinner } from "@/components/PendingTubeSpinner";
 import { useComprasContext } from "@/context/ComprasContext";
+import { useGetOrdenesCompraDetalles } from "../hooks/queries/queries";
 
 
 export const ComprasTable = ({ ordenesCompra, onEditOrder }: ComprasTableProps) => {
 
-  const { compraSeleccionadaId, setCompraSeleccionadaId, setOrdenCompra} = useComprasContext();
+  const { compraSeleccionadaId, setCompraSeleccionadaId } = useComprasContext();
 
-//   const { isFetching: isFetchingOrdenDetalles } = useGetOrdenesDetalles(ordenSeleccionadaId!);
+  const { isFetching: isFetchingOrdenDetalles } = useGetOrdenesCompraDetalles(compraSeleccionadaId!);
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat("es-MX", {
@@ -46,9 +47,9 @@ export const ComprasTable = ({ ordenesCompra, onEditOrder }: ComprasTableProps) 
 
   return (
     <div className="border rounded-lg bg-card shadow-sm relative">
-      {/* {isFetchingOrdenDetalles && (
+      {isFetchingOrdenDetalles && (
         <PendingTubeSpinner size={20} extraClass="absolute top-0 left-0 w-full h-full flex justify-center items-center bg-white opacity-50 z-50" />
-      )} */}
+      )}
       <Table>
         <TableHeader className="bg-(--table-header-bg)">
           <TableRow className="bg-table-header hover:bg-table-header">

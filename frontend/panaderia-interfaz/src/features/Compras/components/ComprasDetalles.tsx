@@ -1,3 +1,5 @@
+import { useState } from "react";
+
 import type { DetalleOC, OrdenCompra } from "../types/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ComprasEstadoBadge } from "./ComprasEstadoBadge";
@@ -12,16 +14,28 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
+import { ComprasEmailModal } from "./ComprasEmailModal";
+
 interface ComprasDetallesProps {
   ordenCompra: OrdenCompra;
   onClose: () => void;
 }
 import type { EstadosOC } from "../types/types";
-import { PDFDownloadLink } from "@react-pdf/renderer";
+import { ComprasFormTotals } from "./ComprasFormTotals";
+import { usePDF } from '@react-pdf/renderer';
 import { OrdenCompraPDF } from "./OrdenCompraPDF";
-
+import { useMemo, useEffect } from "react";
+import { useMarcarEnviadaOCMutation } from "../hooks/mutations/mutations";
+import { toast } from "sonner";
+import { useComprasContext } from "@/context/ComprasContext";
 
 export const ComprasDetalles = ({ ordenCompra, onClose }: ComprasDetallesProps) => {
+
+
+  const [buttonsStates, setButtonsStates] = useState<EstadosOC>(ordenCompra.estado_oc.nombre_estado as EstadosOC);
+  const { mutateAsync: marcarEnviadaOCMutation, isPending: isLoadingMarcarEnviadaOCPending } = useMarcarEnviadaOCMutation();
+  const { setShowRecepcionForm, setShowOrdenCompraDetalles } = useComprasContext();
+
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat("es-MX", {
@@ -29,9 +43,6 @@ export const ComprasDetalles = ({ ordenCompra, onClose }: ComprasDetallesProps) 
       currency: "USD",
     }).format(amount);
   };
-
-  
-
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("es-MX", {
@@ -42,8 +53,94 @@ export const ComprasDetalles = ({ ordenCompra, onClose }: ComprasDetallesProps) 
       minute: "2-digit",
     });
   };
-;
 
+  // Use usePDF hook for better control over PDF generation
+  // Memoize the document to avoid re-rendering on every render
+  const pdfDocument = useMemo(
+    () => <OrdenCompraPDF ordenCompra={ordenCompra} />,
+    [ordenCompra]
+  );
+
+  const [instance] = usePDF({ document: pdfDocument });
+
+  // Debug logging
+  useEffect(() => {
+    if (instance.error) {
+      console.error('PDF Generation Error:', instance.error);
+    }
+    if (instance.url) {
+      console.log('PDF Generated Successfully:', instance.url);
+    }
+  }, [instance.error, instance.url]);
+
+  const handleDownloadPDF = () => {
+    if (instance.url) {
+      const link = document.createElement('a');
+      link.href = instance.url;
+      link.download = `orden-compra-${ordenCompra.id}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } else if (instance.error) {
+      console.error('Cannot download PDF:', instance.error);
+      alert('Error al generar el PDF. Por favor, intenta nuevamente.');
+    } else {
+      console.warn('PDF URL not available yet. Loading:', instance.loading);
+    }
+  };
+
+  const handleMarcarEnviadaOC = async (mutateAsync: () => Promise<{ message: string }>) => {
+    try {
+      const response = await mutateAsync();
+      if (response.message) {
+        toast.success(response.message);
+        setButtonsStates("Enviada");
+      }
+    } catch (error) {
+      console.error("Error marking order as sent:", error);
+      toast.error("Error marcando orden como enviada");
+    }
+  };
+
+  const handleButtonStates = (estado: EstadosOC) => {
+    switch (estado) {
+      case "Borrador":
+        return (
+          <>
+          <ComprasEmailModal />
+          <Button 
+          className="cursor-pointer bg-amber-600 text-white hover:bg-amber-700"
+          onClick={() => handleMarcarEnviadaOC(() => marcarEnviadaOCMutation(ordenCompra.id))}
+          disabled={isLoadingMarcarEnviadaOCPending}
+          >
+            Marcar como Enviada
+          </Button>
+          </>
+        );
+      case "Enviada":
+        return (
+          <>
+            <Button variant="outline" className="cursor-pointer font-semibold" onClick={() => {
+              setShowRecepcionForm(true);
+              setShowOrdenCompraDetalles(false);
+            }}>
+              Recibir
+            </Button>
+            <Button className="cursor-pointer bg-green-600 text-white font-semibold hover:bg-green-700">
+              Registrar Pago
+            </Button>
+          </>
+        );
+      case "Recibida Sin Pagar":
+        return (
+          <>
+          <Button className="cursor-pointer bg-green-600 text-white hover:bg-green-700">
+            Registrar Pago
+          </Button>
+          </>
+        );
+    }
+  };
 //   const handleCancelOrder = async () => {
 //     try {
 //       const response = await cancelOrdenMutation(orden.id);
@@ -62,36 +159,27 @@ export const ComprasDetalles = ({ ordenCompra, onClose }: ComprasDetallesProps) 
 //     }
 //   };
 
-
   return (
     <>
-      <div className="flex items-center justify-center p-4">
-      <PDFDownloadLink document={<OrdenCompraPDF ordenCompra={ordenCompra} />} fileName="OrdenCompraPDF.pdf">
-        <Button>
-          <FileDown className="h-4 w-4" />
-          Descargar PDF
-        </Button>
-      </PDFDownloadLink>
+      <div className="flex items-center justify-center mx-8 py-5">
         <Card className="w-full max-w-6xl">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4 border-b sticky top-0 bg-card z-10">
             <div className="flex items-center gap-3">
-              <CardTitle className="text-2xl font-bold">{ordenCompra.id}</CardTitle>
+              <CardTitle className="text-2xl font-bold">Orden de Compra #{ordenCompra.id}</CardTitle>
               <ComprasEstadoBadge estadoCompras={ordenCompra.estado_oc ? ordenCompra.estado_oc.nombre_estado as EstadosOC : 'Borrador'} />
             </div>
             <div className="flex items-center gap-2">
-              
-              <Button variant="ghost" size="icon" onClick={onClose}>
-                <X className="h-4 w-4" />
-              </Button>
+              {handleButtonStates(buttonsStates)}
+              <div>
+                <Button variant="ghost" size="icon" onClick={onClose}>
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
           </CardHeader>
           <CardContent className="space-y-6 pt-6">
             {/* Order Info */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div>
-                <p className="text-sm text-muted-foreground">Proveedor</p>
-                <p className="font-medium">{ordenCompra.proveedor.nombre_proveedor}</p>
-              </div>
               <div>
                 <p className="text-sm text-muted-foreground">Fecha de Orden</p>
                 <p className="font-medium">{formatDate(ordenCompra.fecha_emision_oc)}</p>
@@ -114,22 +202,37 @@ export const ComprasDetalles = ({ ordenCompra, onClose }: ComprasDetallesProps) 
               )}
             </div>
 
-            {/* Customer Details */}
+            {/* Proveedor Details */}
             <div className="border-t pt-4">
-              <h3 className="font-semibold mb-2">Datos del Cliente</h3>
+              <h3 className="font-semibold mb-2">Datos del Proveedor</h3>
               <div className="grid grid-cols-2 gap-4">
-                {ordenCompra.proveedor.email_contacto && (
-                  <div>
-                    <p className="text-sm text-muted-foreground">Email</p>
-                    <p className="text-sm">{ordenCompra.proveedor.email_contacto}</p>
-                  </div>
-                )}
-                {ordenCompra.proveedor.telefono_contacto && (
-                  <div>
-                    <p className="text-sm text-muted-foreground">Teléfono</p>
-                    <p className="text-sm">{ordenCompra.proveedor.telefono_contacto}</p>
-                  </div>
-                )}
+                {ordenCompra.proveedor.nombre_proveedor && (
+                    <div>
+                      <p className="text-sm text-muted-foreground">Nombre del Proveedor</p>
+                      <p className="text-sm">{ordenCompra.proveedor.nombre_proveedor}</p>
+                    </div>
+                  )}
+
+                  {ordenCompra.proveedor.nombre_comercial && (
+                    <div>
+                      <p className="text-sm text-muted-foreground">Nombre Comercial</p>
+                      <p className="text-sm">{ordenCompra.proveedor.nombre_comercial}</p>
+                    </div>
+                  )}
+
+                  {ordenCompra.proveedor.email_contacto && (
+                    <div>
+                      <p className="text-sm text-muted-foreground">Email</p>
+                      <p className="text-sm">{ordenCompra.proveedor.email_contacto}</p>
+                    </div>
+                  )}
+
+                  {ordenCompra.proveedor.telefono_contacto && (
+                    <div>
+                      <p className="text-sm text-muted-foreground">Teléfono</p>
+                      <p className="text-sm">{ordenCompra.proveedor.telefono_contacto}</p>
+                    </div>
+                  )}
               </div>
             </div>
 
@@ -144,8 +247,6 @@ export const ComprasDetalles = ({ ordenCompra, onClose }: ComprasDetallesProps) 
                       <TableHead className="font-semibold text-center">Cantidad Solicitada</TableHead>
                       <TableHead className="font-semibold text-center">Unidad de Medida</TableHead>
                       <TableHead className="font-semibold text-right">Precio Unitario</TableHead>
-                      <TableHead className="font-semibold text-center">Impuesto</TableHead>
-                      <TableHead className="font-semibold text-center">Descuento</TableHead>
                       <TableHead className="font-semibold text-right">Subtotal</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -156,10 +257,7 @@ export const ComprasDetalles = ({ ordenCompra, onClose }: ComprasDetallesProps) 
                         <TableCell className="text-center">{item.cantidad_solicitada}</TableCell>
                         <TableCell className="text-center">{item.unidad_medida_abrev}</TableCell>
                         <TableCell className="text-right">{formatCurrency(item.costo_unitario_usd)}</TableCell>
-                        <TableCell className="text-center">{item.porcentaje_impuesto}%</TableCell>
-                        <TableCell className="text-right">{formatCurrency(item.impuesto_linea_usd)}</TableCell>
                         <TableCell className="text-right">{formatCurrency(item.subtotal_linea_usd)}</TableCell>
-                        <TableCell className="text-right">{formatCurrency(item.subtotal_linea_usd + item.impuesto_linea_usd)}</TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
@@ -168,30 +266,12 @@ export const ComprasDetalles = ({ ordenCompra, onClose }: ComprasDetallesProps) 
             </div>
 
             {/* Totals */}
-            <div className="border-t pt-4 flex justify-end gap-6">
-
-              <div className="space-y-2 w-64">
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Tasa de Cambio:</span>
-                  <span className="font-medium">{ordenCompra.tasa_cambio_aplicada}</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="font-bold">Total en VES:</span>
-                  <span className="font-medium">{ordenCompra.monto_total_oc_ves}</span>
-                </div>
-              </div>
-
-              <div className="space-y-2 w-64">
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Impuestos:</span>
-                  <span className="font-medium">{formatCurrency(ordenCompra.monto_impuestos_oc_usd)}</span>
-                </div>
-                <div className="flex justify-between text-lg font-bold border-t pt-2">
-                  <span>Total:</span>
-                  <span>{formatCurrency(ordenCompra.monto_total_oc_usd)}</span>
-                </div>
-              </div>
-            </div>
+            <ComprasFormTotals
+              bcvRate={Number(ordenCompra.tasa_cambio_aplicada)}
+              totalVes={Number(ordenCompra.monto_total_oc_ves)}
+              totalUsd={Number(ordenCompra.monto_total_oc_usd)}
+              formatCurrency={formatCurrency}
+            />
 
             {/* Notes */}
             {ordenCompra.notas && (
@@ -200,6 +280,25 @@ export const ComprasDetalles = ({ ordenCompra, onClose }: ComprasDetallesProps) 
                 <p className="text-sm text-muted-foreground">{ordenCompra.notas}</p>
               </div>
             )}
+
+            {/* PDF Download Button */}
+            <div className="flex justify-end border-t pt-4">
+              <Button 
+                variant="outline" 
+                className="cursor-pointer px-5 py-6 font-semibold"
+                onClick={handleDownloadPDF}
+                disabled={instance.loading || !!instance.error}
+              >
+                <FileDown className="size-5" />
+                {instance.loading 
+                  ? 'Generando PDF...' 
+                  : instance.error 
+                    ? 'Error al generar PDF' 
+                    : 'Descargar PDF'}
+              </Button>
+            </div>
+            
+            
           </CardContent>
         </Card>
       </div>

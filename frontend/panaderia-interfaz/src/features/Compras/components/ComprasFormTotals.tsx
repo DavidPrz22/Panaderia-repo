@@ -44,8 +44,6 @@ const TotalsSection = ({ rows, width = "w-60" }: TotalsSectionProps) => {
 interface ComprasFormTotalsProps {
   bcvRate?: number;
   totalVes: number;
-  subtotalUsd: number;
-  addedCostsUsd: number;
   totalUsd: number;
   formatCurrency: (amount: number) => string;
 }
@@ -53,8 +51,6 @@ interface ComprasFormTotalsProps {
 export const ComprasFormTotals = ({
   bcvRate,
   totalVes,
-  subtotalUsd,
-  addedCostsUsd,
   totalUsd,
   formatCurrency,
 }: ComprasFormTotalsProps) => {
@@ -66,21 +62,12 @@ export const ComprasFormTotals = ({
     {
       label: "Total en VES:",
       value: totalVes.toFixed(2),
-      isBold: true,
     },
   ];
 
   const usdSection = [
     {
-      label: "Subtotal:",
-      value: formatCurrency(subtotalUsd),
-    },
-    {
-      label: "+ Costos agregados:",
-      value: formatCurrency(addedCostsUsd),
-    },
-    {
-      label: "Total:",
+      label: "Total en Divisas:",
       value: formatCurrency(totalUsd),
       isBold: true,
       isLarge: true,
@@ -90,8 +77,8 @@ export const ComprasFormTotals = ({
 
   return (
     <div className="border-t pt-4 flex justify-end">
-      <div className="grid grid-cols-2 gap-2">
-        <TotalsSection rows={vesSection} width="w-60" />
+      <div className="space-y-2">
+        <TotalsSection rows={vesSection} width="w-80" />
         <TotalsSection rows={usdSection} width="w-80" />
       </div>
     </div>
