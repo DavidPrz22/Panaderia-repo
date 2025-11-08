@@ -23,13 +23,18 @@ export function ComprasRecepcion({
   onClose: () => void;
 }) {
   const { mutateAsync: crearRecepcionOC } = useCrearRecepcionOCMutation();
-  const { handleSubmit, watch, setValue } = useForm<TRecepcionFormSchema>({
+  const { 
+    handleSubmit, 
+    watch, 
+    setValue,
+    formState: { errors },
+  } = useForm<TRecepcionFormSchema>({
     resolver: zodResolver(RecepcionFormSchema),
     defaultValues: {
       orden_compra_id: ordenCompra.id,
       detalles: ordenCompra.detalles.map((detalle) => ({
         detalle_oc_id: detalle.id,
-        lotes: [{ id: 1, cantidad: 0, fecha_caducidad: "" }],
+        lotes: [{ id: 1, cantidad: detalle.cantidad_solicitada, fecha_caducidad: "" }],
         cantidad_total_recibida: Number(detalle.cantidad_solicitada),
       })),
       recibido_parcialmente: false,
@@ -39,8 +44,8 @@ export function ComprasRecepcion({
   const [receptions, setReceptions] = useState<ComponentesUIRecepcion[]>(
     ordenCompra.detalles.map((line) => ({
       linea_oc: line,
-      lotes: [{ id: 1, cantidad: 0, fecha_caducidad: "" }],
-      cantidad_total_recibida: line.cantidad_solicitada,
+      lotes: [{ id: 1, cantidad: line.cantidad_solicitada, fecha_caducidad: "" }],
+      cantidad_total_recibida: Number(line.cantidad_solicitada),
     })),
   );
 
@@ -101,7 +106,7 @@ export function ComprasRecepcion({
     // Sync form state with updated lots
     updateFormDetalles(lineId, updatedLots.length > 0 ? updatedLots : [{ id: 1, cantidad: 0, fecha_caducidad: "" }], updatedCantidadTotalRecibida);
   };
-
+  console.log("receptions", receptions);
   const updateFormDetalles = (
     detalle_oc_id: number, 
     lotes : LoteRecepcion[], 
@@ -222,6 +227,19 @@ export function ComprasRecepcion({
       toast.error("Error al crear la recepción");
     }
   };
+  console.log("errors", errors);
+
+  const getErrorMessage = (lineId: number, lotIndex: number, field: "cantidad" | "fecha_caducidad") => {
+    const lineIndex = watch("detalles").findIndex((detalle) => detalle.detalle_oc_id === lineId);
+    
+    if (field === "cantidad") {
+      return errors.detalles?.[lineIndex]?.lotes?.[lotIndex]?.cantidad ? errors.detalles?.[lineIndex]?.lotes?.[lotIndex]?.cantidad.message : "";
+    }
+    if (field === "fecha_caducidad") {
+      return errors.detalles?.[lineIndex]?.lotes?.[lotIndex]?.fecha_caducidad ? errors.detalles?.[lineIndex]?.lotes?.[lotIndex]?.fecha_caducidad.message : "";
+    }
+    return "";
+  };
 
   return (
     <div className="mx-8 py-5">
@@ -294,7 +312,7 @@ export function ComprasRecepcion({
                       {reception.lotes.map((lot, lotIndex) => (
                         <div
                           key={lot.id}
-                          className="space-y-3 rounded-lg bg-white p-4 border border-gray-200"
+                          className="space-y-2 rounded-lg bg-white p-3 border border-gray-200"
                         >
                           <div className="flex items-center justify-between">
                             <p className="text-sm font-medium text-gray-600">
@@ -353,7 +371,16 @@ export function ComprasRecepcion({
                                 }
                                 icon={<CalendarIcon className="h-4 w-4" />}
                               />
+                              
                             </div>
+                          </div>
+                          <div className="grid grid-cols-2 gap-2 text-red-500 text-xs">
+                              <p className="col-span-1 text-red-500 text-sm">
+                                {getErrorMessage(reception.linea_oc.id, lotIndex, "cantidad")}
+                              </p>
+                              <p className="col-span-1 text-red-500 text-sm">
+                                {getErrorMessage(reception.linea_oc.id, lotIndex, "fecha_caducidad")}
+                              </p>
                           </div>
                         </div>
                       ))}

@@ -40,8 +40,8 @@ export const OrdenCompraSchema = z.object({
 
 const loteRecepcion = z.object({
   id: z.number(),
-  cantidad: z.number(),
-  fecha_caducidad: z.string(),
+  cantidad: z.coerce.number().min(1, "La cantidad debe ser mayor a 0"),
+  fecha_caducidad: z.string().min(1, "La fecha de caducidad es requerida"),
 });
 
 const detalleRecepcionSchema = z.object({
