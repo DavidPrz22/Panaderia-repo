@@ -14,6 +14,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useCrearRecepcionOCMutation } from "../hooks/mutations/mutations";
 import { toast } from "sonner";
+import { useComprasContext } from "@/context/ComprasContext";
 
 export function ComprasRecepcion({
   ordenCompra,
@@ -23,6 +24,13 @@ export function ComprasRecepcion({
   onClose: () => void;
 }) {
   const { mutateAsync: crearRecepcionOC } = useCrearRecepcionOCMutation();
+  const { setOrdenCompra } = useComprasContext();
+  // Get today's date in YYYY-MM-DD format
+  const getTodayDate = () => {
+    const today = new Date();
+    return today.toISOString().split('T')[0];
+  };
+
   const { 
     handleSubmit, 
     watch, 
@@ -32,6 +40,7 @@ export function ComprasRecepcion({
     resolver: zodResolver(RecepcionFormSchema),
     defaultValues: {
       orden_compra_id: ordenCompra.id,
+      fecha_recepcion: getTodayDate(),
       detalles: ordenCompra.detalles.map((detalle) => ({
         detalle_oc_id: detalle.id,
         lotes: [{ id: 1, cantidad: detalle.cantidad_solicitada, fecha_caducidad: "" }],
@@ -106,7 +115,7 @@ export function ComprasRecepcion({
     // Sync form state with updated lots
     updateFormDetalles(lineId, updatedLots.length > 0 ? updatedLots : [{ id: 1, cantidad: 0, fecha_caducidad: "" }], updatedCantidadTotalRecibida);
   };
-  console.log("receptions", receptions);
+
   const updateFormDetalles = (
     detalle_oc_id: number, 
     lotes : LoteRecepcion[], 
@@ -219,15 +228,16 @@ export function ComprasRecepcion({
   };
 
   const handleSubmitReception = async (data: TRecepcionFormSchema) => {
+
     try {
-      await crearRecepcionOC(data);
-      toast.success("Recepción creada exitosamente");
+      const response = await crearRecepcionOC(data);
+      // setOrdenCompra(response.orden);
+      toast.success(response.message);
     } catch (error) {
       console.error("Error creating reception:", error);
       toast.error("Error al crear la recepción");
     }
   };
-  console.log("errors", errors);
 
   const getErrorMessage = (lineId: number, lotIndex: number, field: "cantidad" | "fecha_caducidad") => {
     const lineIndex = watch("detalles").findIndex((detalle) => detalle.detalle_oc_id === lineId);
@@ -302,7 +312,6 @@ export function ComprasRecepcion({
                         {reception.cantidad_total_recibida}
                       </span>
                     </div>
-
                     <div />
                   </div>
 
@@ -371,8 +380,8 @@ export function ComprasRecepcion({
                                 }
                                 icon={<CalendarIcon className="h-4 w-4" />}
                               />
-                              
                             </div>
+
                           </div>
                           <div className="grid grid-cols-2 gap-2 text-red-500 text-xs">
                               <p className="col-span-1 text-red-500 text-sm">
@@ -402,7 +411,21 @@ export function ComprasRecepcion({
           </div>
 
           {/* Footer with summary and save button */}
-          <div className="flex justify-between items-end bg-white px-6 pb-4 ">
+          <div className="flex justify-between items-end bg-white px-6 py-5 gap-4">
+            
+            <div className="flex-1 max-w-xs">
+              <ComprasFormDatePicker
+                label="Fecha de Recepción"
+                value={watch("fecha_recepcion")}
+                onChange={(v: string) => setValue("fecha_recepcion", v)}
+                icon={<CalendarIcon className="h-4 w-4" />}
+              />
+              {errors.fecha_recepcion && (
+                <p className="text-red-500 text-xs mt-1">
+                  {errors.fecha_recepcion.message}
+                </p>
+              )}
+            </div>
             <div className="flex items-center justify-between w-70 rounded-lg bg-blue-100 p-3">
               <span className="text-sm font-medium text-blue-900">
                 Total de unidades a recibir:

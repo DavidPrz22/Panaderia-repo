@@ -58,11 +58,15 @@ class DetallesResponseSerializer(serializers.ModelSerializer):
             'producto_reventa_nombre',
             'cantidad_solicitada',
             'cantidad_recibida',
+            'cantidad_pendiente',
             'unidad_medida_compra',
             'unidad_medida_abrev',
             'costo_unitario_usd',
-            'subtotal_linea_usd',
+            'subtotal_linea_usd'
         ]
+
+    def get_cantidad_pendiente(self, obj):
+        return obj.cantidad_solicitada - obj.cantidad_recibida
 
 
 class FormattedResponseOCSerializer(serializers.ModelSerializer):
@@ -151,3 +155,80 @@ class RecepcionCompraSerializer(serializers.Serializer):
     orden_compra_id = serializers.IntegerField()
     detalles = DetalleRecepcionSerializer(many=True)
     recibido_parcialmente = serializers.BooleanField()
+
+
+# serializers.py additions
+class DetallesResponseSerializer(serializers.ModelSerializer):
+    materia_prima_nombre = serializers.CharField(source='materia_prima.nombre', read_only=True)
+    producto_reventa_nombre = serializers.CharField(source='producto_reventa.nombre_producto', read_only=True)
+    unidad_medida_abrev = serializers.CharField(source='unidad_medida_compra.abreviatura', read_only=True)
+    cantidad_pendiente = serializers.DecimalField(max_digits=10, decimal_places=2, read_only=True)
+    
+    class Meta:
+        model = DetalleOrdenesCompra
+        fields = [
+            'id',
+            'materia_prima',
+            'materia_prima_nombre',
+            'producto_reventa',
+            'producto_reventa_nombre',
+            'cantidad_solicitada',
+            'cantidad_recibida',
+            'cantidad_pendiente',
+            'unidad_medida_compra',
+            'unidad_medida_abrev',
+            'costo_unitario_usd',
+            'subtotal_linea_usd'
+        ]
+    
+
+class RecepcionCompraSerializer(serializers.Serializer):
+    orden_compra_id = serializers.IntegerField()
+    fecha_recepcion = serializers.DateField()  # Add this field
+    detalles = DetalleRecepcionSerializer(many=True)
+    recibido_parcialmente = serializers.BooleanField()
+    
+    def validate(self, data):
+        """Validate that received quantities don't exceed pending quantities"""
+        try:
+            orden_compra = OrdenesCompra.objects.get(id=data['orden_compra_id'])
+        except OrdenesCompra.DoesNotExist:
+            raise serializers.ValidationError("Orden de compra no encontrada")
+        
+        # Get all detalles at once to avoid N+1 queries
+        detalles_oc_ids = [d['detalle_oc_id'] for d in data['detalles']]
+        detalles_oc = DetalleOrdenesCompra.objects.filter(
+            id__in=detalles_oc_ids
+        ).select_related('materia_prima', 'producto_reventa')
+        
+        detalles_dict = {d.id: d for d in detalles_oc}
+        
+        for detalle_data in data['detalles']:
+            oc_detalle = detalles_dict.get(detalle_data['detalle_oc_id'])
+            if not oc_detalle:
+                raise serializers.ValidationError(
+                    f"Detalle de OC {detalle_data['detalle_oc_id']} no encontrado"
+                )
+            
+            cantidad_pendiente = oc_detalle.cantidad_solicitada - oc_detalle.cantidad_recibida
+            cantidad_recibida = detalle_data['cantidad_total_recibida']
+            
+            if cantidad_recibida > cantidad_pendiente:
+                producto_nombre = (
+                    oc_detalle.materia_prima.nombre if oc_detalle.materia_prima 
+                    else oc_detalle.producto_reventa.nombre_producto
+                )
+                raise serializers.ValidationError(
+                    f"La cantidad recibida de '{producto_nombre}' ({cantidad_recibida}) "
+                    f"excede la cantidad pendiente ({cantidad_pendiente})"
+                )
+            
+            # Validate that lotes sum equals cantidad_total_recibida
+            suma_lotes = sum(lote['cantidad'] for lote in detalle_data['lotes'])
+            if suma_lotes != cantidad_recibida:
+                raise serializers.ValidationError(
+                    f"La suma de lotes ({suma_lotes}) no coincide con "
+                    f"la cantidad total recibida ({cantidad_recibida})"
+                )
+        
+        return data

@@ -163,7 +163,7 @@ export const marcarEnviadaOC = async (
 };
 
 
-export const crearRecepcionOC = async (params: TRecepcionFormSchema): Promise<{ message: string }> => {
+export const crearRecepcionOC = async (params: TRecepcionFormSchema): Promise<{ message: string, orden: OrdenCompra }> => {
   try {
     const response = await apiClient.post(
       "/api/compras/compras/",

@@ -1,3 +1,4 @@
+from django.utils.timezone import timedelta
 from rest_framework import viewsets
 from apps.compras.models import Proveedores
 from apps.compras.models import OrdenesCompra
@@ -5,9 +6,10 @@ from apps.compras.serializers import ProveedoresSerializer, CompraRegistroProvee
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.db import transaction
-from apps.compras.models import DetalleOrdenesCompra, EstadosOrdenCompra, Compras
+from apps.compras.models import DetalleOrdenesCompra, EstadosOrdenCompra, Compras, DetalleCompras
 from rest_framework import status, serializers
-
+from apps.inventario.models import LotesMateriasPrimas, LotesProductosReventa
+from django.utils import timezone
 
 class ProveedoresViewSet(viewsets.ModelViewSet):
     queryset = Proveedores.objects.all()
@@ -92,6 +94,7 @@ class OrdenesCompraViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
 
+# viewsets.py - Improved ComprasViewSet
 class ComprasViewSet(viewsets.ModelViewSet):
     queryset = Compras.objects.all()
     serializer_class = RecepcionCompraSerializer
@@ -101,6 +104,138 @@ class ComprasViewSet(viewsets.ModelViewSet):
             serializer = RecepcionCompraSerializer(data=request.data)
             serializer.is_valid(raise_exception=True)
 
-            orden_compra = OrdenesCompra.objects.get(id=serializer.validated_data['orden_compra_id'])
+            # Extract validated data
+            orden_compra_id = serializer.validated_data['orden_compra_id']
+            fecha_recepcion = serializer.validated_data['fecha_recepcion']
+            detalles_oc = serializer.validated_data['detalles']
+            parcial = serializer.validated_data['recibido_parcialmente']
 
-            return Response({'message': 'Compra creada exitosamente'}, status=status.HTTP_201_CREATED)
+            # Fetch orden_compra with related data
+            orden_compra = OrdenesCompra.objects.select_related(
+                'proveedor', 'estado_oc'
+            ).get(id=orden_compra_id)
+
+            # Fetch all detalles at once (avoid N+1 queries)
+            detalles_oc_ids = [d['detalle_oc_id'] for d in detalles_oc]
+            detalles_orm = DetalleOrdenesCompra.objects.filter(
+                id__in=detalles_oc_ids
+            ).select_related('materia_prima', 'producto_reventa', 'unidad_medida_compra')
+            
+            # Create lookup dictionary for O(1) access
+            detalles_dict = {d.id: d for d in detalles_orm}
+
+            # Prepare bulk creates for lotes
+            lotes_mp_bulk = []
+            lotes_pr_bulk = []
+            
+            # Calculate actual reception amount
+            monto_recepcion_usd = 0
+            
+            for detalle_data in detalles_oc:
+                oc_detalle = detalles_dict[detalle_data['detalle_oc_id']]
+                cantidad_total_recibida = detalle_data['cantidad_total_recibida']
+                
+                # Calculate subtotal for this line
+                monto_recepcion_usd += cantidad_total_recibida * oc_detalle.costo_unitario_usd
+                
+                # Create lotes with individual quantities
+                for lote_data in detalle_data['lotes']:
+                    if oc_detalle.materia_prima:
+                        lotes_mp_bulk.append(LotesMateriasPrimas(
+                            materia_prima=oc_detalle.materia_prima,
+                            proveedor=orden_compra.proveedor,
+                            fecha_recepcion=fecha_recepcion,
+                            fecha_caducidad=lote_data['fecha_caducidad'],
+                            cantidad_recibida=lote_data['cantidad'],  # Individual lot quantity
+                            stock_actual_lote=lote_data['cantidad'],  # Individual lot quantity
+                            costo_unitario_usd=oc_detalle.costo_unitario_usd,
+                            detalle_oc=oc_detalle
+                        ))
+                    elif oc_detalle.producto_reventa:
+                        lotes_pr_bulk.append(LotesProductosReventa(
+                            producto_reventa=oc_detalle.producto_reventa,
+                            proveedor=orden_compra.proveedor,
+                            fecha_recepcion=fecha_recepcion,
+                            fecha_caducidad=lote_data['fecha_caducidad'],
+                            cantidad_recibida=lote_data['cantidad'],  # Individual lot quantity
+                            stock_actual_lote=lote_data['cantidad'],  # Individual lot quantity
+                            coste_unitario_lote_usd=oc_detalle.costo_unitario_usd,
+                            detalle_oc=oc_detalle
+                        ))
+
+            # Bulk create lotes (outside the loop)
+            if lotes_mp_bulk:
+                LotesMateriasPrimas.objects.bulk_create(lotes_mp_bulk)
+            if lotes_pr_bulk:
+                LotesProductosReventa.objects.bulk_create(lotes_pr_bulk)
+
+            # Calculate VES amount
+            monto_recepcion_ves = monto_recepcion_usd * orden_compra.tasa_cambio_aplicada
+
+            # Create the Compra record
+            compra = Compras.objects.create(
+                orden_compra=orden_compra,
+                proveedor=orden_compra.proveedor,
+                usuario_recepcionador=request.user,
+                fecha_recepcion=fecha_recepcion,
+                monto_recepcion_usd=monto_recepcion_usd,  # Actual reception amount
+                monto_recepcion_ves=monto_recepcion_ves,  # Actual reception amount
+                monto_pendiente_pago_usd=monto_recepcion_usd,
+                tasa_cambio_aplicada=orden_compra.tasa_cambio_aplicada,
+            )
+
+            # Create DetalleCompras records
+            detalles_compra_bulk = []
+            for detalle_data in detalles_oc:
+                oc_detalle = detalles_dict[detalle_data['detalle_oc_id']]
+                cantidad_total_recibida = detalle_data['cantidad_total_recibida']
+                
+                detalles_compra_bulk.append(DetalleCompras(
+                    compra=compra,
+                    detalle_oc=oc_detalle,
+                    materia_prima=oc_detalle.materia_prima,
+                    producto_reventa=oc_detalle.producto_reventa,
+                    cantidad_recibida=cantidad_total_recibida,
+                    unidad_medida=oc_detalle.unidad_medida_compra,
+                    costo_unitario_usd=oc_detalle.costo_unitario_usd,
+                    subtotal_usd=cantidad_total_recibida * oc_detalle.costo_unitario_usd,
+                ))
+
+            DetalleCompras.objects.bulk_create(detalles_compra_bulk)
+
+            # Update cantidad_recibida in DetalleOrdenesCompra
+            detalles_to_update = []
+            for detalle_data in detalles_oc:
+                oc_detalle = detalles_dict[detalle_data['detalle_oc_id']]
+                oc_detalle.cantidad_recibida += detalle_data['cantidad_total_recibida']  # ALWAYS += for cumulative
+                detalles_to_update.append(oc_detalle)
+            
+            # Bulk update
+            DetalleOrdenesCompra.objects.bulk_update(
+                detalles_to_update, 
+                ['cantidad_recibida']
+            )
+
+            # Update orden_compra status
+            if parcial:
+                orden_compra.estado_oc = EstadosOrdenCompra.objects.get(
+                    nombre_estado='Recibida Parcial'
+                )
+            else:
+                orden_compra.estado_oc = EstadosOrdenCompra.objects.get(
+                    nombre_estado='Recibida Completa'
+                )
+                orden_compra.fecha_entrega_real = fecha_recepcion
+            
+            orden_compra.save()
+
+            # Refresh from DB to get updated data
+            orden_compra.refresh_from_db()
+            
+            # Return response with updated order data
+            response_serializer = FormattedResponseOCSerializer(orden_compra)
+            
+            return Response({
+                'message': 'Compra parcialmente recibida' if parcial else 'Compra completamente recibida',
+                'orden': response_serializer.data,
+            }, status=status.HTTP_201_CREATED)

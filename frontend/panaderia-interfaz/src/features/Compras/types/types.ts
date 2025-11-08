@@ -69,6 +69,7 @@ export type DetalleOC = {
   producto_reventa_nombre?: string;
   cantidad_solicitada: number;
   cantidad_recibida?: number;
+  cantidad_pendiente: number;
   unidad_medida_compra?: number;
   unidad_medida_abrev?: string;
   costo_unitario_usd: number;
@@ -114,5 +115,6 @@ export type DetalleRecepcion = {
 
 export type RecepcionForm = {
   orden_compra_id: number;
+  fecha_recepcion: string;
   detalles: DetalleRecepcion[];
 };

@@ -52,6 +52,7 @@ const detalleRecepcionSchema = z.object({
 
 export const RecepcionFormSchema = z.object({
   orden_compra_id: z.number(),
+  fecha_recepcion: z.string().min(1, "La fecha de recepción es requerida"),
   detalles: z.array(detalleRecepcionSchema),
   recibido_parcialmente: z.boolean(),
 });

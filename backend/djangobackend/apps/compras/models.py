@@ -50,11 +50,17 @@ class DetalleOrdenesCompra(models.Model):
     unidad_medida_compra = models.ForeignKey(UnidadesDeMedida, on_delete=models.CASCADE, null=False, blank=False)
     costo_unitario_usd = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     subtotal_linea_usd = models.DecimalField(max_digits=10, decimal_places=2, default=0)
-
+    
+    @property
+    def cantidad_pendiente(self):
+        """Returns remaining quantity to be received"""
+        return self.cantidad_solicitada - self.cantidad_recibida
+        
     def __str__(self):
         if self.materia_prima:
             return f"Detalle OC {self.id} - {self.materia_prima.nombre}"
         return f"Detalle OC {self.id} - {self.producto_reventa.nombre_producto}"
+
     
     class Meta:
         constraints = [
