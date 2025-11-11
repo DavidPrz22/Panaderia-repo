@@ -98,6 +98,7 @@ export const ComprasForm = ({ orden, onClose }: ComprasFormProps) => {
       unidad_medida_abrev: p.unidad_medida_abrev,
       costo_unitario_usd: p.costo_unitario_usd,
       subtotal_linea_usd: p.subtotal_linea_usd,
+      cantidad_pendiente: p.cantidad_pendiente || 0,
     })) || [],
   );
 

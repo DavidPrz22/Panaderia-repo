@@ -1,9 +1,6 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { format } from "date-fns";
-import { es } from "date-fns/locale";
-import { CalendarIcon } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -22,15 +19,14 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { Calendar } from "@/components/ui/calendar";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { cn } from "@/lib/utils";
-import type { OrdenCompra } from "../types/types";
+
+import type { MetodoDePago, OrdenCompra } from "../types/types";
 import { PagoSchema, type TPagoSchema } from "../schemas/schemas";
+import { ComprasFormDatePicker } from "./ComprasFormDatePicker";
+import { ComprasFormSelect } from "./ComprasFormSelect";
+import { useGetParametros } from "../hooks/queries/queries";
+import { cn } from "@/lib/utils";
+
 
 interface ComprasRegistrarPagoDialogProps {
   open: boolean;
@@ -51,7 +47,9 @@ export const ComprasRegistrarPagoDialog = ({
   const [tasaCambio, setTasaCambio] = useState<string>(
     ordenCompra.tasa_cambio_aplicada.toString(),
   );
-  const [fechaPago, setFechaPago] = useState<Date>(new Date());
+
+  const parametros = useGetParametros();
+  const metodosDePago = parametros[1].data ?? [];
 
   const {
     register,
@@ -63,7 +61,7 @@ export const ComprasRegistrarPagoDialog = ({
     resolver: zodResolver(PagoSchema),
     defaultValues: {
       fecha_pago: new Date().toISOString().split("T")[0],
-      metodo_pago: ordenCompra.metodo_pago.nombre_metodo,
+      metodo_pago: ordenCompra.metodo_pago.id,
       monto: Number(ordenCompra.monto_total_oc_usd),
       moneda: "USD",
       tasa_cambio: Number(ordenCompra.tasa_cambio_aplicada),
@@ -132,7 +130,7 @@ export const ComprasRegistrarPagoDialog = ({
             <div>
               <p className="text-sm text-muted-foreground mb-1">Proveedor</p>
               <p className="font-semibold">
-                Proveedor ID: {ordenCompra.proveedor.id}
+                {ordenCompra.proveedor.nombre_proveedor}
               </p>
             </div>
             <div>
@@ -146,43 +144,13 @@ export const ComprasRegistrarPagoDialog = ({
           </div>
 
           {/* Payment Date and Method */}
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 items-center gap-4">
             <div className="space-y-2">
-              <Label htmlFor="fecha_pago" className="text-sm font-medium">
-                Fecha de Pago <span className="text-red-500">*</span>
-              </Label>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    className={cn(
-                      "w-full justify-start text-left font-normal",
-                      !fechaPago && "text-muted-foreground",
-                      errors.fecha_pago && "border-red-500"
-                    )}
-                  >
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {fechaPago ? (
-                      format(fechaPago, "PPP", { locale: es })
-                    ) : (
-                      <span>Selecciona una fecha</span>
-                    )}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0 z-[9999]" align="start">
-                  <Calendar
-                    mode="single"
-                    selected={fechaPago}
-                    onSelect={(date) => {
-                      if (date) {
-                        setFechaPago(date);
-                        setValue("fecha_pago", format(date, "yyyy-MM-dd"));
-                      }
-                    }}
-                    initialFocus
-                  />
-                </PopoverContent>
-              </Popover>
+              <ComprasFormDatePicker
+                label="Fecha de Pago"
+                value={watch("fecha_pago")}
+                onChange={(v) => setValue("fecha_pago", v)}
+              />
               {errors.fecha_pago && (
                 <p className="text-sm text-red-500">
                   {errors.fecha_pago.message}
@@ -194,29 +162,18 @@ export const ComprasRegistrarPagoDialog = ({
               <Label htmlFor="metodo_pago" className="text-sm font-medium">
                 Método de Pago <span className="text-red-500">*</span>
               </Label>
-              <Select
-                defaultValue={ordenCompra.metodo_pago.nombre_metodo}
-                onValueChange={(value) => setValue("metodo_pago", value)}
+              <ComprasFormSelect
+                id="metodo_pago"
+                value={watch("metodo_pago") ? watch("metodo_pago").toString() : ""}
+                onChange={(v: string) => setValue("metodo_pago", Number(v))}
+                placeholder="Selecciona método de pago"
               >
-                <SelectTrigger
-                  className={errors.metodo_pago ? "border-red-500" : ""}
-                >
-                  <SelectValue placeholder="Selecciona método de pago" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Transferencia Bancaria">
-                    Transferencia Bancaria
+                {metodosDePago.map((metodo: MetodoDePago) => (
+                  <SelectItem key={metodo.id} value={metodo.id.toString()}>
+                    {metodo.nombre_metodo}
                   </SelectItem>
-                  <SelectItem value="Efectivo">Efectivo</SelectItem>
-                  <SelectItem value="Cheque">Cheque</SelectItem>
-                  <SelectItem value="Tarjeta de Crédito">
-                    Tarjeta de Crédito
-                  </SelectItem>
-                  <SelectItem value="Tarjeta de Débito">
-                    Tarjeta de Débito
-                  </SelectItem>
-                </SelectContent>
-              </Select>
+                ))}
+              </ComprasFormSelect>
               {errors.metodo_pago && (
                 <p className="text-sm text-red-500">
                   {errors.metodo_pago.message}
@@ -228,13 +185,14 @@ export const ComprasRegistrarPagoDialog = ({
           {/* Payment Reference */}
           <div className="space-y-2">
             <Label htmlFor="referencia_pago" className="text-sm font-medium">
-              Referencia de Pago
+              Referencia de Pago <span className="text-red-500">*</span>
             </Label>
             <Input
               id="referencia_pago"
               type="text"
               placeholder="Número de referencia, confirmación, etc."
-              {...register("referencia_pago")}
+              className="focus-visible:ring-blue-200"
+              {...register("referencia_pago")}  
             />
           </div>
 
@@ -251,7 +209,7 @@ export const ComprasRegistrarPagoDialog = ({
                 placeholder="0.00"
                 value={monto}
                 onChange={handleMontoChange}
-                className={errors.monto ? "border-red-500" : ""}
+                className={cn(errors.monto ? "border-red-500" : "", "focus-visible:ring-blue-200")}
               />
               {errors.monto && (
                 <p className="text-sm text-red-500">{errors.monto.message}</p>
@@ -266,7 +224,7 @@ export const ComprasRegistrarPagoDialog = ({
                 defaultValue="USD"
                 onValueChange={handleMonedaChange}
               >
-                <SelectTrigger className={errors.moneda ? "border-red-500" : ""}>
+                <SelectTrigger className={cn(errors.moneda ? "border-red-500" : "", "focus-visible:ring-blue-200")}>
                   <SelectValue placeholder="Moneda" />
                 </SelectTrigger>
                 <SelectContent>
@@ -291,7 +249,7 @@ export const ComprasRegistrarPagoDialog = ({
                 placeholder="0.00"
                 value={tasaCambio}
                 onChange={handleTasaCambioChange}
-                className={errors.tasa_cambio ? "border-red-500" : ""}
+                className={cn(errors.tasa_cambio ? "border-red-500" : "", "focus-visible:ring-blue-200")}
               />
               {errors.tasa_cambio && (
                 <p className="text-sm text-red-500">
@@ -323,7 +281,7 @@ export const ComprasRegistrarPagoDialog = ({
               placeholder="Notas adicionales sobre el pago..."
               {...register("notas_pago")}
               rows={3}
-              className="resize-none"
+              className="resize-none focus-visible:ring-blue-200"
             />
           </div>
 
@@ -338,7 +296,7 @@ export const ComprasRegistrarPagoDialog = ({
             </div>
             <div className="flex justify-between text-sm">
               <span className="text-muted-foreground">Método:</span>
-              <span className="font-medium">{watch("metodo_pago")}</span>
+              <span className="font-medium">{metodosDePago.find(metodo => metodo.id === watch("metodo_pago"))?.nombre_metodo}</span>
             </div>
             <div className="flex justify-between text-sm">
               <span className="text-muted-foreground">Fecha:</span>
