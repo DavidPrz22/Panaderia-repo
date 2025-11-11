@@ -147,7 +147,25 @@ export const ComprasDetalles = ({
             </Button>
           </>
         );
-      case "Recibida Sin Pagar":
+      case "Recibida Parcial":
+        return (
+          <>
+            <Button
+              variant="outline"
+              className="cursor-pointer font-semibold"
+              onClick={() => {
+                setShowRecepcionForm(true);
+                setShowOrdenCompraDetalles(false);
+              }}
+            >
+              Recibir Restante
+            </Button>
+            <Button className="cursor-pointer bg-green-600 text-white hover:bg-green-700">
+              Registrar Pago
+            </Button>
+          </>
+        );
+      case "Recibida Completa":
         return (
           <>
             <Button className="cursor-pointer bg-green-600 text-white hover:bg-green-700">

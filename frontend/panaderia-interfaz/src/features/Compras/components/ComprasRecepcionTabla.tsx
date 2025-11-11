@@ -14,7 +14,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useCrearRecepcionOCMutation } from "../hooks/mutations/mutations";
 import { toast } from "sonner";
-import { useComprasContext } from "@/context/ComprasContext";
+import { PendingTubeSpinner } from "@/components/PendingTubeSpinner";
 
 export function ComprasRecepcion({
   ordenCompra,
@@ -23,22 +23,56 @@ export function ComprasRecepcion({
   ordenCompra: OrdenCompra;
   onClose: () => void;
 }) {
-  const { mutateAsync: crearRecepcionOC } = useCrearRecepcionOCMutation();
-  const { setOrdenCompra } = useComprasContext();
+  const { mutateAsync: crearRecepcionOC, isPending: isCreatingRecepcion } = useCrearRecepcionOCMutation();
+
+  const isPartial = ordenCompra.estado_oc.nombre_estado === "Recibida Parcial" ? true : false;
+  
   // Get today's date in YYYY-MM-DD format
   const getTodayDate = () => {
     const today = new Date();
     return today.toISOString().split('T')[0];
   };
 
-  const { 
-    handleSubmit, 
-    watch, 
-    setValue,
-    formState: { errors },
-  } = useForm<TRecepcionFormSchema>({
-    resolver: zodResolver(RecepcionFormSchema),
-    defaultValues: {
+  const getReceptions = (): ComponentesUIRecepcion[] => {
+    if (isPartial) {
+      const completedReceptions: ComponentesUIRecepcion[] = ordenCompra.detalles
+      .filter((line) => line.cantidad_pendiente > 0)
+      .map((line) => ({
+        linea_oc: line,
+        lotes: [{ id: 1, cantidad: line.cantidad_pendiente, fecha_caducidad: "" }],
+        cantidad_total_recibida: Number(line.cantidad_recibida),
+        cantidad_en_inventario: Number(line.cantidad_recibida),
+        cantidad_pendiente: Number(line.cantidad_pendiente),
+      }));
+
+      return completedReceptions;
+    }
+    const pendingReceptions: ComponentesUIRecepcion[] = ordenCompra.detalles.map((line) => ({
+    linea_oc: line,
+    lotes: [{ id: 1, cantidad: line.cantidad_solicitada, fecha_caducidad: "" }],
+    cantidad_total_recibida: Number(line.cantidad_solicitada),
+  }));
+
+  return pendingReceptions;
+  }
+
+  const getFormDefaultData = (): TRecepcionFormSchema => {
+    if (isPartial) {
+      return {
+      orden_compra_id: ordenCompra.id,
+      fecha_recepcion: getTodayDate(),
+      detalles: ordenCompra.detalles
+      .filter((detalle) => detalle.cantidad_pendiente > 0)
+      .map((detalle) => ({
+        detalle_oc_id: detalle.id,
+        lotes: [{ id: 1, cantidad: detalle.cantidad_pendiente, fecha_caducidad: "" }],
+        cantidad_total_recibida: Number(detalle.cantidad_pendiente),
+      })),
+      recibido_parcialmente: false,
+    };
+    }
+    
+    return {
       orden_compra_id: ordenCompra.id,
       fecha_recepcion: getTodayDate(),
       detalles: ordenCompra.detalles.map((detalle) => ({
@@ -47,15 +81,22 @@ export function ComprasRecepcion({
         cantidad_total_recibida: Number(detalle.cantidad_solicitada),
       })),
       recibido_parcialmente: false,
-    },
+    };
+  }
+
+
+  const { 
+    handleSubmit, 
+    watch, 
+    setValue,
+    formState: { errors },
+  } = useForm<TRecepcionFormSchema>({
+    resolver: zodResolver(RecepcionFormSchema),
+    defaultValues: getFormDefaultData() as TRecepcionFormSchema,
   });
 
   const [receptions, setReceptions] = useState<ComponentesUIRecepcion[]>(
-    ordenCompra.detalles.map((line) => ({
-      linea_oc: line,
-      lotes: [{ id: 1, cantidad: line.cantidad_solicitada, fecha_caducidad: "" }],
-      cantidad_total_recibida: Number(line.cantidad_solicitada),
-    })),
+    getReceptions(),
   );
 
   const handleAddLot = (lineId: number) => {
@@ -78,7 +119,7 @@ export function ComprasRecepcion({
         return reception;
       }),
     );
-
+    
     const detalle_oc_index = watch("detalles").findIndex((detalle) => detalle.detalle_oc_id === lineId);
 
     setValue(`detalles.${detalle_oc_index}.lotes`, [
@@ -173,17 +214,18 @@ export function ComprasRecepcion({
   };
 
   const checkPartiallyReceived = (lineId: number, updatedCantidadTotalRecibida: number) => {
-    if (updatedCantidadTotalRecibida < ( ordenCompra.detalles.find((detalle) => detalle.id === lineId)?.cantidad_solicitada || 0)) {
-      setValue("recibido_parcialmente", true);
-    } else {
+
+    if (isPartial && updatedCantidadTotalRecibida < ( ordenCompra.detalles.find((detalle) => detalle.id === lineId)?.cantidad_pendiente || 0)) {
+        setValue("recibido_parcialmente", true);
+    }
+    else if (!isPartial && updatedCantidadTotalRecibida < ( ordenCompra.detalles.find((detalle) => detalle.id === lineId)?.cantidad_solicitada || 0)) {
+        setValue("recibido_parcialmente", true);
+    }
+    else {
       setValue("recibido_parcialmente", false);
     }
   };
 
-  /**
-   * Handles changes to lot fields (cantidad or fecha_caducidad)
-   * Updates both UI state (receptions) and form state (react-hook-form)
-   */
   const handleLotChange = (
     lineId: number,
     lotId: number,
@@ -212,7 +254,6 @@ export function ComprasRecepcion({
     return "bg-orange-100 text-orange-700";
   };
 
-
   const getTotalAllReceptions = () => {
     return receptions.reduce((sum, r) => sum + r.cantidad_total_recibida, 0);
   };
@@ -231,8 +272,8 @@ export function ComprasRecepcion({
 
     try {
       const response = await crearRecepcionOC(data);
-      // setOrdenCompra(response.orden);
       toast.success(response.message);
+      onClose();
     } catch (error) {
       console.error("Error creating reception:", error);
       toast.error("Error al crear la recepción");
@@ -251,8 +292,14 @@ export function ComprasRecepcion({
     return "";
   };
 
-  return (
-    <div className="mx-8 py-5">
+  return ( 
+    <div className="mx-8 py-5 relative">
+      {isCreatingRecepcion && (
+        <PendingTubeSpinner
+          size={28}
+          extraClass="absolute bg-white opacity-50 w-full h-full"
+        />
+      )}
       <form onSubmit={handleSubmit(handleSubmitReception)}>
         <div className="text-card-foreground flex flex-col border bg-white shadow-sm rounded-lg">
           <div className="border-b px-6 py-5">
@@ -276,10 +323,12 @@ export function ComprasRecepcion({
 
           <div className="m-6 border border-gray-300 rounded-t-lg">
             {/* Header */}
-            <div className="grid grid-cols-4 gap-6 border-b bg-gray-50 px-6 py-3 text-sm uppercase font-semibold tracking-wider text-gray-500 rounded-t-lg">
+            <div className={`grid grid-cols-${isPartial ? "5" : "3"} gap-6 border-b bg-gray-50 px-6 py-3 text-sm uppercase font-semibold tracking-wider text-gray-500 rounded-t-lg`}>
               <div>Producto</div>
               <div className="text-right ">Ordenado</div>
+              {isPartial && <div className="text-center ">En inventario</div>}
               <div className="text-center ">Recibido</div>
+              {isPartial && <div className="text-center ">Pendiente</div>}
             </div>
 
             {/* Rows */}
@@ -287,7 +336,7 @@ export function ComprasRecepcion({
               {receptions.map((reception) => (
                 <div key={reception.linea_oc.id}>
                   {/* Product Row */}
-                  <div className="grid grid-cols-4 gap-6 border-b px-6 py-4 items-center ">
+                  <div className={`grid grid-cols-${isPartial ? "5" : "3"} gap-6 border-b px-6 py-4 items-center `}>
                     <div className="flex items-center gap-3">
                       <div className="rounded-lg bg-gray-100 p-2">
                         <Package className="h-5 w-5 text-gray-600" />
@@ -298,7 +347,36 @@ export function ComprasRecepcion({
                         </p>
                       </div>
                     </div>
+                    { isPartial ? 
+                    <>
+                      <div className="text-right">
+                        <p className="text-sm font-medium text-gray-900">
+                          {reception.linea_oc.cantidad_solicitada}
+                        </p>
+                      </div>
 
+                      <div className="text-center">
+                        <span
+                          className={`inline-flex items-center justify-center rounded-full px-3 py-1 text-sm font-semibold bg-blue-100 text-blue-700`}
+                        >
+                          {reception.cantidad_en_inventario}
+                        </span>
+                      </div>
+                      <div className="text-center">
+                        <span className={`inline-flex items-center justify-center rounded-full px-3 py-1 text-sm font-semibold ${getReceivedBadgeColor(reception.cantidad_total_recibida, reception.linea_oc.cantidad_pendiente)}`}>
+                          {reception.linea_oc.cantidad_pendiente}
+                        </span>                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      
+                      </div>
+                      <div className="text-center">
+                        <span
+                          className='inline-flex items-center justify-center rounded-full px-3 py-1 text-sm font-semibold bg-red-100 text-red-700'
+                        >
+                          {reception.cantidad_pendiente}
+                        </span>
+                      </div>
+                    </>
+                    :
+                    <>
                     <div className="text-right">
                       <p className="text-sm font-medium text-gray-900">
                         {reception.linea_oc.cantidad_solicitada}
@@ -312,7 +390,9 @@ export function ComprasRecepcion({
                         {reception.cantidad_total_recibida}
                       </span>
                     </div>
-                    <div />
+                    </>
+                    }
+                    
                   </div>
 
                   {/* Lots Section */}
@@ -437,6 +517,7 @@ export function ComprasRecepcion({
             <Button
               type="submit"
               className=" bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded p-6.5"
+              disabled={isCreatingRecepcion}
             >
               Guardar Recepción
             </Button>

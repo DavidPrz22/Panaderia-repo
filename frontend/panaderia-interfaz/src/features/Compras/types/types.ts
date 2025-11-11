@@ -106,6 +106,8 @@ export type ComponentesUIRecepcion = {
   linea_oc: DetalleOC;
   lotes: LoteRecepcion[];
   cantidad_total_recibida: number;
+  cantidad_en_inventario?: number;
+  cantidad_pendiente?: number;
 };
 
 export type DetalleRecepcion = {
