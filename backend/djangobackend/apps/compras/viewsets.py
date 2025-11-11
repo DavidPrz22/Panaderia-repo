@@ -10,6 +10,7 @@ from apps.compras.models import DetalleOrdenesCompra, EstadosOrdenCompra, Compra
 from rest_framework import status, serializers
 from apps.inventario.models import LotesMateriasPrimas, LotesProductosReventa
 from django.utils import timezone
+from apps.inventario.models import MateriasPrimas, ProductosReventa
 
 class ProveedoresViewSet(viewsets.ModelViewSet):
     queryset = Proveedores.objects.all()
@@ -131,6 +132,11 @@ class ComprasViewSet(viewsets.ModelViewSet):
             # Calculate actual reception amount
             monto_recepcion_usd = 0
             
+            # mp map for stock update
+            mp_map = {}
+            # pr map for stock update
+            pr_map = {}
+
             for detalle_data in detalles_oc:
                 oc_detalle = detalles_dict[detalle_data['detalle_oc_id']]
                 cantidad_total_recibida = detalle_data['cantidad_total_recibida']
@@ -141,6 +147,7 @@ class ComprasViewSet(viewsets.ModelViewSet):
                 # Create lotes with individual quantities
                 for lote_data in detalle_data['lotes']:
                     if oc_detalle.materia_prima:
+                        mp_map[oc_detalle.materia_prima.id] = oc_detalle.materia_prima
                         lotes_mp_bulk.append(LotesMateriasPrimas(
                             materia_prima=oc_detalle.materia_prima,
                             proveedor=orden_compra.proveedor,
@@ -152,6 +159,7 @@ class ComprasViewSet(viewsets.ModelViewSet):
                             detalle_oc=oc_detalle
                         ))
                     elif oc_detalle.producto_reventa:
+                        pr_map[oc_detalle.producto_reventa.id] = oc_detalle.producto_reventa
                         lotes_pr_bulk.append(LotesProductosReventa(
                             producto_reventa=oc_detalle.producto_reventa,
                             proveedor=orden_compra.proveedor,
@@ -166,8 +174,12 @@ class ComprasViewSet(viewsets.ModelViewSet):
             # Bulk create lotes (outside the loop)
             if lotes_mp_bulk:
                 LotesMateriasPrimas.objects.bulk_create(lotes_mp_bulk)
+                for mp in mp_map.values():
+                    mp.actualizar_stock()
             if lotes_pr_bulk:
                 LotesProductosReventa.objects.bulk_create(lotes_pr_bulk)
+                for pr in pr_map.values():
+                    pr.actualizar_product_stock()
 
             # Calculate VES amount
             monto_recepcion_ves = monto_recepcion_usd * orden_compra.tasa_cambio_aplicada
