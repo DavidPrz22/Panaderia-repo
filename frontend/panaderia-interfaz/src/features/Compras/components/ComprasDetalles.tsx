@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/table";
 
 import { ComprasEmailModal } from "./ComprasEmailModal";
+import { ComprasRegistrarPagoDialog } from "./ComprasRegistrarPagoDialog";
 
 interface ComprasDetallesProps {
   ordenCompra: OrdenCompra;
@@ -28,6 +29,7 @@ import { useMemo, useEffect } from "react";
 import { useMarcarEnviadaOCMutation } from "../hooks/mutations/mutations";
 import { toast } from "sonner";
 import { useComprasContext } from "@/context/ComprasContext";
+import type { TPagoSchema } from "../schemas/schemas";
 
 export const ComprasDetalles = ({
   ordenCompra,
@@ -36,6 +38,7 @@ export const ComprasDetalles = ({
   const [buttonsStates, setButtonsStates] = useState<EstadosOC>(
     ordenCompra.estado_oc.nombre_estado as EstadosOC,
   );
+  const [showRegistrarPagoDialog, setShowRegistrarPagoDialog] = useState(false);
   const {
     mutateAsync: marcarEnviadaOCMutation,
     isPending: isLoadingMarcarEnviadaOCPending,
@@ -110,6 +113,20 @@ export const ComprasDetalles = ({
     }
   };
 
+  const handleRegistrarPago = async (data: TPagoSchema) => {
+    try {
+      // TODO: Implement the API call to register payment
+      console.log("Registrar pago data:", data);
+      toast.success("Pago registrado exitosamente");
+      // After successful payment registration, you might want to update the order state
+      // setButtonsStates("Pagado");
+    } catch (error) {
+      console.error("Error registrando pago:", error);
+      toast.error("Error al registrar el pago");
+      throw error;
+    }
+  };
+
   const handleButtonStates = (estado: EstadosOC) => {
     switch (estado) {
       case "Borrador":
@@ -142,7 +159,10 @@ export const ComprasDetalles = ({
             >
               Recibir
             </Button>
-            <Button className="cursor-pointer bg-green-600 text-white font-semibold hover:bg-green-700">
+            <Button 
+              className="cursor-pointer bg-green-600 text-white font-semibold hover:bg-green-700"
+              onClick={() => setShowRegistrarPagoDialog(true)}
+            >
               Registrar Pago
             </Button>
           </>
@@ -160,7 +180,10 @@ export const ComprasDetalles = ({
             >
               Recibir Restante
             </Button>
-            <Button className="cursor-pointer bg-green-600 text-white hover:bg-green-700">
+            <Button 
+              className="cursor-pointer bg-green-600 text-white hover:bg-green-700"
+              onClick={() => setShowRegistrarPagoDialog(true)}
+            >
               Registrar Pago
             </Button>
           </>
@@ -168,7 +191,10 @@ export const ComprasDetalles = ({
       case "Recibida Completa":
         return (
           <>
-            <Button className="cursor-pointer bg-green-600 text-white hover:bg-green-700">
+            <Button 
+              className="cursor-pointer bg-green-600 text-white hover:bg-green-700"
+              onClick={() => setShowRegistrarPagoDialog(true)}
+            >
               Registrar Pago
             </Button>
           </>
@@ -393,6 +419,13 @@ export const ComprasDetalles = ({
         orderId={orden.id}
         isLoadingCancelOrdenMutation={isLoadingCancelOrdenMutation}
       /> */}
+
+      <ComprasRegistrarPagoDialog
+        open={showRegistrarPagoDialog}
+        onOpenChange={setShowRegistrarPagoDialog}
+        ordenCompra={ordenCompra}
+        onSubmit={handleRegistrarPago}
+      />
     </>
   );
 };
