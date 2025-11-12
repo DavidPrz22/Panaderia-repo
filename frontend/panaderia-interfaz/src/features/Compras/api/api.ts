@@ -9,7 +9,7 @@ import type {
   Producto,
 } from "../types/types";
 import type { UnidadesDeMedida } from "@/features/ProductosIntermedios/types/types";
-import type { TOrdenCompraSchema, TRecepcionFormSchema } from "../schemas/schemas";
+import type { TOrdenCompraSchema, TPagoSchema, TRecepcionFormSchema } from "../schemas/schemas";
 
 export type OrdenCompraDetallesResponse = {
   orden: OrdenCompra;
@@ -172,6 +172,19 @@ export const crearRecepcionOC = async (params: TRecepcionFormSchema): Promise<{ 
     return response.data;
   } catch (error) {
     console.error("Error creating reception:", error);
+    throw error;
+  }
+};
+
+export const registrarPago = async (params: TPagoSchema): Promise<{ message: string }> => {
+  try {
+    const response = await apiClient.post(
+      "/api/compras/pagos-proveedores/",
+      params,
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Error registering payment:", error);
     throw error;
   }
 };

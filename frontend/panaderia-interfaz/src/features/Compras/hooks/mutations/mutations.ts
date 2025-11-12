@@ -4,8 +4,9 @@ import {
   createOrdenCompra,
   marcarEnviadaOC,
   crearRecepcionOC,
+  registrarPago,
 } from "../../api/api";
-import type { TOrdenCompraSchema, TRecepcionFormSchema } from "../../schemas/schemas";
+import type { TOrdenCompraSchema, TPagoSchema, TRecepcionFormSchema } from "../../schemas/schemas";
 import { ordenesCompraTableQueryOptions } from "../queries/queryOptions";
 import { ordenesCompraDetallesQueryOptions } from "@/features/Compras/hooks/queries/queryOptions";
 
@@ -62,6 +63,21 @@ export const useCrearRecepcionOCMutation = () => {
     },
     onError: (error) => {
       console.error("Error creating reception:", error);
+    },
+  });
+};
+
+export const useRegistrarPagoMutation = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (params: TPagoSchema) => registrarPago(params),
+    onSuccess: (_, params) => {
+      queryClient.invalidateQueries({
+        queryKey: ordenesCompraTableQueryOptions.queryKey,
+      });
+      queryClient.invalidateQueries({
+        queryKey: ordenesCompraDetallesQueryOptions(params.orden_compra_asociada).queryKey,
+      });
     },
   });
 };

@@ -20,36 +20,39 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 
-import type { MetodoDePago, OrdenCompra } from "../types/types";
+import type { MetodoDePago, OrdenCompra, RecepcionOC } from "../types/types";
 import { PagoSchema, type TPagoSchema } from "../schemas/schemas";
 import { ComprasFormDatePicker } from "./ComprasFormDatePicker";
 import { ComprasFormSelect } from "./ComprasFormSelect";
 import { useGetParametros } from "../hooks/queries/queries";
 import { cn } from "@/lib/utils";
 
+import { useRegistrarPagoMutation } from "../hooks/mutations/mutations";
+import { toast } from "sonner";
 
 interface ComprasRegistrarPagoDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   ordenCompra: OrdenCompra;
-  onSubmit: (data: TPagoSchema) => Promise<void>;
 }
+
 
 export const ComprasRegistrarPagoDialog = ({
   open,
   onOpenChange,
   ordenCompra,
-  onSubmit,
 }: ComprasRegistrarPagoDialogProps) => {
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedMoneda, setSelectedMoneda] = useState<string>("USD");
-  const [monto, setMonto] = useState<string>("");
+  const [monto, setMonto] = useState<string>(
+    ordenCompra.monto_total_oc_usd.toString(),
+  );
   const [tasaCambio, setTasaCambio] = useState<string>(
     ordenCompra.tasa_cambio_aplicada.toString(),
   );
-
   const parametros = useGetParametros();
   const metodosDePago = parametros[1].data ?? [];
+
+  const { mutateAsync: registrarPago, isPending: isSubmitting } = useRegistrarPagoMutation();
 
   const {
     register,
@@ -62,13 +65,26 @@ export const ComprasRegistrarPagoDialog = ({
     defaultValues: {
       fecha_pago: new Date().toISOString().split("T")[0],
       metodo_pago: ordenCompra.metodo_pago.id,
-      monto: Number(ordenCompra.monto_total_oc_usd),
+      monto_pago_usd: Number(ordenCompra.monto_total_oc_usd),
+      monto_pago_ves: Number(ordenCompra.monto_total_oc_usd) * Number(ordenCompra.tasa_cambio_aplicada),
       moneda: "USD",
-      tasa_cambio: Number(ordenCompra.tasa_cambio_aplicada),
+      tasa_cambio_aplicada: Number(ordenCompra.tasa_cambio_aplicada),
       referencia_pago: "",
-      notas_pago: "",
+      notas: "",
+      orden_compra_asociada: ordenCompra.id,
     },
   });
+
+
+  const getMontoDisplay = (compraAsociada: number | undefined) => {
+    if (compraAsociada !== undefined) {
+      return ordenCompra.recepciones.find(recepcion => recepcion.id === compraAsociada)?.monto_pendiente_pago_usd || 0;
+    } else {
+      return ordenCompra.monto_total_oc_usd;
+    }
+  }
+
+  const [montoEnOrden, setMontoEnOrden] = useState<number>(getMontoDisplay(watch("compra_asociada")));
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat("es-VE", {
@@ -77,46 +93,131 @@ export const ComprasRegistrarPagoDialog = ({
     }).format(amount);
   };
 
-  // Calculate equivalent in VES
-  const calcularEquivalenteVES = () => {
+  // Calculate payment amount in USD
+  const calcularMontoUSD = () => {
     const montoNum = parseFloat(monto) || 0;
     const tasaNum = parseFloat(tasaCambio) || 0;
-    return montoNum * tasaNum;
+    
+    if (selectedMoneda === "USD" || selectedMoneda === "EUR") {
+      return montoNum;
+    } else if (selectedMoneda === "VES") {
+      return tasaNum > 0 ? montoNum / tasaNum : 0;
+    }
+    return 0;
+  };
+
+  // Calculate payment amount in VES
+  const calcularMontoVES = () => {
+    const montoNum = parseFloat(monto) || 0;
+    const tasaNum = parseFloat(tasaCambio) || 0;
+    
+    if (selectedMoneda === "USD" || selectedMoneda === "EUR") {
+      return montoNum * tasaNum;
+    } else if (selectedMoneda === "VES") {
+      return montoNum;
+    }
+    return 0;
   };
 
   const handleFormSubmit = async (data: TPagoSchema) => {
-    setIsSubmitting(true);
     try {
-      await onSubmit(data);
+      await registrarPago(data);
       onOpenChange(false);
+      toast.success("Pago registrado exitosamente");
     } catch (error) {
       console.error("Error registrando pago:", error);
-    } finally {
-      setIsSubmitting(false);
+      toast.error("Error al registrar el pago");
     }
   };
 
   const handleMontoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setMonto(value);
-    setValue("monto", parseFloat(value) || 0);
+    
+    const montoNum = parseFloat(value) || 0;
+    const tasaNum = parseFloat(tasaCambio) || 0;
+    
+    let montoUSD = 0;
+    let montoVES = 0;
+    
+    if (selectedMoneda === "USD" || selectedMoneda === "EUR") {
+      montoUSD = montoNum;
+      montoVES = montoNum * tasaNum;
+    } else if (selectedMoneda === "VES") {
+      montoUSD = tasaNum > 0 ? montoNum / tasaNum : 0;
+      montoVES = montoNum;
+    }
+    
+    setValue("monto_pago_usd", montoUSD);
+    setValue("monto_pago_ves", montoVES);
   };
 
   const handleTasaCambioChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setTasaCambio(value);
-    setValue("tasa_cambio", parseFloat(value) || 0);
+    setValue("tasa_cambio_aplicada", parseFloat(value) || 0);
+    
+    // Recalculate USD and VES amounts when exchange rate changes
+    const montoNum = parseFloat(monto) || 0;
+    const tasaNum = parseFloat(value) || 0;
+    
+    let montoUSD = 0;
+    let montoVES = 0;
+    
+    if (selectedMoneda === "USD" || selectedMoneda === "EUR") {
+      montoUSD = montoNum;
+      montoVES = montoNum * tasaNum;
+    } else if (selectedMoneda === "VES") {
+      montoUSD = tasaNum > 0 ? montoNum / tasaNum : 0;
+      montoVES = montoNum;
+    }
+    
+    setValue("monto_pago_usd", montoUSD);
+    setValue("monto_pago_ves", montoVES);
   };
 
   const handleMonedaChange = (value: string) => {
     setSelectedMoneda(value);
     setValue("moneda", value);
+    
+    // Recalculate USD and VES amounts when currency changes
+    const montoNum = parseFloat(monto) || 0;
+    const tasaNum = parseFloat(tasaCambio) || 0;
+    
+    let montoUSD = 0;
+    let montoVES = 0;
+    
+    if (value === "USD" || value === "EUR") {
+      montoUSD = montoNum;
+      montoVES = montoNum * tasaNum;
+    } else if (value === "VES") {
+      montoUSD = tasaNum > 0 ? montoNum / tasaNum : 0;
+      montoVES = montoNum;
+    }
+    
+    setValue("monto_pago_usd", montoUSD);
+    setValue("monto_pago_ves", montoVES);
   };
+
+  const handleCompraAsociadaChange = (value: string) => {
+    if (value === "adelanto") {
+      setMontoEnOrden(ordenCompra.monto_total_oc_usd);
+      setValue("compra_asociada", undefined);
+      setMonto(ordenCompra.monto_total_oc_usd.toString());
+
+    } else {
+      setValue("compra_asociada", Number(value));
+      const montoPendiente = ordenCompra.recepciones.find(recepcion => recepcion.id === Number(value))?.monto_pendiente_pago_usd || 0;
+      setMontoEnOrden(montoPendiente);
+      setMonto(montoPendiente.toString());
+    }
+  };
+
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent 
-          className="z-[var(--z-index-over-header-bar)] max-w-xl md:max-h-[80vh] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 "
+          className="z-[var(--z-index-over-header-bar)] max-w-xl md:max-h-[90vh] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 "
           overlayClassName="z-[var(--z-index-over-header-bar)] ">
         <DialogHeader>
           <DialogTitle className="text-xl font-bold">
@@ -135,10 +236,10 @@ export const ComprasRegistrarPagoDialog = ({
             </div>
             <div>
               <p className="text-sm text-muted-foreground mb-1">
-                Total de la Orden
+                Total
               </p>
               <p className="text-lg font-bold">
-                ${formatCurrency(ordenCompra.monto_total_oc_usd)}
+                ${formatCurrency(montoEnOrden)}
               </p>
             </div>
           </div>
@@ -181,7 +282,32 @@ export const ComprasRegistrarPagoDialog = ({
               )}
             </div>
           </div>
-
+          {/* Compra Asociada */}
+          {ordenCompra.recepciones.length > 0 && (
+            <div className="space-y-2">
+              <Label htmlFor="compra_asociada" className="text-sm font-medium">
+                Compra Asociada <span className="text-red-500">*</span>
+              </Label>
+              <ComprasFormSelect
+                id="compra_asociada"
+                value={watch("compra_asociada") ? watch("compra_asociada")?.toString() || "" : "adelanto"}
+                onChange={handleCompraAsociadaChange}
+                placeholder="Selecciona compra asociada"
+              >
+                <SelectItem value="adelanto">Pago en adelanto</SelectItem>
+                {ordenCompra.recepciones.map((recepcion: RecepcionOC) => (
+                  <SelectItem key={recepcion.id} value={recepcion.id.toString()}>
+                    #{recepcion.id.toString()} - {recepcion.fecha_recepcion} - ${recepcion.monto_pendiente_pago_usd}
+                  </SelectItem>
+                ))}
+              </ComprasFormSelect>
+              {errors.compra_asociada && (
+                <p className="text-sm text-red-500">
+                  {errors.compra_asociada.message}
+                </p>
+              )}
+            </div>
+          )}
           {/* Payment Reference */}
           <div className="space-y-2">
             <Label htmlFor="referencia_pago" className="text-sm font-medium">
@@ -209,10 +335,10 @@ export const ComprasRegistrarPagoDialog = ({
                 placeholder="0.00"
                 value={monto}
                 onChange={handleMontoChange}
-                className={cn(errors.monto ? "border-red-500" : "", "focus-visible:ring-blue-200")}
+                className={cn(errors.monto_pago_usd ? "border-red-500" : "", "focus-visible:ring-blue-200")}
               />
-              {errors.monto && (
-                <p className="text-sm text-red-500">{errors.monto.message}</p>
+              {errors.monto_pago_usd && (
+                <p className="text-sm text-red-500">{errors.monto_pago_usd.message}</p>
               )}
             </div>
 
@@ -230,7 +356,6 @@ export const ComprasRegistrarPagoDialog = ({
                 <SelectContent>
                   <SelectItem value="USD">USD - Dólar</SelectItem>
                   <SelectItem value="VES">VES - Bolívar</SelectItem>
-                  <SelectItem value="EUR">EUR - Euro</SelectItem>
                 </SelectContent>
               </Select>
               {errors.moneda && (
@@ -249,37 +374,45 @@ export const ComprasRegistrarPagoDialog = ({
                 placeholder="0.00"
                 value={tasaCambio}
                 onChange={handleTasaCambioChange}
-                className={cn(errors.tasa_cambio ? "border-red-500" : "", "focus-visible:ring-blue-200")}
+                className={cn(errors.tasa_cambio_aplicada ? "border-red-500" : "", "focus-visible:ring-blue-200")}
               />
-              {errors.tasa_cambio && (
+              {errors.tasa_cambio_aplicada && (
                 <p className="text-sm text-red-500">
-                  {errors.tasa_cambio.message}
+                  {errors.tasa_cambio_aplicada.message}
                 </p>
               )}
             </div>
           </div>
 
-          {/* Equivalent in VES */}
-          <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+          {/* Payment Amount in USD and VES */}
+          <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg space-y-2">
             <div className="flex justify-between items-center">
               <span className="text-sm font-medium text-blue-900">
-                Equivalente en VES:
+                Monto en USD:
               </span>
               <span className="text-lg font-bold text-blue-900">
-                {formatCurrency(calcularEquivalenteVES())} VES
+                ${formatCurrency(calcularMontoUSD())}
+              </span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-sm font-medium text-blue-900">
+                Monto en VES:
+              </span>
+              <span className="text-lg font-bold text-blue-900">
+                {formatCurrency(calcularMontoVES())} VES
               </span>
             </div>
           </div>
 
           {/* Payment Notes */}
           <div className="space-y-2">
-            <Label htmlFor="notas_pago" className="text-sm font-medium">
+            <Label htmlFor="notas" className="text-sm font-medium">
               Notas del Pago
             </Label>
             <Textarea
-              id="notas_pago"
+              id="notas"
               placeholder="Notas adicionales sobre el pago..."
-              {...register("notas_pago")}
+              {...register("notas")}
               rows={3}
               className="resize-none focus-visible:ring-blue-200"
             />

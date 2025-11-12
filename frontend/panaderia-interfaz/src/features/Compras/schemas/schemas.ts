@@ -59,12 +59,15 @@ export const RecepcionFormSchema = z.object({
 
 export const PagoSchema = z.object({
   fecha_pago: z.string().min(1, "La fecha de pago es requerida"),
+  orden_compra_asociada: z.number().min(0, "La orden de compra asociada es requerida"),
+  compra_asociada: z.number().min(0, "La compra asociada es requerida").optional(),
   metodo_pago: z.number().min(0, "El método de pago es requerido"),
   referencia_pago: z.string().min(1, "La referencia de pago es requerida"),
-  monto: z.coerce.number().min(0.01, "El monto debe ser mayor a 0"),
+  monto_pago_usd: z.coerce.number().min(0.01, "El monto debe ser mayor a 0"),
+  monto_pago_ves: z.coerce.number().min(0.01, "El monto debe ser mayor a 0"),
   moneda: z.string().min(1, "La moneda es requerida"),
-  tasa_cambio: z.coerce.number().min(0.01, "La tasa de cambio debe ser mayor a 0"),
-  notas_pago: z.string().optional(),
+  tasa_cambio_aplicada: z.coerce.number().min(0.01, "La tasa de cambio debe ser mayor a 0"),
+  notas: z.string().optional(),
 });
 
 export type TOrdenCompraSchema = z.infer<typeof OrdenCompraSchema>;

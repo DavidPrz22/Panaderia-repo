@@ -323,7 +323,7 @@ export function ComprasRecepcion({
 
           <div className="m-6 border border-gray-300 rounded-t-lg">
             {/* Header */}
-            <div className={`grid grid-cols-${isPartial ? "5" : "4"} gap-6 border-b bg-gray-50 px-6 py-3 text-sm uppercase font-semibold tracking-wider text-gray-500 rounded-t-lg`}>
+            <div className={`grid ${isPartial ? "grid-cols-5" : "grid-cols-3"} gap-6 border-b bg-gray-50 px-6 py-3 text-sm uppercase font-semibold tracking-wider text-gray-500 rounded-t-lg`}>
               <div>Producto</div>
               <div className="text-right ">Ordenado</div>
               {isPartial && <div className="text-center ">En inventario</div>}
@@ -336,7 +336,7 @@ export function ComprasRecepcion({
               {receptions.map((reception) => (
                 <div key={reception.linea_oc.id}>
                   {/* Product Row */}
-                  <div className={`grid grid-cols-${isPartial ? "5" : "4"} gap-6 border-b px-6 py-4 items-center `}>
+                  <div className={`grid ${isPartial ? "grid-cols-5" : "grid-cols-3"} gap-6 border-b px-6 py-4 items-center `}>
                     <div className="flex items-center gap-3">
                       <div className="rounded-lg bg-gray-100 p-2">
                         <Package className="h-5 w-5 text-gray-600" />

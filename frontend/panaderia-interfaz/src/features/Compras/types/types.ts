@@ -94,6 +94,18 @@ export type OrdenCompra = {
   email_enviado: boolean;
   fecha_email_enviado?: string;
   terminos_pago?: string;
+  recepciones: RecepcionOC[];
+};
+
+export type RecepcionOC = {
+  id: number;
+  orden_compra: OrdenCompra;
+  fecha_recepcion: string;
+  monto_pendiente_pago_usd: number;
+  numero_factura_proveedor?: string;
+  numero_remision?: string;
+  notas?: string;
+  detalles: DetalleRecepcion[];
 };
 
 export type LoteRecepcion = {

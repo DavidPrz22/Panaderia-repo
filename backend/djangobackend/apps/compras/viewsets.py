@@ -2,15 +2,16 @@ from django.utils.timezone import timedelta
 from rest_framework import viewsets
 from apps.compras.models import Proveedores
 from apps.compras.models import OrdenesCompra
-from apps.compras.serializers import ProveedoresSerializer, CompraRegistroProveedoresSerializer, OrdenesCompraSerializer, OrdenesCompraTableSerializer, FormattedResponseOCSerializer, RecepcionCompraSerializer
+from apps.compras.serializers import ProveedoresSerializer, CompraRegistroProveedoresSerializer, OrdenesCompraSerializer, OrdenesCompraTableSerializer, FormattedResponseOCSerializer, RecepcionCompraSerializer, PagosProveedoresSerializer
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.db import transaction
-from apps.compras.models import DetalleOrdenesCompra, EstadosOrdenCompra, Compras, DetalleCompras
+from apps.compras.models import DetalleOrdenesCompra, EstadosOrdenCompra, Compras, DetalleCompras, PagosProveedores
 from rest_framework import status, serializers
 from apps.inventario.models import LotesMateriasPrimas, LotesProductosReventa
-from django.utils import timezone
-from apps.inventario.models import MateriasPrimas, ProductosReventa
+from apps.core.models import MetodosDePago
+from django.db.models import Sum
+
 
 class ProveedoresViewSet(viewsets.ModelViewSet):
     queryset = Proveedores.objects.all()
@@ -181,20 +182,40 @@ class ComprasViewSet(viewsets.ModelViewSet):
                 for pr in pr_map.values():
                     pr.actualizar_product_stock()
 
+
+            # CALCULO DE PAGOS
+
             # Calculate VES amount
             monto_recepcion_ves = monto_recepcion_usd * orden_compra.tasa_cambio_aplicada
 
-            # Create the Compra record
+            pagos_adelantados = PagosProveedores.objects.filter(
+                orden_compra_asociada=orden_compra,
+                compra_asociada__isnull=True  # Only advance payments
+            ).aggregate(total=Sum('monto_pago_usd'))['total'] or 0
+
+            # Adjust pending amount
+            monto_pendiente_pago_usd = max(0, monto_recepcion_usd - pagos_adelantados)
+            pagado = (monto_pendiente_pago_usd == 0)
+
             compra = Compras.objects.create(
                 orden_compra=orden_compra,
                 proveedor=orden_compra.proveedor,
                 usuario_recepcionador=request.user,
                 fecha_recepcion=fecha_recepcion,
-                monto_recepcion_usd=monto_recepcion_usd,  # Actual reception amount
-                monto_recepcion_ves=monto_recepcion_ves,  # Actual reception amount
-                monto_pendiente_pago_usd=monto_recepcion_usd,
+                monto_recepcion_usd=monto_recepcion_usd,
+                monto_recepcion_ves=monto_recepcion_ves,
+                monto_pendiente_pago_usd=monto_pendiente_pago_usd,  # ✅ Accounts for advances
+                pagado=pagado,  # ✅ May already be paid!
                 tasa_cambio_aplicada=orden_compra.tasa_cambio_aplicada,
             )
+
+            # Link advance payments to this new reception
+            if pagos_adelantados > 0:
+                PagosProveedores.objects.filter(
+                    orden_compra_asociada=orden_compra,
+                    compra_asociada__isnull=True
+                ).update(compra_asociada=compra)
+
 
             # Create DetalleCompras records
             detalles_compra_bulk = []
@@ -250,4 +271,95 @@ class ComprasViewSet(viewsets.ModelViewSet):
             return Response({
                 'message': 'Compra parcialmente recibida' if parcial else 'Compra completamente recibida',
                 'orden': response_serializer.data,
+            }, status=status.HTTP_201_CREATED)
+
+
+class PagosProveedoresViewSet(viewsets.ModelViewSet):
+    queryset = PagosProveedores.objects.all()
+    serializer_class = PagosProveedoresSerializer
+
+    def create(self, request, *args, **kwargs):
+        with transaction.atomic():
+            serializer = PagosProveedoresSerializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+
+            # Extract validated data
+            orden_compra_asociada_id = serializer.validated_data.get('orden_compra_asociada', None)
+            compra_asociada_id = serializer.validated_data.get('compra_asociada', None)
+            metodo_pago_id = serializer.validated_data.get('metodo_pago', None)
+            monto_pago_usd = serializer.validated_data.get('monto_pago_usd')
+            monto_pago_ves = serializer.validated_data.get('monto_pago_ves', None)
+            tasa_cambio_aplicada = serializer.validated_data.get('tasa_cambio_aplicada', None)
+            fecha_pago = serializer.validated_data.get('fecha_pago', None)
+            referencia_pago = serializer.validated_data.get('referencia_pago')
+            notas = serializer.validated_data.get('notas', '')
+            usuario_registrador = request.user
+
+            # Fetch orden_compra - handle if not exists
+            try:
+                orden_compra_asociada = OrdenesCompra.objects.select_related('proveedor').get(id=orden_compra_asociada_id)
+            except OrdenesCompra.DoesNotExist:
+                return Response(
+                    {'error': 'Orden de compra no encontrada'},
+                    status=status.HTTP_404_NOT_FOUND
+                )
+
+            # Fetch compra_asociada - might not exist if paying before reception
+            compra_asociada = Compras.objects.filter(id=compra_asociada_id).first()
+
+            # Determine amount owed
+            if compra_asociada:
+                monto_a_pagar_usd = compra_asociada.monto_pendiente_pago_usd
+            else:
+                # Payment before reception - use OC total
+                monto_a_pagar_usd = monto_pago_usd
+
+            # Validate payment doesn't exceed owed amount
+            if monto_pago_usd > monto_a_pagar_usd:
+                return Response(
+                    {
+                        'error': f'El monto del pago (${monto_pago_usd}) excede el monto pendiente (${monto_a_pagar_usd})',
+                        'monto_pendiente': str(monto_a_pagar_usd)
+                    },
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            # Calculate remaining balance
+            monto_pendiente_pago_usd = monto_a_pagar_usd - monto_pago_usd
+
+            # Update compra if it exists
+            if compra_asociada:
+                compra_asociada.monto_pendiente_pago_usd = monto_pendiente_pago_usd
+                compra_asociada.pagado = (monto_pendiente_pago_usd == 0)
+                compra_asociada.save()
+
+            # Fetch metodo_pago
+            try:
+                metodo_pago = MetodosDePago.objects.get(id=metodo_pago_id)
+            except MetodosDePago.DoesNotExist:
+                return Response(
+                    {'error': 'Método de pago no encontrado'},
+                    status=status.HTTP_404_NOT_FOUND
+                )
+
+            # Create the PagosProveedores record
+            pago = PagosProveedores.objects.create(
+                orden_compra_asociada=orden_compra_asociada,
+                compra_asociada=compra_asociada,
+                metodo_pago=metodo_pago,
+                proveedor=orden_compra_asociada.proveedor,
+                fecha_pago=fecha_pago,
+                referencia_pago=referencia_pago,
+                monto_pago_usd=monto_pago_usd,
+                monto_pago_ves=monto_pago_ves,
+                tasa_cambio_aplicada=tasa_cambio_aplicada,
+                usuario_registrador=usuario_registrador,
+                notas=notas
+            )
+
+            return Response({
+                'message': 'Pago registrado correctamente',
+                'pago_id': pago.id,
+                'monto_pendiente_usd': str(monto_pendiente_pago_usd),
+                'pagado_completamente': monto_pendiente_pago_usd == 0
             }, status=status.HTTP_201_CREATED)

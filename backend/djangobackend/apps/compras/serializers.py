@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from apps.compras.models import Proveedores
-from apps.compras.models import OrdenesCompra, Compras,DetalleOrdenesCompra
+from apps.compras.models import OrdenesCompra, PagosProveedores, DetalleOrdenesCompra, Compras
 from apps.core.serializers import EstadosOrdenCompraSerializer, MetodosDePagoSerializer
 
 
@@ -69,11 +69,24 @@ class DetallesResponseSerializer(serializers.ModelSerializer):
         return obj.cantidad_solicitada - obj.cantidad_recibida
 
 
+class ComprasSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Compras
+        fields = [
+            'id',
+            'orden_compra',
+            'fecha_recepcion',
+            'monto_pendiente_pago_usd',
+            'tasa_cambio_aplicada',
+        ]
+
+
 class FormattedResponseOCSerializer(serializers.ModelSerializer):
     proveedor = ProveedoresSerializer()
     estado_oc = EstadosOrdenCompraSerializer()
     metodo_pago = MetodosDePagoSerializer()
     detalles = DetallesResponseSerializer(many=True)
+    recepciones = ComprasSerializer(many=True, read_only=True)
 
     class Meta:
         model = OrdenesCompra
@@ -92,6 +105,7 @@ class FormattedResponseOCSerializer(serializers.ModelSerializer):
             'detalles',
             'terminos_pago',
             'metodo_pago',
+            'recepciones',
         ]
 
 
@@ -232,3 +246,69 @@ class RecepcionCompraSerializer(serializers.Serializer):
                 )
         
         return data
+
+
+class PagosProveedoresSerializer(serializers.Serializer):
+    """
+    Serializer for registering payments to providers.
+    Supports partial payments and tracks remaining balances.
+    """
+    compra_asociada = serializers.IntegerField(
+        help_text="ID de la compra a la que se aplica el pago",
+        required=False
+    )
+    orden_compra_asociada = serializers.IntegerField(
+        help_text="ID de la orden de compra a la que se aplica el pago",
+        required=False
+    )
+    metodo_pago = serializers.IntegerField(
+        help_text="ID del método de pago utilizado"
+    )
+    monto_pago_usd = serializers.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        help_text="Monto del pago en USD"
+    )
+    monto_pago_ves = serializers.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        help_text="Monto del pago en VES"
+    )
+    tasa_cambio_aplicada = serializers.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        help_text="Tasa de cambio USD/VES aplicada"
+    )
+    fecha_pago = serializers.DateField(
+        help_text="Fecha en que se realizó el pago"
+    )
+    referencia_pago = serializers.CharField(
+        max_length=100,
+        help_text="Número de referencia bancaria"
+    )
+    notas = serializers.CharField(
+        max_length=255,
+        required=False,
+        allow_blank=True,
+        help_text="Observaciones adicionales sobre el pago"
+    )
+
+    def validate_monto_pago_usd(self, value):
+        """Ensure payment amount is positive"""
+        if value <= 0:
+            raise serializers.ValidationError("El monto del pago debe ser mayor a cero")
+        return value
+
+    def validate(self, data):
+        """Cross-field validation"""
+        # Validate currency conversion
+        expected_ves = data['monto_pago_usd'] * data['tasa_cambio_aplicada']
+        tolerance = 0.01  # Allow 1 cent tolerance for rounding
+        
+        if abs(expected_ves - data['monto_pago_ves']) > tolerance:
+            raise serializers.ValidationError(
+                f"El monto en VES no coincide con la conversión. "
+                f"Esperado: {expected_ves:.2f}, Recibido: {data['monto_pago_ves']}"
+            )
+        
+        return data   
