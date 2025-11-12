@@ -15,6 +15,10 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useCrearRecepcionOCMutation } from "../hooks/mutations/mutations";
 import { toast } from "sonner";
 import { PendingTubeSpinner } from "@/components/PendingTubeSpinner";
+import { ComprasFormTotals } from "./ComprasFormTotals";
+import { ComprasRecepcionTotals } from "./ComprasRecepcionTotals";
+import { formatCurrency } from "../utils/itemHandlers";
+import { getReceptions } from "../utils/dataFormatter";
 
 export function ComprasRecepcion({
   ordenCompra,
@@ -26,37 +30,82 @@ export function ComprasRecepcion({
   const { mutateAsync: crearRecepcionOC, isPending: isCreatingRecepcion } = useCrearRecepcionOCMutation();
 
   const isPartial = ordenCompra.estado_oc.nombre_estado === "Recibida Parcial" ? true : false;
-  
+
   // Get today's date in YYYY-MM-DD format
   const getTodayDate = () => {
     const today = new Date();
     return today.toISOString().split('T')[0];
   };
 
-  const getReceptions = (): ComponentesUIRecepcion[] => {
-    if (isPartial) {
-      const completedReceptions: ComponentesUIRecepcion[] = ordenCompra.detalles
-      .filter((line) => line.cantidad_pendiente > 0)
-      .map((line) => ({
-        linea_oc: line,
-        lotes: [{ id: 1, cantidad: line.cantidad_pendiente, fecha_caducidad: "" }],
-        cantidad_total_recibida: Number(line.cantidad_recibida),
-        cantidad_en_inventario: Number(line.cantidad_recibida),
-        cantidad_pendiente: Number(line.cantidad_pendiente),
-      }));
+  // Helper functions to calculate initial totals from ordenCompra (not from state)
+  const calculateInitialTotalUSD = () => {
+    const total = ordenCompra.detalles.reduce((sum, detalle) => {
+      if (isPartial && detalle.cantidad_pendiente > 0) {
+        return sum + (detalle.cantidad_pendiente * detalle.costo_unitario_usd);
+      }
+      return sum + (detalle.cantidad_solicitada * detalle.costo_unitario_usd);
+    }, 0);
+    return Math.round(total * 1000) / 1000;
+  };
 
-      return completedReceptions;
+  const calculateInitialTotalVES = () => {
+    const totalUSD = calculateInitialTotalUSD();
+    return Math.round(totalUSD * Number(ordenCompra.tasa_cambio_aplicada) * 1000) / 1000;
+  };
+
+  const calculateInitialTotalUSDConAdelanto = () => {
+    const totalUSD = calculateInitialTotalUSD();
+    const adelantoUSD = Number(ordenCompra.pagos_en_adelantado?.monto_pago_usd || 0);
+    return Math.round(Math.max(0, totalUSD - adelantoUSD) * 1000) / 1000;
+  };
+
+  const calculateInitialTotalVESConAdelanto = () => {
+    const totalVES = calculateInitialTotalVES();
+    const adelantoVES = Number(ordenCompra.pagos_en_adelantado?.monto_pago_ves || 0);
+    return Math.round(Math.max(0, totalVES - adelantoVES) * 1000) / 1000;
+  };
+
+  // Runtime functions to calculate totals from state
+  const getTotalRecepcionUSD = () => {
+    const total = receptions.reduce((sum, r) => {
+      const subtotal = r.cantidad_total_recibida * r.linea_oc.costo_unitario_usd;
+      return sum + subtotal;
+    }, 0);  
+    return Math.round(total * 1000) / 1000;
+  };
+
+  const getTotalRecepcionVES = () => {
+    const totalUSD = getTotalRecepcionUSD();
+    return Math.round(totalUSD * Number(ordenCompra.tasa_cambio_aplicada) * 1000) / 1000;
+  };
+
+  const getTotalRecepcionUSDConAdelanto = () => {
+    const totalUSD = getTotalRecepcionUSD();
+    const adelantoUSD = Number(ordenCompra.pagos_en_adelantado?.monto_pago_usd || 0);
+    return Math.round(Math.max(0, totalUSD - adelantoUSD) * 1000) / 1000;
+  };
+
+  const getTotalRecepcionVESConAdelanto = () => {
+    const totalVES = getTotalRecepcionVES();
+    const adelantoVES = Number(ordenCompra.pagos_en_adelantado?.monto_pago_ves || 0);
+    return Math.round(Math.max(0, totalVES - adelantoVES) * 1000) / 1000;
+  };
+
+  const updateMontoTotalRecibido = () => {
+    const hasAdelanto = !!ordenCompra.pagos_en_adelantado;
+    
+    if (hasAdelanto) {
+      setValue("monto_total_recibido_usd", getTotalRecepcionUSDConAdelanto());
+      setValue("monto_total_recibido_ves", getTotalRecepcionVESConAdelanto());
+    } else {
+      setValue("monto_total_recibido_usd", getTotalRecepcionUSD());
+      setValue("monto_total_recibido_ves", getTotalRecepcionVES());
     }
-    const pendingReceptions: ComponentesUIRecepcion[] = ordenCompra.detalles.map((line) => ({
-    linea_oc: line,
-    lotes: [{ id: 1, cantidad: line.cantidad_solicitada, fecha_caducidad: "" }],
-    cantidad_total_recibida: Number(line.cantidad_solicitada),
-  }));
-
-  return pendingReceptions;
-  }
+  };
 
   const getFormDefaultData = (): TRecepcionFormSchema => {
+    const hasAdelanto = !!ordenCompra.pagos_en_adelantado;
+    
     if (isPartial) {
       return {
       orden_compra_id: ordenCompra.id,
@@ -69,6 +118,8 @@ export function ComprasRecepcion({
         cantidad_total_recibida: Number(detalle.cantidad_pendiente),
       })),
       recibido_parcialmente: false,
+      monto_total_recibido_usd: hasAdelanto ? calculateInitialTotalUSDConAdelanto() : calculateInitialTotalUSD(),
+      monto_total_recibido_ves: hasAdelanto ? calculateInitialTotalVESConAdelanto() : calculateInitialTotalVES(),
     };
     }
     
@@ -81,6 +132,8 @@ export function ComprasRecepcion({
         cantidad_total_recibida: Number(detalle.cantidad_solicitada),
       })),
       recibido_parcialmente: false,
+      monto_total_recibido_usd: hasAdelanto ? calculateInitialTotalUSDConAdelanto() : calculateInitialTotalUSD(),
+      monto_total_recibido_ves: hasAdelanto ? calculateInitialTotalVESConAdelanto() : calculateInitialTotalVES(),
     };
   }
 
@@ -96,7 +149,7 @@ export function ComprasRecepcion({
   });
 
   const [receptions, setReceptions] = useState<ComponentesUIRecepcion[]>(
-    getReceptions(),
+    getReceptions(ordenCompra),
   );
 
   const handleAddLot = (lineId: number) => {
@@ -240,8 +293,8 @@ export function ComprasRecepcion({
 
     // Sync changes with react-hook-form state
     updateFormDetalles(lineId, updatedLots, updatedCantidadTotalRecibida);
-
     checkPartiallyReceived(lineId, updatedCantidadTotalRecibida);
+    updateMontoTotalRecibido();
   };
 
   const getReceivedBadgeColor = (
@@ -269,7 +322,6 @@ export function ComprasRecepcion({
   };
 
   const handleSubmitReception = async (data: TRecepcionFormSchema) => {
-
     try {
       const response = await crearRecepcionOC(data);
       toast.success(response.message);
@@ -291,6 +343,7 @@ export function ComprasRecepcion({
     }
     return "";
   };
+
 
   return ( 
     <div className="mx-8 py-5 relative">
@@ -489,6 +542,37 @@ export function ComprasRecepcion({
               ))}
             </div>
           </div>
+            <div className="px-6 py-4">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Expected Totals (Purchase Order) */}
+                <div className="bg-gradient-to-br from-blue-50 to-blue-100/50 rounded-lg border border-blue-200 p-5 shadow-sm">
+                  <div className="flex items-center gap-2 mb-4">
+                    <div className="h-2 w-2 rounded-full bg-blue-500"></div>
+                    <h3 className="text-sm font-semibold text-gray-800 uppercase tracking-wide">
+                      Totales Esperados (Orden de Compra)
+                    </h3>
+                  </div>
+                  <ComprasFormTotals
+                    bcvRate={Number(ordenCompra.tasa_cambio_aplicada)}
+                    totalVes={Number(ordenCompra.monto_total_oc_ves)}
+                    totalUsd={Number(ordenCompra.monto_total_oc_usd)}
+                    formatCurrency={formatCurrency}
+                    showBlueBorder={true}
+                  />
+                </div>
+
+                {/* Reception Totals */}
+                <ComprasRecepcionTotals
+                  tasaCambioAplicada={Number(ordenCompra.tasa_cambio_aplicada)}
+                  totalRecepcionUSD={getTotalRecepcionUSD()}
+                  totalRecepcionVES={getTotalRecepcionVES()}
+                  totalRecepcionUSDConAdelanto={getTotalRecepcionUSDConAdelanto()}
+                  totalRecepcionVESConAdelanto={getTotalRecepcionVESConAdelanto()}
+                  pagosEnAdelantado={ordenCompra.pagos_en_adelantado}
+                  formatCurrency={formatCurrency}
+                />
+              </div>
+            </div>
 
           {/* Footer with summary and save button */}
           <div className="flex justify-between items-end bg-white px-6 py-5 gap-4">
@@ -522,6 +606,7 @@ export function ComprasRecepcion({
               Guardar Recepción
             </Button>
           </div>
+
         </div>
       </form>
     </div>

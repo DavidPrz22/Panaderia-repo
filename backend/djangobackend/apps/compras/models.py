@@ -313,19 +313,19 @@ class PagosProveedores(models.Model):
     # Montos
     monto_pago_usd = models.DecimalField(
         max_digits=10, 
-        decimal_places=2,
+        decimal_places=3,
         help_text="Monto pagado en USD"
     )
     
     monto_pago_ves = models.DecimalField(
         max_digits=10, 
-        decimal_places=2,
+        decimal_places=3,
         help_text="Monto pagado en VES"
     )
     
     tasa_cambio_aplicada = models.DecimalField(
         max_digits=10, 
-        decimal_places=2,
+        decimal_places=3,
         help_text="Tasa de cambio USD/VES al momento del pago"
     )
     

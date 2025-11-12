@@ -226,8 +226,6 @@ export const ComprasRegistrarPagoDialog = ({
     setValue("monto_pago_usd", montoPendiente);
     setValue("monto_pago_ves", montoPendiente * Number(tasaCambio));
   };
-
-  console.log(watch())
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent 

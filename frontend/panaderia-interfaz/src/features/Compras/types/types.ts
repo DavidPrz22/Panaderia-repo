@@ -95,6 +95,10 @@ export type OrdenCompra = {
   fecha_email_enviado?: string;
   terminos_pago?: string;
   recepciones: RecepcionOC[];
+  pagos_en_adelantado: {
+    monto_pago_usd: number;
+    monto_pago_ves: number;
+  } | null;
 };
 
 export type RecepcionOC = {

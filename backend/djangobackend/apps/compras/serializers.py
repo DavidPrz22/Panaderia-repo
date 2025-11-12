@@ -2,6 +2,7 @@ from rest_framework import serializers
 from apps.compras.models import Proveedores
 from apps.compras.models import OrdenesCompra, PagosProveedores, DetalleOrdenesCompra, Compras
 from apps.core.serializers import EstadosOrdenCompraSerializer, MetodosDePagoSerializer
+from django.db.models import Sum
 
 
 class ProveedoresSerializer(serializers.ModelSerializer):
@@ -81,33 +82,6 @@ class ComprasSerializer(serializers.ModelSerializer):
             'pagado',
         ]
 
-
-class FormattedResponseOCSerializer(serializers.ModelSerializer):
-    proveedor = ProveedoresSerializer()
-    estado_oc = EstadosOrdenCompraSerializer()
-    metodo_pago = MetodosDePagoSerializer()
-    detalles = DetallesResponseSerializer(many=True)
-    recepciones = ComprasSerializer(many=True, read_only=True)
-
-    class Meta:
-        model = OrdenesCompra
-        fields = [
-            'id',
-            'proveedor',
-            'fecha_emision_oc',
-            'fecha_entrega_esperada',
-            'fecha_entrega_real',
-            'estado_oc',
-            'monto_total_oc_usd',
-            'monto_total_oc_ves',
-            'tasa_cambio_aplicada',
-            'direccion_envio',
-            'notas',
-            'detalles',
-            'terminos_pago',
-            'metodo_pago',
-            'recepciones',
-        ]
 
 
 class OrdenesCompraSerializer(serializers.ModelSerializer):
@@ -202,14 +176,16 @@ class RecepcionCompraSerializer(serializers.Serializer):
     fecha_recepcion = serializers.DateField()  # Add this field
     detalles = DetalleRecepcionSerializer(many=True)
     recibido_parcialmente = serializers.BooleanField()
-    
+    monto_total_recibido_usd = serializers.DecimalField(max_digits=10, decimal_places=3)
+    monto_total_recibido_ves = serializers.DecimalField(max_digits=10, decimal_places=3)
+
     def validate(self, data):
         """Validate that received quantities don't exceed pending quantities"""
         try:
             orden_compra = OrdenesCompra.objects.get(id=data['orden_compra_id'])
         except OrdenesCompra.DoesNotExist:
             raise serializers.ValidationError("Orden de compra no encontrada")
-        
+
         # Get all detalles at once to avoid N+1 queries
         detalles_oc_ids = [d['detalle_oc_id'] for d in data['detalles']]
         detalles_oc = DetalleOrdenesCompra.objects.filter(
@@ -217,14 +193,14 @@ class RecepcionCompraSerializer(serializers.Serializer):
         ).select_related('materia_prima', 'producto_reventa')
         
         detalles_dict = {d.id: d for d in detalles_oc}
-        
+
         for detalle_data in data['detalles']:
             oc_detalle = detalles_dict.get(detalle_data['detalle_oc_id'])
             if not oc_detalle:
                 raise serializers.ValidationError(
                     f"Detalle de OC {detalle_data['detalle_oc_id']} no encontrado"
                 )
-            
+
             cantidad_pendiente = oc_detalle.cantidad_solicitada - oc_detalle.cantidad_recibida
             cantidad_recibida = detalle_data['cantidad_total_recibida']
             
@@ -237,7 +213,7 @@ class RecepcionCompraSerializer(serializers.Serializer):
                     f"La cantidad recibida de '{producto_nombre}' ({cantidad_recibida}) "
                     f"excede la cantidad pendiente ({cantidad_pendiente})"
                 )
-            
+
             # Validate that lotes sum equals cantidad_total_recibida
             suma_lotes = sum(lote['cantidad'] for lote in detalle_data['lotes'])
             if suma_lotes != cantidad_recibida:
@@ -245,7 +221,7 @@ class RecepcionCompraSerializer(serializers.Serializer):
                     f"La suma de lotes ({suma_lotes}) no coincide con "
                     f"la cantidad total recibida ({cantidad_recibida})"
                 )
-        
+
         return data
 
 
@@ -267,17 +243,17 @@ class PagosProveedoresSerializer(serializers.Serializer):
     )
     monto_pago_usd = serializers.DecimalField(
         max_digits=10,
-        decimal_places=2,
+        decimal_places=3,
         help_text="Monto del pago en USD"
     )
     monto_pago_ves = serializers.DecimalField(
         max_digits=10,
-        decimal_places=2,
+        decimal_places=3,
         help_text="Monto del pago en VES"
     )
     tasa_cambio_aplicada = serializers.DecimalField(
         max_digits=10,
-        decimal_places=2,
+        decimal_places=3,
         help_text="Tasa de cambio USD/VES aplicada"
     )
     fecha_pago = serializers.DateField(
@@ -312,4 +288,44 @@ class PagosProveedoresSerializer(serializers.Serializer):
                 f"Esperado: {expected_ves:.2f}, Recibido: {data['monto_pago_ves']}"
             )
         
-        return data   
+        return data
+
+
+class FormattedResponseOCSerializer(serializers.ModelSerializer):
+    proveedor = ProveedoresSerializer()
+    estado_oc = EstadosOrdenCompraSerializer()
+    metodo_pago = MetodosDePagoSerializer()
+    detalles = DetallesResponseSerializer(many=True)
+    recepciones = ComprasSerializer(many=True, read_only=True)
+    pagos_en_adelantado = serializers.SerializerMethodField(read_only=True)
+
+    class Meta:
+        model = OrdenesCompra
+        fields = [
+            'id',
+            'proveedor',
+            'fecha_emision_oc',
+            'fecha_entrega_esperada',
+            'fecha_entrega_real',
+            'estado_oc',
+            'monto_total_oc_usd',
+            'monto_total_oc_ves',
+            'tasa_cambio_aplicada',
+            'direccion_envio',
+            'notas',
+            'detalles',
+            'terminos_pago',
+            'metodo_pago',
+            'recepciones',
+            'pagos_en_adelantado',
+        ]
+    
+    def get_pagos_en_adelantado(self, obj):
+        pagos = PagosProveedores.objects.filter(orden_compra_asociada=obj, compra_asociada__isnull=True)
+        if not pagos.exists():
+            return None
+
+        return {
+            "monto_pago_usd": pagos.aggregate(total=Sum('monto_pago_usd'))['total'] or 0, 
+            "monto_pago_ves": pagos.aggregate(total=Sum('monto_pago_ves'))['total'] or 0,
+        }

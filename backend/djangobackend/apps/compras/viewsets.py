@@ -111,6 +111,8 @@ class ComprasViewSet(viewsets.ModelViewSet):
             fecha_recepcion = serializer.validated_data['fecha_recepcion']
             detalles_oc = serializer.validated_data['detalles']
             parcial = serializer.validated_data['recibido_parcialmente']
+            monto_total_recibido_usd = serializer.validated_data['monto_total_recibido_usd']
+            monto_total_recibido_ves = serializer.validated_data['monto_total_recibido_ves']
 
             # Fetch orden_compra with related data
             orden_compra = OrdenesCompra.objects.select_related(
@@ -130,8 +132,6 @@ class ComprasViewSet(viewsets.ModelViewSet):
             lotes_mp_bulk = []
             lotes_pr_bulk = []
             
-            # Calculate actual reception amount
-            monto_recepcion_usd = 0
             
             # mp map for stock update
             mp_map = {}
@@ -141,9 +141,6 @@ class ComprasViewSet(viewsets.ModelViewSet):
             for detalle_data in detalles_oc:
                 oc_detalle = detalles_dict[detalle_data['detalle_oc_id']]
                 cantidad_total_recibida = detalle_data['cantidad_total_recibida']
-                
-                # Calculate subtotal for this line
-                monto_recepcion_usd += cantidad_total_recibida * oc_detalle.costo_unitario_usd
                 
                 # Create lotes with individual quantities
                 for lote_data in detalle_data['lotes']:
@@ -184,17 +181,8 @@ class ComprasViewSet(viewsets.ModelViewSet):
 
 
             # CALCULO DE PAGOS
-
-            # Calculate VES amount
-            monto_recepcion_ves = monto_recepcion_usd * orden_compra.tasa_cambio_aplicada
-
-            pagos_adelantados = PagosProveedores.objects.filter(
-                orden_compra_asociada=orden_compra,
-                compra_asociada__isnull=True  # Only advance payments
-            ).aggregate(total=Sum('monto_pago_usd'))['total'] or 0
-
-            # Adjust pending amount
-            monto_pendiente_pago_usd = max(0, monto_recepcion_usd - pagos_adelantados)
+            print(monto_total_recibido_usd)
+            monto_pendiente_pago_usd = monto_total_recibido_usd
             pagado = (monto_pendiente_pago_usd == 0)
 
             compra = Compras.objects.create(
@@ -202,14 +190,20 @@ class ComprasViewSet(viewsets.ModelViewSet):
                 proveedor=orden_compra.proveedor,
                 usuario_recepcionador=request.user,
                 fecha_recepcion=fecha_recepcion,
-                monto_recepcion_usd=monto_recepcion_usd,
-                monto_recepcion_ves=monto_recepcion_ves,
+                monto_recepcion_usd=monto_total_recibido_usd,
+                monto_recepcion_ves=monto_total_recibido_ves,
                 monto_pendiente_pago_usd=monto_pendiente_pago_usd,  # ✅ Accounts for advances
                 pagado=pagado,  # ✅ May already be paid!
                 tasa_cambio_aplicada=orden_compra.tasa_cambio_aplicada,
             )
 
             # Link advance payments to this new reception
+
+            pagos_adelantados = PagosProveedores.objects.filter(
+                orden_compra_asociada=orden_compra,
+                compra_asociada__isnull=True  # Only advance payments
+            ).aggregate(total=Sum('monto_pago_usd'))['total'] or 0
+
             if pagos_adelantados > 0:
                 PagosProveedores.objects.filter(
                     orden_compra_asociada=orden_compra,

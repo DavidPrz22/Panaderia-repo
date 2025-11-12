@@ -43,6 +43,7 @@ import {
   updateItemFromProducto,
   findProductoIndex,
   createNewDetalleOC,
+  formatCurrency,
 } from "../utils/itemHandlers";
 import { useComprasContext } from "@/context/ComprasContext";
 
@@ -164,13 +165,6 @@ export const ComprasForm = ({ orden, onClose }: ComprasFormProps) => {
         isEdit ? "Error al actualizar la orden" : "Error al crear la orden",
       );
     }
-  };
-
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("es-MX", {
-      style: "currency",
-      currency: "USD",
-    }).format(amount);
   };
 
   return (

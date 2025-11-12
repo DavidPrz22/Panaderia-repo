@@ -54,6 +54,8 @@ export const RecepcionFormSchema = z.object({
   orden_compra_id: z.number(),
   fecha_recepcion: z.string().min(1, "La fecha de recepción es requerida"),
   detalles: z.array(detalleRecepcionSchema),
+  monto_total_recibido_usd: z.coerce.number().min(0, "El monto total recibido en USD es requerido"),
+  monto_total_recibido_ves: z.coerce.number().min(0, "El monto total recibido en VES es requerido"),
   recibido_parcialmente: z.boolean(),
 });
 

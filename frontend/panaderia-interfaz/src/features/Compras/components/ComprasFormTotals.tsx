@@ -54,6 +54,7 @@ interface ComprasFormTotalsProps {
   totalVes: number;
   totalUsd: number;
   formatCurrency: (amount: number) => string;
+  showBlueBorder?: boolean;
 }
 
 export const ComprasFormTotals = ({
@@ -61,6 +62,7 @@ export const ComprasFormTotals = ({
   totalVes,
   totalUsd,
   formatCurrency,
+  showBlueBorder = false,
 }: ComprasFormTotalsProps) => {
   const vesSection = [
     {
@@ -73,18 +75,21 @@ export const ComprasFormTotals = ({
     },
   ];
 
+  const borderColorClass = showBlueBorder ? "border-blue-200" : "";
+  const usdBorderColorClass = showBlueBorder ? "border-blue-300" : "";
+
   const usdSection = [
     {
       label: "Total en Divisas:",
       value: formatCurrency(totalUsd),
       isBold: true,
       isLarge: true,
-      className: "border-t pt-2",
+      className: `border-t ${usdBorderColorClass} pt-2`,
     },
   ];
 
   return (
-    <div className="border-t pt-4 flex justify-end">
+    <div className={`border-t ${borderColorClass} pt-4 flex justify-end`}>
       <div className="space-y-2">
         <TotalsSection rows={vesSection} width="w-80" />
         <TotalsSection rows={usdSection} width="w-80" />

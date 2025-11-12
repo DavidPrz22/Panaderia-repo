@@ -40,10 +40,17 @@ export const createNewDetalleOC = (id: number): DetalleOC => ({
   producto_reventa_nombre: undefined,
   cantidad_solicitada: 0,
   cantidad_recibida: 0,
+  cantidad_pendiente: 0,
   unidad_medida_compra: 0,
   unidad_medida_abrev: undefined,
   costo_unitario_usd: 0,
-  subtotal_linea_usd: 0,
-  porcentaje_impuesto: 0,
-  impuesto_linea_usd: 0,
+  subtotal_linea_usd: 0
 });
+
+
+export const formatCurrency = (amount: number) => {
+  return new Intl.NumberFormat("es-MX", {
+    style: "currency",
+    currency: "USD",
+  }).format(amount);
+};

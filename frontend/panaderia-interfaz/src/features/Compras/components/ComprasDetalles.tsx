@@ -29,6 +29,7 @@ import { useMemo, useEffect } from "react";
 import { useMarcarEnviadaOCMutation } from "../hooks/mutations/mutations";
 import { toast } from "sonner";
 import { useComprasContext } from "@/context/ComprasContext";
+import { formatCurrency } from "../utils/itemHandlers";
 
 export const ComprasDetalles = ({
   ordenCompra,
@@ -44,13 +45,6 @@ export const ComprasDetalles = ({
   } = useMarcarEnviadaOCMutation();
   const { setShowRecepcionForm, setShowOrdenCompraDetalles } =
     useComprasContext();
-
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("es-MX", {
-      style: "currency",
-      currency: "USD",
-    }).format(amount);
-  };
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("es-MX", {
@@ -204,7 +198,6 @@ export const ComprasDetalles = ({
   //       toast.error("Error cancelando orden");
   //     }
   //   };
-
   return (
     <>
       <div className="flex items-center justify-center mx-8 py-5">
