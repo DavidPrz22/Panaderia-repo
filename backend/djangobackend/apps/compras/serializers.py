@@ -78,6 +78,7 @@ class ComprasSerializer(serializers.ModelSerializer):
             'fecha_recepcion',
             'monto_pendiente_pago_usd',
             'tasa_cambio_aplicada',
+            'pagado',
         ]
 
 

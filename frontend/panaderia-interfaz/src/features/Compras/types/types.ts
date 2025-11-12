@@ -105,7 +105,7 @@ export type RecepcionOC = {
   numero_factura_proveedor?: string;
   numero_remision?: string;
   notas?: string;
-  detalles: DetalleRecepcion[];
+  pagado?: boolean;
 };
 
 export type LoteRecepcion = {

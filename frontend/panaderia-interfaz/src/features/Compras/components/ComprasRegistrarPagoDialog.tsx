@@ -43,9 +43,7 @@ export const ComprasRegistrarPagoDialog = ({
   ordenCompra,
 }: ComprasRegistrarPagoDialogProps) => {
   const [selectedMoneda, setSelectedMoneda] = useState<string>("USD");
-  const [monto, setMonto] = useState<string>(
-    ordenCompra.monto_total_oc_usd.toString(),
-  );
+
   const [tasaCambio, setTasaCambio] = useState<string>(
     ordenCompra.tasa_cambio_aplicada.toString(),
   );
@@ -76,7 +74,7 @@ export const ComprasRegistrarPagoDialog = ({
   });
 
 
-  const getMontoDisplay = (compraAsociada: number | undefined) => {
+  const getMontoOrden = (compraAsociada: number | undefined) => {
     if (compraAsociada !== undefined) {
       return ordenCompra.recepciones.find(recepcion => recepcion.id === compraAsociada)?.monto_pendiente_pago_usd || 0;
     } else {
@@ -84,7 +82,17 @@ export const ComprasRegistrarPagoDialog = ({
     }
   }
 
-  const [montoEnOrden, setMontoEnOrden] = useState<number>(getMontoDisplay(watch("compra_asociada")));
+  const getMontoPago = (compraAsociada: number | undefined) => {
+    if (compraAsociada !== undefined) {
+      return ordenCompra.recepciones.find(recepcion => recepcion.id === compraAsociada)?.monto_pendiente_pago_usd || 0;
+    } else {
+      return ordenCompra.monto_total_oc_usd;
+    }
+  }
+  const [montoEnOrden, setMontoEnOrden] = useState<number>(getMontoOrden(watch("compra_asociada")));
+  const [monto, setMonto] = useState<string>(
+    getMontoPago(watch("compra_asociada")).toString(),
+  );
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat("es-VE", {
@@ -200,20 +208,26 @@ export const ComprasRegistrarPagoDialog = ({
   };
 
   const handleCompraAsociadaChange = (value: string) => {
+    if (value === "pagado") {
+      return;
+    }
+
     if (value === "adelanto") {
       setMontoEnOrden(ordenCompra.monto_total_oc_usd);
       setValue("compra_asociada", undefined);
       setMonto(ordenCompra.monto_total_oc_usd.toString());
+      return;
+    }  
 
-    } else {
-      setValue("compra_asociada", Number(value));
-      const montoPendiente = ordenCompra.recepciones.find(recepcion => recepcion.id === Number(value))?.monto_pendiente_pago_usd || 0;
-      setMontoEnOrden(montoPendiente);
-      setMonto(montoPendiente.toString());
-    }
+    setValue("compra_asociada", Number(value));
+    const montoPendiente = ordenCompra.recepciones.find(recepcion => recepcion.id === Number(value))?.monto_pendiente_pago_usd || 0;
+    setMontoEnOrden(montoPendiente);
+    setMonto(montoPendiente.toString());
+    setValue("monto_pago_usd", montoPendiente);
+    setValue("monto_pago_ves", montoPendiente * Number(tasaCambio));
   };
 
-
+  console.log(watch())
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent 
@@ -296,9 +310,14 @@ export const ComprasRegistrarPagoDialog = ({
               >
                 <SelectItem value="adelanto">Pago en adelanto</SelectItem>
                 {ordenCompra.recepciones.map((recepcion: RecepcionOC) => (
-                  <SelectItem key={recepcion.id} value={recepcion.id.toString()}>
-                    #{recepcion.id.toString()} - {recepcion.fecha_recepcion} - ${recepcion.monto_pendiente_pago_usd}
-                  </SelectItem>
+                  recepcion.pagado ? 
+                  <SelectItem  className="text-gray-500" key={recepcion.id} value={'pagado'}>
+                    #{recepcion.id.toString()} - {recepcion.fecha_recepcion} - Pagado
+                  </SelectItem> : (
+                    <SelectItem key={recepcion.id} value={recepcion.id.toString()}>
+                      #{recepcion.id.toString()} - {recepcion.fecha_recepcion} - ${recepcion.monto_pendiente_pago_usd}
+                    </SelectItem>
+                  )
                 ))}
               </ComprasFormSelect>
               {errors.compra_asociada && (
