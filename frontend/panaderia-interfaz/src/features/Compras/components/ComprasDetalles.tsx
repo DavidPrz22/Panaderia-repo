@@ -21,6 +21,7 @@ interface ComprasDetallesProps {
   ordenCompra: OrdenCompra;
   onClose: () => void;
 }
+
 import type { EstadosOC } from "../types/types";
 import { ComprasFormTotals } from "./ComprasFormTotals";
 import { usePDF } from "@react-pdf/renderer";
@@ -45,10 +46,17 @@ export const ComprasDetalles = ({
     mutateAsync: marcarEnviadaOCMutation,
     isPending: isLoadingMarcarEnviadaOCPending,
   } = useMarcarEnviadaOCMutation();
+
   const { setShowRecepcionForm, setShowOrdenCompraDetalles, compraSeleccionadaId } =
     useComprasContext();
 
   const { isFetching: isFetchingOrdenCompraDetalles } = useGetOrdenesCompraDetalles(compraSeleccionadaId!);
+
+  useEffect(() => {
+    if (ordenCompra) {
+      setButtonsStates(ordenCompra.estado_oc.nombre_estado as EstadosOC);
+    }
+  }, [ordenCompra]);
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("es-MX", {

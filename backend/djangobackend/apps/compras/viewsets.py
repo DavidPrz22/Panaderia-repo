@@ -181,7 +181,6 @@ class ComprasViewSet(viewsets.ModelViewSet):
 
 
             # CALCULO DE PAGOS
-            print(monto_total_recibido_usd)
             monto_pendiente_pago_usd = monto_total_recibido_usd
             pagado = (monto_pendiente_pago_usd == 0)
 
