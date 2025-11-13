@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -20,40 +20,44 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 
-import type { MetodoDePago, OrdenCompra, RecepcionOC } from "../types/types";
+import type { MetodoDePago, RecepcionOC } from "../types/types";
 import { PagoSchema, type TPagoSchema } from "../schemas/schemas";
 import { ComprasFormDatePicker } from "./ComprasFormDatePicker";
 import { ComprasFormSelect } from "./ComprasFormSelect";
 import { useGetParametros } from "../hooks/queries/queries";
 import { cn } from "@/lib/utils";
-
+import { useGetOrdenesCompraDetalles } from "../hooks/queries/queries";
 import { useRegistrarPagoMutation } from "../hooks/mutations/mutations";
 import { toast } from "sonner";
+import { useComprasContext } from "@/context/ComprasContext";
+
 interface ComprasRegistrarPagoDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  ordenCompra: OrdenCompra;
 }
 
 
 export const ComprasRegistrarPagoDialog = ({
   open,
   onOpenChange,
-  ordenCompra,
 }: ComprasRegistrarPagoDialogProps) => {
+
+  const { compraSeleccionadaId } = useComprasContext();
+  const { data: { orden: ordenCompra } = { orden: undefined } } = useGetOrdenesCompraDetalles(compraSeleccionadaId!);
   const [selectedMoneda, setSelectedMoneda] = useState<string>("USD");
 
   const [tasaCambio, setTasaCambio] = useState<string>(
-    ordenCompra.tasa_cambio_aplicada.toString(),
+    ordenCompra?.tasa_cambio_aplicada.toString() || "0",
   );
+  const [montoPagoRealUsd, setMontoPagoRealUsd] = useState<number>(ordenCompra?.monto_pendiente_pago_usd ? Number(ordenCompra.monto_pendiente_pago_usd) : Number(ordenCompra?.monto_total_oc_usd || 0));
+  const [montoPagoRealVes, setMontoPagoRealVes] = useState<number>(ordenCompra?.monto_pendiente_pago_usd ? Number(ordenCompra.monto_pendiente_pago_usd) * Number(ordenCompra?.tasa_cambio_aplicada || 0) : Number(ordenCompra?.monto_total_oc_usd || 0) * Number(ordenCompra?.tasa_cambio_aplicada || 0));
+ 
   const parametros = useGetParametros();
   const metodosDePago = parametros[1].data ?? [];
 
   const { mutateAsync: registrarPago, isPending: isSubmitting } = useRegistrarPagoMutation();
 
-  const monto_pago_real_usd = ordenCompra.monto_pendiente_pago_usd ? Number(ordenCompra.monto_pendiente_pago_usd) : Number(ordenCompra.monto_total_oc_usd);
-  const setMonto_pago_ves = ordenCompra.monto_pendiente_pago_usd ? Number(ordenCompra.monto_pendiente_pago_usd) * Number(ordenCompra.tasa_cambio_aplicada) : Number(ordenCompra.monto_total_oc_usd) * Number(ordenCompra.tasa_cambio_aplicada);
-  
+  console.log("ordenCompra", ordenCompra);
   const {
     register,
     handleSubmit,
@@ -65,30 +69,30 @@ export const ComprasRegistrarPagoDialog = ({
     resolver: zodResolver(PagoSchema),
     defaultValues: {
       fecha_pago: new Date().toISOString().split("T")[0],
-      metodo_pago: ordenCompra.metodo_pago.id,
-      monto_pago_usd: monto_pago_real_usd,
-      monto_pago_ves: setMonto_pago_ves,
+      metodo_pago: ordenCompra?.metodo_pago.id,
+      monto_pago_usd: montoPagoRealUsd,
+      monto_pago_ves: montoPagoRealVes,
       moneda: "USD",
-      tasa_cambio_aplicada: Number(ordenCompra.tasa_cambio_aplicada),
+      tasa_cambio_aplicada: Number(ordenCompra?.tasa_cambio_aplicada || 0),
       referencia_pago: "",
       notas: "",
-      orden_compra_asociada: ordenCompra.id,
+      orden_compra_asociada: ordenCompra?.id,
     },
   });
 
   const getMontoOrden = (compraAsociada: number | undefined) => {
     if (compraAsociada !== undefined) {
-      return ordenCompra.recepciones.find(recepcion => recepcion.id === compraAsociada)?.monto_pendiente_pago_usd || 0;
+      return ordenCompra?.recepciones.find(recepcion => recepcion.id === compraAsociada)?.monto_pendiente_pago_usd || 0;
     } else {
-      return monto_pago_real_usd;
+      return montoPagoRealUsd;
     }
   }
 
   const getMontoPago = (compraAsociada: number | undefined) => {
     if (compraAsociada !== undefined) {
-      return ordenCompra.recepciones.find(recepcion => recepcion.id === compraAsociada)?.monto_pendiente_pago_usd || 0;
+      return ordenCompra?.recepciones.find(recepcion => recepcion.id === compraAsociada)?.monto_pendiente_pago_usd || 0;
     } else {
-      return monto_pago_real_usd;
+      return montoPagoRealUsd;
     }
   }
   const [montoEnOrden, setMontoEnOrden] = useState<number>(getMontoOrden(watch("compra_asociada")));
@@ -132,8 +136,8 @@ export const ComprasRegistrarPagoDialog = ({
   const handleFormSubmit = async (data: TPagoSchema) => {
     try {
       await registrarPago(data);
-      onOpenChange(false);
       reset();
+      onOpenChange(false);
       toast.success("Pago registrado exitosamente");
     } catch (error) {
       console.error("Error registrando pago:", error);
@@ -216,19 +220,50 @@ export const ComprasRegistrarPagoDialog = ({
     }
 
     if (value === "adelanto") {
-      setMontoEnOrden(monto_pago_real_usd);
+      setMontoEnOrden(montoPagoRealUsd);
       setValue("compra_asociada", undefined);
-      setMonto(monto_pago_real_usd.toString());
+      setMonto(montoPagoRealUsd.toString());
       return;
     }  
 
     setValue("compra_asociada", Number(value));
-    const montoPendiente = ordenCompra.recepciones.find(recepcion => recepcion.id === Number(value))?.monto_pendiente_pago_usd || 0;
+    const montoPendiente = ordenCompra?.recepciones.find(recepcion => recepcion.id === Number(value))?.monto_pendiente_pago_usd || 0;
     setMontoEnOrden(montoPendiente);
     setMonto(montoPendiente.toString());
     setValue("monto_pago_usd", montoPendiente);
     setValue("monto_pago_ves", montoPendiente * Number(tasaCambio));
   };
+
+  useEffect(() => {
+    if (ordenCompra) {
+      // Calculate values directly from ordenCompra
+      const newMontoPagoUsd = ordenCompra.monto_pendiente_pago_usd 
+        ? Number(ordenCompra.monto_pendiente_pago_usd) 
+        : Number(ordenCompra.monto_total_oc_usd || 0);
+      
+      const tasaCambioNum = Number(ordenCompra.tasa_cambio_aplicada || 0);
+      const newMontoPagoVes = newMontoPagoUsd * tasaCambioNum;
+      
+      // Update state variables
+      setMontoPagoRealUsd(newMontoPagoUsd);
+      setMontoPagoRealVes(newMontoPagoVes);
+      
+      // Update form values with the newly calculated values
+      setValue("fecha_pago", new Date().toISOString().split("T")[0]);
+      setValue("metodo_pago", ordenCompra.metodo_pago.id);
+      setValue("monto_pago_usd", newMontoPagoUsd);
+      setValue("monto_pago_ves", newMontoPagoVes);
+      setValue("tasa_cambio_aplicada", tasaCambioNum);
+      setValue("orden_compra_asociada", ordenCompra.id);
+      
+      // Update local state
+      setTasaCambio(tasaCambioNum.toString());
+      setMonto(newMontoPagoUsd.toString());
+      setMontoEnOrden(newMontoPagoUsd);
+      setSelectedMoneda("USD");
+    }
+  }, [ordenCompra, setValue, open]); 
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent 
@@ -236,7 +271,7 @@ export const ComprasRegistrarPagoDialog = ({
           overlayClassName="z-[var(--z-index-over-header-bar)] ">
         <DialogHeader>
           <DialogTitle className="text-xl font-bold">
-            Registrar Pago - Orden OC-{ordenCompra.id.toString().padStart(3, "0")}
+            Registrar Pago - Orden OC-{ordenCompra?.id.toString().padStart(3, "0")}
           </DialogTitle>
         </DialogHeader>
 
@@ -246,7 +281,7 @@ export const ComprasRegistrarPagoDialog = ({
             <div>
               <p className="text-sm text-muted-foreground mb-1">Proveedor</p>
               <p className="font-semibold">
-                {ordenCompra.proveedor.nombre_proveedor}
+                {ordenCompra?.proveedor.nombre_proveedor}
               </p>
             </div>
             <div>
@@ -298,7 +333,7 @@ export const ComprasRegistrarPagoDialog = ({
             </div>
           </div>
           {/* Compra Asociada */}
-          {ordenCompra.recepciones.length > 0 && (
+          {ordenCompra?.recepciones && ordenCompra.recepciones.length > 0 && (
             <div className="space-y-2">
               <Label htmlFor="compra_asociada" className="text-sm font-medium">
                 Compra Asociada <span className="text-red-500">*</span>
@@ -310,7 +345,7 @@ export const ComprasRegistrarPagoDialog = ({
                 placeholder="Selecciona compra asociada"
               >
                 <SelectItem value="adelanto">Pago en adelanto</SelectItem>
-                {ordenCompra.recepciones.map((recepcion: RecepcionOC) => (
+                {ordenCompra?.recepciones.map((recepcion: RecepcionOC) => (
                   recepcion.pagado ? 
                   <SelectItem  className="text-gray-500" key={recepcion.id} value={'pagado'}>
                     #{recepcion.id.toString()} - {recepcion.fecha_recepcion} - Pagado

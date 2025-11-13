@@ -413,7 +413,6 @@ export const ComprasDetalles = ({
       <ComprasRegistrarPagoDialog
         open={showRegistrarPagoDialog}
         onOpenChange={setShowRegistrarPagoDialog}
-        ordenCompra={ordenCompra}
       />
     </>
   );
