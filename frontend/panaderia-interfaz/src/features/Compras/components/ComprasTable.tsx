@@ -50,6 +50,10 @@ export const ComprasTable = ({
     setCompraSeleccionadaId(id);
   };
 
+  const sortedOrdenesCompra = ordenesCompra.sort((a, b) => {
+    return b.id - a.id;
+  });
+
   return (
     <div className="border rounded-lg bg-card shadow-sm relative">
       {isFetchingOrdenDetalles && (
@@ -72,8 +76,8 @@ export const ComprasTable = ({
           </TableRow>
         </TableHeader>
         <TableBody>
-          {ordenesCompra.length > 0 ? (
-            ordenesCompra.map((ordenCompra, index) => (
+          {sortedOrdenesCompra.length > 0 ? (
+            sortedOrdenesCompra.map((ordenCompra, index) => (
               <TableRow
                 key={ordenCompra.id}
                 className={`hover:bg-gray-100 cursor-pointer ${index % 2 !== 0 ? "bg-gray-50" : ""}`}
@@ -108,6 +112,7 @@ export const ComprasTable = ({
                       variant="ghost"
                       size="icon"
                       onClick={() => onEditOrder(ordenCompra)}
+                      className="hover:bg-gray-400 "
                       title="Editar"
                     >
                       <Pencil className="h-4 w-4" />
