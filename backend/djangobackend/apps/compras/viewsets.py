@@ -353,7 +353,4 @@ class PagosProveedoresViewSet(viewsets.ModelViewSet):
 
             return Response({
                 'message': 'Pago registrado correctamente',
-                'pago_id': pago.id,
-                'monto_pendiente_usd': str(monto_pendiente_pago_usd),
-                'pagado_completamente': monto_pendiente_pago_usd == 0
             }, status=status.HTTP_201_CREATED)

@@ -26,10 +26,12 @@ import { ComprasFormTotals } from "./ComprasFormTotals";
 import { usePDF } from "@react-pdf/renderer";
 import { OrdenCompraPDF } from "./OrdenCompraPDF";
 import { useMemo, useEffect } from "react";
-import { useMarcarEnviadaOCMutation } from "../hooks/mutations/mutations";
+import { useMarcarEnviadaOCMutation} from "../hooks/mutations/mutations";
+import { useGetOrdenesCompraDetalles } from "../hooks/queries/queries";
 import { toast } from "sonner";
 import { useComprasContext } from "@/context/ComprasContext";
 import { formatCurrency } from "../utils/itemHandlers";
+import { PendingTubeSpinner } from "@/components/PendingTubeSpinner";
 
 export const ComprasDetalles = ({
   ordenCompra,
@@ -43,8 +45,10 @@ export const ComprasDetalles = ({
     mutateAsync: marcarEnviadaOCMutation,
     isPending: isLoadingMarcarEnviadaOCPending,
   } = useMarcarEnviadaOCMutation();
-  const { setShowRecepcionForm, setShowOrdenCompraDetalles } =
+  const { setShowRecepcionForm, setShowOrdenCompraDetalles, compraSeleccionadaId } =
     useComprasContext();
+
+  const { isFetching: isFetchingOrdenCompraDetalles } = useGetOrdenesCompraDetalles(compraSeleccionadaId!);
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("es-MX", {
@@ -200,7 +204,14 @@ export const ComprasDetalles = ({
   //   };
   return (
     <>
-      <div className="flex items-center justify-center mx-8 py-5">
+      <div className="flex items-center justify-center mx-8 py-5 relative">
+        {isFetchingOrdenCompraDetalles && (
+          <PendingTubeSpinner
+            size={20}
+            extraClass="absolute top-0 left-0 w-full h-full flex justify-center items-center bg-white opacity-50 z-50"
+          />
+        )}
+
         <Card className="w-full max-w-6xl">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4 border-b sticky top-0 bg-card z-10">
             <div className="flex items-center gap-3">

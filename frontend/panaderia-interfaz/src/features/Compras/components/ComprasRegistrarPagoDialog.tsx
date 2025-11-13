@@ -29,7 +29,6 @@ import { cn } from "@/lib/utils";
 
 import { useRegistrarPagoMutation } from "../hooks/mutations/mutations";
 import { toast } from "sonner";
-
 interface ComprasRegistrarPagoDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -61,6 +60,7 @@ export const ComprasRegistrarPagoDialog = ({
     formState: { errors },
     setValue,
     watch,
+    reset,
   } = useForm<TPagoSchema>({
     resolver: zodResolver(PagoSchema),
     defaultValues: {
@@ -133,6 +133,7 @@ export const ComprasRegistrarPagoDialog = ({
     try {
       await registrarPago(data);
       onOpenChange(false);
+      reset();
       toast.success("Pago registrado exitosamente");
     } catch (error) {
       console.error("Error registrando pago:", error);

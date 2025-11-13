@@ -1,5 +1,3 @@
-import { formatCurrency } from "../utils/itemHandlers";
-
 interface ComprasRecepcionTotalsProps {
   tasaCambioAplicada: number;
   totalRecepcionUSD: number;
