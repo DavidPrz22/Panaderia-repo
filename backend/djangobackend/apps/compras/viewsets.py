@@ -284,7 +284,7 @@ class PagosProveedoresViewSet(viewsets.ModelViewSet):
             monto_pago_ves = serializer.validated_data.get('monto_pago_ves', None)
             tasa_cambio_aplicada = serializer.validated_data.get('tasa_cambio_aplicada', None)
             fecha_pago = serializer.validated_data.get('fecha_pago', None)
-            referencia_pago = serializer.validated_data.get('referencia_pago')
+            referencia_pago = serializer.validated_data.get('referencia_pago', None)
             notas = serializer.validated_data.get('notas', '')
             usuario_registrador = request.user
 
@@ -335,14 +335,13 @@ class PagosProveedoresViewSet(viewsets.ModelViewSet):
                     status=status.HTTP_404_NOT_FOUND
                 )
 
-            # Create the PagosProveedores record
-            pago = PagosProveedores.objects.create(
+            PagosProveedores.objects.create(
                 orden_compra_asociada=orden_compra_asociada,
                 compra_asociada=compra_asociada,
                 metodo_pago=metodo_pago,
                 proveedor=orden_compra_asociada.proveedor,
                 fecha_pago=fecha_pago,
-                referencia_pago=referencia_pago,
+                referencia_pago=referencia_pago if referencia_pago else None,
                 monto_pago_usd=monto_pago_usd,
                 monto_pago_ves=monto_pago_ves,
                 tasa_cambio_aplicada=tasa_cambio_aplicada,

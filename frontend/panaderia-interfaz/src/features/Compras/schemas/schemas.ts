@@ -64,7 +64,11 @@ export const PagoSchema = z.object({
   orden_compra_asociada: z.number().min(0, "La orden de compra asociada es requerida"),
   compra_asociada: z.number().min(0, "La compra asociada es requerida").optional(),
   metodo_pago: z.number().min(0, "El método de pago es requerido"),
-  referencia_pago: z.string().min(1, "La referencia de pago es requerida"),
+  referencia_pago: z.string().optional().refine((val) => !val || val.length >= 3, {
+    message: "La referencia de pago no puede tener menos de 3 caracteres",
+  }).refine((val) => !val || val.length <= 10, {
+    message: "La referencia de pago no puede tener más de 10 caracteres",
+  }),
   monto_pago_usd: z.coerce.number().min(0.01, "El monto debe ser mayor a 0"),
   monto_pago_ves: z.coerce.number().min(0.01, "El monto debe ser mayor a 0"),
   moneda: z.string().min(1, "La moneda es requerida"),

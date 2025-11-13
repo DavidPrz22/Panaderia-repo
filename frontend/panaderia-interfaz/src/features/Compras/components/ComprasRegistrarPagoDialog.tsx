@@ -74,7 +74,7 @@ export const ComprasRegistrarPagoDialog = ({
       monto_pago_ves: montoPagoRealVes,
       moneda: "USD",
       tasa_cambio_aplicada: Number(ordenCompra?.tasa_cambio_aplicada || 0),
-      referencia_pago: "",
+      referencia_pago: undefined,
       notas: "",
       orden_compra_asociada: ordenCompra?.id,
     },
@@ -264,6 +264,8 @@ export const ComprasRegistrarPagoDialog = ({
     }
   }, [ordenCompra, setValue, open]); 
 
+  const requiereReferencia = metodosDePago.find(metodo => metodo.id === watch("metodo_pago"))?.requiere_referencia;
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent 
@@ -364,6 +366,7 @@ export const ComprasRegistrarPagoDialog = ({
             </div>
           )}
           {/* Payment Reference */}
+          {requiereReferencia && (
           <div className="space-y-2">
             <Label htmlFor="referencia_pago" className="text-sm font-medium">
               Referencia de Pago <span className="text-red-500">*</span>
@@ -376,6 +379,7 @@ export const ComprasRegistrarPagoDialog = ({
               {...register("referencia_pago")}  
             />
           </div>
+          )}
 
           {/* Amount, Currency and Exchange Rate */}
           <div className="grid grid-cols-3 gap-4">

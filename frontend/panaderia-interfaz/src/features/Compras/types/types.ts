@@ -27,6 +27,7 @@ export type EstadoOC = {
 export type MetodoDePago = {
   id: number;
   nombre_metodo: string;
+  requiere_referencia: boolean;
 };
 
 export type Producto = {

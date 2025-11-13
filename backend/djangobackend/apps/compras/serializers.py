@@ -260,8 +260,10 @@ class PagosProveedoresSerializer(serializers.Serializer):
         help_text="Fecha en que se realizó el pago"
     )
     referencia_pago = serializers.CharField(
-        max_length=100,
-        help_text="Número de referencia bancaria"
+        max_length=10,
+        help_text="Número de referencia bancaria",
+        required=False,
+        allow_blank=True,
     )
     notas = serializers.CharField(
         max_length=255,
