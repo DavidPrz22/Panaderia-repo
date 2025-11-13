@@ -24,6 +24,7 @@ export const ComprasTable = ({
   ordenesCompra,
   onEditOrder,
 }: ComprasTableProps) => {
+
   const { compraSeleccionadaId, setCompraSeleccionadaId } = useComprasContext();
 
   const { isFetching: isFetchingOrdenDetalles } = useGetOrdenesCompraDetalles(
@@ -44,6 +45,7 @@ export const ComprasTable = ({
       day: "2-digit",
     });
   };
+
   const handleOrdenSeleccionada = (id: number) => {
     setCompraSeleccionadaId(id);
   };

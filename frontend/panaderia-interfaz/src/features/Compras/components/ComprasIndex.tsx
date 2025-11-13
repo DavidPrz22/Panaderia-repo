@@ -43,6 +43,7 @@ export const ComprasIndex = () => {
     data: ordenesCompraTable = [],
     isFetching: isFetchingOrdenesCompraTable,
   } = useGetOrdenesCompraTable();
+
   const { data: { orden: compraDetalles } = { orden: undefined }, isFetched } =
     useGetOrdenesCompraDetalles(compraSeleccionadaId!);
 
@@ -112,7 +113,7 @@ export const ComprasIndex = () => {
     );
   }
 
-  if (showOrdenCompraDetalles && ordenCompra) {
+  if (showOrdenCompraDetalles && ordenCompra && isFetched) {
     return (
       <ComprasDetalles
         ordenCompra={ordenCompra}
