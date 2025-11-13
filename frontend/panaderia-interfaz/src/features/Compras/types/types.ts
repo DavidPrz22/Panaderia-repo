@@ -99,6 +99,7 @@ export type OrdenCompra = {
     monto_pago_usd: number;
     monto_pago_ves: number;
   } | null;
+  monto_pendiente_pago_usd?: number;
 };
 
 export type RecepcionOC = {

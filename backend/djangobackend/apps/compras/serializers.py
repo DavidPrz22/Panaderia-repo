@@ -298,6 +298,7 @@ class FormattedResponseOCSerializer(serializers.ModelSerializer):
     detalles = DetallesResponseSerializer(many=True)
     recepciones = ComprasSerializer(many=True, read_only=True)
     pagos_en_adelantado = serializers.SerializerMethodField(read_only=True)
+    monto_pendiente_pago_usd = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = OrdenesCompra
@@ -318,6 +319,7 @@ class FormattedResponseOCSerializer(serializers.ModelSerializer):
             'metodo_pago',
             'recepciones',
             'pagos_en_adelantado',
+            'monto_pendiente_pago_usd',
         ]
     
     def get_pagos_en_adelantado(self, obj):
@@ -329,3 +331,17 @@ class FormattedResponseOCSerializer(serializers.ModelSerializer):
             "monto_pago_usd": pagos.aggregate(total=Sum('monto_pago_usd'))['total'] or 0, 
             "monto_pago_ves": pagos.aggregate(total=Sum('monto_pago_ves'))['total'] or 0,
         }
+
+    def get_monto_pendiente_pago_usd(self, obj):
+        pagos_adelantados_sin_registrar = PagosProveedores.objects.filter(orden_compra_asociada=obj, compra_asociada__isnull=True).aggregate(total=Sum('monto_pago_usd'))['total'] or 0
+
+        compras_pagadas = Compras.objects.filter(orden_compra=obj, pagado=True)
+        pagos_completos = PagosProveedores.objects.filter(orden_compra_asociada=obj, compra_asociada__in=compras_pagadas).aggregate(total=Sum('monto_pago_usd'))['total'] or 0
+
+        compras_no_pagadas = Compras.objects.filter(orden_compra=obj, pagado=False)
+        pago_adelantado_registrado = PagosProveedores.objects.filter(orden_compra_asociada=obj, compra_asociada__in=compras_no_pagadas).aggregate(total=Sum('monto_pago_usd'))['total'] or 0
+
+        if not pagos_completos and not pagos_adelantados_sin_registrar and not pago_adelantado_registrado:
+            return None
+
+        return obj.monto_total_oc_usd - pagos_completos - pago_adelantado_registrado - pagos_adelantados_sin_registrar

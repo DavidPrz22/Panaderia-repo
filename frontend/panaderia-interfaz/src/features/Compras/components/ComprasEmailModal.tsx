@@ -38,7 +38,7 @@ export const ComprasEmailModal = () => {
           </Button>
         </DialogTrigger>
         <DialogContent
-          className="z-[var(--z-index-over-header-bar)] "
+          className="z-[var(--z-index-over-header-bar)] h-[95vh] md:h-auto"
           overlayClassName="z-[var(--z-index-over-header-bar)]"
         >
           <DialogHeader>
@@ -82,8 +82,8 @@ export const ComprasEmailModal = () => {
               <Textarea
                 id="email"
                 placeholder="Ingrese el mensaje del email"
-                rows={8}
-                className="bg-gray-50 focus-visible:ring-blue-200"
+                rows={6}
+                className="bg-gray-50 focus-visible:ring-blue-200 resize-none"
               />
             </div>
             <Card className="bg-gray-50">

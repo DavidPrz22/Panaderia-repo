@@ -52,6 +52,9 @@ export const ComprasRegistrarPagoDialog = ({
 
   const { mutateAsync: registrarPago, isPending: isSubmitting } = useRegistrarPagoMutation();
 
+  const monto_pago_real_usd = ordenCompra.monto_pendiente_pago_usd ? Number(ordenCompra.monto_pendiente_pago_usd) : Number(ordenCompra.monto_total_oc_usd);
+  const setMonto_pago_ves = ordenCompra.monto_pendiente_pago_usd ? Number(ordenCompra.monto_pendiente_pago_usd) * Number(ordenCompra.tasa_cambio_aplicada) : Number(ordenCompra.monto_total_oc_usd) * Number(ordenCompra.tasa_cambio_aplicada);
+  
   const {
     register,
     handleSubmit,
@@ -63,8 +66,8 @@ export const ComprasRegistrarPagoDialog = ({
     defaultValues: {
       fecha_pago: new Date().toISOString().split("T")[0],
       metodo_pago: ordenCompra.metodo_pago.id,
-      monto_pago_usd: Number(ordenCompra.monto_total_oc_usd),
-      monto_pago_ves: Number(ordenCompra.monto_total_oc_usd) * Number(ordenCompra.tasa_cambio_aplicada),
+      monto_pago_usd: monto_pago_real_usd,
+      monto_pago_ves: setMonto_pago_ves,
       moneda: "USD",
       tasa_cambio_aplicada: Number(ordenCompra.tasa_cambio_aplicada),
       referencia_pago: "",
@@ -73,12 +76,11 @@ export const ComprasRegistrarPagoDialog = ({
     },
   });
 
-
   const getMontoOrden = (compraAsociada: number | undefined) => {
     if (compraAsociada !== undefined) {
       return ordenCompra.recepciones.find(recepcion => recepcion.id === compraAsociada)?.monto_pendiente_pago_usd || 0;
     } else {
-      return ordenCompra.monto_total_oc_usd;
+      return monto_pago_real_usd;
     }
   }
 
@@ -86,7 +88,7 @@ export const ComprasRegistrarPagoDialog = ({
     if (compraAsociada !== undefined) {
       return ordenCompra.recepciones.find(recepcion => recepcion.id === compraAsociada)?.monto_pendiente_pago_usd || 0;
     } else {
-      return ordenCompra.monto_total_oc_usd;
+      return monto_pago_real_usd;
     }
   }
   const [montoEnOrden, setMontoEnOrden] = useState<number>(getMontoOrden(watch("compra_asociada")));
@@ -213,9 +215,9 @@ export const ComprasRegistrarPagoDialog = ({
     }
 
     if (value === "adelanto") {
-      setMontoEnOrden(ordenCompra.monto_total_oc_usd);
+      setMontoEnOrden(monto_pago_real_usd);
       setValue("compra_asociada", undefined);
-      setMonto(ordenCompra.monto_total_oc_usd.toString());
+      setMonto(monto_pago_real_usd.toString());
       return;
     }  
 
