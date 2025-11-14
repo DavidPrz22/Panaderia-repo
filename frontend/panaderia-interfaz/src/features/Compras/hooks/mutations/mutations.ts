@@ -5,6 +5,7 @@ import {
   marcarEnviadaOC,
   crearRecepcionOC,
   registrarPago,
+  updateOrdenCompra,
 } from "../../api/api";
 import type { TOrdenCompraSchema, TPagoSchema, TRecepcionFormSchema } from "../../schemas/schemas";
 import { ordenesCompraTableQueryOptions } from "../queries/queryOptions";
@@ -31,6 +32,20 @@ export const useCreateOCMutation = () => {
   });
 };
 
+export const useUpdateOCMutation = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, data }: { id: number; data: TOrdenCompraSchema }) => updateOrdenCompra(id, data),
+    onSuccess: (_, { id }) => {
+      queryClient.invalidateQueries({
+        queryKey: ordenesCompraTableQueryOptions.queryKey,
+      });
+      queryClient.invalidateQueries({
+        queryKey: ordenesCompraDetallesQueryOptions(id).queryKey,
+      });
+    },
+  });
+};
 export const useMarcarEnviadaOCMutation = () => {
   const queryClient = useQueryClient();
   return useMutation({

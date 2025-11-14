@@ -37,7 +37,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { ComprasFormDatePicker } from "./ComprasFormDatePicker";
 import { toast } from "sonner";
 
-import { useCreateOCMutation } from "../hooks/mutations/mutations";
+import { useCreateOCMutation, useUpdateOCMutation } from "../hooks/mutations/mutations";
 import { useComprasFormLogic } from "../hooks/useComprasFormLogic";
 import {
   updateItemFromProducto,
@@ -58,7 +58,29 @@ export const ComprasForm = ({ orden, onClose }: ComprasFormProps) => {
   const { handleSubmit, watch, setValue } = useForm<TOrdenCompraSchema>({
     resolver: zodResolver(OrdenCompraSchema),
     defaultValues: orden
-      ? {}
+      ? {
+        fecha_emision_oc: orden.fecha_emision_oc,
+        fecha_entrega_esperada: orden.fecha_entrega_esperada,
+        fecha_entrega_real: orden.fecha_entrega_real ? orden.fecha_entrega_real : undefined,
+        estado_oc: orden.estado_oc.id,
+        proveedor: orden.proveedor.id,
+        metodo_pago: orden.metodo_pago.id,
+        monto_total_oc_usd: orden.monto_total_oc_usd,
+        monto_total_oc_ves: orden.monto_total_oc_ves,
+        tasa_cambio_aplicada: orden.tasa_cambio_aplicada,
+        direccion_envio: orden.direccion_envio ? orden.direccion_envio : undefined,
+        terminos_pago: orden.terminos_pago ? orden.terminos_pago : undefined,
+        detalles: orden.detalles.map((p, index) => ({
+          id: index,
+          materia_prima: p.materia_prima,
+          producto_reventa: p.producto_reventa,
+          cantidad_solicitada: Number(p.cantidad_solicitada),
+          unidad_medida_compra: p.unidad_medida_compra,
+          costo_unitario_usd: Number(p.costo_unitario_usd),
+          subtotal_linea_usd: Number(p.subtotal_linea_usd),
+        })),
+        notas: orden.notas ? orden.notas : undefined,
+      }
       : {
           fecha_emision_oc: new Date().toISOString().split("T")[0],
           fecha_entrega_esperada: new Date().toISOString().split("T")[0],
@@ -85,7 +107,9 @@ export const ComprasForm = ({ orden, onClose }: ComprasFormProps) => {
 
   const { mutateAsync: createOCMutation, isPending: isCreatingOCMutation } =
     useCreateOCMutation();
-  // const { mutateAsync: updateOrdenMutation, isPending: isUpdatingOrden } = useUpdateOrdenMutation();
+  const { mutateAsync: updateOCMutation, isPending: isUpdatingOCMutation } = 
+  useUpdateOCMutation()
+  ;
   const [items, setItems] = useState<DetalleOC[]>(
     orden?.detalles.map((p, idx) => ({
       id: idx,
@@ -93,12 +117,12 @@ export const ComprasForm = ({ orden, onClose }: ComprasFormProps) => {
       materia_prima_nombre: p.materia_prima_nombre,
       producto_reventa: p.producto_reventa,
       producto_reventa_nombre: p.producto_reventa_nombre,
-      cantidad_solicitada: p.cantidad_solicitada,
-      cantidad_recibida: p.cantidad_recibida,
+      cantidad_solicitada: Number(p.cantidad_solicitada),
+      cantidad_recibida: Number(p.cantidad_recibida),
       unidad_medida_compra: p.unidad_medida_compra,
       unidad_medida_abrev: p.unidad_medida_abrev,
-      costo_unitario_usd: p.costo_unitario_usd,
-      subtotal_linea_usd: p.subtotal_linea_usd,
+      costo_unitario_usd: Number(p.costo_unitario_usd),
+      subtotal_linea_usd: Number(p.subtotal_linea_usd),
       cantidad_pendiente: p.cantidad_pendiente || 0,
     })) || [],
   );
@@ -148,10 +172,13 @@ export const ComprasForm = ({ orden, onClose }: ComprasFormProps) => {
       calculateTotalFromItems(newItems);
     }
   };
+
   const handleSubmitForm = async (data: TOrdenCompraSchema) => {
     try {
       if (isEdit && orden) {
-        // await updateOrdenMutation({ id: orden.id, data });
+        const { orden: updatedOrden } = await updateOCMutation({ id: orden!.id, data });
+        setOrdenCompra(updatedOrden);
+        setShowForm(false);
         toast.success("Orden actualizada exitosamente");
       } else {
         const { orden } = await createOCMutation(data);
@@ -169,7 +196,7 @@ export const ComprasForm = ({ orden, onClose }: ComprasFormProps) => {
 
   return (
     <div className="mx-8 py-5 relative">
-      {isCreatingOCMutation && (
+      {isCreatingOCMutation || isUpdatingOCMutation && (
         <PendingTubeSpinner
           size={20}
           extraClass="absolute top-0 left-0 w-full h-full flex justify-center items-center bg-white opacity-50 z-50"
@@ -276,6 +303,7 @@ export const ComprasForm = ({ orden, onClose }: ComprasFormProps) => {
                   ))}
                 </ComprasFormSelect>
               </div>
+
               {/* Referencia de Pago */}
               <div className="space-y-2">
                 <Label htmlFor="payment">Terminos de Pago (Opcional)</Label>

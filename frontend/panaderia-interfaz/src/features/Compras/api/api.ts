@@ -148,6 +148,16 @@ export const createOrdenCompra = async (
   }
 };
 
+export const updateOrdenCompra = async (id: number, data: TOrdenCompraSchema): Promise<OrdenCompraDetallesResponse> => {
+  try {
+    const response = await apiClient.put(`/api/compras/ordenes-compra/${id}/`, data);
+    return response.data;
+  } catch (error) {
+    console.error("Error updating orden compra:", error);
+    throw error;
+  }
+};
+
 export const marcarEnviadaOC = async (
   id: number,
 ): Promise<{ message: string }> => {
@@ -188,3 +198,4 @@ export const registrarPago = async (params: TPagoSchema): Promise<{ message: str
     throw error;
   }
 };
+

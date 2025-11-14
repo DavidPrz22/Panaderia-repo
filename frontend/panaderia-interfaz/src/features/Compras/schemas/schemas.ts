@@ -2,8 +2,8 @@ import { z } from "zod";
 
 const detalleOC = z.object({
   id: z.number(),
-  materia_prima: z.number().optional(),
-  producto_reventa: z.number().optional(),
+  materia_prima: z.number().optional().nullable(),
+  producto_reventa: z.number().optional().nullable(),
   cantidad_solicitada: z.number(),
   unidad_medida_compra: z.number(),
   costo_unitario_usd: z.number(),

@@ -1,3 +1,6 @@
+from typing import Any
+
+
 from django.utils.timezone import timedelta
 from rest_framework import viewsets
 from apps.compras.models import Proveedores
@@ -8,7 +11,7 @@ from rest_framework.response import Response
 from django.db import transaction
 from apps.compras.models import DetalleOrdenesCompra, EstadosOrdenCompra, Compras, DetalleCompras, PagosProveedores
 from rest_framework import status, serializers
-from apps.inventario.models import LotesMateriasPrimas, LotesProductosReventa
+from apps.inventario.models import LotesMateriasPrimas, LotesProductosReventa, MateriasPrimas, ProductosReventa
 from apps.core.models import MetodosDePago
 from django.db.models import Sum
 
@@ -70,6 +73,101 @@ class OrdenesCompraViewSet(viewsets.ModelViewSet):
             return Response({
                 "orden": orden_serializer.data, 
             }, status=status.HTTP_201_CREATED)
+
+    def update(self, request, *args, **kwargs):
+        with transaction.atomic():
+            instance = self.get_object()
+            
+            serializer = self.get_serializer(instance, data=request.data)
+            serializer.is_valid(raise_exception=True)
+
+            detalles_data = serializer.validated_data.pop('detalles', [])
+            
+            # Save the parent orden_compra
+            serializer.save()
+
+            # Get existing detalles for this orden
+            registered_detalles = DetalleOrdenesCompra.objects.filter(orden_compra=instance)    
+            registered_detalles_ids = set(d.id for d in registered_detalles)
+            detalles_id_from_request = set(d.get('id') for d in detalles_data if d.get('id'))
+
+            # Find detalles to delete (exist in DB but not in request)
+            detalles_to_delete_ids = registered_detalles_ids - detalles_id_from_request
+            if detalles_to_delete_ids:
+                DetalleOrdenesCompra.objects.filter(id__in=detalles_to_delete_ids).delete()
+
+            # Prepare maps for efficient lookups
+            materias_primas_ids = [d.get('materia_prima').id for d in detalles_data if d.get('materia_prima')]
+            productos_reventa_ids = [d.get('producto_reventa').id for d in detalles_data if d.get('producto_reventa')]
+
+            mp_map = {mp.id: mp for mp in MateriasPrimas.objects.filter(id__in=materias_primas_ids)}
+            pr_map = {pr.id: pr for pr in ProductosReventa.objects.filter(id__in=productos_reventa_ids)}
+
+            # Get existing detalles as a map
+            detalles_map = {d.id: d for d in registered_detalles}
+
+            detalles_to_create = []
+            detalles_to_update = []
+
+            for detalle_data in detalles_data:
+                detalle_id = detalle_data.get('id')
+                
+                # Check if this ID actually exists in the database
+                # If detalle_id is None OR not in registered_detalles_ids, create it
+                if not detalle_id or detalle_id not in registered_detalles_ids:
+                    # CREATE NEW DETALLE
+                    detalle_to_create = DetalleOrdenesCompra(
+                        orden_compra=instance,
+                        materia_prima=mp_map.get(detalle_data['materia_prima'].id) if detalle_data.get('materia_prima') else None,
+                        producto_reventa=pr_map.get(detalle_data['producto_reventa'].id) if detalle_data.get('producto_reventa') else None,
+                        cantidad_solicitada=detalle_data.get('cantidad_solicitada', 0),
+                        unidad_medida_compra=detalle_data.get('unidad_medida_compra'),
+                        cantidad_recibida=detalle_data.get('cantidad_recibida', 0),
+                        costo_unitario_usd=detalle_data.get('costo_unitario_usd', 0),
+                        subtotal_linea_usd=detalle_data.get('subtotal_linea_usd', 0),
+                    )
+                    detalles_to_create.append(detalle_to_create)
+                    continue
+
+                # UPDATE EXISTING DETALLE
+                # We know this ID exists because it's in registered_detalles_ids
+                detalle_obj = detalles_map[detalle_id]
+
+                # Update product references
+                if detalle_data.get('materia_prima'):
+                    detalle_obj.materia_prima = mp_map.get(detalle_data['materia_prima'].id)
+                    detalle_obj.producto_reventa = None
+                elif detalle_data.get('producto_reventa'):
+                    detalle_obj.producto_reventa = pr_map.get(detalle_data['producto_reventa'].id)
+                    detalle_obj.materia_prima = None
+
+                # Update other fields
+                detalle_obj.cantidad_solicitada = detalle_data.get('cantidad_solicitada', detalle_obj.cantidad_solicitada)
+                detalle_obj.unidad_medida_compra = detalle_data.get('unidad_medida_compra', detalle_obj.unidad_medida_compra)
+                detalle_obj.cantidad_recibida = detalle_data.get('cantidad_recibida', detalle_obj.cantidad_recibida)
+                detalle_obj.costo_unitario_usd = detalle_data.get('costo_unitario_usd', detalle_obj.costo_unitario_usd)
+                detalle_obj.subtotal_linea_usd = detalle_data.get('subtotal_linea_usd', detalle_obj.subtotal_linea_usd)
+                
+                detalles_to_update.append(detalle_obj)
+
+            # Bulk operations
+            if detalles_to_update:
+                DetalleOrdenesCompra.objects.bulk_update(
+                    detalles_to_update,
+                    ['materia_prima', 'producto_reventa', 'cantidad_solicitada', 
+                    'unidad_medida_compra', 'cantidad_recibida', 'costo_unitario_usd', 
+                    'subtotal_linea_usd']
+                )
+            
+            if detalles_to_create:
+                DetalleOrdenesCompra.objects.bulk_create(detalles_to_create)
+
+            # Return formatted response
+            formatted_response = FormattedResponseOCSerializer(instance)
+            return Response({
+                'orden': formatted_response.data,
+            }, status=status.HTTP_200_OK)
+
 
     @action(detail=True, methods=['post'])
     def marcar_enviada(self, request, pk=None):
