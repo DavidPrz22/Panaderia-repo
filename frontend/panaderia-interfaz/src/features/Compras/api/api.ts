@@ -9,7 +9,7 @@ import type {
   Producto,
 } from "../types/types";
 import type { UnidadesDeMedida } from "@/features/ProductosIntermedios/types/types";
-import type { TOrdenCompraSchema, TPagoSchema, TRecepcionFormSchema } from "../schemas/schemas";
+import type { TEmailSchema, TOrdenCompraSchema, TPagoSchema, TRecepcionFormSchema } from "../schemas/schemas";
 
 export type OrdenCompraDetallesResponse = {
   orden: OrdenCompra;
@@ -199,3 +199,15 @@ export const registrarPago = async (params: TPagoSchema): Promise<{ message: str
   }
 };
 
+export const enviarEmailOC = async (id: number, params: TEmailSchema): Promise<{ message: string }> => {
+  try {
+    const response = await apiClient.post(
+      `/api/compras/ordenes-compra/${id}/enviar-email/`,
+      params,
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Error sending email:", error);
+    throw error;
+  }
+};

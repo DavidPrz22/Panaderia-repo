@@ -6,8 +6,9 @@ import {
   crearRecepcionOC,
   registrarPago,
   updateOrdenCompra,
+  enviarEmailOC,
 } from "../../api/api";
-import type { TOrdenCompraSchema, TPagoSchema, TRecepcionFormSchema } from "../../schemas/schemas";
+import type { TEmailSchema, TOrdenCompraSchema, TPagoSchema, TRecepcionFormSchema } from "../../schemas/schemas";
 import { ordenesCompraTableQueryOptions } from "../queries/queryOptions";
 import { ordenesCompraDetallesQueryOptions } from "@/features/Compras/hooks/queries/queryOptions";
 
@@ -46,6 +47,7 @@ export const useUpdateOCMutation = () => {
     },
   });
 };
+
 export const useMarcarEnviadaOCMutation = () => {
   const queryClient = useQueryClient();
   return useMutation({
@@ -92,6 +94,21 @@ export const useRegistrarPagoMutation = () => {
       });
       queryClient.invalidateQueries({
         queryKey: ordenesCompraDetallesQueryOptions(params.orden_compra_asociada).queryKey,
+      });
+    },
+  });
+};
+
+export const useEnviarEmailOCMutation = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({id, params}: {id: number, params: TEmailSchema}) => enviarEmailOC(id, params),
+    onSuccess: (_, { id }) => {
+      queryClient.invalidateQueries({
+        queryKey: ordenesCompraTableQueryOptions.queryKey,
+      });
+      queryClient.invalidateQueries({
+        queryKey: ordenesCompraDetallesQueryOptions(id).queryKey,
       });
     },
   });

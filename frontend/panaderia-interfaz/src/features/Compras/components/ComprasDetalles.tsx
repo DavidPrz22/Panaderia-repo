@@ -127,7 +127,7 @@ export const ComprasDetalles = ({
       case "Borrador":
         return (
           <>
-            <ComprasEmailModal />
+            <ComprasEmailModal datos_proveedor={ordenCompra.proveedor} />
             <Button
               className="cursor-pointer bg-amber-600 text-white hover:bg-amber-700"
               onClick={() =>

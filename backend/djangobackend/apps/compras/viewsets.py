@@ -1,6 +1,3 @@
-from typing import Any
-
-
 from django.utils.timezone import timedelta
 from rest_framework import viewsets
 from apps.compras.models import Proveedores
@@ -15,6 +12,10 @@ from apps.inventario.models import LotesMateriasPrimas, LotesProductosReventa, M
 from apps.core.models import MetodosDePago
 from django.db.models import Sum
 
+from dotenv import load_dotenv
+import os
+import resend
+from datetime import datetime
 
 class ProveedoresViewSet(viewsets.ModelViewSet):
     queryset = Proveedores.objects.all()
@@ -168,7 +169,6 @@ class OrdenesCompraViewSet(viewsets.ModelViewSet):
                 'orden': formatted_response.data,
             }, status=status.HTTP_200_OK)
 
-
     @action(detail=True, methods=['post'])
     def marcar_enviada(self, request, pk=None):
         orden = OrdenesCompra.objects.get(id=pk)
@@ -193,6 +193,42 @@ class OrdenesCompraViewSet(viewsets.ModelViewSet):
         serializer = OrdenesCompraTableSerializer(queryset, many=True)
         return Response(serializer.data)
 
+    @action(detail=True, methods=['post'], url_path='enviar-email')
+    def enviar_email(self, request, pk=None):
+        with transaction.atomic():
+            try:
+                load_dotenv()
+                apikey = os.getenv('RESEND_APIKEY')
+                resend.api_key = apikey
+                orden = OrdenesCompra.objects.get(id=pk)
+                email = request.data.get('email')
+                asunto = request.data.get('asunto')
+                mensaje = request.data.get('mensaje')
+                attachments = request.data.get('attachments', [])
+                user_email = (request.user.email or 'noreply@panaderia.com')
+
+
+                params: resend.Emails.SendParams = {
+                    'from': user_email,
+                    'to': [email],
+                    'subject': asunto,
+                    'html': f'<p>{mensaje}</p>',
+                    'attachments': attachments,
+                }
+
+                email_response = resend.Emails.send(params)
+
+                if email_response.error:
+                    return Response({'error': email_response.error.message}, status=status.HTTP_400_BAD_REQUEST)
+                else:
+
+                    orden.estado_oc = EstadosOrdenCompra.objects.get(nombre_estado='Enviada')
+                    orden.fecha_email_enviado = datetime.now()
+                    orden.email_enviado = True
+                    orden.save()
+                    return Response({'message': 'Email enviado exitosamente', 'email_response': email_response}, status=status.HTTP_200_OK)
+            except Exception as e:
+                return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 # viewsets.py - Improved ComprasViewSet
 class ComprasViewSet(viewsets.ModelViewSet):

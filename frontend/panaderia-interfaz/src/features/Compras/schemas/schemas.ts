@@ -76,6 +76,18 @@ export const PagoSchema = z.object({
   notas: z.string().optional(),
 });
 
+export const EmailSchema = z.object({
+  email: z.string().email("El correo electrónico no es válido"),
+  asunto: z.string().min(1, "El asunto es requerido"),
+  mensaje: z.string().min(1, "El mensaje es requerido"),
+  attachments: z.array(z.object({
+    content: z.string().min(1, "El contenido del archivo es requerido"),
+    filename: z.string().min(1, "El nombre del archivo es requerido"),
+  })).optional().nullable(),
+});
+
+
+export type TEmailSchema = z.infer<typeof EmailSchema>;
 export type TOrdenCompraSchema = z.infer<typeof OrdenCompraSchema>;
 export type TRecepcionFormSchema = z.infer<typeof RecepcionFormSchema>;
 export type TPagoSchema = z.infer<typeof PagoSchema>;
