@@ -242,7 +242,7 @@ export const ComprasRegistrarPagoDialog = ({
         : Number(ordenCompra.monto_total_oc_usd || 0);
       
       const tasaCambioNum = Number(ordenCompra.tasa_cambio_aplicada || 0);
-      const newMontoPagoVes = newMontoPagoUsd * tasaCambioNum;
+      const newMontoPagoVes = Math.round(newMontoPagoUsd * tasaCambioNum * 1000) / 1000;
       
       // Update state variables
       setMontoPagoRealUsd(newMontoPagoUsd);

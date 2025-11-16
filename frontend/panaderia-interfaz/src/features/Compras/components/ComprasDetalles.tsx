@@ -120,6 +120,9 @@ export const ComprasDetalles = ({
 
 
   const handleButtonStates = (estado: EstadosOC) => {
+
+    const isPaymentComplete = ordenCompra.monto_pendiente_pago_usd === 0;
+
     switch (estado) {
       case "Borrador":
         return (
@@ -172,23 +175,27 @@ export const ComprasDetalles = ({
             >
               Recibir Restante
             </Button>
+            {!isPaymentComplete ? (
             <Button 
               className="cursor-pointer bg-green-600 text-white hover:bg-green-700"
               onClick={() => setShowRegistrarPagoDialog(true)}
             >
               Registrar Pago
             </Button>
+            ) : null}
           </>
         );
       case "Recibida Completa":
         return (
           <>
+            {!isPaymentComplete ? (
             <Button 
               className="cursor-pointer bg-green-600 text-white hover:bg-green-700"
               onClick={() => setShowRegistrarPagoDialog(true)}
-            >
-              Registrar Pago
-            </Button>
+              >
+                Registrar Pago
+              </Button>
+            ) : null}
           </>
         );
     }
@@ -210,6 +217,7 @@ export const ComprasDetalles = ({
   //       toast.error("Error cancelando orden");
   //     }
   //   };
+
   return (
     <>
       <div className="flex items-center justify-center mx-8 py-5 relative">
