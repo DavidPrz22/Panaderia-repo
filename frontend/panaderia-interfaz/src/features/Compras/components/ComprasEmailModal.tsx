@@ -26,13 +26,14 @@ import { Trash2Icon } from "lucide-react";
 import { HadleFilesConversion } from "@/utils/utils";
 import { useEffect } from "react";
 import { useComprasContext } from "@/context/ComprasContext";
+import { getPDFAsBase64 } from "../utils/pdfUtils";
 
 interface ComprasEmailModalProps {
   datos_proveedor: Proveedor;
 }
 
 export const ComprasEmailModal = ({ datos_proveedor }: ComprasEmailModalProps) => {
-  const { compraSeleccionadaId } = useComprasContext();
+  const { compraSeleccionadaId, ordenCompra } = useComprasContext();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [files, setFiles] = useState<File[]>([]);
   const [fileError, setFileError] = useState<string | null>(null);
@@ -78,6 +79,13 @@ export const ComprasEmailModal = ({ datos_proveedor }: ComprasEmailModalProps) =
   const { mutateAsync: enviarEmailOC } = useEnviarEmailOCMutation();
 
   const handleFormSubmit = async (data: TEmailSchema) => {
+    if (includePDF && ordenCompra) {
+      const base64 = await getPDFAsBase64(ordenCompra);
+      if (base64) {
+        data.attachments?.push(base64);
+      }
+    }
+  
     try {
       await enviarEmailOC({ id: compraSeleccionadaId!, params: data });
       toast.success("Email enviado exitosamente");

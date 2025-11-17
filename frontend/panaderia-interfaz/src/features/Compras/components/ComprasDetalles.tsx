@@ -4,7 +4,7 @@ import type { DetalleOC, OrdenCompra } from "../types/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ComprasEstadoBadge } from "./ComprasEstadoBadge";
 import { Button } from "@/components/ui/button";
-import { FileDown, X } from "lucide-react";
+import { X } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -24,15 +24,14 @@ interface ComprasDetallesProps {
 
 import type { EstadosOC } from "../types/types";
 import { ComprasFormTotals } from "./ComprasFormTotals";
-import { usePDF } from "@react-pdf/renderer";
-import { OrdenCompraPDF } from "./OrdenCompraPDF";
-import { useMemo, useEffect } from "react";
+import { useEffect } from "react";
 import { useMarcarEnviadaOCMutation} from "../hooks/mutations/mutations";
 import { useGetOrdenesCompraDetalles } from "../hooks/queries/queries";
 import { toast } from "sonner";
 import { useComprasContext } from "@/context/ComprasContext";
 import { formatCurrency } from "../utils/itemHandlers";
 import { PendingTubeSpinner } from "@/components/PendingTubeSpinner";
+import { ComprasPDFDownload } from "./ComprasPDFDownload";
 
 export const ComprasDetalles = ({
   ordenCompra,
@@ -70,38 +69,38 @@ export const ComprasDetalles = ({
 
   // Use usePDF hook for better control over PDF generation
   // Memoize the document to avoid re-rendering on every render
-  const pdfDocument = useMemo(
-    () => <OrdenCompraPDF ordenCompra={ordenCompra} />,
-    [ordenCompra],
-  );
+  // const pdfDocument = useMemo(
+  //   () => <OrdenCompraPDF ordenCompra={ordenCompra} />,
+  //   [ordenCompra],
+  // );
 
-  const [instance] = usePDF({ document: pdfDocument });
+  // const [instance] = usePDF({ document: pdfDocument });
 
-  // Debug logging
-  useEffect(() => {
-    if (instance.error) {
-      console.error("PDF Generation Error:", instance.error);
-    }
-    if (instance.url) {
-      console.log("PDF Generated Successfully:", instance.url);
-    }
-  }, [instance.error, instance.url]);
+  // // Debug logging
+  // useEffect(() => {
+  //   if (instance.error) {
+  //     console.error("PDF Generation Error:", instance.error);
+  //   }
+  //   if (instance.url) {
+  //     console.log("PDF Generated Successfully:", instance.url);
+  //   }
+  // }, [instance.error, instance.url]);
 
-  const handleDownloadPDF = () => {
-    if (instance.url) {
-      const link = document.createElement("a");
-      link.href = instance.url;
-      link.download = `orden-compra-${ordenCompra.id}.pdf`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    } else if (instance.error) {
-      console.error("Cannot download PDF:", instance.error);
-      alert("Error al generar el PDF. Por favor, intenta nuevamente.");
-    } else {
-      console.warn("PDF URL not available yet. Loading:", instance.loading);
-    }
-  };
+  // const handleDownloadPDF = () => {
+  //   if (instance.url) {
+  //     const link = document.createElement("a");
+  //     link.href = instance.url;
+  //     link.download = `orden-compra-${ordenCompra.id}.pdf`;
+  //     document.body.appendChild(link);
+  //     link.click();
+  //     document.body.removeChild(link);
+  //   } else if (instance.error) {
+  //     console.error("Cannot download PDF:", instance.error);
+  //     alert("Error al generar el PDF. Por favor, intenta nuevamente.");
+  //   } else {
+  //     console.warn("PDF URL not available yet. Loading:", instance.loading);
+  //   }
+  // };
 
   const handleMarcarEnviadaOC = async (
     mutateAsync: () => Promise<{ message: string }>,
@@ -400,19 +399,7 @@ export const ComprasDetalles = ({
 
             {/* PDF Download Button */}
             <div className="flex justify-end border-t pt-4">
-              <Button
-                variant="outline"
-                className="cursor-pointer px-5 py-6 font-semibold"
-                onClick={handleDownloadPDF}
-                disabled={instance.loading || !!instance.error}
-              >
-                <FileDown className="size-5" />
-                {instance.loading
-                  ? "Generando PDF..."
-                  : instance.error
-                    ? "Error al generar PDF"
-                    : "Descargar PDF"}
-              </Button>
+              <ComprasPDFDownload ordenCompra={ordenCompra} />
             </div>
           </CardContent>
         </Card>

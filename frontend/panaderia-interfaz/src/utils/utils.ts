@@ -4,7 +4,7 @@
 
 // You can add other utility functions here as needed.
 
-type TFileBase64 = {
+export type TFileBase64 = {
   content: string;
   filename: string;
 }
@@ -53,3 +53,4 @@ export const HadleFileConversion = async (file: File): Promise<TFileBase64 | nul
       return null;
     }
   };
+  
