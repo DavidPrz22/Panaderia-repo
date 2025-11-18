@@ -100,6 +100,7 @@ class DetallesResponseSerializer(serializers.ModelSerializer):
     materia_prima_nombre = serializers.CharField(source='materia_prima.nombre', read_only=True)
     producto_reventa_nombre = serializers.CharField(source='producto_reventa.nombre_producto', read_only=True)
     unidad_medida_abrev = serializers.CharField(source='unidad_medida_compra.abreviatura', read_only=True)
+    tipo_medida = serializers.CharField(source='unidad_medida_compra.tipo_medida', read_only=True)
 
     class Meta:
         model = DetalleOrdenesCompra
@@ -114,6 +115,7 @@ class DetallesResponseSerializer(serializers.ModelSerializer):
             'cantidad_pendiente',
             'unidad_medida_compra',
             'unidad_medida_abrev',
+            'tipo_medida',
             'costo_unitario_usd',
             'subtotal_linea_usd'
         ]
@@ -204,6 +206,7 @@ class DetallesResponseSerializer(serializers.ModelSerializer):
     producto_reventa_nombre = serializers.CharField(source='producto_reventa.nombre_producto', read_only=True)
     unidad_medida_abrev = serializers.CharField(source='unidad_medida_compra.abreviatura', read_only=True)
     cantidad_pendiente = serializers.DecimalField(max_digits=10, decimal_places=2, read_only=True)
+    tipo_medida = serializers.CharField(source='unidad_medida_compra.tipo_medida', read_only=True)
     
     class Meta:
         model = DetalleOrdenesCompra
@@ -218,6 +221,7 @@ class DetallesResponseSerializer(serializers.ModelSerializer):
             'cantidad_pendiente',
             'unidad_medida_compra',
             'unidad_medida_abrev',
+            'tipo_medida',
             'costo_unitario_usd',
             'subtotal_linea_usd'
         ]

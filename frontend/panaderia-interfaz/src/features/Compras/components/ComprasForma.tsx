@@ -121,6 +121,7 @@ export const ComprasForm = ({ orden, onClose }: ComprasFormProps) => {
       cantidad_recibida: Number(p.cantidad_recibida),
       unidad_medida_compra: p.unidad_medida_compra,
       unidad_medida_abrev: p.unidad_medida_abrev,
+      tipo_medida: p.tipo_medida,
       costo_unitario_usd: Number(p.costo_unitario_usd),
       subtotal_linea_usd: Number(p.subtotal_linea_usd),
       cantidad_pendiente: p.cantidad_pendiente || 0,
@@ -193,7 +194,7 @@ export const ComprasForm = ({ orden, onClose }: ComprasFormProps) => {
       );
     }
   };
-  
+  console.log(orden)
   return (
     <div className="mx-8 py-5 relative">
       {(isCreatingOCMutation || isUpdatingOCMutation) && (
