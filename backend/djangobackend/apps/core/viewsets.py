@@ -1,6 +1,6 @@
 from rest_framework import viewsets
-from .models import UnidadesDeMedida, CategoriasMateriaPrima, CategoriasProductosElaborados, CategoriasProductosReventa, MetodosDePago, EstadosOrdenVenta, EstadosOrdenCompra
-from .serializers import UnidadMedidaSerializer, CategoriaMateriaPrimaSerializer, CategoriaProductoSerializer, CategoriaProductosReventaSerializer, MetodosDePagoSerializer, EstadosOrdenVentaSerializer, EstadosOrdenCompraSerializer
+from .models import UnidadesDeMedida, CategoriasMateriaPrima, CategoriasProductosElaborados, CategoriasProductosReventa, MetodosDePago, EstadosOrdenVenta, EstadosOrdenCompra, ConversionesUnidades
+from .serializers import UnidadMedidaSerializer, CategoriaMateriaPrimaSerializer, CategoriaProductoSerializer, CategoriaProductosReventaSerializer, MetodosDePagoSerializer, EstadosOrdenVentaSerializer, EstadosOrdenCompraSerializer, ConversionUnidadSerializer
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.decorators import action
@@ -9,25 +9,35 @@ class UnidadMedidaViewSet(viewsets.ModelViewSet):
     queryset = UnidadesDeMedida.objects.all()
     serializer_class = UnidadMedidaSerializer
 
+
+class ConversionUnidadViewSet(viewsets.ModelViewSet):
+    queryset = ConversionesUnidades.objects.all()
+    serializer_class = ConversionUnidadSerializer
+
 class CategoriaMateriaPrimaViewSet(viewsets.ModelViewSet):
     queryset = CategoriasMateriaPrima.objects.all()
     serializer_class = CategoriaMateriaPrimaSerializer
+
 
 class CategoriaProductoIntermedioViewSet(viewsets.ModelViewSet):
     queryset = CategoriasProductosElaborados.objects.filter(es_intermediario=True)
     serializer_class = CategoriaProductoSerializer
 
+
 class CategoriaProductoFinalViewSet(viewsets.ModelViewSet):
     queryset = CategoriasProductosElaborados.objects.filter(es_intermediario=False)
     serializer_class = CategoriaProductoSerializer
+
 
 class CategoriaProductosReventaViewSet(viewsets.ModelViewSet):
     queryset = CategoriasProductosReventa.objects.all()
     serializer_class = CategoriaProductosReventaSerializer
 
+
 class MetodosDePagoViewSet(viewsets.ModelViewSet):
     queryset = MetodosDePago.objects.all()
     serializer_class = MetodosDePagoSerializer
+
 
 class EstadosOrdenVentaViewSet(viewsets.ModelViewSet):
     queryset = EstadosOrdenVenta.objects.all()
@@ -38,6 +48,7 @@ class EstadosOrdenVentaViewSet(viewsets.ModelViewSet):
         estados = EstadosOrdenVenta.objects.filter(id__in=[1, 4])
         serializer = EstadosOrdenVentaSerializer(estados, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
 
 class EstadosOrdenCompraViewSet(viewsets.ModelViewSet):
     queryset = EstadosOrdenCompra.objects.all()

@@ -481,14 +481,21 @@ export const ComprasForm = ({ orden, onClose }: ComprasFormProps) => {
                               )
                             }
                           >
-                            {unidadesMedida?.map((unidad) => (
-                              <SelectItem
-                                key={unidad.id}
-                                value={unidad.id.toString()}
-                              >
-                                {unidad.abreviatura}
-                              </SelectItem>
-                            ))}
+                            {unidadesMedida
+                              ?.filter((unidad) => {
+                                // Filter units to show only compatible ones based on product's base unit tipo_medida
+                                const productTipoMedida = item.tipo_medida;
+                                if (!productTipoMedida) return true; // Show all if no tipo_medida
+                                return unidad.tipo_medida === productTipoMedida;
+                              })
+                              .map((unidad) => (
+                                <SelectItem
+                                  key={unidad.id}
+                                  value={unidad.id.toString()}
+                                >
+                                  {unidad.abreviatura}
+                                </SelectItem>
+                              ))}
                           </ComprasFormSelect>
                         </TableCell>
                         <TableCell className="text-sm">

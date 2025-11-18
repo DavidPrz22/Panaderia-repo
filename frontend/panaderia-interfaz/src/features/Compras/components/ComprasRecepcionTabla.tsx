@@ -312,6 +312,7 @@ export function ComprasRecepcion({
   };
 
   const getProductDisplayName = (line: DetalleOC) => {
+    // Display includes purchase unit - backend automatically converts to base inventory unit during reception
     if (line.materia_prima_nombre) {
       return `${line.materia_prima_nombre} (${line.unidad_medida_abrev})`;
     }

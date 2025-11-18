@@ -73,6 +73,7 @@ export type UnidadesDeMedida = {
   id: number;
   nombre_completo: string;
   abreviatura: string;
+  tipo_medida?: string;
 };
 
 export type CategoriaProductosReventa = {

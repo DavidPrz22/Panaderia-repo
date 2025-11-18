@@ -23,6 +23,7 @@ export const updateItemFromProducto = (item: DetalleOC, producto: Producto) => {
   item.costo_unitario_usd = producto.precio_compra_usd;
   item.unidad_medida_compra = producto.unidad_medida_compra.id;
   item.unidad_medida_abrev = producto.unidad_medida_compra.abreviatura;
+  item.tipo_medida = producto.unidad_medida_compra.tipo_medida; // Store base unit tipo_medida for filtering
 };
 
 export const findProductoIndex = (
@@ -43,6 +44,7 @@ export const createNewDetalleOC = (id: number): DetalleOC => ({
   cantidad_pendiente: 0,
   unidad_medida_compra: 0,
   unidad_medida_abrev: undefined,
+  tipo_medida: undefined,
   costo_unitario_usd: 0,
   subtotal_linea_usd: 0
 });

@@ -11,6 +11,8 @@ from rest_framework import status, serializers
 from apps.inventario.models import LotesMateriasPrimas, LotesProductosReventa, MateriasPrimas, ProductosReventa
 from apps.core.models import MetodosDePago
 from django.db.models import Sum
+from django.core.exceptions import ValidationError
+from decimal import Decimal, ROUND_HALF_UP
 
 from dotenv import load_dotenv
 import os
@@ -280,25 +282,63 @@ class ComprasViewSet(viewsets.ModelViewSet):
                 for lote_data in detalle_data['lotes']:
                     if oc_detalle.materia_prima:
                         mp_map[oc_detalle.materia_prima.id] = oc_detalle.materia_prima
+                        
+                        # Convert purchase unit to base inventory unit if different
+                        base_unit_id = oc_detalle.materia_prima.unidad_medida_base_id
+                        purchase_unit_id = oc_detalle.unidad_medida_compra_id
+                        cantidad_lote = lote_data['cantidad']
+                        
+                        if base_unit_id != purchase_unit_id:
+                            from apps.core.models import UnidadesDeMedida
+                            try:
+                                cantidad_lote = UnidadesDeMedida.convertir_cantidad(
+                                    cantidad_lote, purchase_unit_id, base_unit_id
+                                )
+                                cantidad_lote = cantidad_lote.quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
+                            except ValidationError as e:
+                                return Response(
+                                    {'error': str(e)},
+                                    status=status.HTTP_400_BAD_REQUEST
+                                )
+                        
                         lotes_mp_bulk.append(LotesMateriasPrimas(
                             materia_prima=oc_detalle.materia_prima,
                             proveedor=orden_compra.proveedor,
                             fecha_recepcion=fecha_recepcion,
                             fecha_caducidad=lote_data['fecha_caducidad'],
-                            cantidad_recibida=lote_data['cantidad'],  # Individual lot quantity
-                            stock_actual_lote=lote_data['cantidad'],  # Individual lot quantity
+                            cantidad_recibida=cantidad_lote,  # Converted to base unit
+                            stock_actual_lote=cantidad_lote,  # Converted to base unit
                             costo_unitario_usd=oc_detalle.costo_unitario_usd,
                             detalle_oc=oc_detalle
                         ))
                     elif oc_detalle.producto_reventa:
                         pr_map[oc_detalle.producto_reventa.id] = oc_detalle.producto_reventa
+                        
+                        # Convert purchase unit to base inventory unit if different
+                        base_unit_id = oc_detalle.producto_reventa.unidad_base_inventario_id
+                        purchase_unit_id = oc_detalle.unidad_medida_compra_id
+                        cantidad_lote = lote_data['cantidad']
+                        
+                        if base_unit_id != purchase_unit_id:
+                            from apps.core.models import UnidadesDeMedida
+                            try:
+                                cantidad_lote = UnidadesDeMedida.convertir_cantidad(
+                                    cantidad_lote, purchase_unit_id, base_unit_id
+                                )
+                                cantidad_lote = cantidad_lote.quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
+                            except ValidationError as e:
+                                return Response(
+                                    {'error': str(e)},
+                                    status=status.HTTP_400_BAD_REQUEST
+                                )
+                        
                         lotes_pr_bulk.append(LotesProductosReventa(
                             producto_reventa=oc_detalle.producto_reventa,
                             proveedor=orden_compra.proveedor,
                             fecha_recepcion=fecha_recepcion,
                             fecha_caducidad=lote_data['fecha_caducidad'],
-                            cantidad_recibida=lote_data['cantidad'],  # Individual lot quantity
-                            stock_actual_lote=lote_data['cantidad'],  # Individual lot quantity
+                            cantidad_recibida=cantidad_lote,  # Converted to base unit
+                            stock_actual_lote=cantidad_lote,  # Converted to base unit
                             coste_unitario_lote_usd=oc_detalle.costo_unitario_usd,
                             detalle_oc=oc_detalle
                         ))

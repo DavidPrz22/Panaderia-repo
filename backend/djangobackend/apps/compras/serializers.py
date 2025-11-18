@@ -42,6 +42,58 @@ class DetallesSerializer(serializers.ModelSerializer):
             'costo_unitario_usd',
             'subtotal_linea_usd',
         ]
+    
+    def validate(self, data):
+        """
+        Validate that purchase unit tipo_medida matches product's base unit tipo_medida.
+        This ensures unit conversions are valid.
+        """
+        from apps.core.models import UnidadesDeMedida
+        from apps.inventario.models import MateriasPrimas, ProductosReventa
+        
+        unidad_compra_id = data.get('unidad_medida_compra')
+        materia_prima = data.get('materia_prima')
+        producto_reventa = data.get('producto_reventa')
+        
+        if not unidad_compra_id:
+            return data
+        
+        if isinstance(unidad_compra_id, UnidadesDeMedida):
+            unidad_compra = unidad_compra_id
+        else:
+            unidad_compra = UnidadesDeMedida.objects.get(id=unidad_compra_id)
+        
+        # Check materia prima
+        if materia_prima:
+            if isinstance(materia_prima, MateriasPrimas):
+                base_unit = materia_prima.unidad_medida_base
+            else:
+                mp = MateriasPrimas.objects.get(id=materia_prima)
+                base_unit = mp.unidad_medida_base
+            
+            if unidad_compra.tipo_medida != base_unit.tipo_medida:
+                raise serializers.ValidationError(
+                    f"La unidad de compra '{unidad_compra.nombre_completo}' (tipo: {unidad_compra.tipo_medida}) "
+                    f"no es compatible con la unidad base '{base_unit.nombre_completo}' (tipo: {base_unit.tipo_medida}) "
+                    f"de la materia prima."
+                )
+        
+        # Check producto reventa
+        if producto_reventa:
+            if isinstance(producto_reventa, ProductosReventa):
+                base_unit = producto_reventa.unidad_base_inventario
+            else:
+                pr = ProductosReventa.objects.get(id=producto_reventa)
+                base_unit = pr.unidad_base_inventario
+            
+            if base_unit and unidad_compra.tipo_medida != base_unit.tipo_medida:
+                raise serializers.ValidationError(
+                    f"La unidad de compra '{unidad_compra.nombre_completo}' (tipo: {unidad_compra.tipo_medida}) "
+                    f"no es compatible con la unidad base '{base_unit.nombre_completo}' (tipo: {base_unit.tipo_medida}) "
+                    f"del producto de reventa."
+                )
+        
+        return data
 
 
 class DetallesResponseSerializer(serializers.ModelSerializer):

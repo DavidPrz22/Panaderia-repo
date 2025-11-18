@@ -80,7 +80,7 @@ class ProductosComprasSearchView(APIView):
         # Get ProductosReventa using .values()
         productos_reventa = ProductosReventa.objects.filter(
             nombre_producto__icontains=param
-        ).values('id', 'nombre_producto', 'unidad_base_inventario__id', 'unidad_base_inventario__abreviatura', 'SKU', 'precio_venta_usd')
+        ).select_related('unidad_base_inventario')
 
         # Convert to list and add 'tipo' field
         materias_primas_list = [
@@ -89,7 +89,8 @@ class ProductosComprasSearchView(APIView):
                 'nombre': p.nombre,
                 'unidad_medida_compra': {
                     'id': p.unidad_medida_base.id,
-                    'abreviatura': p.unidad_medida_base.abreviatura
+                    'abreviatura': p.unidad_medida_base.abreviatura,
+                    'tipo_medida': p.unidad_medida_base.tipo_medida
                 } if p.unidad_medida_base else None,
                 'SKU': p.SKU,
                 'precio_compra_usd': p.precio_compra_usd,
@@ -100,14 +101,15 @@ class ProductosComprasSearchView(APIView):
 
         reventa_list = [
             {
-                'id': p['id'],
-                'nombre': p['nombre_producto'],
+                'id': p.id,
+                'nombre': p.nombre_producto,
                 'unidad_medida_compra': {
-                    'id': p['unidad_base_inventario__id'],
-                    'abreviatura': p['unidad_base_inventario__abreviatura']
-                } if p['unidad_base_inventario__id'] else None,
-                'SKU': p['SKU'],
-                'precio_compra_usd': p['precio_venta_usd'],
+                    'id': p.unidad_base_inventario.id,
+                    'abreviatura': p.unidad_base_inventario.abreviatura,
+                    'tipo_medida': p.unidad_base_inventario.tipo_medida
+                } if p.unidad_base_inventario else None,
+                'SKU': p.SKU,
+                'precio_compra_usd': p.precio_venta_usd,
                 'tipo': 'producto-reventa'
             }
             for p in productos_reventa
