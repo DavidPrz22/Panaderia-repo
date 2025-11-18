@@ -211,3 +211,10 @@ export const enviarEmailOC = async (id: number, params: TEmailSchema): Promise<{
     throw error;
   }
 };
+
+export const deleteOrdenCompra = async (id: number): Promise<{ message: string }> => {
+  const response = await apiClient.delete(
+    `/api/compras/ordenes-compra/${id}/`,
+  );
+  return response.data;
+};

@@ -9,7 +9,11 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Pencil } from "lucide-react";
+import { Pencil, Trash2 } from "lucide-react";
+import { useState } from "react";
+import { DeleteOrdenCompraDialog } from "./DeleteOrdenCompraDialog";
+import { useDeleteOrdenCompraMutation } from "../hooks/mutations/mutations";
+import { toast } from "sonner";
 
 interface ComprasTableProps {
   ordenesCompra: OrdenCompraTable[];
@@ -30,6 +34,34 @@ export const ComprasTable = ({
   const { isFetching: isFetchingOrdenDetalles } = useGetOrdenesCompraDetalles(
     compraSeleccionadaId!,
   );
+
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [ordenToDelete, setOrdenToDelete] = useState<number | null>(null);
+
+  const deleteOrdenCompraMutation = useDeleteOrdenCompraMutation();
+
+  const handleDeleteClick = (ordenId: number) => {
+    setOrdenToDelete(ordenId);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (ordenToDelete === null) return;
+
+    deleteOrdenCompraMutation.mutate(ordenToDelete, {
+      onSuccess: () => {
+        toast.success("Orden de compra eliminada exitosamente");
+        setDeleteDialogOpen(false);
+        setOrdenToDelete(null);
+        if (compraSeleccionadaId === ordenToDelete) {
+          setCompraSeleccionadaId(null);
+        }
+      },
+      onError: (error) => {
+        toast.error(`Error al eliminar la orden de compra: ${error.message}`);
+      },
+    });
+  };
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat("es-MX", {
@@ -117,6 +149,15 @@ export const ComprasTable = ({
                     >
                       <Pencil className="h-4 w-4" />
                     </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handleDeleteClick(ordenCompra.id)}
+                      className="hover:bg-red-100 text-red-600 hover:text-red-700"
+                      title="Eliminar"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
                   </div>
                 </TableCell>
               </TableRow>
@@ -133,6 +174,13 @@ export const ComprasTable = ({
           )}
         </TableBody>
       </Table>
+      <DeleteOrdenCompraDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={handleDeleteConfirm}
+        ordenCompraId={ordenToDelete ?? 0}
+        isLoading={deleteOrdenCompraMutation.isPending}
+      />
     </div>
   );
 };

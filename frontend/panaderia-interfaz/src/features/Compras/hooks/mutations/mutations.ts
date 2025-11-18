@@ -7,6 +7,7 @@ import {
   registrarPago,
   updateOrdenCompra,
   enviarEmailOC,
+  deleteOrdenCompra,
 } from "../../api/api";
 import type { TEmailSchema, TOrdenCompraSchema, TPagoSchema, TRecepcionFormSchema } from "../../schemas/schemas";
 import { ordenesCompraTableQueryOptions } from "../queries/queryOptions";
@@ -109,6 +110,18 @@ export const useEnviarEmailOCMutation = () => {
       });
       queryClient.invalidateQueries({
         queryKey: ordenesCompraDetallesQueryOptions(id).queryKey,
+      });
+    },
+  });
+};
+
+export const useDeleteOrdenCompraMutation = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: number) => deleteOrdenCompra(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ordenesCompraTableQueryOptions.queryKey,
       });
     },
   });

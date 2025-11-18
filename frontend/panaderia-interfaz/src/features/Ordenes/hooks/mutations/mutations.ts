@@ -6,6 +6,7 @@ import {
   updateOrdenStatus,
   registerPaymentReference,
   cancelOrden,
+  deleteOrden,
 } from "../../api/api";
 import type { TOrderSchema } from "../../schema/schema";
 import {
@@ -116,6 +117,18 @@ export const useRegisterPaymentReferenceMutation = () => {
     },
     onError: (error) => {
       console.error("Error registering payment reference:", error);
+    },
+  });
+};
+
+export const useDeleteOrdenMutation = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: number) => deleteOrden(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ordenesTableQueryOptions.queryKey,
+      });
     },
   });
 };
