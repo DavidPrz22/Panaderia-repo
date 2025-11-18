@@ -193,7 +193,7 @@ export const ComprasForm = ({ orden, onClose }: ComprasFormProps) => {
       );
     }
   };
-
+  
   return (
     <div className="mx-8 py-5 relative">
       {(isCreatingOCMutation || isUpdatingOCMutation) && (
@@ -474,12 +474,17 @@ export const ComprasForm = ({ orden, onClose }: ComprasFormProps) => {
                                 `detalles.${item.id}.unidad_medida_compra`,
                               )?.toString() || ""
                             }
-                            onChange={(v: string) =>
+                            onChange={(v: string) =>{
                               setValue(
                                 `detalles.${item.id}.unidad_medida_compra`,
                                 Number(v),
-                              )
-                            }
+                              );
+                              const rowToUpdate = items.find((i) => i.id === item.id)
+                              if (rowToUpdate) {
+                                rowToUpdate.unidad_medida_compra = Number(v);
+                                setItems([...items]);
+                              }
+                            }}
                           >
                             {unidadesMedida
                               ?.filter((unidad) => {
