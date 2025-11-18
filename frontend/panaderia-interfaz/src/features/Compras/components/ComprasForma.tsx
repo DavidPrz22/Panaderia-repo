@@ -504,7 +504,45 @@ export const ComprasForm = ({ orden, onClose }: ComprasFormProps) => {
                           </ComprasFormSelect>
                         </TableCell>
                         <TableCell className="text-sm">
-                          {formatCurrency(item.costo_unitario_usd)}
+                          <Input
+                            type="number"
+                            min="0"
+                            step="0.001"
+                            className="focus-visible:ring-blue-200"
+                            value={item.costo_unitario_usd || 0}
+                            onChange={(e) => {
+                              const productoId = item.id;
+                              const value = Number(e.target.value);
+
+                              if (value < 0) {
+                                e.target.value = "0";
+                                toast.error(
+                                  "El Costo No Puede Ser Menor a 0",
+                                );
+                                return;
+                              }
+
+                              const productoIndex = findProductoIndex(
+                                watch,
+                                productoId,
+                              );
+                              if (productoIndex !== -1) {
+                                item.costo_unitario_usd = value;
+                                setItems([...items]);
+                                const subtotal = updateItemCalculations(item);
+
+                                updateFormDetalles(
+                                  items,
+                                  productoIndex,
+                                  subtotal,
+                                  {
+                                    costo_unitario_usd: value,
+                                  },
+                                );
+                                calculateTotalFromItems(items);
+                              }
+                            }}
+                          />
                         </TableCell>
                         <TableCell className="font-medium">
                           {formatCurrency(item.subtotal_linea_usd)}
