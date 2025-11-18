@@ -19,7 +19,7 @@ interface ComprasTableProps {
   ordenesCompra: OrdenCompraTable[];
   onEditOrder: (order: OrdenCompraTable) => void;
 }
-// import { useGetOrdenesDetalles } from "../hooks/queries/queries";
+
 import { PendingTubeSpinner } from "@/components/PendingTubeSpinner";
 import { useComprasContext } from "@/context/ComprasContext";
 import { useGetOrdenesCompraDetalles } from "../hooks/queries/queries";
@@ -38,7 +38,7 @@ export const ComprasTable = ({
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [ordenToDelete, setOrdenToDelete] = useState<number | null>(null);
 
-  const deleteOrdenCompraMutation = useDeleteOrdenCompraMutation();
+  const {mutateAsync: deleteOrdenCompraMutation, isPending: isDeletingOrdenCompra} = useDeleteOrdenCompraMutation();
 
   const handleDeleteClick = (ordenId: number) => {
     setOrdenToDelete(ordenId);
@@ -48,19 +48,17 @@ export const ComprasTable = ({
   const handleDeleteConfirm = async () => {
     if (ordenToDelete === null) return;
 
-    deleteOrdenCompraMutation.mutate(ordenToDelete, {
-      onSuccess: () => {
-        toast.success("Orden de compra eliminada exitosamente");
-        setDeleteDialogOpen(false);
-        setOrdenToDelete(null);
-        if (compraSeleccionadaId === ordenToDelete) {
-          setCompraSeleccionadaId(null);
-        }
-      },
-      onError: (error) => {
-        toast.error(`Error al eliminar la orden de compra: ${error.message}`);
-      },
-    });
+    try {
+      await deleteOrdenCompraMutation(ordenToDelete);
+      toast.success("Orden de compra eliminada exitosamente");
+      setDeleteDialogOpen(false);
+      setOrdenToDelete(null);
+      if (compraSeleccionadaId === ordenToDelete) {
+        setCompraSeleccionadaId(null);
+      }
+    } catch (error) {
+      toast.error(`Error al eliminar la orden de compra: ${error instanceof Error ? error.message : "Unknown error"}`);
+    }
   };
 
   const formatCurrency = (amount: number) => {
@@ -179,7 +177,7 @@ export const ComprasTable = ({
         onOpenChange={setDeleteDialogOpen}
         onConfirm={handleDeleteConfirm}
         ordenCompraId={ordenToDelete ?? 0}
-        isLoading={deleteOrdenCompraMutation.isPending}
+        isLoading={isDeletingOrdenCompra}
       />
     </div>
   );

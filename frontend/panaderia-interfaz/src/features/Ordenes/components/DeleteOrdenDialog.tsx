@@ -24,8 +24,21 @@ export const DeleteOrdenDialog = ({
   ordenId,
   isLoading,
 }: DeleteOrdenDialogProps) => {
+  // Prevent closing the dialog while loading
+  const handleOpenChange = (newOpen: boolean) => {
+    if (!isLoading) {
+      onOpenChange(newOpen);
+    }
+  };
+
+  // Prevent the default dialog close behavior when clicking the action button
+  const handleConfirm = (e: React.MouseEvent) => {
+    e.preventDefault();
+    onConfirm();
+  };
+
   return (
-    <AlertDialog open={open} onOpenChange={onOpenChange}>
+    <AlertDialog open={open} onOpenChange={handleOpenChange}>
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>¿Eliminar orden {ordenId}?</AlertDialogTitle>
@@ -43,7 +56,7 @@ export const DeleteOrdenDialog = ({
             Cancelar
           </AlertDialogCancel>
           <AlertDialogAction
-            onClick={onConfirm}
+            onClick={handleConfirm}
             className="bg-destructive text-white hover:bg-destructive/90"
             disabled={isLoading}
           >

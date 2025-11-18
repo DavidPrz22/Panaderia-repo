@@ -33,7 +33,7 @@ export const OrdersTable = ({ orders, onEditOrder }: OrdersTableProps) => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [ordenToDelete, setOrdenToDelete] = useState<number | null>(null);
 
-  const deleteOrdenMutation = useDeleteOrdenMutation();
+  const { mutateAsync: deleteOrdenMutation, isPending: isDeletingOrden } = useDeleteOrdenMutation();
 
   const handleDeleteClick = (ordenId: number) => {
     setOrdenToDelete(ordenId);
@@ -43,19 +43,18 @@ export const OrdersTable = ({ orders, onEditOrder }: OrdersTableProps) => {
   const handleDeleteConfirm = async () => {
     if (ordenToDelete === null) return;
 
-    deleteOrdenMutation.mutate(ordenToDelete, {
-      onSuccess: () => {
-        toast.success("Orden eliminada exitosamente");
-        setDeleteDialogOpen(false);
-        setOrdenToDelete(null);
-        if (ordenSeleccionadaId === ordenToDelete) {
-          setOrdenSeleccionadaId(null);
-        }
-      },
-      onError: (error) => {
-        toast.error(`Error al eliminar la orden: ${error.message}`);
-      },
-    });
+    try {
+      await deleteOrdenMutation(ordenToDelete);
+
+      toast.success("Orden eliminada exitosamente");
+      setDeleteDialogOpen(false);
+      setOrdenToDelete(null);
+      if (ordenSeleccionadaId === ordenToDelete) {
+        setOrdenSeleccionadaId(null);
+      }
+    } catch (error) {
+      toast.error(`Error al eliminar la orden: ${error instanceof Error ? error.message : "Unknown error"}`);
+    }
   };
 
   const formatCurrency = (amount: number) => {
@@ -156,7 +155,7 @@ export const OrdersTable = ({ orders, onEditOrder }: OrdersTableProps) => {
         onOpenChange={setDeleteDialogOpen}
         onConfirm={handleDeleteConfirm}
         ordenId={ordenToDelete ?? 0}
-        isLoading={deleteOrdenMutation.isPending}
+        isLoading={isDeletingOrden}
       />
     </div>
   );

@@ -24,6 +24,10 @@ export const DeleteOrdenCompraDialog = ({
   ordenCompraId,
   isLoading,
 }: DeleteOrdenCompraDialogProps) => {
+  const handleConfirm = (e: React.MouseEvent) => {
+    e.preventDefault();
+    onConfirm();
+  };
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent>
@@ -43,7 +47,7 @@ export const DeleteOrdenCompraDialog = ({
             Cancelar
           </AlertDialogCancel>
           <AlertDialogAction
-            onClick={onConfirm}
+            onClick={handleConfirm}
             className="bg-destructive text-white hover:bg-destructive/90"
             disabled={isLoading}
           >
