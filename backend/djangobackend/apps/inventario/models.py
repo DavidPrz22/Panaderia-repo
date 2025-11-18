@@ -326,6 +326,7 @@ class MateriasPrimas(ComponentesStockManagement):
     stock_actual = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     SKU = models.CharField(max_length=50, null=True, blank=True, unique=True)
     nombre_empaque_estandar = models.CharField(max_length=100, null=True, blank=True)
+    precio_compra_usd = models.DecimalField(max_digits=10, decimal_places=2, default=0, null=True, blank=True)
     cantidad_empaque_estandar = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     unidad_medida_empaque_estandar = models.ForeignKey(UnidadesDeMedida, on_delete=models.CASCADE, related_name='materias_primas_empaque', null=True, blank=True)
     punto_reorden = models.DecimalField(max_digits=10, decimal_places=2, default=0, null=False, blank=False)
@@ -361,36 +362,6 @@ class MateriasPrimas(ComponentesStockManagement):
         LotesMateriasPrimas.objects.bulk_update(lotes_actualizar, ['activo',])
 
         return {"resumen": resumen}
-    @property
-    def precio_compra_usd(self):
-        """Calculate weighted average price from available lots"""
-        from django.db.models import Sum, F, DecimalField
-        from django.db.models.functions import Coalesce
-        
-        # Get available lots with their costs
-        lots = LotesMateriasPrimas.objects.filter(
-            materia_prima=self,
-            estado=LotesStatus.DISPONIBLE,
-            stock_actual_lote__gt=0
-        )
-        
-        # Calculate weighted average: sum(price * quantity) / sum(quantity)
-        result = lots.aggregate(
-            total_cost=Coalesce(
-                Sum(F('costo_unitario_usd') * F('stock_actual_lote'), output_field=DecimalField()),
-                Decimal('0')
-            ),
-            total_quantity=Coalesce(Sum('stock_actual_lote'), Decimal('0'))
-        )
-        
-        if result['total_quantity'] and result['total_quantity'] > 0:
-            return result['total_cost'] / result['total_quantity']
-        
-        # Return 0 if no available lots
-        return Decimal('0')
-    
-    def __str__(self):
-        return self.nombre
 
 
 class LotesMateriasPrimas(models.Model):
@@ -656,11 +627,11 @@ class ProductosReventa(ProductosStockManagement):
         help_text="Precio por unidad de venta"
     )
 
-    costo_ultima_compra_usd = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    precio_compra_usd = models.DecimalField(max_digits=10, decimal_places=2, default=0, null=True, blank=True)
     pecedero = models.BooleanField(default=False, null=False)
     fecha_creacion_registro = models.DateField(auto_now_add=True)
     fecha_modificacion_registro = models.DateField(auto_now=True)
-  
+
     def expirar_lotes_viejos(self, force=False):
         """Expire old lots for this specific product"""
         ahora = timezone.now().date()

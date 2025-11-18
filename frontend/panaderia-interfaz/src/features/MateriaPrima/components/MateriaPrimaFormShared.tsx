@@ -32,6 +32,7 @@ export default function MateriaPrimaFormShared({
     handleSubmit,
     setError,
     reset,
+    watch,
   } = useForm<TMateriaPrimaSchema>({
     resolver: zodResolver(materiaPrimaSchema),
     defaultValues:
@@ -48,6 +49,7 @@ export default function MateriaPrimaFormShared({
             unidad_medida_base: initialData.unidad_medida_base_detail.id,
             categoria: initialData.categoria_detail.id,
             descripcion: initialData.descripcion || "",
+            precio_compra_usd: initialData.precio_compra_usd || undefined,
           }
         : {},
   });
@@ -186,7 +188,7 @@ export default function MateriaPrimaFormShared({
       onClose();
     }
   };
-
+  console.log("precio_compra_usd", watch());
   const onSubmit = async (data: TMateriaPrimaSchema) => {
     //Clean up the data before sending
     const cleanedData: submitMateriaPrima = {
@@ -196,6 +198,7 @@ export default function MateriaPrimaFormShared({
         data.unidad_medida_empaque_estandar || null,
       nombre_empaque_estandar: data.nombre_empaque_estandar?.trim() || null,
       descripcion: data.descripcion?.trim() || null,
+      precio_compra_usd: data.precio_compra_usd || null,
     };
 
     handleMateriaPrimaMutation(cleanedData);
@@ -227,6 +230,7 @@ export default function MateriaPrimaFormShared({
               register={register}
               errors={errors}
             />
+
             <MateriaPrimaFormInputContainer
               inputType="text"
               title="SKU"
@@ -234,6 +238,16 @@ export default function MateriaPrimaFormShared({
               register={register}
               errors={errors}
             />
+
+            <MateriaPrimaFormInputContainer
+              inputType="number"
+              title="Precio de compra por unidad (USD)"
+              name="precio_compra_usd"
+              register={register}
+              errors={errors}
+              optional={true}
+            />
+
             <MateriaPrimaFormInputContainer
               inputType="text"
               title="Nombre del empaque"

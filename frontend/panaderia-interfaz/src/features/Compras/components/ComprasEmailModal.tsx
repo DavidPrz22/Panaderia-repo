@@ -94,6 +94,7 @@ export const ComprasEmailModal = ({ datos_proveedor }: ComprasEmailModalProps) =
       toast.error("Error al enviar el email");
     }
   };
+
   return (
     <Dialog>
         <DialogTrigger asChild>
