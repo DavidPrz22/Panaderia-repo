@@ -41,7 +41,7 @@ export const DetailsTable = ({
           Precio venta USD
         </DetailsField>
         <DetailsField extraClass="min-h-[25px] flex items-center">
-          Costo última compra USD
+          Precio de compra por unidad (USD)
         </DetailsField>
         <DetailsField extraClass="min-h-[25px] flex items-center">
           Perecedero
@@ -91,7 +91,7 @@ export const DetailsTable = ({
           ${productosReventaDetalles.precio_venta_usd}
         </DetailFieldValue>
         <DetailFieldValue extraClass="min-h-[25px] ">
-          ${productosReventaDetalles.costo_ultima_compra_usd}
+          ${productosReventaDetalles.precio_compra_usd}
         </DetailFieldValue>
         <DetailFieldValue extraClass="min-h-[25px] ">
           {productosReventaDetalles.pecedero ? "Sí" : "No"}

@@ -43,6 +43,7 @@ export default function ProductosReventaFormShared({
             factor_conversion: initialData.factor_conversion,
             precio_venta_usd: initialData.precio_venta_usd,
             pecedero: initialData.pecedero,
+            precio_compra_usd: initialData.precio_compra_usd,
           }
         : {
             nombre_producto: "",
@@ -199,6 +200,14 @@ export default function ProductosReventaFormShared({
               name="precio_venta_usd"
               register={register}
               errors={errors}
+            />
+            <PRFormInputContainer
+              inputType="number"
+              title="Precio de compra por unidad (USD)"
+              name="precio_compra_usd"
+              register={register}
+              errors={errors}
+              optional={true}
             />
             <PRFormInputContainer
               inputType="text"

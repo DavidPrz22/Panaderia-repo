@@ -33,7 +33,7 @@ export const getCategoriasProductosReventa = async (): Promise<
 
 export const getProveedores = async (): Promise<Proveedor[]> => {
   try {
-    const response = await apiClient.get("/api/proveedores/");
+    const response = await apiClient.get("/api/compras/proveedores/");
     return response.data;
   } catch (error) {
     console.error("Error fetching proveedores:", error);
