@@ -73,6 +73,7 @@ export type UnidadesDeMedida = {
   id: number;
   nombre_completo: string;
   abreviatura: string;
+  tipo_medida?: string;
 };
 
 export type CategoriaProductosReventa = {
@@ -113,7 +114,7 @@ export type ProductosReventaDetalles = {
   factor_conversion: number;
   stock_actual: number;
   precio_venta_usd: number;
-  costo_ultima_compra_usd: number;
+  precio_compra_usd: number;
   pecedero: boolean;
   fecha_creacion_registro: string;
   fecha_modificacion_registro: string;

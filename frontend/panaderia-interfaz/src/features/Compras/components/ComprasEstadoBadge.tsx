@@ -23,7 +23,7 @@ export const ComprasEstadoBadge = ({
   const colors: Record<EstadosOC, string> = {
     Borrador: "border-orange-500 text-orange-500",
     Enviada: "bg-blue-500 text-white",
-    "Recibida Parcial": "bg-green-500 text-white",
+    "Recibida Parcial": "bg-amber-600 text-white",
     "Recibida Completa": "bg-green-500 text-white",
     "Recibida Sin Pagar": "bg-amber-500 text-white",
     Cancelada: "bg-red-500 text-white",

@@ -23,6 +23,7 @@ export const updateItemFromProducto = (item: DetalleOC, producto: Producto) => {
   item.costo_unitario_usd = producto.precio_compra_usd;
   item.unidad_medida_compra = producto.unidad_medida_compra.id;
   item.unidad_medida_abrev = producto.unidad_medida_compra.abreviatura;
+  item.tipo_medida = producto.unidad_medida_compra.tipo_medida; // Store base unit tipo_medida for filtering
 };
 
 export const findProductoIndex = (
@@ -40,10 +41,18 @@ export const createNewDetalleOC = (id: number): DetalleOC => ({
   producto_reventa_nombre: undefined,
   cantidad_solicitada: 0,
   cantidad_recibida: 0,
+  cantidad_pendiente: 0,
   unidad_medida_compra: 0,
   unidad_medida_abrev: undefined,
+  tipo_medida: undefined,
   costo_unitario_usd: 0,
-  subtotal_linea_usd: 0,
-  porcentaje_impuesto: 0,
-  impuesto_linea_usd: 0,
+  subtotal_linea_usd: 0
 });
+
+
+export const formatCurrency = (amount: number) => {
+  return new Intl.NumberFormat("es-MX", {
+    style: "currency",
+    currency: "USD",
+  }).format(amount);
+};

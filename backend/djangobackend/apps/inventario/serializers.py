@@ -15,34 +15,6 @@ class CategoriaMateriaPrimaSerializer(serializers.ModelSerializer):
         model = CategoriasMateriaPrima
         fields = ['id', 'nombre_categoria', 'descripcion']
 
-class MateriaPrimaSerializer(serializers.ModelSerializer):
-    unidad_medida_base_detail = UnidadMedidaSerializer(source='unidad_medida_base', read_only=True)
-    unidad_medida_empaque_estandar_detail = UnidadMedidaSerializer(source='unidad_medida_empaque_estandar', read_only=True)
-    categoria_detail = CategoriaMateriaPrimaSerializer(source='categoria', read_only=True)
-
-    class Meta:
-        model = MateriasPrimas
-        fields = [ 
-                'id', 
-                'nombre', 
-                'unidad_medida_base', 
-                'unidad_medida_base_detail',
-                'unidad_medida_empaque_estandar', 
-                'unidad_medida_empaque_estandar_detail',
-                'stock_actual', 
-                'SKU',
-                'nombre_empaque_estandar',
-                'cantidad_empaque_estandar',
-                'unidad_medida_empaque_estandar',
-                'unidad_medida_empaque_estandar_detail',
-                'punto_reorden', 
-                'categoria',
-                'descripcion',
-                'fecha_ultima_actualizacion',
-                'fecha_creacion_registro',
-                'fecha_modificacion_registro'
-                ]
-
 
 class ComponentesSearchSerializer(serializers.Serializer):
     id = serializers.IntegerField()
@@ -155,6 +127,7 @@ class MateriaPrimaSerializer(serializers.ModelSerializer):
             'unidad_medida_base_detail',
             'stock_actual',
             'SKU',
+            'precio_compra_usd',
             'nombre_empaque_estandar',
             'cantidad_empaque_estandar',
             'unidad_medida_empaque_estandar',
@@ -271,7 +244,7 @@ class MateriaPrimaSerializer(serializers.ModelSerializer):
                 data[field] = instance.__getattribute__(field).strftime('%Y-%m-%d')
 
         return data
-    
+
 
 class ProductosIntermediosSerializer(serializers.ModelSerializer):
     categoria_nombre = serializers.CharField(source='categoria.nombre_categoria', read_only=True)
@@ -666,7 +639,7 @@ class ProductosReventaSerializer(serializers.ModelSerializer):
             'factor_conversion',
             'precio_venta_usd',
             'stock_actual',
-            'costo_ultima_compra_usd',
+            'precio_compra_usd',
             'pecedero',
             'fecha_creacion_registro',
             'fecha_modificacion_registro',
@@ -681,7 +654,6 @@ class ProductosReventaSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         # Set default values for fields not provided in the form
         validated_data['stock_actual'] = 0
-        validated_data['costo_ultima_compra_usd'] = 0
 
         return super().create(validated_data)
 
@@ -780,7 +752,7 @@ class ProductosReventaDetallesSerializer(serializers.ModelSerializer):
             'factor_conversion',
             'stock_actual',
             'precio_venta_usd',
-            'costo_ultima_compra_usd',
+            'precio_compra_usd',
             'pecedero',
             'fecha_creacion_registro',
             'fecha_modificacion_registro',
@@ -828,22 +800,3 @@ class ProductosReventaDetallesSerializer(serializers.ModelSerializer):
         # Since it's a method that takes parameter, return the factor as example
         return f"Multiply by {obj.factor_conversion}"
 
-
-# class ProductosReventaPedidoSearchSerializer(serializers.ModelSerializer):
-#     tipo = serializers.SerializerMethodField()
-#     class Meta:
-#         model = ProductosReventa
-#         fields = ['id', 'nombre_producto', 'unidad_venta', 'SKU', 'precio_venta_usd', 'tipo']
-
-#     def get_tipo(self, obj):
-#         return 'producto-reventa'
-
-
-# class ProductosElaboradosPedidoSearchSerializer(serializers.ModelSerializer):
-#     tipo = serializers.SerializerMethodField()
-#     class Meta:
-#         model = ProductosElaborados
-#         fields = ['id', 'nombre_producto', 'unidad_venta', 'SKU', 'precio_venta_usd', 'tipo']
-
-#     def get_tipo(self, obj):
-#         return 'producto-elaborado'

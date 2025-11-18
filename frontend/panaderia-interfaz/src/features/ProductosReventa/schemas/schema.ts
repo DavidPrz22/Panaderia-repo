@@ -20,6 +20,7 @@ export const productosReventaSchema = z.object({
       invalid_type_error: "La categoría no es válida",
     })
     .min(1, "La categoría es requerida"),
+  precio_compra_usd: z.coerce.number().min(0, "El precio de compra debe ser mayor a 0").optional().nullable(),
   marca: z
     .string()
     .max(100, "La marca no puede exceder 100 caracteres")

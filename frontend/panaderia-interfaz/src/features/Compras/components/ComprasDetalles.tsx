@@ -4,7 +4,7 @@ import type { DetalleOC, OrdenCompra } from "../types/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ComprasEstadoBadge } from "./ComprasEstadoBadge";
 import { Button } from "@/components/ui/button";
-import { FileDown, X } from "lucide-react";
+import { X } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -15,19 +15,23 @@ import {
 } from "@/components/ui/table";
 
 import { ComprasEmailModal } from "./ComprasEmailModal";
+import { ComprasRegistrarPagoDialog } from "./ComprasRegistrarPagoDialog";
 
 interface ComprasDetallesProps {
   ordenCompra: OrdenCompra;
   onClose: () => void;
 }
+
 import type { EstadosOC } from "../types/types";
 import { ComprasFormTotals } from "./ComprasFormTotals";
-import { usePDF } from "@react-pdf/renderer";
-import { OrdenCompraPDF } from "./OrdenCompraPDF";
-import { useMemo, useEffect } from "react";
-import { useMarcarEnviadaOCMutation } from "../hooks/mutations/mutations";
+import { useEffect } from "react";
+import { useMarcarEnviadaOCMutation} from "../hooks/mutations/mutations";
+import { useGetOrdenesCompraDetalles } from "../hooks/queries/queries";
 import { toast } from "sonner";
 import { useComprasContext } from "@/context/ComprasContext";
+import { formatCurrency } from "../utils/itemHandlers";
+import { PendingTubeSpinner } from "@/components/PendingTubeSpinner";
+import { ComprasPDFDownload } from "./ComprasPDFDownload";
 
 export const ComprasDetalles = ({
   ordenCompra,
@@ -36,19 +40,22 @@ export const ComprasDetalles = ({
   const [buttonsStates, setButtonsStates] = useState<EstadosOC>(
     ordenCompra.estado_oc.nombre_estado as EstadosOC,
   );
+  const [showRegistrarPagoDialog, setShowRegistrarPagoDialog] = useState(false);
   const {
     mutateAsync: marcarEnviadaOCMutation,
     isPending: isLoadingMarcarEnviadaOCPending,
   } = useMarcarEnviadaOCMutation();
-  const { setShowRecepcionForm, setShowOrdenCompraDetalles } =
+
+  const { setShowRecepcionForm, setShowOrdenCompraDetalles, compraSeleccionadaId } =
     useComprasContext();
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("es-MX", {
-      style: "currency",
-      currency: "USD",
-    }).format(amount);
-  };
+  const { isFetching: isFetchingOrdenCompraDetalles } = useGetOrdenesCompraDetalles(compraSeleccionadaId!);
+
+  useEffect(() => {
+    if (ordenCompra) {
+      setButtonsStates(ordenCompra.estado_oc.nombre_estado as EstadosOC);
+    }
+  }, [ordenCompra]);
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("es-MX", {
@@ -62,38 +69,38 @@ export const ComprasDetalles = ({
 
   // Use usePDF hook for better control over PDF generation
   // Memoize the document to avoid re-rendering on every render
-  const pdfDocument = useMemo(
-    () => <OrdenCompraPDF ordenCompra={ordenCompra} />,
-    [ordenCompra],
-  );
+  // const pdfDocument = useMemo(
+  //   () => <OrdenCompraPDF ordenCompra={ordenCompra} />,
+  //   [ordenCompra],
+  // );
 
-  const [instance] = usePDF({ document: pdfDocument });
+  // const [instance] = usePDF({ document: pdfDocument });
 
-  // Debug logging
-  useEffect(() => {
-    if (instance.error) {
-      console.error("PDF Generation Error:", instance.error);
-    }
-    if (instance.url) {
-      console.log("PDF Generated Successfully:", instance.url);
-    }
-  }, [instance.error, instance.url]);
+  // // Debug logging
+  // useEffect(() => {
+  //   if (instance.error) {
+  //     console.error("PDF Generation Error:", instance.error);
+  //   }
+  //   if (instance.url) {
+  //     console.log("PDF Generated Successfully:", instance.url);
+  //   }
+  // }, [instance.error, instance.url]);
 
-  const handleDownloadPDF = () => {
-    if (instance.url) {
-      const link = document.createElement("a");
-      link.href = instance.url;
-      link.download = `orden-compra-${ordenCompra.id}.pdf`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    } else if (instance.error) {
-      console.error("Cannot download PDF:", instance.error);
-      alert("Error al generar el PDF. Por favor, intenta nuevamente.");
-    } else {
-      console.warn("PDF URL not available yet. Loading:", instance.loading);
-    }
-  };
+  // const handleDownloadPDF = () => {
+  //   if (instance.url) {
+  //     const link = document.createElement("a");
+  //     link.href = instance.url;
+  //     link.download = `orden-compra-${ordenCompra.id}.pdf`;
+  //     document.body.appendChild(link);
+  //     link.click();
+  //     document.body.removeChild(link);
+  //   } else if (instance.error) {
+  //     console.error("Cannot download PDF:", instance.error);
+  //     alert("Error al generar el PDF. Por favor, intenta nuevamente.");
+  //   } else {
+  //     console.warn("PDF URL not available yet. Loading:", instance.loading);
+  //   }
+  // };
 
   const handleMarcarEnviadaOC = async (
     mutateAsync: () => Promise<{ message: string }>,
@@ -110,12 +117,16 @@ export const ComprasDetalles = ({
     }
   };
 
+
   const handleButtonStates = (estado: EstadosOC) => {
+
+    const isPaymentComplete = ordenCompra.monto_pendiente_pago_usd === 0;
+
     switch (estado) {
       case "Borrador":
         return (
           <>
-            <ComprasEmailModal />
+            <ComprasEmailModal datos_proveedor={ordenCompra.proveedor} />
             <Button
               className="cursor-pointer bg-amber-600 text-white hover:bg-amber-700"
               onClick={() =>
@@ -142,17 +153,48 @@ export const ComprasDetalles = ({
             >
               Recibir
             </Button>
-            <Button className="cursor-pointer bg-green-600 text-white font-semibold hover:bg-green-700">
+            <Button 
+              className="cursor-pointer bg-green-600 text-white font-semibold hover:bg-green-700"
+              onClick={() => setShowRegistrarPagoDialog(true)}
+            >
               Registrar Pago
             </Button>
           </>
         );
-      case "Recibida Sin Pagar":
+      case "Recibida Parcial":
         return (
           <>
-            <Button className="cursor-pointer bg-green-600 text-white hover:bg-green-700">
+            <Button
+              variant="outline"
+              className="cursor-pointer font-semibold"
+              onClick={() => {
+                setShowRecepcionForm(true);
+                setShowOrdenCompraDetalles(false);
+              }}
+            >
+              Recibir Restante
+            </Button>
+            {!isPaymentComplete ? (
+            <Button 
+              className="cursor-pointer bg-green-600 text-white hover:bg-green-700"
+              onClick={() => setShowRegistrarPagoDialog(true)}
+            >
               Registrar Pago
             </Button>
+            ) : null}
+          </>
+        );
+      case "Recibida Completa":
+        return (
+          <>
+            {!isPaymentComplete ? (
+            <Button 
+              className="cursor-pointer bg-green-600 text-white hover:bg-green-700"
+              onClick={() => setShowRegistrarPagoDialog(true)}
+              >
+                Registrar Pago
+              </Button>
+            ) : null}
           </>
         );
     }
@@ -177,7 +219,14 @@ export const ComprasDetalles = ({
 
   return (
     <>
-      <div className="flex items-center justify-center mx-8 py-5">
+      <div className="flex items-center justify-center mx-8 py-5 relative">
+        {isFetchingOrdenCompraDetalles && (
+          <PendingTubeSpinner
+            size={20}
+            extraClass="absolute top-0 left-0 w-full h-full flex justify-center items-center bg-white opacity-50 z-50"
+          />
+        )}
+
         <Card className="w-full max-w-6xl">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4 border-b sticky top-0 bg-card z-10">
             <div className="flex items-center gap-3">
@@ -350,19 +399,7 @@ export const ComprasDetalles = ({
 
             {/* PDF Download Button */}
             <div className="flex justify-end border-t pt-4">
-              <Button
-                variant="outline"
-                className="cursor-pointer px-5 py-6 font-semibold"
-                onClick={handleDownloadPDF}
-                disabled={instance.loading || !!instance.error}
-              >
-                <FileDown className="size-5" />
-                {instance.loading
-                  ? "Generando PDF..."
-                  : instance.error
-                    ? "Error al generar PDF"
-                    : "Descargar PDF"}
-              </Button>
+              <ComprasPDFDownload ordenCompra={ordenCompra} />
             </div>
           </CardContent>
         </Card>
@@ -375,6 +412,11 @@ export const ComprasDetalles = ({
         orderId={orden.id}
         isLoadingCancelOrdenMutation={isLoadingCancelOrdenMutation}
       /> */}
+
+      <ComprasRegistrarPagoDialog
+        open={showRegistrarPagoDialog}
+        onOpenChange={setShowRegistrarPagoDialog}
+      />
     </>
   );
 };

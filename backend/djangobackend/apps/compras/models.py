@@ -32,7 +32,8 @@ class OrdenesCompra(models.Model):
     tasa_cambio_aplicada = models.DecimalField(max_digits=10, decimal_places=3, default=0)
     direccion_envio = models.TextField(max_length=255, null=True, blank=True)
     fecha_envio_oc = models.DateField(null=True, blank=True)
-    email_enviado = models.EmailField(max_length=100, null=True, blank=True)
+    email_enviado = models.BooleanField(default=False)
+    fecha_email_enviado = models.DateTimeField(null=True, blank=True)
     terminos_pago = models.CharField(max_length=100, null=True, blank=True)
     notas = models.TextField(max_length=255, null=True, blank=True)
 
@@ -50,11 +51,17 @@ class DetalleOrdenesCompra(models.Model):
     unidad_medida_compra = models.ForeignKey(UnidadesDeMedida, on_delete=models.CASCADE, null=False, blank=False)
     costo_unitario_usd = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     subtotal_linea_usd = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    
+    @property
+    def cantidad_pendiente(self):
+        """Returns remaining quantity to be received"""
+        return self.cantidad_solicitada - self.cantidad_recibida
 
     def __str__(self):
         if self.materia_prima:
             return f"Detalle OC {self.id} - {self.materia_prima.nombre}"
         return f"Detalle OC {self.id} - {self.producto_reventa.nombre_producto}"
+
     
     class Meta:
         constraints = [
@@ -76,13 +83,13 @@ class Compras(models.Model):
         related_name='recepciones',
         help_text="Orden de compra asociada a esta recepción"
     )
-    
+
     proveedor = models.ForeignKey(
         Proveedores, 
         on_delete=models.CASCADE,
         help_text="Proveedor que realizó la entrega"
     )
-    
+
     usuario_recepcionador = models.ForeignKey(
         User, 
         on_delete=models.CASCADE,
@@ -94,7 +101,7 @@ class Compras(models.Model):
         default=False,
         help_text="Indica si esta recepción ha sido pagada completamente"
     )
-    
+
     monto_pendiente_pago_usd = models.DecimalField(
         max_digits=10, 
         decimal_places=2, 
@@ -108,21 +115,21 @@ class Compras(models.Model):
         blank=False,
         help_text="Fecha en que se recibió la mercancía"
     )
-    
+
     numero_factura_proveedor = models.CharField(
         max_length=100, 
         null=True, 
         blank=True,
         help_text="Número de factura del proveedor para esta entrega"
     )
-    
+
     numero_remision = models.CharField(
         max_length=100, 
         null=True, 
         blank=True,
         help_text="Número de guía de remisión o nota de entrega"
     )
-    
+
     # Montos de esta recepción específica
     monto_recepcion_usd = models.DecimalField(
         max_digits=10, 
@@ -130,14 +137,14 @@ class Compras(models.Model):
         default=0,
         help_text="Monto total de esta recepción en USD"
     )
-    
+
     monto_recepcion_ves = models.DecimalField(
         max_digits=10, 
         decimal_places=2, 
         default=0,
         help_text="Monto total de esta recepción en VES"
     )
-    
+
     tasa_cambio_aplicada = models.DecimalField(
         max_digits=10, 
         decimal_places=2, 
@@ -155,15 +162,15 @@ class Compras(models.Model):
     
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    
+
     class Meta:
         verbose_name = "Compra/Recepción"
         verbose_name_plural = "Compras/Recepciones"
         ordering = ['-fecha_recepcion', '-created_at']
-    
+
     def __str__(self):
         return f"Compra #{self.id} - OC #{self.orden_compra.id} - {self.proveedor.nombre_proveedor}"
-    
+
     def save(self, *args, **kwargs):
         # Inicializar monto_pendiente con el total si es nueva
         if not self.pk:
@@ -307,19 +314,19 @@ class PagosProveedores(models.Model):
     # Montos
     monto_pago_usd = models.DecimalField(
         max_digits=10, 
-        decimal_places=2,
+        decimal_places=3,
         help_text="Monto pagado en USD"
     )
     
     monto_pago_ves = models.DecimalField(
         max_digits=10, 
-        decimal_places=2,
+        decimal_places=3,
         help_text="Monto pagado en VES"
     )
     
     tasa_cambio_aplicada = models.DecimalField(
         max_digits=10, 
-        decimal_places=2,
+        decimal_places=3,
         help_text="Tasa de cambio USD/VES al momento del pago"
     )
     

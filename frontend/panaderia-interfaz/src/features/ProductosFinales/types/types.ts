@@ -85,6 +85,8 @@ export type CategoriaProductoFinal = {
 export type UnidadesDeMedida = {
   id: number;
   nombre_completo: string;
+  abreviatura?: string;
+  tipo_medida?: string;
 };
 
 export type recetasSearchItem = {

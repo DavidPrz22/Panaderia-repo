@@ -27,6 +27,7 @@ export type EstadoOC = {
 export type MetodoDePago = {
   id: number;
   nombre_metodo: string;
+  requiere_referencia: boolean;
 };
 
 export type Producto = {
@@ -34,7 +35,7 @@ export type Producto = {
   SKU: string;
   nombre: string;
   precio_compra_usd: number;
-  unidad_medida_compra: { id: number; abreviatura: string };
+  unidad_medida_compra: { id: number; abreviatura: string; tipo_medida: string };
   tipo: "materia-prima" | "producto-reventa";
 };
 
@@ -69,8 +70,10 @@ export type DetalleOC = {
   producto_reventa_nombre?: string;
   cantidad_solicitada: number;
   cantidad_recibida?: number;
+  cantidad_pendiente: number;
   unidad_medida_compra?: number;
   unidad_medida_abrev?: string;
+  tipo_medida?: string; // Base unit tipo_medida for filtering compatible purchase units
   costo_unitario_usd: number;
   subtotal_linea_usd: number;
 };
@@ -93,10 +96,27 @@ export type OrdenCompra = {
   email_enviado: boolean;
   fecha_email_enviado?: string;
   terminos_pago?: string;
+  recepciones: RecepcionOC[];
+  pagos_en_adelantado: {
+    monto_pago_usd: number;
+    monto_pago_ves: number;
+  } | null;
+  monto_pendiente_pago_usd?: number;
+};
+
+export type RecepcionOC = {
+  id: number;
+  orden_compra: OrdenCompra;
+  fecha_recepcion: string;
+  monto_pendiente_pago_usd: number;
+  numero_factura_proveedor?: string;
+  numero_remision?: string;
+  notas?: string;
+  pagado?: boolean;
 };
 
 export type LoteRecepcion = {
-  id: string;
+  id: number;
   cantidad: number;
   fecha_caducidad: string;
 };
@@ -105,6 +125,8 @@ export type ComponentesUIRecepcion = {
   linea_oc: DetalleOC;
   lotes: LoteRecepcion[];
   cantidad_total_recibida: number;
+  cantidad_en_inventario?: number;
+  cantidad_pendiente?: number;
 };
 
 export type DetalleRecepcion = {
@@ -114,5 +136,6 @@ export type DetalleRecepcion = {
 
 export type RecepcionForm = {
   orden_compra_id: number;
+  fecha_recepcion: string;
   detalles: DetalleRecepcion[];
 };

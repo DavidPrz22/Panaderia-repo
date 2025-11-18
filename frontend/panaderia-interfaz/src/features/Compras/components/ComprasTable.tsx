@@ -9,13 +9,17 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Pencil } from "lucide-react";
+import { Pencil, Trash2 } from "lucide-react";
+import { useState } from "react";
+import { DeleteOrdenCompraDialog } from "./DeleteOrdenCompraDialog";
+import { useDeleteOrdenCompraMutation } from "../hooks/mutations/mutations";
+import { toast } from "sonner";
 
 interface ComprasTableProps {
   ordenesCompra: OrdenCompraTable[];
   onEditOrder: (order: OrdenCompraTable) => void;
 }
-// import { useGetOrdenesDetalles } from "../hooks/queries/queries";
+
 import { PendingTubeSpinner } from "@/components/PendingTubeSpinner";
 import { useComprasContext } from "@/context/ComprasContext";
 import { useGetOrdenesCompraDetalles } from "../hooks/queries/queries";
@@ -24,11 +28,38 @@ export const ComprasTable = ({
   ordenesCompra,
   onEditOrder,
 }: ComprasTableProps) => {
+
   const { compraSeleccionadaId, setCompraSeleccionadaId } = useComprasContext();
 
   const { isFetching: isFetchingOrdenDetalles } = useGetOrdenesCompraDetalles(
     compraSeleccionadaId!,
   );
+
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [ordenToDelete, setOrdenToDelete] = useState<number | null>(null);
+
+  const {mutateAsync: deleteOrdenCompraMutation, isPending: isDeletingOrdenCompra} = useDeleteOrdenCompraMutation();
+
+  const handleDeleteClick = (ordenId: number) => {
+    setOrdenToDelete(ordenId);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (ordenToDelete === null) return;
+
+    try {
+      await deleteOrdenCompraMutation(ordenToDelete);
+      toast.success("Orden de compra eliminada exitosamente");
+      setDeleteDialogOpen(false);
+      setOrdenToDelete(null);
+      if (compraSeleccionadaId === ordenToDelete) {
+        setCompraSeleccionadaId(null);
+      }
+    } catch (error) {
+      toast.error(`Error al eliminar la orden de compra: ${error instanceof Error ? error.message : "Unknown error"}`);
+    }
+  };
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat("es-MX", {
@@ -44,9 +75,14 @@ export const ComprasTable = ({
       day: "2-digit",
     });
   };
+
   const handleOrdenSeleccionada = (id: number) => {
     setCompraSeleccionadaId(id);
   };
+
+  const sortedOrdenesCompra = ordenesCompra.sort((a, b) => {
+    return b.id - a.id;
+  });
 
   return (
     <div className="border rounded-lg bg-card shadow-sm relative">
@@ -70,8 +106,8 @@ export const ComprasTable = ({
           </TableRow>
         </TableHeader>
         <TableBody>
-          {ordenesCompra.length > 0 ? (
-            ordenesCompra.map((ordenCompra, index) => (
+          {sortedOrdenesCompra.length > 0 ? (
+            sortedOrdenesCompra.map((ordenCompra, index) => (
               <TableRow
                 key={ordenCompra.id}
                 className={`hover:bg-gray-100 cursor-pointer ${index % 2 !== 0 ? "bg-gray-50" : ""}`}
@@ -106,9 +142,19 @@ export const ComprasTable = ({
                       variant="ghost"
                       size="icon"
                       onClick={() => onEditOrder(ordenCompra)}
+                      className="hover:bg-gray-400 "
                       title="Editar"
                     >
                       <Pencil className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handleDeleteClick(ordenCompra.id)}
+                      className="hover:bg-red-100 text-red-600 hover:text-red-700"
+                      title="Eliminar"
+                    >
+                      <Trash2 className="h-4 w-4" />
                     </Button>
                   </div>
                 </TableCell>
@@ -126,6 +172,13 @@ export const ComprasTable = ({
           )}
         </TableBody>
       </Table>
+      <DeleteOrdenCompraDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={handleDeleteConfirm}
+        ordenCompraId={ordenToDelete ?? 0}
+        isLoading={isDeletingOrdenCompra}
+      />
     </div>
   );
 };

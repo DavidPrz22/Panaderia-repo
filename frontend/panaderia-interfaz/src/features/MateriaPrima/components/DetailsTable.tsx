@@ -7,11 +7,13 @@ export const DetailsTable = ({
 }: {
   materiaprimaDetalles: MateriaPrimaListServer;
 }) => {
+  console.log("materiaprimaDetalles", materiaprimaDetalles);
   return (
     <div className="flex items-center gap-20">
       <div className="grid grid-rows-12 grid-cols-1 gap-2">
         <DetailsField>Nombre</DetailsField>
         <DetailsField>SKU</DetailsField>
+        <DetailsField>Precio de compra por unidad (USD)</DetailsField>
         <DetailsField>Punto de reorden</DetailsField>
         <DetailsField>Unidad de medida</DetailsField>
         <DetailsField>Categoría</DetailsField>
@@ -28,6 +30,9 @@ export const DetailsTable = ({
           {materiaprimaDetalles?.nombre || "-"}
         </DetailFieldValue>
         <DetailFieldValue>{materiaprimaDetalles?.SKU || "-"}</DetailFieldValue>
+        <DetailFieldValue>
+          {materiaprimaDetalles?.precio_compra_usd || "-"}
+        </DetailFieldValue>
         <DetailFieldValue>
           {materiaprimaDetalles?.punto_reorden || "-"}
         </DetailFieldValue>

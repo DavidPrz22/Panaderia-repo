@@ -51,6 +51,7 @@ export type MateriaPrimaListServer = {
   SKU: string;
   nombre_empaque_estandar: string;
   cantidad_empaque_estandar: number;
+  precio_compra_usd: number | null;
   unidad_medida_empaque_estandar_detail: UnidadMedida;
   punto_reorden: number;
   fecha_ultima_actualizacion: string;
@@ -64,6 +65,7 @@ export type submitMateriaPrima = {
   unidad_medida_empaque_estandar: number | null;
   nombre_empaque_estandar: string | null;
   descripcion: string | null;
+  precio_compra_usd: number | null;
   nombre: string;
   SKU: string;
   punto_reorden: number;

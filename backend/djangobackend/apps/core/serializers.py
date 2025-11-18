@@ -1,10 +1,19 @@
 from rest_framework import serializers
-from .models import UnidadesDeMedida, CategoriasMateriaPrima, CategoriasProductosElaborados, CategoriasProductosReventa, MetodosDePago, EstadosOrdenVenta, EstadosOrdenCompra
+from .models import UnidadesDeMedida, CategoriasMateriaPrima, CategoriasProductosElaborados, CategoriasProductosReventa, MetodosDePago, EstadosOrdenVenta, EstadosOrdenCompra, ConversionesUnidades
 
 class UnidadMedidaSerializer(serializers.ModelSerializer):
     class Meta:
         model = UnidadesDeMedida
-        fields = ['id', 'nombre_completo', 'abreviatura']
+        fields = ['id', 'nombre_completo', 'abreviatura', 'tipo_medida']
+
+
+class ConversionUnidadSerializer(serializers.ModelSerializer):
+    unidad_origen_nombre = serializers.CharField(source='unidad_origen.nombre_completo', read_only=True)
+    unidad_destino_nombre = serializers.CharField(source='unidad_destino.nombre_completo', read_only=True)
+    
+    class Meta:
+        model = ConversionesUnidades
+        fields = ['id', 'unidad_origen', 'unidad_origen_nombre', 'unidad_destino', 'unidad_destino_nombre', 'factor_conversion']
 
 class CategoriaMateriaPrimaSerializer(serializers.ModelSerializer):
     class Meta:

@@ -9,7 +9,11 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Pencil } from "lucide-react";
+import { Pencil, Trash2 } from "lucide-react";
+import { useState } from "react";
+import { DeleteOrdenDialog } from "./DeleteOrdenDialog";
+import { useDeleteOrdenMutation } from "../hooks/mutations/mutations";
+import { toast } from "sonner";
 import { useOrdenesContext } from "@/context/OrdenesContext";
 
 interface OrdersTableProps {
@@ -25,6 +29,33 @@ export const OrdersTable = ({ orders, onEditOrder }: OrdersTableProps) => {
   const { isFetching: isFetchingOrdenDetalles } = useGetOrdenesDetalles(
     ordenSeleccionadaId!,
   );
+
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [ordenToDelete, setOrdenToDelete] = useState<number | null>(null);
+
+  const { mutateAsync: deleteOrdenMutation, isPending: isDeletingOrden } = useDeleteOrdenMutation();
+
+  const handleDeleteClick = (ordenId: number) => {
+    setOrdenToDelete(ordenId);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (ordenToDelete === null) return;
+
+    try {
+      await deleteOrdenMutation(ordenToDelete);
+
+      toast.success("Orden eliminada exitosamente");
+      setDeleteDialogOpen(false);
+      setOrdenToDelete(null);
+      if (ordenSeleccionadaId === ordenToDelete) {
+        setOrdenSeleccionadaId(null);
+      }
+    } catch (error) {
+      toast.error(`Error al eliminar la orden: ${error instanceof Error ? error.message : "Unknown error"}`);
+    }
+  };
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat("es-MX", {
@@ -45,6 +76,8 @@ export const OrdersTable = ({ orders, onEditOrder }: OrdersTableProps) => {
     setOrdenSeleccionadaId(id);
   };
 
+  orders.sort((a, b) => b.id - a.id);
+  
   return (
     <div className="border rounded-lg bg-card shadow-sm relative">
       {isFetchingOrdenDetalles && (
@@ -102,12 +135,28 @@ export const OrdersTable = ({ orders, onEditOrder }: OrdersTableProps) => {
                   >
                     <Pencil className="h-4 w-4" />
                   </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => handleDeleteClick(order.id)}
+                    className="hover:bg-red-100 text-red-600 hover:text-red-700"
+                    title="Eliminar"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
                 </div>
               </TableCell>
             </TableRow>
           ))}
         </TableBody>
       </Table>
+      <DeleteOrdenDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={handleDeleteConfirm}
+        ordenId={ordenToDelete ?? 0}
+        isLoading={isDeletingOrden}
+      />
     </div>
   );
 };

@@ -1,4 +1,6 @@
 from django.db import models
+from django.core.exceptions import ValidationError
+from decimal import Decimal
 
 # Create your models here.
 
@@ -10,6 +12,36 @@ class UnidadesDeMedida(models.Model):
 
     def __str__(self):
         return self.nombre_completo
+    
+    @classmethod
+    def convertir_cantidad(cls, cantidad, unidad_origen_id, unidad_destino_id):
+        """
+        Convert quantity from one unit to another.
+        Returns the converted quantity in the destination unit.
+        If units are the same, returns the original quantity.
+        """
+        if unidad_origen_id == unidad_destino_id:
+            return Decimal(str(cantidad))
+        
+        try:
+            conversion = ConversionesUnidades.objects.get(
+                unidad_origen_id=unidad_origen_id,
+                unidad_destino_id=unidad_destino_id
+            )
+            return Decimal(str(cantidad)) * conversion.factor_conversion
+        except ConversionesUnidades.DoesNotExist:
+            raise ValidationError(
+                f"No existe una conversión definida entre las unidades {unidad_origen_id} y {unidad_destino_id}"
+            )
+    
+    @classmethod
+    def obtener_unidades_compatibles(cls, unidad_id):
+        """
+        Get all units compatible for conversion with the given unit.
+        Returns units with the same tipo_medida.
+        """
+        unidad = cls.objects.get(id=unidad_id)
+        return cls.objects.filter(tipo_medida=unidad.tipo_medida)
 
 
 class CategoriasMateriaPrima(models.Model):
@@ -59,3 +91,50 @@ class EstadosOrdenCompra(models.Model): # Ej: "Borrador", "Emitida", "Recibida P
 
     def __str__(self):
         return self.nombre_estado
+
+
+class ConversionesUnidades(models.Model):
+    """
+    Store conversion factors between units of measure.
+    Example: 1 kg = 1000 g (factor_conversion = 1000)
+    """
+    unidad_origen = models.ForeignKey(
+        UnidadesDeMedida, 
+        on_delete=models.CASCADE, 
+        related_name='conversiones_origen',
+        help_text="Unidad desde la cual se convierte"
+    )
+    unidad_destino = models.ForeignKey(
+        UnidadesDeMedida, 
+        on_delete=models.CASCADE, 
+        related_name='conversiones_destino',
+        help_text="Unidad a la cual se convierte"
+    )
+    factor_conversion = models.DecimalField(
+        max_digits=15, 
+        decimal_places=6,
+        help_text="Factor de conversión: 1 unidad_origen = X unidad_destino"
+    )
+    
+    class Meta:
+        unique_together = ('unidad_origen', 'unidad_destino')
+        verbose_name = "Conversión de Unidad"
+        verbose_name_plural = "Conversiones de Unidades"
+    
+    def clean(self):
+        """Validate that both units have the same tipo_medida"""
+        if self.unidad_origen.tipo_medida != self.unidad_destino.tipo_medida:
+            raise ValidationError(
+                f"No se puede crear una conversión entre unidades de diferentes tipos: "
+                f"{self.unidad_origen.tipo_medida} y {self.unidad_destino.tipo_medida}"
+            )
+        
+        if self.factor_conversion <= 0:
+            raise ValidationError("El factor de conversión debe ser mayor a cero")
+    
+    def save(self, *args, **kwargs):
+        self.clean()
+        super().save(*args, **kwargs)
+    
+    def __str__(self):
+        return f"1 {self.unidad_origen.abreviatura} = {self.factor_conversion} {self.unidad_destino.abreviatura}"

@@ -9,7 +9,7 @@ import type {
   Producto,
 } from "../types/types";
 import type { UnidadesDeMedida } from "@/features/ProductosIntermedios/types/types";
-import type { TOrdenCompraSchema } from "../schemas/schemas";
+import type { TEmailSchema, TOrdenCompraSchema, TPagoSchema, TRecepcionFormSchema } from "../schemas/schemas";
 
 export type OrdenCompraDetallesResponse = {
   orden: OrdenCompra;
@@ -148,6 +148,16 @@ export const createOrdenCompra = async (
   }
 };
 
+export const updateOrdenCompra = async (id: number, data: TOrdenCompraSchema): Promise<OrdenCompraDetallesResponse> => {
+  try {
+    const response = await apiClient.put(`/api/compras/ordenes-compra/${id}/`, data);
+    return response.data;
+  } catch (error) {
+    console.error("Error updating orden compra:", error);
+    throw error;
+  }
+};
+
 export const marcarEnviadaOC = async (
   id: number,
 ): Promise<{ message: string }> => {
@@ -160,4 +170,51 @@ export const marcarEnviadaOC = async (
     console.error("Error marking order as sent:", error);
     throw error;
   }
+};
+
+
+export const crearRecepcionOC = async (params: TRecepcionFormSchema): Promise<{ message: string, orden: OrdenCompra }> => {
+  try {
+    const response = await apiClient.post(
+      "/api/compras/compras/",
+      params,
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Error creating reception:", error);
+    throw error;
+  }
+};
+
+export const registrarPago = async (params: TPagoSchema): Promise<{ message: string }> => {
+  try {
+    const response = await apiClient.post(
+      "/api/compras/pagos-proveedores/",
+      params,
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Error registering payment:", error);
+    throw error;
+  }
+};
+
+export const enviarEmailOC = async (id: number, params: TEmailSchema): Promise<{ message: string }> => {
+  try {
+    const response = await apiClient.post(
+      `/api/compras/ordenes-compra/${id}/enviar-email/`,
+      params,
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Error sending email:", error);
+    throw error;
+  }
+};
+
+export const deleteOrdenCompra = async (id: number): Promise<{ message: string }> => {
+  const response = await apiClient.delete(
+    `/api/compras/ordenes-compra/${id}/`,
+  );
+  return response.data;
 };

@@ -37,12 +37,13 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { ComprasFormDatePicker } from "./ComprasFormDatePicker";
 import { toast } from "sonner";
 
-import { useCreateOCMutation } from "../hooks/mutations/mutations";
+import { useCreateOCMutation, useUpdateOCMutation } from "../hooks/mutations/mutations";
 import { useComprasFormLogic } from "../hooks/useComprasFormLogic";
 import {
   updateItemFromProducto,
   findProductoIndex,
   createNewDetalleOC,
+  formatCurrency,
 } from "../utils/itemHandlers";
 import { useComprasContext } from "@/context/ComprasContext";
 
@@ -57,7 +58,29 @@ export const ComprasForm = ({ orden, onClose }: ComprasFormProps) => {
   const { handleSubmit, watch, setValue } = useForm<TOrdenCompraSchema>({
     resolver: zodResolver(OrdenCompraSchema),
     defaultValues: orden
-      ? {}
+      ? {
+        fecha_emision_oc: orden.fecha_emision_oc,
+        fecha_entrega_esperada: orden.fecha_entrega_esperada,
+        fecha_entrega_real: orden.fecha_entrega_real ? orden.fecha_entrega_real : undefined,
+        estado_oc: orden.estado_oc.id,
+        proveedor: orden.proveedor.id,
+        metodo_pago: orden.metodo_pago.id,
+        monto_total_oc_usd: orden.monto_total_oc_usd,
+        monto_total_oc_ves: orden.monto_total_oc_ves,
+        tasa_cambio_aplicada: orden.tasa_cambio_aplicada,
+        direccion_envio: orden.direccion_envio ? orden.direccion_envio : undefined,
+        terminos_pago: orden.terminos_pago ? orden.terminos_pago : undefined,
+        detalles: orden.detalles.map((p, index) => ({
+          id: index,
+          materia_prima: p.materia_prima,
+          producto_reventa: p.producto_reventa,
+          cantidad_solicitada: Number(p.cantidad_solicitada),
+          unidad_medida_compra: p.unidad_medida_compra,
+          costo_unitario_usd: Number(p.costo_unitario_usd),
+          subtotal_linea_usd: Number(p.subtotal_linea_usd),
+        })),
+        notas: orden.notas ? orden.notas : undefined,
+      }
       : {
           fecha_emision_oc: new Date().toISOString().split("T")[0],
           fecha_entrega_esperada: new Date().toISOString().split("T")[0],
@@ -84,7 +107,9 @@ export const ComprasForm = ({ orden, onClose }: ComprasFormProps) => {
 
   const { mutateAsync: createOCMutation, isPending: isCreatingOCMutation } =
     useCreateOCMutation();
-  // const { mutateAsync: updateOrdenMutation, isPending: isUpdatingOrden } = useUpdateOrdenMutation();
+  const { mutateAsync: updateOCMutation, isPending: isUpdatingOCMutation } = 
+  useUpdateOCMutation()
+  ;
   const [items, setItems] = useState<DetalleOC[]>(
     orden?.detalles.map((p, idx) => ({
       id: idx,
@@ -92,12 +117,14 @@ export const ComprasForm = ({ orden, onClose }: ComprasFormProps) => {
       materia_prima_nombre: p.materia_prima_nombre,
       producto_reventa: p.producto_reventa,
       producto_reventa_nombre: p.producto_reventa_nombre,
-      cantidad_solicitada: p.cantidad_solicitada,
-      cantidad_recibida: p.cantidad_recibida,
+      cantidad_solicitada: Number(p.cantidad_solicitada),
+      cantidad_recibida: Number(p.cantidad_recibida),
       unidad_medida_compra: p.unidad_medida_compra,
       unidad_medida_abrev: p.unidad_medida_abrev,
-      costo_unitario_usd: p.costo_unitario_usd,
-      subtotal_linea_usd: p.subtotal_linea_usd,
+      tipo_medida: p.tipo_medida,
+      costo_unitario_usd: Number(p.costo_unitario_usd),
+      subtotal_linea_usd: Number(p.subtotal_linea_usd),
+      cantidad_pendiente: p.cantidad_pendiente || 0,
     })) || [],
   );
 
@@ -146,10 +173,13 @@ export const ComprasForm = ({ orden, onClose }: ComprasFormProps) => {
       calculateTotalFromItems(newItems);
     }
   };
+
   const handleSubmitForm = async (data: TOrdenCompraSchema) => {
     try {
       if (isEdit && orden) {
-        // await updateOrdenMutation({ id: orden.id, data });
+        const { orden: updatedOrden } = await updateOCMutation({ id: orden!.id, data });
+        setOrdenCompra(updatedOrden);
+        setShowForm(false);
         toast.success("Orden actualizada exitosamente");
       } else {
         const { orden } = await createOCMutation(data);
@@ -164,17 +194,10 @@ export const ComprasForm = ({ orden, onClose }: ComprasFormProps) => {
       );
     }
   };
-
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("es-MX", {
-      style: "currency",
-      currency: "USD",
-    }).format(amount);
-  };
-
+  console.log(orden)
   return (
     <div className="mx-8 py-5 relative">
-      {isCreatingOCMutation && (
+      {(isCreatingOCMutation || isUpdatingOCMutation) && (
         <PendingTubeSpinner
           size={20}
           extraClass="absolute top-0 left-0 w-full h-full flex justify-center items-center bg-white opacity-50 z-50"
@@ -281,6 +304,7 @@ export const ComprasForm = ({ orden, onClose }: ComprasFormProps) => {
                   ))}
                 </ComprasFormSelect>
               </div>
+
               {/* Referencia de Pago */}
               <div className="space-y-2">
                 <Label htmlFor="payment">Terminos de Pago (Opcional)</Label>
@@ -451,25 +475,75 @@ export const ComprasForm = ({ orden, onClose }: ComprasFormProps) => {
                                 `detalles.${item.id}.unidad_medida_compra`,
                               )?.toString() || ""
                             }
-                            onChange={(v: string) =>
+                            onChange={(v: string) =>{
                               setValue(
                                 `detalles.${item.id}.unidad_medida_compra`,
                                 Number(v),
-                              )
-                            }
+                              );
+                              const rowToUpdate = items.find((i) => i.id === item.id)
+                              if (rowToUpdate) {
+                                rowToUpdate.unidad_medida_compra = Number(v);
+                                setItems([...items]);
+                              }
+                            }}
                           >
-                            {unidadesMedida?.map((unidad) => (
-                              <SelectItem
-                                key={unidad.id}
-                                value={unidad.id.toString()}
-                              >
-                                {unidad.abreviatura}
-                              </SelectItem>
-                            ))}
+                            {unidadesMedida
+                              ?.filter((unidad) => {
+                                // Filter units to show only compatible ones based on product's base unit tipo_medida
+                                const productTipoMedida = item.tipo_medida;
+                                if (!productTipoMedida) return true; // Show all if no tipo_medida
+                                return unidad.tipo_medida === productTipoMedida;
+                              })
+                              .map((unidad) => (
+                                <SelectItem
+                                  key={unidad.id}
+                                  value={unidad.id.toString()}
+                                >
+                                  {unidad.abreviatura}
+                                </SelectItem>
+                              ))}
                           </ComprasFormSelect>
                         </TableCell>
                         <TableCell className="text-sm">
-                          {formatCurrency(item.costo_unitario_usd)}
+                          <Input
+                            type="number"
+                            min="0"
+                            step="0.001"
+                            className="focus-visible:ring-blue-200"
+                            value={item.costo_unitario_usd || 0}
+                            onChange={(e) => {
+                              const productoId = item.id;
+                              const value = Number(e.target.value);
+
+                              if (value < 0) {
+                                e.target.value = "0";
+                                toast.error(
+                                  "El Costo No Puede Ser Menor a 0",
+                                );
+                                return;
+                              }
+
+                              const productoIndex = findProductoIndex(
+                                watch,
+                                productoId,
+                              );
+                              if (productoIndex !== -1) {
+                                item.costo_unitario_usd = value;
+                                setItems([...items]);
+                                const subtotal = updateItemCalculations(item);
+
+                                updateFormDetalles(
+                                  items,
+                                  productoIndex,
+                                  subtotal,
+                                  {
+                                    costo_unitario_usd: value,
+                                  },
+                                );
+                                calculateTotalFromItems(items);
+                              }
+                            }}
+                          />
                         </TableCell>
                         <TableCell className="font-medium">
                           {formatCurrency(item.subtotal_linea_usd)}

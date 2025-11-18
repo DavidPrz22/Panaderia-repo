@@ -172,3 +172,8 @@ export const registerPaymentReference = async (
     throw error;
   }
 };
+
+export const deleteOrden = async (id: number): Promise<{ message: string }> => {
+  const response = await apiClient.delete(`/api/ordenes/${id}/`);
+  return response.data;
+};
