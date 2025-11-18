@@ -45,6 +45,8 @@ export const OrdersTable = ({ orders, onEditOrder }: OrdersTableProps) => {
     setOrdenSeleccionadaId(id);
   };
 
+  orders.sort((a, b) => b.id - a.id);
+  
   return (
     <div className="border rounded-lg bg-card shadow-sm relative">
       {isFetchingOrdenDetalles && (

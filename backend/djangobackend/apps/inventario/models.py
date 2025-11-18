@@ -427,7 +427,7 @@ class ProductosElaborados(ComponentesStockManagement, ProductosStockManagement):
         null=True, 
         blank=True, 
         related_name='productos_elaborados_unidad_produccion',
-        help_text="Unidad en la que se produce y se gestiona el stock (e.g., Unidades, Gramos).")
+        help_text="Unidad en la que se produce y se gestiona el stock (e.g., Unidades, uGramos).")
 
     unidad_venta = models.ForeignKey(
         UnidadesDeMedida, 

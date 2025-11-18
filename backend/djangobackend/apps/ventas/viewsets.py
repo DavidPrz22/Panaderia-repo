@@ -211,11 +211,15 @@ class OrdenesViewSet(viewsets.ModelViewSet):
                     lotes_detalles_consumo = []
 
                     for detalle in detallesOrdenVenta:
-                        cantidad_consumir = detalle.cantidad_solicitada
                         price = detalle.precio_unitario_usd
                         producto = detalle.producto_elaborado if detalle.producto_elaborado else detalle.producto_reventa
                             
                         if producto:
+                            if isinstance(producto, ProductosReventa):
+                                cantidad_consumir = detalle.cantidad_solicitada * producto.factor_conversion
+                            else:
+                                cantidad_consumir = detalle.cantidad_solicitada
+
                             detalles_consumo_lotes = producto.consume_product_stock(cantidad_consumir, price)
                             producto.actualizar_product_stock()
                             
