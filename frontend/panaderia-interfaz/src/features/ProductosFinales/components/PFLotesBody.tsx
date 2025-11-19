@@ -33,7 +33,7 @@ export const PFLotesBody = ({ data, isLoading }: { data: LotesProductosFinales[]
 
     return (
         <div className="rounded-b-lg">
-            {data.map((item, index) => (
+            {data.map((item) => (
                 <div 
                     key={`${item.fecha_produccion}-${item.fecha_caducidad}`}
                     className={`p-4 grid grid-cols-6 border-t border-gray-300 hover:bg-gray-100 cursor-pointer font-[Roboto] text-sm`}

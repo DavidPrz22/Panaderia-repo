@@ -48,6 +48,10 @@ type ProductosFinalesContextType = {
   setShowLotesDetalles: (value: boolean) => void;
   lotesProductosFinalesDetalles: LotesProductosFinales | null;
   setLotesProductosFinalesDetalles: (value: LotesProductosFinales | null) => void;
+  bajoStockFilter: boolean;
+  setBajoStockFilter: React.Dispatch<React.SetStateAction<boolean>>;
+  agotadosFilter: boolean;
+  setAgotadosFilter: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
 const ProductosFinalesContextProvider = createContext<ProductosFinalesContextType | null>(null);
@@ -103,6 +107,9 @@ export const ProductosFinalesProvider = ({
   const [selectedCategoriasProductoFinal, setSelectedCategoriasProductoFinal] = useState<string[]>([]);
   const [showFiltersPanel, setShowFiltersPanel] = useState<boolean>(false);
 
+  const [bajoStockFilter, setBajoStockFilter] = useState<boolean>(false);
+  const [agotadosFilter, setAgotadosFilter] = useState<boolean>(false);
+
   return (
     <ProductosFinalesContextProvider.Provider
       value={{
@@ -148,6 +155,10 @@ export const ProductosFinalesProvider = ({
         setShowLotesDetalles,
         lotesProductosFinalesDetalles,
         setLotesProductosFinalesDetalles,
+        bajoStockFilter,
+        setBajoStockFilter,
+        agotadosFilter,
+        setAgotadosFilter,
       }}
     >
       {children}
