@@ -289,7 +289,12 @@ export default function ProductosFinalesFormShared({
                 <Checkbox 
                 className="size-5 cursor-pointer"
                 checked={usadoEnTransformaciones}
-                onCheckedChange={() => setUsadoEnTransformaciones(!usadoEnTransformaciones)}
+                onCheckedChange={() => {
+                  setUsadoEnTransformaciones(!usadoEnTransformaciones);
+                  setValue('receta_relacionada', null)
+                  const input: HTMLInputElement | null = document.querySelector('input[data-input="search"]')
+                  if (input) input.value = ''
+                }}
                 />
             </div>
           </div>

@@ -103,6 +103,7 @@ export default function PFInputFormSearch({
           defaultValue={initialData ? initialData.nombre : ""}
           disabled={ initialData ? true : false}
           type="text"
+          data-input='search'
           className="block w-full pl-3 pr-10 py-2.5 border border-gray-300 rounded-md shadow-xs font-[Roboto]
                       focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
         />

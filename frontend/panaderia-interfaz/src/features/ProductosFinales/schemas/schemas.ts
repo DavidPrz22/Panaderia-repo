@@ -20,7 +20,11 @@ export const productoFinalSchema = z.object({
   categoria: z.coerce.number().min(0, "La categoría es requerida"),
   receta_relacionada: z.coerce
     .number()
-    .min(0, "La receta relacionada es requerida"),
+    .optional()
+    .nullable()
+    .refine(val => !val || val < 0, {
+      message: 'se require una receta valida'
+    }),
   precio_venta_usd: z.coerce
     .number()
     .min(0, "El precio de venta debe ser mayor o igual a 0"),
