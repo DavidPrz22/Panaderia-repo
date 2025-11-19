@@ -15,6 +15,9 @@ import { PFFormSelectContainer } from "./PFFormSelectContainer";
 import { PendingTubeSpinner } from "./PendingTubeSpinner";
 import { useCreateProductoFinal } from "../hooks/mutations/productosFinalesMutations";
 import { useUpdateProductoFinal } from "../hooks/mutations/productosFinalesMutations";
+import { Checkbox } from "@/components/ui/checkbox";
+import { useState } from "react";
+
 
 export default function ProductosFinalesFormShared({
   title,
@@ -166,35 +169,7 @@ export default function ProductosFinalesFormShared({
     );
   }
 
-  // function renderTipoManejo() {
-  //   if (isUpdate && initialData) {
-  //     return (
-  //       <>
-  //         {initialData.tipo_medida_fisica &&
-  //         initialData.tipo_medida_fisica === "UNIDAD" ? (
-  //           <>
-  //             <option value="UNIDAD">Unidad</option>
-  //             <option value="PESO">Peso</option>
-  //             <option value="VOLUMEN">Volumen</option>
-  //           </>
-  //         ) : (
-  //           <>
-  //             <option value="PESO_VOLUMEN">Peso/Volumen</option>
-  //             <option value="UNIDAD">Unidad</option>
-  //           </>
-  //         )}
-  //       </>
-  //     );
-  //   }
-  //   return (
-  //     <>
-  //       <option value="">Seleccione un tipo de manejo</option>
-  //       <option value="UNIDAD">Unidad</option>
-  //       <option value="PESO">Peso</option>
-  //       <option value="VOLUMEN">Volumen</option>
-  //     </>
-  //   );
-  // }
+  const [usadoEnTransformaciones, setUsadoEnTransformaciones] = useState(false);
 
   const handleCancelButtonClick = () => {
     onClose();
@@ -244,16 +219,17 @@ export default function ProductosFinalesFormShared({
             />
 
             <PFFormInputContainer
-              title="Receta Relacionada"
-              inputType="text"
-              name="receta_relacionada"
-              register={register}
-              errors={errors}
-              search={true}
-              setValue={setValue}
-              initialData={recetaRelacionadaValidatedData}
-            />
-
+                title="Receta"
+                inputType="text"
+                name="receta_relacionada"
+                register={register}
+                errors={errors}
+                search={true}
+                setValue={setValue}
+                initialData={recetaRelacionadaValidatedData}
+                disabled={usadoEnTransformaciones}
+              />
+  
             <PFFormInputContainer
               inputType="number"
               title="Precio de Venta (USD)"
@@ -279,15 +255,6 @@ export default function ProductosFinalesFormShared({
             >
               {renderUnidadesMedida("unidad_venta_producto")}
             </PFFormSelectContainer>
-
-            {/* <PFFormSelectContainer
-              title="Tipo de Manejo"
-              name="tipo_medida_fisica"
-              register={register}
-              errors={errors}
-            >
-              {renderTipoManejo()}
-            </PFFormSelectContainer> */}
 
             <PFFormSelectContainer
               title="Unidad de Producción"
@@ -315,6 +282,16 @@ export default function ProductosFinalesFormShared({
               errors={errors}
               optional
             />
+            <div className="flex items-center gap-6">
+              <div className="font-[Roboto] text-sm font-semibold">
+                Producto Usado en Transformaciones
+              </div>
+                <Checkbox 
+                className="size-5 cursor-pointer"
+                checked={usadoEnTransformaciones}
+                onCheckedChange={() => setUsadoEnTransformaciones(!usadoEnTransformaciones)}
+                />
+            </div>
           </div>
         </div>
         <div className="flex gap-2 justify-end py-4 px-5 bg-white">
