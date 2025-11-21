@@ -190,8 +190,7 @@ export default function ProductosFinalesFormShared({
      toast.error("El producto debe estar relacionado con una receta"); 
      return;
     }
-    console.log(data)
-    return;
+  
     if (isUpdate) {
       await updateProductosFinales({ id: productoId!, producto: data });
     } else {

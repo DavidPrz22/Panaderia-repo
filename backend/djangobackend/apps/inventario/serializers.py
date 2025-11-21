@@ -321,7 +321,7 @@ class ProductosFinalesSerializer(serializers.ModelSerializer):
     unidad_venta = serializers.PrimaryKeyRelatedField(
         queryset=UnidadesDeMedida.objects.all(), write_only=True, required=False, allow_null=True
     )
-    receta_relacionada = serializers.IntegerField(min_value=0, required=False, write_only=True)
+    receta_relacionada = serializers.IntegerField(required=False, write_only=True, allow_null=True)
 
     class Meta:
         model = ProductosFinales
@@ -458,7 +458,7 @@ class ProductosFinalesDetallesSerializer(serializers.ModelSerializer):
                 'nombre': receta_relacionada.nombre,
             }
         except Recetas.DoesNotExist:
-            return False
+            return None
 
 
 class ProductosFinalesListaTransformacionSerializer(serializers.ModelSerializer):
@@ -471,6 +471,7 @@ class ProductosIntermediosDetallesSerializer(serializers.ModelSerializer):
     categoria_producto = serializers.SerializerMethodField()
     receta_relacionada = serializers.SerializerMethodField()
     unidad_produccion_producto = serializers.SerializerMethodField()
+
     class Meta:
         model = ProductosIntermedios
         fields = [
@@ -512,7 +513,7 @@ class ProductosIntermediosDetallesSerializer(serializers.ModelSerializer):
             'nombre': receta_relacionada.nombre,
         }
         except Recetas.DoesNotExist:
-            return False
+            return None
 
 
 class LotesProductosElaboradosSerializer(serializers.ModelSerializer):
