@@ -379,6 +379,24 @@ class ProductosFinalesSearchViewset(viewsets.ReadOnlyModelViewSet):
     queryset = ProductosFinales.objects.all()
     serializer_class = ProductosFinalesSearchSerializer
 
+    def list(self, request, *args, **kwargs):
+
+        productos = self.get_queryset()
+        
+        productos_con_recetas_ids = Recetas.objects.filter(
+            producto_elaborado__in=productos
+        ).values_list('producto_elaborado_id', flat=True).distinct()
+        
+        productos = productos.filter(id__in=productos_con_recetas_ids)
+        
+        page = self.paginate_queryset(productos)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+            
+        serializer = self.get_serializer(productos, many=True)
+        return Response(serializer.data)
+
 
 class ProductosFinalesListaTransformacionViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = ProductosFinalesListaTransformacionSerializer
