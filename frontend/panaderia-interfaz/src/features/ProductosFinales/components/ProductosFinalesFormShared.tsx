@@ -3,6 +3,7 @@ import type { ProductosFinalesFormSharedProps } from "@/features/ProductosFinale
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 
+
 import {
   productoFinalSchema,
   type TProductoFinalSchema,
@@ -17,6 +18,7 @@ import { useCreateProductoFinal } from "../hooks/mutations/productosFinalesMutat
 import { useUpdateProductoFinal } from "../hooks/mutations/productosFinalesMutations";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useState } from "react";
+import { toast } from "sonner";
 
 
 export default function ProductosFinalesFormShared({
@@ -26,11 +28,13 @@ export default function ProductosFinalesFormShared({
   onClose,
   onSubmitSuccess,
 }: ProductosFinalesFormSharedProps) {
+
   const {
     register,
     handleSubmit,
     formState: { errors },
     setValue,
+    watch,
   } = useForm<TProductoFinalSchema>({
     resolver: zodResolver(productoFinalSchema),
     defaultValues:
@@ -171,11 +175,23 @@ export default function ProductosFinalesFormShared({
 
   const [usadoEnTransformaciones, setUsadoEnTransformaciones] = useState(false);
 
+  const checkInvalidRecetaRelacionada = () => {
+    if (!usadoEnTransformaciones && !watch("receta_relacionada")) return false;
+    return true;
+  }
+  
   const handleCancelButtonClick = () => {
     onClose();
   };
 
   const onSubmit = async (data: TProductoFinalSchema) => {
+
+    if (!checkInvalidRecetaRelacionada()) {
+     toast.error("El producto debe estar relacionado con una receta"); 
+     return;
+    }
+    console.log(data)
+    return;
     if (isUpdate) {
       await updateProductosFinales({ id: productoId!, producto: data });
     } else {
