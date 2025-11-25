@@ -4,7 +4,7 @@ import type {
   recetasSearchList,
 } from "@/features/Recetas/types/types";
 import { createContext, useContext, useState, useRef } from "react";
-import type { componenteListadosReceta } from "@/features/Recetas/types/types";
+import type { componenteListadosReceta, fechaSeleccionadaFiltro } from "@/features/Recetas/types/types";
 
 type RecetasContextType = {
   showRecetasDetalles: boolean;
@@ -41,6 +41,14 @@ type RecetasContextType = {
   setSearchListRecetaList: (recetaList: recetaRelacionada[]) => void;
   recetasListadas: recetaRelacionada[];
   setRecetasListadas: (recetasListadas: recetaRelacionada[]) => void;
+  recetaUnicaFiltro: boolean;
+  setRecetaUnicaFiltro: (recetaUnicaFiltro: boolean) => void;
+  recetaCompuestaFiltro: boolean;
+  setRecetaCompuestaFiltro: (recetaCompuestaFiltro: boolean) => void;
+  fechaSeleccionadaFiltro: fechaSeleccionadaFiltro | undefined;
+  setFechaSeleccionadaFiltro: (fechaSeleccionadaFiltro: fechaSeleccionadaFiltro | undefined) => void;
+  searchTermFilter: string | null;
+  setSeachTermFilter: (searchTermFilter: string | null) => void;
 };
 
 const RecetasContext = createContext<RecetasContextType | null>(null);
@@ -73,7 +81,7 @@ export const RecetasProvider = ({
     componenteListadosReceta[]
   >([]);
 
-  
+
 
   const searchListRecetaListRef = useRef<HTMLInputElement | null>(null);
   const [searchListActiveRecetaList, setSearchListActiveRecetaList] = useState(false);
@@ -93,6 +101,14 @@ export const RecetasProvider = ({
 
   const [enabledRecetaDetalles, setEnabledRecetaDetalles] =
     useState<boolean>(false);
+
+  const [recetaUnicaFiltro, setRecetaUnicaFiltro] = useState<boolean>(false);
+
+  const [recetaCompuestaFiltro, setRecetaCompuestaFiltro] = useState<boolean>(false);
+
+  const [fechaSeleccionadaFiltro, setFechaSeleccionadaFiltro] = useState<fechaSeleccionadaFiltro | undefined>(undefined);
+
+  const [searchTermFilter, setSeachTermFilter] = useState<string | null>(null);
 
   return (
     <RecetasContext.Provider
@@ -129,6 +145,14 @@ export const RecetasProvider = ({
         setSearchListRecetaList,
         recetasListadas,
         setRecetasListadas,
+        recetaUnicaFiltro,
+        setRecetaUnicaFiltro,
+        recetaCompuestaFiltro,
+        setRecetaCompuestaFiltro,
+        fechaSeleccionadaFiltro,
+        setFechaSeleccionadaFiltro,
+        searchTermFilter,
+        setSeachTermFilter
       }}
     >
       {children}

@@ -96,6 +96,7 @@ export type recetaItem = {
   fecha_creacion: string;
   fecha_modificacion: string | null;
   notas: string | null;
+  esCompuesta: boolean;
 };
 
 export type recetaDetallesItemComponente = {
@@ -127,4 +128,9 @@ export type recetaListItemProps = {
   nombre: string;
   id: number;
   last?: boolean;
+};
+
+export type fechaSeleccionadaFiltro = {
+  from: string;
+  to: string;
 };
