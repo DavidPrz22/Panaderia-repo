@@ -44,6 +44,10 @@ type ProductosIntermediosContextType = {
   setSelectedCategoriasIntermedio: React.Dispatch<React.SetStateAction<string[]>>;
   showPIFiltersPanel: boolean;
   setShowPIFiltersPanel: React.Dispatch<React.SetStateAction<boolean>>;
+  bajoStockFilter: boolean;
+  setBajoStockFilter: (value: boolean) => void;
+  agotadosFilter: boolean;
+  setAgotadosFilter: (value: boolean) => void;
   showLotesDetalles: boolean;
   setShowLotesDetalles: (value: boolean) => void;
   lotesProductosIntermediosDetalles: LotesProductosIntermedios | null;
@@ -86,6 +90,8 @@ export const ProductosIntermediosProvider = ({ children }: childrenProp) => {
   const [selectedUnidadesProduccion, setSelectedUnidadesProduccion] = useState<string[]>([]);
   const [selectedCategoriasIntermedio, setSelectedCategoriasIntermedio] = useState<string[]>([]);
   const [showPIFiltersPanel, setShowPIFiltersPanel] = useState(false);
+  const [bajoStockFilter, setBajoStockFilter] = useState(false);
+  const [agotadosFilter, setAgotadosFilter] = useState(false);
 
   const [showLotesDetalles, setShowLotesDetalles] = useState(false);
   const [lotesProductosIntermediosDetalles, setLotesProductosIntermediosDetalles] = useState<LotesProductosIntermedios | null>(null);
@@ -125,6 +131,10 @@ export const ProductosIntermediosProvider = ({ children }: childrenProp) => {
         setSelectedCategoriasIntermedio,
         showPIFiltersPanel,
         setShowPIFiltersPanel,
+        bajoStockFilter,
+        setBajoStockFilter,
+        agotadosFilter,
+        setAgotadosFilter,
         showLotesDetalles,
         setShowLotesDetalles,
         lotesProductosIntermediosDetalles,
