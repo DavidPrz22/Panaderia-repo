@@ -33,6 +33,10 @@ type ProductosReventaContextType = {
   setSelectedCategoriasReventa: React.Dispatch<React.SetStateAction<string[]>>;
   showPRFiltersPanel: boolean;
   setShowPRFiltersPanel: React.Dispatch<React.SetStateAction<boolean>>;
+  bajoStockFilter: boolean;
+  setBajoStockFilter: (value: boolean) => void;
+  agotadosFilter: boolean;
+  setAgotadosFilter: (value: boolean) => void;
   // Lot management
   showPRLotesForm: boolean;
   setShowPRLotesForm: (value: boolean) => void;
@@ -69,6 +73,8 @@ export const ProductosReventaProvider = ({ children }: childrenProp) => {
   const [productosReventaSearchTerm, setProductosReventaSearchTerm] = useState("");
   const [selectedCategoriasReventa, setSelectedCategoriasReventa] = useState<string[]>([]);
   const [showPRFiltersPanel, setShowPRFiltersPanel] = useState(false);
+  const [bajoStockFilter, setBajoStockFilter] = useState(false);
+  const [agotadosFilter, setAgotadosFilter] = useState(false);
 
   // Lot management state
   const [showPRLotesForm, setShowPRLotesForm] = useState(false);
@@ -103,6 +109,10 @@ export const ProductosReventaProvider = ({ children }: childrenProp) => {
         setSelectedCategoriasReventa,
         showPRFiltersPanel,
         setShowPRFiltersPanel,
+        bajoStockFilter,
+        setBajoStockFilter,
+        agotadosFilter,
+        setAgotadosFilter,
         showPRLotesForm,
         setShowPRLotesForm,
         showPRLotesDetalles,

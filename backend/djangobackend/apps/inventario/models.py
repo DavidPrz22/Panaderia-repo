@@ -596,7 +596,7 @@ class ProductosReventa(ProductosStockManagement):
     categoria = models.ForeignKey(CategoriasProductosReventa, on_delete=models.CASCADE)
     marca = models.CharField(max_length=100, null=True, blank=True)
     proveedor_preferido = models.ForeignKey('compras.Proveedores', on_delete=models.CASCADE, null=True, blank=True)
-
+    
     # Replace tipo_manejo_venta with separate units
     unidad_base_inventario = models.ForeignKey(
         UnidadesDeMedida, 
@@ -639,7 +639,8 @@ class ProductosReventa(ProductosStockManagement):
     pecedero = models.BooleanField(default=False, null=False)
     fecha_creacion_registro = models.DateField(auto_now_add=True)
     fecha_modificacion_registro = models.DateField(auto_now=True)
-
+    punto_reorden = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True) 
+    
     def expirar_lotes_viejos(self, force=False):
         """Expire old lots for this specific product"""
         ahora = timezone.now().date()

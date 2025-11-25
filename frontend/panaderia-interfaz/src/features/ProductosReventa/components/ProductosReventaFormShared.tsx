@@ -32,27 +32,28 @@ export default function ProductosReventaFormShared({
     defaultValues:
       isUpdate && initialData
         ? {
-            nombre_producto: initialData.nombre_producto,
-            descripcion: initialData.descripcion || "",
-            SKU: initialData.SKU || "",
-            categoria: initialData.categoria.id,
-            marca: initialData.marca || "",
-            proveedor_preferido: initialData.proveedor_preferido?.id,
-            unidad_base_inventario: initialData.unidad_base_inventario.id,
-            unidad_venta: initialData.unidad_venta.id,
-            factor_conversion: initialData.factor_conversion,
-            precio_venta_usd: initialData.precio_venta_usd,
-            pecedero: initialData.pecedero,
-            precio_compra_usd: initialData.precio_compra_usd,
-          }
+          nombre_producto: initialData.nombre_producto,
+          descripcion: initialData.descripcion || "",
+          SKU: initialData.SKU || "",
+          categoria: initialData.categoria.id,
+          marca: initialData.marca || "",
+          proveedor_preferido: initialData.proveedor_preferido?.id,
+          unidad_base_inventario: initialData.unidad_base_inventario.id,
+          unidad_venta: initialData.unidad_venta.id,
+          factor_conversion: initialData.factor_conversion,
+          precio_venta_usd: initialData.precio_venta_usd,
+          punto_reorden: initialData.punto_reorden,
+          pecedero: initialData.pecedero,
+          precio_compra_usd: initialData.precio_compra_usd,
+        }
         : {
-            nombre_producto: "",
-            descripcion: "",
-            SKU: "",
-            marca: "",
-            proveedor_preferido: undefined,
-            pecedero: false,
-          },
+          nombre_producto: "",
+          descripcion: "",
+          SKU: "",
+          marca: "",
+          proveedor_preferido: undefined,
+          pecedero: false,
+        },
   });
 
   const {
@@ -210,6 +211,13 @@ export default function ProductosReventaFormShared({
               optional={true}
             />
             <PRFormInputContainer
+              inputType="number"
+              title="Punto de Reorden"
+              name="punto_reorden"
+              register={register}
+              errors={errors}
+            />
+            <PRFormInputContainer
               inputType="text"
               title="Marca"
               name="marca"
@@ -274,7 +282,7 @@ export default function ProductosReventaFormShared({
           <Button type="cancel" onClick={handleCancelButtonClick}>
             Cancelar
           </Button>
-          <Button type="submit" onClick={() => {}}>
+          <Button type="submit" onClick={() => { }}>
             Guardar
           </Button>
         </div>
