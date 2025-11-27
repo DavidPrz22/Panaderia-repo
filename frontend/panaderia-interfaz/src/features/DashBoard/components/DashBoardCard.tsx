@@ -1,4 +1,4 @@
-import { Card, CardContent, CardTitle} from "@/components/ui/card"
+import { Card, CardContent} from "@/components/ui/card"
 import { DollarSign, ShoppingCartIcon, AlertTriangleIcon, FactoryIcon } from "lucide-react"
 
 const TYPES = {
