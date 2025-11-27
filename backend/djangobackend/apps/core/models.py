@@ -138,3 +138,25 @@ class ConversionesUnidades(models.Model):
     
     def __str__(self):
         return f"1 {self.unidad_origen.abreviatura} = {self.factor_conversion} {self.unidad_destino.abreviatura}"
+
+
+class TiposNotificaciones(models.TextChoices):
+    BAJO_STOCK = 'Bajo stock', 'Bajo stock'
+    SIN_STOCK = 'Sin stock', 'Sin stock'
+    EXPIRACION = 'Expiración', 'Expiración'
+    ENTREGA_CERCANA = 'Entrega cercana', 'Entrega cercana'
+
+class TiposProductosNotificaciones(models.TextChoices):
+    MATERIA_PRIMA = 'Materia prima', 'Materia prima'
+    PRODUCTOS_ELABORADOS = 'Productos elaborados', 'Productos elaborados'
+    PRODUCTOS_INTERMEDIOS = 'Productos intermedios', 'Productos intermedios'
+    PRODUCTOS_REVENTA = 'Productos de reventa', 'Productos de reventa'
+
+
+class Notificaciones(models.Model):
+    tipo_notificacion = models.CharField(max_length=50, choices=TiposNotificaciones.choices, null=False, blank=False)
+    tipo_producto = models.CharField(max_length=50, choices=TiposProductosNotificaciones.choices, null=False, blank=False)
+    producto_id = models.IntegerField(null=True, blank=True)
+    descripcion = models.TextField(max_length=255, null=True, blank=True)
+    fecha_notificacion = models.DateTimeField(auto_now_add=True)
+    leida = models.BooleanField(default=False)
