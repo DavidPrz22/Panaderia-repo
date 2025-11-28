@@ -7,7 +7,7 @@ from django.dispatch import receiver
 from django.utils import timezone
 from django.core.exceptions import ValidationError
 from decimal import Decimal
-
+from apps.core.services.services import NotificacionesService
 
 # Create your models here.
 class LotesStatus(models.TextChoices):
@@ -772,6 +772,9 @@ def update_materia_prima_stock(sender, instance, **kwargs):
 
     MateriasPrimas.objects.filter(id=materia_prima.id).update(stock_actual=total_stock)
 
+    NotificacionesService.check_low_stock()
+    NotificacionesService.check_sin_stock()
+
 
 @receiver([post_save, post_delete], sender=LotesProductosReventa)
 def update_producto_reventa_stock(sender, instance, **kwargs):
@@ -794,3 +797,7 @@ def update_producto_reventa_stock(sender, instance, **kwargs):
     ).aggregate(total=Sum('stock_actual_lote'))['total'] or 0
 
     ProductosReventa.objects.filter(id=producto_reventa.id).update(stock_actual=total_stock)
+
+    NotificacionesService.check_low_stock()
+    NotificacionesService.check_sin_stock()
+        

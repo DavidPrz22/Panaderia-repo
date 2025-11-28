@@ -5,6 +5,7 @@ from apps.users.models import User
 from apps.inventario.models import UnidadesDeMedida, ProductosElaborados, ProductosReventa, LotesProductosElaborados, LotesProductosReventa
 from apps.core.models import MetodosDePago, EstadosOrdenVenta
 
+
 # Create your models here.
 class Clientes(models.Model):
     nombre_cliente = models.CharField(max_length=100, null=False, blank=False)

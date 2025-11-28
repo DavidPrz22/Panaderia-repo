@@ -4,6 +4,7 @@ from apps.produccion.models import Recetas, RecetasDetalles, RelacionesRecetas
 from apps.inventario.serializers import ComponentesSearchSerializer, MateriaPrimaSerializer, LotesMateriaPrimaSerializer, ProductosIntermediosSerializer, ProductosFinalesSerializer, ProductosIntermediosDetallesSerializer, ProductosElaboradosSerializer, ProductosFinalesDetallesSerializer, ProductosFinalesSearchSerializer, ProductosIntermediosSearchSerializer, ProductosFinalesListaTransformacionSerializer, LotesProductosElaboradosSerializer, ProductosReventaSerializer, ProductosReventaDetallesSerializer, LotesProductosReventaSerializer
 from rest_framework.response import Response
 from rest_framework.decorators import action
+from apps.core.services.services import NotificationService
 from datetime import datetime
 from collections import defaultdict
 from apps.inventario.models import LotesStatus
@@ -16,6 +17,12 @@ class MateriaPrimaViewSet(viewsets.ModelViewSet):
         """Retrieve materia prima details after expiring old lots"""
         # Expire all old lots before returning details
         ComponentesStockManagement.expirar_todos_lotes_viejos()
+        
+        # Check notifications after expiration
+        try:
+            NotificationService.check_all_notifications_after_expiration()
+        except Exception:
+            pass
         
         return super().retrieve(request, *args, **kwargs)
 
@@ -100,9 +107,35 @@ class LotesMateriaPrimaViewSet(viewsets.ModelViewSet):
                 pass
         else:
             # Expire all lots if no filter
+            # Expire all lots if no filter
             ComponentesStockManagement.expirar_todos_lotes_viejos()
+            
+        # Check notifications after expiration
+        try:
+            NotificationService.check_all_notifications_after_expiration()
+        except Exception:
+            pass
         
         return super().list(request, *args, **kwargs)
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        materia_prima = instance.materia_prima
+        self.perform_destroy(instance)
+        
+        # Update stock after deletion
+        materia_prima.actualizar_stock()
+        
+        # Check stock notifications after lot deletion
+        try:
+            NotificationService.check_low_stock(MateriasPrimas)
+            NotificationService.check_sin_stock(MateriasPrimas)
+        except Exception as notif_error:
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.error(f"Failed to create notifications: {str(notif_error)}")
+            
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -113,6 +146,16 @@ class LotesMateriaPrimaViewSet(viewsets.ModelViewSet):
         # Save only once through perform_create
         self.perform_create(serializer)
         headers = self.get_success_headers(serializer.data)
+        
+        # Check expiration notifications for newly created lot
+        try:
+            NotificationService.check_expiration_date(MateriasPrimas, LotesMateriasPrimas)
+        except Exception as notif_error:
+            # Log but don't fail the request
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.error(f"Failed to create notifications: {str(notif_error)}")
+        
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
 
@@ -127,6 +170,16 @@ class LotesMateriaPrimaViewSet(viewsets.ModelViewSet):
                 materia_prima = lote_inactivar.materia_prima
                 lote_inactivar.save(update_fields=['estado'])
                 materia_prima.actualizar_stock()
+                
+                # Check stock notifications after lot inactivation
+                try:
+                    NotificationService.check_low_stock(MateriasPrimas)
+                    NotificationService.check_sin_stock(MateriasPrimas)
+                except Exception as notif_error:
+                    import logging
+                    logger = logging.getLogger(__name__)
+                    logger.error(f"Failed to create notifications: {str(notif_error)}")
+                
                 return Response(status=status.HTTP_200_OK)
             else:
                 return Response(
@@ -289,6 +342,12 @@ class ProductosElaboradosViewSet(viewsets.ModelViewSet):
             producto = ProductosElaborados.objects.get(id=producto_id)
             # Use the expirar_todos_lotes_viejos for ProductosElaborados
             ComponentesStockManagement.expirar_todos_lotes_viejos()
+            
+            # Check notifications after expiration
+            try:
+                NotificationService.check_all_notifications_after_expiration()
+            except Exception:
+                pass
         except ProductosElaborados.DoesNotExist:
             pass
         
@@ -304,9 +363,35 @@ class LotesProductosElaboradosViewSet(viewsets.ModelViewSet):
     def list(self, request, *args, **kwargs):
         """List lots after expiring old ones"""
         # Expire all old lots before returning list
+        # Expire all old lots before returning list
         ComponentesStockManagement.expirar_todos_lotes_viejos()
         
+        # Check notifications after expiration
+        try:
+            NotificationService.check_all_notifications_after_expiration()
+        except Exception:
+            pass
+        
         return super().list(request, *args, **kwargs)
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        producto = instance.producto_elaborado
+        self.perform_destroy(instance)
+        
+        # Update stock after deletion
+        producto.actualizar_stock()
+        
+        # Check stock notifications after lot deletion
+        try:
+            NotificationService.check_low_stock(ProductosElaborados)
+            NotificationService.check_sin_stock(ProductosElaborados)
+        except Exception as notif_error:
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.error(f"Failed to create notifications: {str(notif_error)}")
+            
+        return Response(status=status.HTTP_204_NO_CONTENT)
     
     @action(detail=True, methods=['get'], url_path='change-estado-lote')
     def change_estado_lote(self, request, *args, **kwargs):
@@ -335,7 +420,16 @@ class LotesProductosElaboradosViewSet(viewsets.ModelViewSet):
                         status=status.HTTP_400_BAD_REQUEST, 
                         data={"error": "Este Lote ya caducó"}
                     )
-        
+            
+            # Check stock notifications after lot state change
+            try:
+                NotificationService.check_low_stock(ProductosElaborados)
+                NotificationService.check_sin_stock(ProductosElaborados)
+            except Exception as notif_error:
+                import logging
+                logger = logging.getLogger(__name__)
+                logger.error(f"Failed to create notifications: {str(notif_error)}")
+            
             return Response({"message": "Estado del lote cambiado correctamente"}, status=status.HTTP_200_OK)
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
@@ -464,9 +558,32 @@ class LotesProductosReventaViewSet(viewsets.ModelViewSet):
                 pass
         else:
             # Expire all ProductosReventa lots if no filter
+            # Expire all ProductosReventa lots if no filter
             ProductosReventa.expirar_todos_lotes_viejos()
+            
+        # Check notifications after expiration
+        try:
+            NotificationService.check_all_notifications_after_expiration()
+        except Exception:
+            pass
         
         return super().list(request, *args, **kwargs)
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        # Stock update is handled by signals for ProductosReventa
+        self.perform_destroy(instance)
+        
+        # Check stock notifications after lot deletion
+        try:
+            NotificationService.check_low_stock(ProductosReventa)
+            NotificationService.check_sin_stock(ProductosReventa)
+        except Exception as notif_error:
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.error(f"Failed to create notifications: {str(notif_error)}")
+            
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -478,6 +595,15 @@ class LotesProductosReventaViewSet(viewsets.ModelViewSet):
         # Save through perform_create
         self.perform_create(serializer)
         headers = self.get_success_headers(serializer.data)
+        
+        # Check expiration notifications for newly created lot
+        try:
+            NotificationService.check_expiration_date(ProductosReventa, LotesProductosReventa)
+        except Exception as notif_error:
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.error(f"Failed to create notifications: {str(notif_error)}")
+        
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
     
     @action(detail=True, methods=['get'], url_path='change-estado-lote')
@@ -505,7 +631,16 @@ class LotesProductosReventaViewSet(viewsets.ModelViewSet):
                         status=status.HTTP_400_BAD_REQUEST, 
                         data={"error": "Este Lote ya caducó"}
                     )
-        
+            
+            # Check stock notifications after lot state change
+            try:
+                NotificationService.check_low_stock(ProductosReventa)
+                NotificationService.check_sin_stock(ProductosReventa)
+            except Exception as notif_error:
+                import logging
+                logger = logging.getLogger(__name__)
+                logger.error(f"Failed to create notifications: {str(notif_error)}")
+            
             return Response({"message": "Estado del lote cambiado correctamente"}, status=status.HTTP_200_OK)
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)

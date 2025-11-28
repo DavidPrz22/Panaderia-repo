@@ -10,8 +10,12 @@ from apps.produccion.serializers import RecetasSerializer, RecetasDetallesSerial
 from django.db.models import Q
 from django.core.exceptions import ValidationError
 from apps.produccion.services import ProductionValidationService, StockConsumptionService, ProductionService
+from apps.core.services.services import NotificationService
 from decimal import Decimal
 from django.utils import timezone
+import logging
+logger = logging.getLogger(__name__)
+
 
 class RecetasViewSet(viewsets.ModelViewSet):
     queryset = Recetas.objects.all()
@@ -378,6 +382,21 @@ class ProduccionesViewSet(viewsets.ModelViewSet):
                     product_id, product_type
                 )
 
+                # Check for stock and expiration notifications after production
+                
+                try:
+                    # Check stock levels for consumed materials
+                    NotificationService.check_low_stock(MateriasPrimas)
+                    NotificationService.check_sin_stock(MateriasPrimas)
+                    NotificationService.check_low_stock(ProductosIntermedios)
+                    NotificationService.check_sin_stock(ProductosIntermedios)
+                    
+                    # Check expiration of new lot created
+                    NotificationService.check_expiration_date(ProductosElaborados, LotesProductosElaborados)
+                except Exception as notif_error:
+                    # Log but don't fail the request
+                    logger.error(f"Failed to create notifications: {str(notif_error)}")
+
                 return Response({
                     "message": "Producción registrada exitosamente",
                     "produccion_id": produccion.id,
@@ -389,6 +408,7 @@ class ProduccionesViewSet(viewsets.ModelViewSet):
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             return Response({"error": f"Error interno: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 
 
 class ProduccionDetallesViewSet(viewsets.ReadOnlyModelViewSet):

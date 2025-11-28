@@ -11,6 +11,10 @@ from rest_framework.decorators import action
 from datetime import datetime
 from django.utils import timezone
 from apps.inventario.models import LotesStatus
+from apps.core.services.services import NotificationService
+import logging
+
+logger = logging.getLogger(__name__)
 
 class ClientesViewSet(viewsets.ModelViewSet):
     queryset = Clientes.objects.all()
@@ -239,6 +243,21 @@ class OrdenesViewSet(viewsets.ModelViewSet):
             
                 orden.estado_orden = EstadosOrdenVenta.objects.get(id=estado_id)
                 orden.save()
+                
+                # Check for stock and delivery notifications after order processing
+                try:
+                    # Check stock for products sold
+                    NotificationService.check_low_stock(ProductosElaborados)
+                    NotificationService.check_sin_stock(ProductosElaborados)
+                    NotificationService.check_low_stock(ProductosReventa)
+                    NotificationService.check_sin_stock(ProductosReventa)
+                    
+                    # Check upcoming deliveries
+                    NotificationService.check_order_date()
+                except Exception as notif_error:
+                    # Log but don't fail the request
+                    logger.error(f"Failed to create notifications: {str(notif_error)}")
+                
                 return Response(status=status.HTTP_200_OK)
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)

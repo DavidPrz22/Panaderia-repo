@@ -10,6 +10,10 @@ from .serializers import EjecutarTransformacionSerializer
 from rest_framework.response import Response
 from rest_framework import status
 from django.db import transaction
+from apps.core.services.services import NotificationService
+import logging
+
+logger = logging.getLogger(__name__)
 
 class TransformacionViewSet(viewsets.ModelViewSet):
     queryset = Transformacion.objects.all()
@@ -75,13 +79,17 @@ class EjecutarTransformacionViewSet(viewsets.ModelViewSet):
                     producto_origen=producto_origen,
                     producto_destino=producto_destino
                 )
-                print("Ejecución registrada:", ejecucion)
+                
+                # Check for stock and expiration notifications after transformation
+                try:
+                    NotificationService.check_low_stock(ProductosElaborados)
+                    NotificationService.check_sin_stock(ProductosElaborados)
+                    NotificationService.check_expiration_date(ProductosElaborados, LotesProductosElaborados)
+                except Exception as notif_error:
+                    logger.error(f"Failed to create notifications: {str(notif_error)}")
 
-                print("Transformación ejecutada correctamente.")
                 return Response({"message": "Transformación ejecutada y registrada correctamente."}, status=status.HTTP_200_OK)
         except ValidationError as ve:
-            print("ValidationError en ejecutar-transformacion:", str(ve))
             return Response({"error": str(ve)}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
-            print("Error en ejecutar-transformacion:", str(e))
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
