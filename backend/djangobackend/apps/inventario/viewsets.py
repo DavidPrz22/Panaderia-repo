@@ -306,7 +306,6 @@ class ProductosElaboradosViewSet(viewsets.ModelViewSet):
             producto = ProductosElaborados.objects.get(id=producto_id)
             # Use the expirar_todos_lotes_viejos for ProductosElaborados
             ComponentesStockManagement.expirar_todos_lotes_viejos()
-            
 
         except ProductosElaborados.DoesNotExist:
             pass
@@ -350,6 +349,7 @@ class LotesProductosElaboradosViewSet(viewsets.ModelViewSet):
             
         return Response(status=status.HTTP_204_NO_CONTENT)
     
+
     @action(detail=True, methods=['get'], url_path='change-estado-lote')
     def change_estado_lote(self, request, *args, **kwargs):
         try:

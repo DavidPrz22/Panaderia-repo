@@ -7,7 +7,6 @@ from django.dispatch import receiver
 from django.utils import timezone
 from django.core.exceptions import ValidationError
 from decimal import Decimal
-from apps.core.services.services import NotificationService
 
 # Create your models here.
 class LotesStatus(models.TextChoices):
@@ -220,6 +219,7 @@ class ComponentesStockManagement(models.Model):
 
         # Check notifications after expiration
         try:
+            from apps.core.services.services import NotificationService
             NotificationService.check_all_notifications_after_expiration()
         except Exception as e:
             # Log error but don't fail the expiration process
@@ -781,6 +781,7 @@ def update_materia_prima_stock(sender, instance, **kwargs):
 
     MateriasPrimas.objects.filter(id=materia_prima.id).update(stock_actual=total_stock)
 
+    from apps.core.services.services import NotificationService
     NotificationService.check_low_stock(MateriasPrimas)
     NotificationService.check_sin_stock(MateriasPrimas)
 
@@ -807,6 +808,7 @@ def update_producto_reventa_stock(sender, instance, **kwargs):
 
     ProductosReventa.objects.filter(id=producto_reventa.id).update(stock_actual=total_stock)
 
+    from apps.core.services.services import NotificationService
     NotificationService.check_low_stock(ProductosReventa)
     NotificationService.check_sin_stock(ProductosReventa)
         
