@@ -1,5 +1,5 @@
 import apiClient from "@/api/client";
-import type { DashBoardData } from "../types/types";
+import type { DashBoardData, Notificacion} from "../types/types";
 
 export const getDashBoardData = async (): Promise<DashBoardData | null> => {
     try {
@@ -11,7 +11,7 @@ export const getDashBoardData = async (): Promise<DashBoardData | null> => {
     }
 };
 
-export const getNotificationData = async () => {
+export const getNotificationData = async (): Promise<Notificacion[] | null> => {
     try {
         const response = await apiClient.get("/api/notificaciones/");
         return response.data;

@@ -57,6 +57,27 @@ class EstadosOrdenCompraSerializer(serializers.ModelSerializer):
 
 
 class NotificacionesSerializer(serializers.ModelSerializer):
+    tiempo = serializers.SerializerMethodField()
+    
     class Meta:
         model = Notificaciones
-        fields = ['id', 'tipo_notificacion', 'tipo_producto', 'producto_id', 'descripcion', 'fecha_notificacion', 'leida']
+        fields = ['id', 'tipo_notificacion', 'tipo_producto', 'producto_id', 'descripcion', 'tiempo', 'leida', 'prioridad', 'tiempo']
+    
+    def get_tiempo(self, obj):
+        from django.utils import timezone
+        if obj.fecha_notificacion:
+            delta = timezone.now() - obj.fecha_notificacion
+            total_seconds = int(delta.total_seconds())
+            
+            if total_seconds < 60:
+                return f"hace {total_seconds} segundos"
+            elif total_seconds < 3600:
+                minutes = total_seconds // 60
+                return f"hace {minutes} minutos"
+            elif total_seconds < 86400:
+                hours = total_seconds // 3600
+                return f"hace {hours} horas"
+            else:
+                days = total_seconds // 86400
+                return f"hace {days} días"
+        return "hace poco"
