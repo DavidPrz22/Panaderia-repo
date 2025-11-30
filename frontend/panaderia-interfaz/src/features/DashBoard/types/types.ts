@@ -6,3 +6,7 @@ export type Notification = {
   time: string;
   priority: "high" | "medium" | "low";
 }
+
+export type DashBoardData = {
+  notificaciones: string
+}

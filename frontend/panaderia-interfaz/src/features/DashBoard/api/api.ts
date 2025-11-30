@@ -1,6 +1,7 @@
 import apiClient from "@/api/client";
+import type { DashBoardData } from "../types/types";
 
-export const getDashBoardData = async () => {
+export const getDashBoardData = async (): Promise<DashBoardData | null> => {
     try {
         const response = await apiClient.get("/api/core/dashboard/");
         return response.data;

@@ -4,6 +4,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { NotificacionesFiltro } from "./NotificacionesFiltro";
 import type { Notification } from "../types/types";
 import { NotificationCard } from "./NotificationCard";
+import { useDBNotification } from "../hooks/queries/queries";
 
 const notifications: Notification[] = [
   {
@@ -93,6 +94,8 @@ const notifications: Notification[] = [
 export function DashBoardNotificacionesPanel() {
   const filterByType = (type?: string) => 
     type ? notifications.filter(n => n.type === type) : notifications;
+
+  const { data: notificaciones } = useDBNotification();
 
   const NotificationList = ({ items }: { items: Notification[] }) => (
 
