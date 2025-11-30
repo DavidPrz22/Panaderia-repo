@@ -11,8 +11,8 @@ export type DashBoardData = {
   notificaciones: string
 }
 
-export type TipoProducto = 'Materia Prima' | 'Producto Reventa' | 'Producto Intermedio' | 'Producto Final';
-export type TipoNotificacion = 'Bajo stock' | 'Sin stock' | 'Expiración' | 'Entrega cercana'
+export type TipoProducto = 'Materia Prima' | 'Producto Reventa' | 'Producto Intermedio' | 'Producto Final' | 'TODOS';
+export type TipoNotificacion = 'Bajo stock' | 'Sin stock' | 'Expiración' | 'Entrega cercana' | 'TODOS';
 export type Prioridad = 'Alto' | 'Crítico' | 'Medio' | 'Bajo'
 
 

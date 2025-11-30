@@ -1,5 +1,4 @@
 import { Clock, Package, TruckIcon, X } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import type { Notificacion } from "../types/types";
 import { NOTIFICACIONES_TIPOS, PRIORIDAD_TIPOS } from "../utils/constants";
@@ -9,7 +8,8 @@ const iconMap = {
   [NOTIFICACIONES_TIPOS.SIN_STOCK]: Clock,
   [NOTIFICACIONES_TIPOS.VENCIMIENTO]: TruckIcon,
   [NOTIFICACIONES_TIPOS.ENTREGAS]: TruckIcon,
-} ;
+  'TODOS': Package, // Default icon for 'TODOS' case
+} as const;
 
 const priorityColors = {
   [PRIORIDAD_TIPOS.CRITICO]: "bg-destructive text-destructive-foreground text-white",
