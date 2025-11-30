@@ -1,6 +1,28 @@
 from rest_framework import viewsets
-from .models import UnidadesDeMedida, CategoriasMateriaPrima, CategoriasProductosElaborados, CategoriasProductosReventa, MetodosDePago, EstadosOrdenVenta, EstadosOrdenCompra, ConversionesUnidades
-from .serializers import UnidadMedidaSerializer, CategoriaMateriaPrimaSerializer, CategoriaProductoSerializer, CategoriaProductosReventaSerializer, MetodosDePagoSerializer, EstadosOrdenVentaSerializer, EstadosOrdenCompraSerializer, ConversionUnidadSerializer
+from .models import (
+    UnidadesDeMedida, 
+    CategoriasMateriaPrima, 
+    CategoriasProductosElaborados, 
+    CategoriasProductosReventa, 
+    MetodosDePago, 
+    EstadosOrdenVenta, 
+    EstadosOrdenCompra, 
+    ConversionesUnidades, 
+    Notificaciones 
+    )
+
+from .serializers import (
+    UnidadMedidaSerializer, 
+    CategoriaMateriaPrimaSerializer, 
+    CategoriaProductoSerializer, 
+    CategoriaProductosReventaSerializer, 
+    MetodosDePagoSerializer, 
+    EstadosOrdenVentaSerializer, 
+    EstadosOrdenCompraSerializer, 
+    ConversionUnidadSerializer, 
+    NotificacionesSerializer
+    )
+
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.decorators import action
@@ -59,3 +81,14 @@ class EstadosOrdenCompraViewSet(viewsets.ModelViewSet):
         estados = EstadosOrdenCompra.objects.filter(id__in=[1, 5])
         serializer = EstadosOrdenCompraSerializer(estados, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class NotificacionesViewSet(viewsets.ModelViewSet):
+    queryset = Notificaciones.objects.all()
+    serializer_class = NotificacionesSerializer
+
+    @action(detail=False, methods=['get'], url_path='get-notificaciones-sin-leer')
+    def get_notificaciones_sin_leer(self, request):
+        notificaciones = Notificaciones.objects.filter(leida=False)
+        serializer = NotificacionesSerializer(notificaciones, many=True)
+        return Response({"notificaciones": serializer.data}, status=status.HTTP_200_OK)

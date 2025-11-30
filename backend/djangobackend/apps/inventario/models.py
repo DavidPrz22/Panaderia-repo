@@ -215,17 +215,7 @@ class ComponentesStockManagement(models.Model):
         # Update stock for affected productos reventa
         for pr_id in affected_pr_ids:
             pr = ProductosReventa.objects.get(id=pr_id)
-            pr.actualizar_stock()
-
-        # Check notifications after expiration
-        try:
-            from apps.core.services.services import NotificationService
-            NotificationService.check_all_notifications_after_expiration()
-        except Exception as e:
-            # Log error but don't fail the expiration process
-            import logging
-            logger = logging.getLogger(__name__)
-            logger.error(f"Failed to check notifications after expiration: {str(e)}")
+            pr.actualizar_product_stock()
 
         return {
             "resumen": resumen, 

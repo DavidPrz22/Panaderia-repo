@@ -117,11 +117,11 @@ class NotificationService:
         # Validate input is a class, not an instance
         if not isinstance(producto_class, type) or not issubclass(
             producto_class, 
-            (MateriasPrimas, ProductosFinales, ProductosIntermedios, ProductosReventa)
+            (MateriasPrimas, ProductosElaborados, ProductosFinales, ProductosIntermedios, ProductosReventa)
         ):
             raise ValueError(
                 'El parámetro debe ser una clase de producto válida '
-                '(MateriasPrimas, ProductosFinales, ProductosIntermedios, ProductosReventa)'
+                '(MateriasPrimas, ProductosElaborados, ProductosFinales, ProductosIntermedios, ProductosReventa)'
             )
 
         try:
@@ -166,11 +166,11 @@ class NotificationService:
         # Validate input is a class, not an instance
         if not isinstance(producto_class, type) or not issubclass(
             producto_class, 
-            (MateriasPrimas, ProductosFinales, ProductosIntermedios, ProductosReventa)
+            (MateriasPrimas, ProductosElaborados, ProductosFinales, ProductosIntermedios, ProductosReventa)
         ):
             raise ValueError(
                 'El parámetro debe ser una clase de producto válida '
-                '(MateriasPrimas, ProductosFinales, ProductosIntermedios, ProductosReventa)'
+                '(MateriasPrimas, ProductosElaborados, ProductosFinales, ProductosIntermedios, ProductosReventa)'
             )
 
         try:
@@ -454,15 +454,24 @@ class NotificationService:
             raise
 
     @classmethod
-    def check_all_notifications_after_expiration(cls):
+    def check_all_notifications_after_expiration(cls, force=False):
         """
         Comprehensive check after lot expiration operations.
         Runs all stock and expiration checks - perfect for calling after expirar_todos_lotes_viejos().
         
         Returns:
             dict: Summary of all checks performed
+            
         """
+        from django.core.cache import cache
         try:
+
+            hoy = timezone.now().date()
+            cache_key = f"expirar_todos_lotes_viejos_{hoy}"
+
+            if not force and cache.get(cache_key):
+                return
+
             results = {
                 'stock_checks': {},
                 'expiration_checks': {},
@@ -480,6 +489,9 @@ class NotificationService:
             results['total_created'] += expiration_result.get('total_created', 0)
             
             logger.info(f"Comprehensive check after expiration completed. Total notifications: {results['total_created']}")
+            
+            cache.set(cache_key, True, 86400)  # Cache for 24 hours
+            
             return results
             
         except Exception as e:

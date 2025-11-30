@@ -1,5 +1,15 @@
 from rest_framework import serializers
-from .models import UnidadesDeMedida, CategoriasMateriaPrima, CategoriasProductosElaborados, CategoriasProductosReventa, MetodosDePago, EstadosOrdenVenta, EstadosOrdenCompra, ConversionesUnidades
+from .models import (
+    UnidadesDeMedida, 
+    CategoriasMateriaPrima, 
+    CategoriasProductosElaborados, 
+    CategoriasProductosReventa, 
+    MetodosDePago, 
+    EstadosOrdenVenta, 
+    EstadosOrdenCompra, 
+    Notificaciones, 
+    ConversionesUnidades
+    )
 
 class UnidadMedidaSerializer(serializers.ModelSerializer):
     class Meta:
@@ -44,3 +54,9 @@ class EstadosOrdenCompraSerializer(serializers.ModelSerializer):
     class Meta:
         model = EstadosOrdenCompra
         fields = ['id', 'nombre_estado']
+
+
+class NotificacionesSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Notificaciones
+        fields = ['id', 'tipo_notificacion', 'tipo_producto', 'producto_id', 'descripcion', 'fecha_notificacion', 'leida']
