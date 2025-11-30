@@ -93,10 +93,12 @@ class NotificationService:
         """Get the product type as a string for notifications"""
         if isinstance(producto, MateriasPrimas):
             return TiposProductosNotificaciones.MATERIA_PRIMA
-        elif isinstance(producto, ProductosFinales):
-            return TiposProductosNotificaciones.PRODUCTOS_ELABORADOS
+        elif isinstance(producto, ProductosElaborados):
+            return TiposProductosNotificaciones.PRODUCTOS_INTERMEDIOS if producto.es_intermediario else TiposProductosNotificaciones.PRODUCTOS_FINALES
         elif isinstance(producto, ProductosIntermedios):
             return TiposProductosNotificaciones.PRODUCTOS_INTERMEDIOS
+        elif isinstance(producto, ProductosFinales):
+            return TiposProductosNotificaciones.PRODUCTOS_FINALES
         elif isinstance(producto, ProductosReventa):
             return TiposProductosNotificaciones.PRODUCTOS_REVENTA
         else:

@@ -11,3 +11,12 @@ export const PRIORIDAD_TIPOS = {
     ALTO : 'Alto', 
     CRITICO : 'Crítico'
 } as const
+
+
+export const PRODUCTOS_TIPOS = {
+    MATERIA_PRIMA : 'Materia prima', 
+    PRODUCTOS_FINALES : 'Productos finales', 
+    PRODUCTOS_INTERMEDIOS : 'Productos intermedios',
+    PRODUCTOS_REVENTA : 'Productos de reventa', 
+    ORDENES_VENTA : 'Ordenes de venta',
+} as const

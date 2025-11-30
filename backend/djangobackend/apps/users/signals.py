@@ -12,7 +12,7 @@ def handle_login(sender, user, request, **kwargs):
     # Check notifications after expiration
     try:
         
-        NotificationService.check_all_notifications_after_expiration(force=True)
+        NotificationService.check_all_notifications_after_expiration()
     except Exception as e:
         # Log error but don't fail the expiration process
         logger = logging.getLogger(__name__)

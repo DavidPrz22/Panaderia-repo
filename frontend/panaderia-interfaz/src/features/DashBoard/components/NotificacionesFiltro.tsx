@@ -6,6 +6,7 @@ import {
   SelectItem,
 } from "@/components/ui/select";
 
+import { PRODUCTOS_TIPOS } from "../utils/constants";
 export const NotificacionesFiltro = ({
   id,
   value,
@@ -25,10 +26,11 @@ export const NotificacionesFiltro = ({
         </SelectTrigger>
         <SelectContent>
           <SelectItem value="1">Todas los productos</SelectItem>
-          <SelectItem value="2">Materia Prima</SelectItem>
-          <SelectItem value="3">Producto Final</SelectItem>
-          <SelectItem value="4">Producto Intermedio</SelectItem>
-          <SelectItem value="5">Producto de Reventa</SelectItem>
+          <SelectItem value="2">{PRODUCTOS_TIPOS.MATERIA_PRIMA}</SelectItem>
+          <SelectItem value="3">{PRODUCTOS_TIPOS.PRODUCTOS_FINALES}</SelectItem>
+          <SelectItem value="4">{PRODUCTOS_TIPOS.PRODUCTOS_INTERMEDIOS}</SelectItem>
+          <SelectItem value="5">{PRODUCTOS_TIPOS.PRODUCTOS_REVENTA}</SelectItem>
+          <SelectItem value="6">{PRODUCTOS_TIPOS.ORDENES_VENTA}</SelectItem>
         </SelectContent>
       </Select>
     </>

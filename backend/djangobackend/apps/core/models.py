@@ -163,7 +163,7 @@ class TiposNotificaciones(models.TextChoices):
 
 class TiposProductosNotificaciones(models.TextChoices):
     MATERIA_PRIMA = 'Materia prima', 'Materia prima'
-    PRODUCTOS_ELABORADOS = 'Productos elaborados', 'Productos elaborados'
+    PRODUCTOS_FINALES = 'Productos finales', 'Productos finales'
     PRODUCTOS_INTERMEDIOS = 'Productos intermedios', 'Productos intermedios'
     PRODUCTOS_REVENTA = 'Productos de reventa', 'Productos de reventa'
     ORDENES_VENTA = 'Ordenes de venta', 'Ordenes de venta'
