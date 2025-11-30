@@ -12,16 +12,18 @@ import { useState } from "react";
 const NoNotification = () => (<div className=" text-muted-foreground text-md text-center font-medium py-10">Ninguna Notificación</div>)
 
 export function DashBoardNotificacionesPanel() {
+
+  const TODOS = 'TODOS'
   const { data: notificaciones } = useDBNotification();
-  const [ filtroTipoProducto, setFiltroTipoProducto ] = useState<TipoProducto>('TODOS');
+  const [ filtroTipoProducto, setFiltroTipoProducto ] = useState<TipoProducto>(TODOS);
 
   const filterByType = (tipo_notificacion?: TipoNotificacion) => {
 
-    if (!tipo_notificacion) return notificaciones!.filter(n => filtroTipoProducto === 'TODOS' ? true : n.tipo_producto === filtroTipoProducto)
+    if (!tipo_notificacion) return notificaciones!.filter(n => filtroTipoProducto === TODOS ? true : n.tipo_producto === filtroTipoProducto)
     
     return notificaciones!.filter(n => {
       const tipo = n.tipo_notificacion === tipo_notificacion
-      const producto = n.tipo_producto === filtroTipoProducto
+      const producto = filtroTipoProducto === TODOS ? true : n.tipo_producto === filtroTipoProducto
       return tipo && producto
     })
   }
