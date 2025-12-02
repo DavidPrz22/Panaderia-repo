@@ -121,6 +121,6 @@ class NotificacionesViewSet(viewsets.ModelViewSet):
         else:
             serializer = NotificacionesSerializer(notificaciones_sin_leer, many=True)
         
-        # notificaciones_sin_leer.update(leida=True)
+        Notificaciones.objects.filter(id__in=notificaciones_sin_leer.values_list('id', flat=True)).update(leida=True)
 
         return Response({"notificaciones": serializer.data}, status=status.HTTP_200_OK)
