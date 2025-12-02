@@ -11,7 +11,11 @@ export const getDashBoardData = async (): Promise<DashBoardData | null> => {
     }
 };
 
-export const getNotificationData = async (): Promise<Notificacion[] | null> => {
+type NotificacionesResponse = {
+    notificaciones: Notificacion[];
+}
+
+export const getNotificationData = async (): Promise<NotificacionesResponse | null> => {
     try {
         const response = await apiClient.get("/api/notificaciones/");
         return response.data;

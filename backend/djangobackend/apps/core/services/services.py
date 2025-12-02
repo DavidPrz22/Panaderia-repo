@@ -371,14 +371,9 @@ class NotificationService:
                     prioridad=elemento.get('prioridad'),
                 )
                 notification_bucket.append(notification)
-            else:
-                logger.debug(
-                    f"Skipping duplicate notification for {tipo_producto} ID {producto_id}"
-                )
 
         if notification_bucket:
             Notificaciones.objects.bulk_create(notification_bucket)
-            logger.info(f"Created {len(notification_bucket)} new notifications of type {tipo_notificacion}")
         
         return len(notification_bucket)
 

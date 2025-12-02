@@ -14,25 +14,26 @@ const NoNotification = () => (<div className=" text-muted-foreground text-md tex
 export function DashBoardNotificacionesPanel() {
 
   const TODOS = 'TODOS'
-  const { data: notificaciones } = useDBNotification();
-  const [ filtroTipoProducto, setFiltroTipoProducto ] = useState<TipoProducto>(TODOS);
+  const { data } = useDBNotification();
+  const notificaciones = data?.notificaciones ?? [];
+  const [filtroTipoProducto, setFiltroTipoProducto] = useState<TipoProducto>(TODOS);
 
   const filterByType = (tipo_notificacion?: TipoNotificacion) => {
 
-    if (!tipo_notificacion) return notificaciones!.filter(n => filtroTipoProducto === TODOS ? true : n.tipo_producto === filtroTipoProducto)
-    
-    return notificaciones!.filter(n => {
+    if (!tipo_notificacion) return notificaciones.filter(n => filtroTipoProducto === TODOS ? true : n.tipo_producto === filtroTipoProducto)
+
+    return notificaciones.filter(n => {
       const tipo = n.tipo_notificacion === tipo_notificacion
       const producto = filtroTipoProducto === TODOS ? true : n.tipo_producto === filtroTipoProducto
       return tipo && producto
     })
   }
-  
+
   const NotificationList = ({ items }: { items: Notificacion[] }) => {
     if (items.length === 0) {
-      return <NoNotification/>;
+      return <NoNotification />;
     }
-    
+
     return (
       <ScrollArea className="h-[72vh]">
         <div className="space-y-3 pr-4">
@@ -53,7 +54,7 @@ export function DashBoardNotificacionesPanel() {
             <div className="text-sm font-semibold">
               Filtrar por tipos:
             </div>
-            <NotificacionesFiltro id="notificaciones-filtro" placeholder="Selecciona un tipo" value={filtroTipoProducto} onChange={(v) => setFiltroTipoProducto(v as TipoProducto)}/>
+            <NotificacionesFiltro id="notificaciones-filtro" placeholder="Selecciona un tipo" value={filtroTipoProducto} onChange={(v) => setFiltroTipoProducto(v as TipoProducto)} />
           </div>
         </CardTitle>
       </CardHeader>

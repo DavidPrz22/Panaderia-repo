@@ -31,7 +31,7 @@ export const NotificationCard = ({id, prioridad, tipo_notificacion, tipo_product
     return (
             <div
               key={id}
-              className="flex gap-3 p-4 rounded-lg border bg-card hover:bg-secondary/50 transition-colors"
+              className={`flex gap-3 p-4 rounded-lg border hover:bg-secondary ${leida ? '' : 'bg-gray-50'} transition-colors`}
             >
               <div className={`p-2 rounded-lg h-fit ${priorityIconColor[prioridad]}`}> 
                 <Icon className={`h-4 w-4 ${(prioridad === PRIORIDAD_TIPOS.ALTO || prioridad === PRIORIDAD_TIPOS.CRITICO) ? 'text-destructive' : 'text-primary'} `} />
