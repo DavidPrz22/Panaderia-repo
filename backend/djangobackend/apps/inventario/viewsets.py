@@ -13,13 +13,6 @@ class MateriaPrimaViewSet(viewsets.ModelViewSet):
     queryset = MateriasPrimas.objects.all()
     serializer_class = MateriaPrimaSerializer
 
-    def retrieve(self, request, *args, **kwargs):
-        """Retrieve materia prima details after expiring old lots"""
-        # Expire all old lots before returning details
-        ComponentesStockManagement.expirar_todos_lotes_viejos()
-        
-        return super().retrieve(request, *args, **kwargs)
-
 
 class ComponenteSearchViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = MateriasPrimas.objects.none()
@@ -94,18 +87,7 @@ class LotesMateriaPrimaViewSet(viewsets.ModelViewSet):
         
         # If filtering by materia prima, expire lots for that material
         if materia_prima_id:
-            try:
                 materia_prima = MateriasPrimas.objects.get(id=materia_prima_id)
-                materia_prima.expirar_lotes_viejos()
-            except MateriasPrimas.DoesNotExist:
-                pass
-        else:
-            # Expire all lots if no filter
-            # Expire all lots if no filter
-            ComponentesStockManagement.expirar_todos_lotes_viejos()
-            
-        # Check notifications after expiration
-
         
         return super().list(request, *args, **kwargs)
 
@@ -301,15 +283,6 @@ class ProductosElaboradosViewSet(viewsets.ModelViewSet):
     def lotes(self, request, *args, **kwargs):
         producto_id = kwargs.get('pk')
         
-        # Expire old lots before returning lot information
-        try:
-            producto = ProductosElaborados.objects.get(id=producto_id)
-            # Use the expirar_todos_lotes_viejos for ProductosElaborados
-            ComponentesStockManagement.expirar_todos_lotes_viejos()
-
-        except ProductosElaborados.DoesNotExist:
-            pass
-        
         lotes = LotesProductosElaborados.objects.filter(producto_elaborado=producto_id)
         serializer = LotesProductosElaboradosSerializer(lotes, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
@@ -319,16 +292,6 @@ class LotesProductosElaboradosViewSet(viewsets.ModelViewSet):
     queryset = LotesProductosElaborados.objects.all()
     serializer = LotesProductosElaboradosSerializer
     
-    def list(self, request, *args, **kwargs):
-        """List lots after expiring old ones"""
-        # Expire all old lots before returning list
-        # Expire all old lots before returning list
-        ComponentesStockManagement.expirar_todos_lotes_viejos()
-        
-        # Check notifications after expiration
-
-        
-        return super().list(request, *args, **kwargs)
 
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -406,24 +369,10 @@ class ProductosIntermediosDetallesViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = ProductosIntermedios.objects.all()
     serializer_class = ProductosIntermediosDetallesSerializer
 
-    def retrieve(self, request, *args, **kwargs):
-        """Retrieve product details after expiring old lots"""
-        # Expire all old lots before returning details
-        ComponentesStockManagement.expirar_todos_lotes_viejos()
-        
-        return super().retrieve(request, *args, **kwargs)
-
 
 class ProductosFinalesDetallesViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = ProductosFinales.objects.all()
     serializer_class = ProductosFinalesDetallesSerializer
-
-    def retrieve(self, request, *args, **kwargs):
-        """Retrieve product details after expiring old lots"""
-        # Expire all old lots before returning details
-        ComponentesStockManagement.expirar_todos_lotes_viejos()
-        
-        return super().retrieve(request, *args, **kwargs)
 
 
 class ProductosFinalesSearchViewset(viewsets.ReadOnlyModelViewSet):
@@ -479,16 +428,6 @@ class ProductosReventaDetallesViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = ProductosReventa.objects.all()
     serializer_class = ProductosReventaDetallesSerializer
 
-    def retrieve(self, request, *args, **kwargs):
-        """Retrieve product details after expiring old lots"""
-        instance = self.get_object()
-        
-        # Expire old lots for this specific product before returning details
-        instance.expirar_lotes_viejos()
-        
-        serializer = self.get_serializer(instance)
-        return Response(serializer.data)
-
 
 class LotesProductosReventaViewSet(viewsets.ModelViewSet):
     queryset = LotesProductosReventa.objects.all()
@@ -514,8 +453,6 @@ class LotesProductosReventaViewSet(viewsets.ModelViewSet):
             except ProductosReventa.DoesNotExist:
                 pass
         else:
-            # Expire all ProductosReventa lots if no filter
-            # Expire all ProductosReventa lots if no filter
             ProductosReventa.expirar_todos_lotes_viejos()
         
         return super().list(request, *args, **kwargs)
@@ -557,6 +494,7 @@ class LotesProductosReventaViewSet(viewsets.ModelViewSet):
         
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
     
+
     @action(detail=True, methods=['get'], url_path='change-estado-lote')
     def change_estado_lote(self, request, *args, **kwargs):
         try:
