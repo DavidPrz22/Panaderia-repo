@@ -24,7 +24,7 @@ import {
 } from "../hooks/queries/queries";
 import { useOrdenesContext } from "@/context/OrdenesContext";
 import { DoubleSpinnerLoading } from "@/components/DoubleSpinnerLoading";
-import { useReducer, useMemo} from "react";
+import { useReducer, useMemo } from "react";
 
 import { Paginator } from "@/components/Paginator";
 
@@ -54,35 +54,38 @@ const OrdenesIndex = () => {
   const { data: ordenDetalles, isFetched } = useGetOrdenesDetalles(
     ordenSeleccionadaId!,
   );
-  
-  const [page, setPage] = useReducer((state: number, action: { type: PaginatorActions, payload?: number}) => {
-    
-    if (action.type === 'next' && ordenesPagination) {
 
-      if (state < ordenesPagination.pages.length - 1) 
-        return state + 1;
-      
-      if (hasNextPage) fetchNextPage();
-        return state + 1;
-    }
-    
-    if (action.type === 'previous') {
+  const [page, setPage] = useReducer((state: number, action: { type: PaginatorActions, payload?: number }) => {
+
+    switch (action.type) {
+      case 'next':
+        if (ordenesPagination) {
+          if (state < ordenesPagination.pages.length - 1)
+            return state + 1;
+
+          if (hasNextPage) fetchNextPage();
+          return state + 1;
+        }
+        return state;
+
+      case 'previous':
         return state - 1;
-    }
-    
-    if (action.type === 'base' && ordenesPagination) {
 
-      if (action.payload! > ordenesPagination.pages.length - 1 || action.payload! < 0) {
-        if (hasNextPage) fetchNextPage();
-        return state + 1;
-      }
+      case 'base':
+        if (ordenesPagination) {
+          if (action.payload! > ordenesPagination.pages.length - 1 || action.payload! < 0) {
+            if (hasNextPage) fetchNextPage();
+            return state + 1;
+          }
+          return action.payload!;
+        }
+        return state;
 
-      return action.payload!;
+      default:
+        return state;
     }
-    
-    return state;
-        }, 0);
-        
+  }, 0);
+
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("Todos");
 
@@ -106,7 +109,7 @@ const OrdenesIndex = () => {
   const pages_count = useMemo(() => {
     const result_count = ordenesPagination?.pages[0].count || 1;
     const entry_per_page = ordenesPagination?.pages[0].results.length || 1;
-    return  Math.round(result_count / entry_per_page);
+    return Math.round(result_count / entry_per_page);
 
   }, [isFetchedOrdenesTable]);
 
@@ -268,14 +271,14 @@ const OrdenesIndex = () => {
           <>
             <OrdersTable orders={filteredOrders} onEditOrder={handleEditOrder} />
             {pages_count > 1 && (
-              <Paginator 
-                    previousPage={page > 0} 
-                    nextPage={ hasNextPage || page < pages_count - 1} 
-                    pages={Array.from({ length: pages_count}, (_, i) => i + 1)}
-                    currentPage={page + 1}
-                    onClickPrev={() => setPage({type:'previous'})}
-                    onClickPage={(p) => setPage({type:'base', payload: p - 1})}
-                    onClickNext={() => setPage({type:'next'})}
+              <Paginator
+                previousPage={page > 0}
+                nextPage={hasNextPage || page < pages_count - 1}
+                pages={Array.from({ length: pages_count }, (_, i) => i)}
+                currentPage={page}
+                onClickPrev={() => setPage({ type: 'previous' })}
+                onClickPage={(p) => setPage({ type: 'base', payload: p })}
+                onClickNext={() => setPage({ type: 'next' })}
               />
             )}
           </>

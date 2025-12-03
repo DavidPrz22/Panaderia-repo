@@ -1,12 +1,12 @@
 import apiClient from "@/api/client";
 import axios from "axios";
 import type {
-  OrdenCompraTable,
   ProveedorRegistro,
   OrdenCompra,
   EstadoOC,
   MetodoDePago,
   Producto,
+  OrdenesCompraPagination
 } from "../types/types";
 import type { UnidadesDeMedida } from "@/features/ProductosIntermedios/types/types";
 import type { TEmailSchema, TOrdenCompraSchema, TPagoSchema, TRecepcionFormSchema } from "../schemas/schemas";
@@ -27,15 +27,17 @@ export const getProveedores = async (): Promise<ProveedorRegistro[]> => {
   }
 };
 
-export const getOrdenesComprasTable = async (): Promise<OrdenCompraTable[]> => {
+
+export const getOrdenesComprasTable = async ({ pageParam }: { pageParam?: string | null } = {}): Promise<OrdenesCompraPagination> => {
+
+  const route = pageParam || "/api/compras/ordenes-compra-lista/"
+
   try {
-    const response = await apiClient.get(
-      "/api/compras/ordenes-compra/get_ordenes_table/",
-    );
+    const response = await apiClient.get(route);
     return response.data;
   } catch (error) {
-    console.error("Error fetching compras:", error);
-    return [];
+    console.error("Error fetching compras detalles:", error);
+    throw error;
   }
 };
 

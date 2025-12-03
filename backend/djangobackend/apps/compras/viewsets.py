@@ -19,6 +19,9 @@ import os
 import resend
 from datetime import datetime
 
+
+from djangobackend.pagination import StandardResultsSetPagination
+
 class ProveedoresViewSet(viewsets.ModelViewSet):
     queryset = Proveedores.objects.all()
     serializer_class = ProveedoresSerializer
@@ -28,6 +31,12 @@ class ProveedoresViewSet(viewsets.ModelViewSet):
         queryset = Proveedores.objects.all()
         serializer = CompraRegistroProveedoresSerializer(queryset, many=True)
         return Response(serializer.data)
+
+
+class OrdenesCompraTableViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = OrdenesCompra.objects.all()
+    serializer_class = OrdenesCompraTableSerializer
+    pagination_class = StandardResultsSetPagination
 
 
 class OrdenesCompraViewSet(viewsets.ModelViewSet):
@@ -188,12 +197,6 @@ class OrdenesCompraViewSet(viewsets.ModelViewSet):
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
-        
-    @action(detail=False, methods=['get'])
-    def get_ordenes_table(self, request):
-        queryset = OrdenesCompra.objects.all()
-        serializer = OrdenesCompraTableSerializer(queryset, many=True)
-        return Response(serializer.data)
 
     @action(detail=True, methods=['post'], url_path='enviar-email')
     def enviar_email(self, request, pk=None):

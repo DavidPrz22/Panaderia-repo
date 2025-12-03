@@ -32,6 +32,7 @@ class OrdenesViewSet(viewsets.ModelViewSet):
     queryset = OrdenVenta.objects.all()
     serializer_class = OrdenesSerializer
 
+
     def create(self, request, *args, **kwargs):
 
         with transaction.atomic():
@@ -310,6 +311,7 @@ class OrdenesViewSet(viewsets.ModelViewSet):
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
+
     def actualizar_lote(self, lote, cantidad_consumida):
         # Restore the consumed quantity back to the lot
         if (lote.fecha_caducidad < timezone.now().date()):
@@ -335,6 +337,7 @@ class OrdenesViewSet(viewsets.ModelViewSet):
         
         lote.save()
     
+
     def register_payment(self, orden, ref, user):
         try:
             Pagos.objects.create(
@@ -351,6 +354,7 @@ class OrdenesViewSet(viewsets.ModelViewSet):
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
+
     def update_payment(self, orden, ref, user):
         try:
             existing_payment = Pagos.objects.filter(orden_venta_asociada=orden).first()
@@ -364,6 +368,7 @@ class OrdenesViewSet(viewsets.ModelViewSet):
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
     
+
     @action(detail=True, methods=['put'])
     def register_payment_reference(self, request, pk=None):
         orden = OrdenVenta.objects.get(id=pk)

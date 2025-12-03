@@ -1,4 +1,4 @@
-import { useQueries, useQuery } from "@tanstack/react-query";
+import { useQueries, useQuery, useInfiniteQuery } from "@tanstack/react-query";
 import {
   bcvRateQueryOptions,
   ordenesCompraTableQueryOptions,
@@ -13,7 +13,7 @@ import {
 } from "./queryOptions";
 
 export const useGetOrdenesCompraTable = () => {
-  return useQuery(ordenesCompraTableQueryOptions);
+  return useInfiniteQuery(ordenesCompraTableQueryOptions);
 };
 
 export const useGetAllEstadosOrdenCompra = () => {

@@ -139,3 +139,10 @@ export type RecepcionForm = {
   fecha_recepcion: string;
   detalles: DetalleRecepcion[];
 };
+
+export type OrdenesCompraPagination = {
+  previous: string | null;
+  next: string | null;
+  results: OrdenCompraTable[];
+  count: number
+}

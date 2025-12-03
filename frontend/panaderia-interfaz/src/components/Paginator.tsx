@@ -69,7 +69,7 @@ export function Paginator({ previousPage, pages, nextPage, onClickPage, onClickP
 
         {visiblePages.map(p => (
           <PaginationItem key={p}>
-            <PaginationLink onClick={() => onClickPage(p)} className={p === currentPage ? "bg-primary text-primary-foreground hover:bg-primary/20" : "cursor-pointer"}> {p} </PaginationLink>
+            <PaginationLink onClick={() => onClickPage(p)} className={p === currentPage ? "bg-primary text-primary-foreground hover:bg-primary/20" : "cursor-pointer"}> {p + 1} </PaginationLink>
           </PaginationItem>
         ))}
 

@@ -5,7 +5,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
 import type { OrdenCompraTable } from "../types/types";
-import { useEffect } from "react";
+
+import { useEffect, useMemo, useReducer } from "react";
+
 import {
   Select,
   SelectContent,
@@ -24,6 +26,9 @@ import { ComprasTable } from "./ComprasTable";
 import { ComprasForm } from "./ComprasForma";
 import { ComprasDetalles } from "./ComprasDetalles";
 import { ComprasRecepcion } from "./ComprasRecepcionTabla";
+import { Paginator } from "@/components/Paginator";
+
+type actionType = 'previous' | 'next' | 'base';
 
 export const ComprasIndex = () => {
   const {
@@ -40,9 +45,53 @@ export const ComprasIndex = () => {
   } = useComprasContext();
 
   const {
-    data: ordenesCompraTable = [],
+    data: ordenesCompraPagination,
     isFetching: isFetchingOrdenesCompraTable,
+    isFetchedAfterMount,
+    hasNextPage,
+    fetchNextPage,
+
   } = useGetOrdenesCompraTable();
+
+  const pages_count = useMemo(() => {
+    const result_count = ordenesCompraPagination?.pages[0].count || 1;
+    const entry_per_page = ordenesCompraPagination?.pages[0].results.length || 1;
+    return Math.round(result_count / entry_per_page);
+
+  }, [isFetchedAfterMount]);
+
+
+  const [page, setPage] = useReducer((state: number, action: { type: actionType, payload?: number }) => {
+    switch (action.type) {
+      case 'next':
+        if (ordenesCompraPagination) {
+          if (state < ordenesCompraPagination.pages.length - 1)
+            return state + 1;
+
+          if (hasNextPage) fetchNextPage();
+          return state + 1;
+        }
+        return state;
+
+      case 'previous':
+        return state - 1;
+
+      case 'base':
+        if (ordenesCompraPagination) {
+          if (action.payload! > ordenesCompraPagination.pages.length - 1 || action.payload! < 0) {
+            if (hasNextPage) fetchNextPage();
+            return state + 1;
+          }
+          return action.payload!;
+        }
+        return state;
+
+      default:
+        return state;
+    }
+  }, 0)
+
+  const ordenesCompraTable = ordenesCompraPagination?.pages[page]?.results || [];
 
   const { data: { orden: compraDetalles } = { orden: undefined }, isFetched } =
     useGetOrdenesCompraDetalles(compraSeleccionadaId!);
@@ -84,8 +133,8 @@ export const ComprasIndex = () => {
     const matchesStatus =
       statusFilter === "Todos" ||
       order.estado_oc ===
-        estadosOrden?.find((e) => e.id.toString() === statusFilter)
-          ?.nombre_estado;
+      estadosOrden?.find((e) => e.id.toString() === statusFilter)
+        ?.nombre_estado;
 
     return matchesSearch && matchesStatus;
   });
@@ -242,10 +291,24 @@ export const ComprasIndex = () => {
         {isFetchingOrdenesCompraTable ? (
           <DoubleSpinnerLoading extraClassName="size-20" />
         ) : (
-          <ComprasTable
-            ordenesCompra={filteredOrders}
-            onEditOrder={handleEditOrder}
-          />
+          <>
+            <ComprasTable
+              ordenesCompra={filteredOrders}
+              onEditOrder={handleEditOrder}
+            />
+            {pages_count > 1 && (
+              <Paginator
+                previousPage={page > 0}
+                nextPage={hasNextPage || page < pages_count - 1}
+                pages={Array.from({ length: pages_count }, (_, i) => i )}
+                currentPage={page}
+                onClickPrev={() => setPage({ type: 'previous' })}
+                onClickPage={(p) => setPage({ type: 'base', payload: p })}
+                onClickNext={() => setPage({ type: 'next' })}
+              />
+            )}
+          </>
+
         )}
       </div>
     </div>
