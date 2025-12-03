@@ -6,10 +6,15 @@ import type {
   EstadoOC,
   MetodoDePago,
   Producto,
-  OrdenesCompraPagination
+  OrdenesCompraPagination,
 } from "../types/types";
 import type { UnidadesDeMedida } from "@/features/ProductosIntermedios/types/types";
-import type { TEmailSchema, TOrdenCompraSchema, TPagoSchema, TRecepcionFormSchema } from "../schemas/schemas";
+import type {
+  TEmailSchema,
+  TOrdenCompraSchema,
+  TPagoSchema,
+  TRecepcionFormSchema,
+} from "../schemas/schemas";
 
 export type OrdenCompraDetallesResponse = {
   orden: OrdenCompra;
@@ -27,10 +32,10 @@ export const getProveedores = async (): Promise<ProveedorRegistro[]> => {
   }
 };
 
-
-export const getOrdenesComprasTable = async ({ pageParam }: { pageParam?: string | null } = {}): Promise<OrdenesCompraPagination> => {
-
-  const route = pageParam || "/api/compras/ordenes-compra-lista/"
+export const getOrdenesComprasTable = async ({
+  pageParam,
+}: { pageParam?: string | null } = {}): Promise<OrdenesCompraPagination> => {
+  const route = pageParam || "/api/compras/ordenes-compra-lista/";
 
   try {
     const response = await apiClient.get(route);
@@ -150,9 +155,15 @@ export const createOrdenCompra = async (
   }
 };
 
-export const updateOrdenCompra = async (id: number, data: TOrdenCompraSchema): Promise<OrdenCompraDetallesResponse> => {
+export const updateOrdenCompra = async (
+  id: number,
+  data: TOrdenCompraSchema,
+): Promise<OrdenCompraDetallesResponse> => {
   try {
-    const response = await apiClient.put(`/api/compras/ordenes-compra/${id}/`, data);
+    const response = await apiClient.put(
+      `/api/compras/ordenes-compra/${id}/`,
+      data,
+    );
     return response.data;
   } catch (error) {
     console.error("Error updating orden compra:", error);
@@ -174,13 +185,11 @@ export const marcarEnviadaOC = async (
   }
 };
 
-
-export const crearRecepcionOC = async (params: TRecepcionFormSchema): Promise<{ message: string, orden: OrdenCompra }> => {
+export const crearRecepcionOC = async (
+  params: TRecepcionFormSchema,
+): Promise<{ message: string; orden: OrdenCompra }> => {
   try {
-    const response = await apiClient.post(
-      "/api/compras/compras/",
-      params,
-    );
+    const response = await apiClient.post("/api/compras/compras/", params);
     return response.data;
   } catch (error) {
     console.error("Error creating reception:", error);
@@ -188,7 +197,9 @@ export const crearRecepcionOC = async (params: TRecepcionFormSchema): Promise<{ 
   }
 };
 
-export const registrarPago = async (params: TPagoSchema): Promise<{ message: string }> => {
+export const registrarPago = async (
+  params: TPagoSchema,
+): Promise<{ message: string }> => {
   try {
     const response = await apiClient.post(
       "/api/compras/pagos-proveedores/",
@@ -201,7 +212,10 @@ export const registrarPago = async (params: TPagoSchema): Promise<{ message: str
   }
 };
 
-export const enviarEmailOC = async (id: number, params: TEmailSchema): Promise<{ message: string }> => {
+export const enviarEmailOC = async (
+  id: number,
+  params: TEmailSchema,
+): Promise<{ message: string }> => {
   try {
     const response = await apiClient.post(
       `/api/compras/ordenes-compra/${id}/enviar-email/`,
@@ -214,9 +228,9 @@ export const enviarEmailOC = async (id: number, params: TEmailSchema): Promise<{
   }
 };
 
-export const deleteOrdenCompra = async (id: number): Promise<{ message: string }> => {
-  const response = await apiClient.delete(
-    `/api/compras/ordenes-compra/${id}/`,
-  );
+export const deleteOrdenCompra = async (
+  id: number,
+): Promise<{ message: string }> => {
+  const response = await apiClient.delete(`/api/compras/ordenes-compra/${id}/`);
   return response.data;
 };

@@ -87,9 +87,7 @@ export function ComprasRecepcionTotals({
         <div className=" w-80">
           {/* Final Total USD */}
           <div className="flex justify-between items-center text-md border-t border-green-300 pt-3 mt-2">
-            <span className="font-bold text-gray-900">
-              Total a Pagar USD:
-            </span>
+            <span className="font-bold text-gray-900">Total a Pagar USD:</span>
             <span className="font-bold text-lg">
               {formatCurrency(totalRecepcionUSDConAdelanto)}
             </span>
@@ -97,9 +95,7 @@ export function ComprasRecepcionTotals({
 
           {/* Final Total VES */}
           <div className="flex justify-between items-center text-md">
-            <span className="font-bold text-gray-900">
-              Total a Pagar VES:
-            </span>
+            <span className="font-bold text-gray-900">Total a Pagar VES:</span>
             <span className="font-bold text-lg">
               {totalRecepcionVESConAdelanto.toFixed(2)}
             </span>
@@ -109,4 +105,3 @@ export function ComprasRecepcionTotals({
     </div>
   );
 }
-

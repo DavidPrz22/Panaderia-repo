@@ -1,4 +1,4 @@
-import { 
+import {
   Select,
   SelectValue,
   SelectContent,
@@ -26,11 +26,21 @@ export const NotificacionesFiltro = ({
         </SelectTrigger>
         <SelectContent>
           <SelectItem value="TODOS">Todas los productos</SelectItem>
-          <SelectItem value={PRODUCTOS_TIPOS.MATERIA_PRIMA}>{PRODUCTOS_TIPOS.MATERIA_PRIMA}</SelectItem>
-          <SelectItem value={PRODUCTOS_TIPOS.PRODUCTOS_FINALES}>{PRODUCTOS_TIPOS.PRODUCTOS_FINALES}</SelectItem>
-          <SelectItem value={PRODUCTOS_TIPOS.PRODUCTOS_INTERMEDIOS}>{PRODUCTOS_TIPOS.PRODUCTOS_INTERMEDIOS}</SelectItem>
-          <SelectItem value={PRODUCTOS_TIPOS.PRODUCTOS_REVENTA}>{PRODUCTOS_TIPOS.PRODUCTOS_REVENTA}</SelectItem>
-          <SelectItem value={PRODUCTOS_TIPOS.ORDENES_VENTA}>{PRODUCTOS_TIPOS.ORDENES_VENTA}</SelectItem>
+          <SelectItem value={PRODUCTOS_TIPOS.MATERIA_PRIMA}>
+            {PRODUCTOS_TIPOS.MATERIA_PRIMA}
+          </SelectItem>
+          <SelectItem value={PRODUCTOS_TIPOS.PRODUCTOS_FINALES}>
+            {PRODUCTOS_TIPOS.PRODUCTOS_FINALES}
+          </SelectItem>
+          <SelectItem value={PRODUCTOS_TIPOS.PRODUCTOS_INTERMEDIOS}>
+            {PRODUCTOS_TIPOS.PRODUCTOS_INTERMEDIOS}
+          </SelectItem>
+          <SelectItem value={PRODUCTOS_TIPOS.PRODUCTOS_REVENTA}>
+            {PRODUCTOS_TIPOS.PRODUCTOS_REVENTA}
+          </SelectItem>
+          <SelectItem value={PRODUCTOS_TIPOS.ORDENES_VENTA}>
+            {PRODUCTOS_TIPOS.ORDENES_VENTA}
+          </SelectItem>
         </SelectContent>
       </Select>
     </>

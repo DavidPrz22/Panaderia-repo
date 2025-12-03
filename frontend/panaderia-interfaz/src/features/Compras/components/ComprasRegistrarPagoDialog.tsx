@@ -36,26 +36,36 @@ interface ComprasRegistrarPagoDialogProps {
   onOpenChange: (open: boolean) => void;
 }
 
-
 export const ComprasRegistrarPagoDialog = ({
   open,
   onOpenChange,
 }: ComprasRegistrarPagoDialogProps) => {
-
   const { compraSeleccionadaId } = useComprasContext();
-  const { data: { orden: ordenCompra } = { orden: undefined } } = useGetOrdenesCompraDetalles(compraSeleccionadaId!);
+  const { data: { orden: ordenCompra } = { orden: undefined } } =
+    useGetOrdenesCompraDetalles(compraSeleccionadaId!);
   const [selectedMoneda, setSelectedMoneda] = useState<string>("USD");
 
   const [tasaCambio, setTasaCambio] = useState<string>(
     ordenCompra?.tasa_cambio_aplicada.toString() || "0",
   );
-  const [montoPagoRealUsd, setMontoPagoRealUsd] = useState<number>(ordenCompra?.monto_pendiente_pago_usd ? Number(ordenCompra.monto_pendiente_pago_usd) : Number(ordenCompra?.monto_total_oc_usd || 0));
-  const [montoPagoRealVes, setMontoPagoRealVes] = useState<number>(ordenCompra?.monto_pendiente_pago_usd ? Number(ordenCompra.monto_pendiente_pago_usd) * Number(ordenCompra?.tasa_cambio_aplicada || 0) : Number(ordenCompra?.monto_total_oc_usd || 0) * Number(ordenCompra?.tasa_cambio_aplicada || 0));
- 
+  const [montoPagoRealUsd, setMontoPagoRealUsd] = useState<number>(
+    ordenCompra?.monto_pendiente_pago_usd
+      ? Number(ordenCompra.monto_pendiente_pago_usd)
+      : Number(ordenCompra?.monto_total_oc_usd || 0),
+  );
+  const [montoPagoRealVes, setMontoPagoRealVes] = useState<number>(
+    ordenCompra?.monto_pendiente_pago_usd
+      ? Number(ordenCompra.monto_pendiente_pago_usd) *
+          Number(ordenCompra?.tasa_cambio_aplicada || 0)
+      : Number(ordenCompra?.monto_total_oc_usd || 0) *
+          Number(ordenCompra?.tasa_cambio_aplicada || 0),
+  );
+
   const parametros = useGetParametros();
   const metodosDePago = parametros[1].data ?? [];
 
-  const { mutateAsync: registrarPago, isPending: isSubmitting } = useRegistrarPagoMutation();
+  const { mutateAsync: registrarPago, isPending: isSubmitting } =
+    useRegistrarPagoMutation();
 
   console.log("ordenCompra", ordenCompra);
   const {
@@ -82,20 +92,30 @@ export const ComprasRegistrarPagoDialog = ({
 
   const getMontoOrden = (compraAsociada: number | undefined) => {
     if (compraAsociada !== undefined) {
-      return ordenCompra?.recepciones.find(recepcion => recepcion.id === compraAsociada)?.monto_pendiente_pago_usd || 0;
+      return (
+        ordenCompra?.recepciones.find(
+          (recepcion) => recepcion.id === compraAsociada,
+        )?.monto_pendiente_pago_usd || 0
+      );
     } else {
       return montoPagoRealUsd;
     }
-  }
+  };
 
   const getMontoPago = (compraAsociada: number | undefined) => {
     if (compraAsociada !== undefined) {
-      return ordenCompra?.recepciones.find(recepcion => recepcion.id === compraAsociada)?.monto_pendiente_pago_usd || 0;
+      return (
+        ordenCompra?.recepciones.find(
+          (recepcion) => recepcion.id === compraAsociada,
+        )?.monto_pendiente_pago_usd || 0
+      );
     } else {
       return montoPagoRealUsd;
     }
-  }
-  const [montoEnOrden, setMontoEnOrden] = useState<number>(getMontoOrden(watch("compra_asociada")));
+  };
+  const [montoEnOrden, setMontoEnOrden] = useState<number>(
+    getMontoOrden(watch("compra_asociada")),
+  );
   const [monto, setMonto] = useState<string>(
     getMontoPago(watch("compra_asociada")).toString(),
   );
@@ -111,7 +131,7 @@ export const ComprasRegistrarPagoDialog = ({
   const calcularMontoUSD = () => {
     const montoNum = parseFloat(monto) || 0;
     const tasaNum = parseFloat(tasaCambio) || 0;
-    
+
     if (selectedMoneda === "USD" || selectedMoneda === "EUR") {
       return montoNum;
     } else if (selectedMoneda === "VES") {
@@ -124,7 +144,7 @@ export const ComprasRegistrarPagoDialog = ({
   const calcularMontoVES = () => {
     const montoNum = parseFloat(monto) || 0;
     const tasaNum = parseFloat(tasaCambio) || 0;
-    
+
     if (selectedMoneda === "USD" || selectedMoneda === "EUR") {
       return montoNum * tasaNum;
     } else if (selectedMoneda === "VES") {
@@ -148,13 +168,13 @@ export const ComprasRegistrarPagoDialog = ({
   const handleMontoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setMonto(value);
-    
+
     const montoNum = parseFloat(value) || 0;
     const tasaNum = parseFloat(tasaCambio) || 0;
-    
+
     let montoUSD = 0;
     let montoVES = 0;
-    
+
     if (selectedMoneda === "USD" || selectedMoneda === "EUR") {
       montoUSD = montoNum;
       montoVES = montoNum * tasaNum;
@@ -162,7 +182,7 @@ export const ComprasRegistrarPagoDialog = ({
       montoUSD = tasaNum > 0 ? montoNum / tasaNum : 0;
       montoVES = montoNum;
     }
-    
+
     setValue("monto_pago_usd", montoUSD);
     setValue("monto_pago_ves", montoVES);
   };
@@ -171,14 +191,14 @@ export const ComprasRegistrarPagoDialog = ({
     const value = e.target.value;
     setTasaCambio(value);
     setValue("tasa_cambio_aplicada", parseFloat(value) || 0);
-    
+
     // Recalculate USD and VES amounts when exchange rate changes
     const montoNum = parseFloat(monto) || 0;
     const tasaNum = parseFloat(value) || 0;
-    
+
     let montoUSD = 0;
     let montoVES = 0;
-    
+
     if (selectedMoneda === "USD" || selectedMoneda === "EUR") {
       montoUSD = montoNum;
       montoVES = montoNum * tasaNum;
@@ -186,7 +206,7 @@ export const ComprasRegistrarPagoDialog = ({
       montoUSD = tasaNum > 0 ? montoNum / tasaNum : 0;
       montoVES = montoNum;
     }
-    
+
     setValue("monto_pago_usd", montoUSD);
     setValue("monto_pago_ves", montoVES);
   };
@@ -194,14 +214,14 @@ export const ComprasRegistrarPagoDialog = ({
   const handleMonedaChange = (value: string) => {
     setSelectedMoneda(value);
     setValue("moneda", value);
-    
+
     // Recalculate USD and VES amounts when currency changes
     const montoNum = parseFloat(monto) || 0;
     const tasaNum = parseFloat(tasaCambio) || 0;
-    
+
     let montoUSD = 0;
     let montoVES = 0;
-    
+
     if (value === "USD" || value === "EUR") {
       montoUSD = montoNum;
       montoVES = montoNum * tasaNum;
@@ -209,7 +229,7 @@ export const ComprasRegistrarPagoDialog = ({
       montoUSD = tasaNum > 0 ? montoNum / tasaNum : 0;
       montoVES = montoNum;
     }
-    
+
     setValue("monto_pago_usd", montoUSD);
     setValue("monto_pago_ves", montoVES);
   };
@@ -224,10 +244,13 @@ export const ComprasRegistrarPagoDialog = ({
       setValue("compra_asociada", undefined);
       setMonto(montoPagoRealUsd.toString());
       return;
-    }  
+    }
 
     setValue("compra_asociada", Number(value));
-    const montoPendiente = ordenCompra?.recepciones.find(recepcion => recepcion.id === Number(value))?.monto_pendiente_pago_usd || 0;
+    const montoPendiente =
+      ordenCompra?.recepciones.find(
+        (recepcion) => recepcion.id === Number(value),
+      )?.monto_pendiente_pago_usd || 0;
     setMontoEnOrden(montoPendiente);
     setMonto(montoPendiente.toString());
     setValue("monto_pago_usd", montoPendiente);
@@ -237,17 +260,18 @@ export const ComprasRegistrarPagoDialog = ({
   useEffect(() => {
     if (ordenCompra) {
       // Calculate values directly from ordenCompra
-      const newMontoPagoUsd = ordenCompra.monto_pendiente_pago_usd 
-        ? Number(ordenCompra.monto_pendiente_pago_usd) 
+      const newMontoPagoUsd = ordenCompra.monto_pendiente_pago_usd
+        ? Number(ordenCompra.monto_pendiente_pago_usd)
         : Number(ordenCompra.monto_total_oc_usd || 0);
-      
+
       const tasaCambioNum = Number(ordenCompra.tasa_cambio_aplicada || 0);
-      const newMontoPagoVes = Math.round(newMontoPagoUsd * tasaCambioNum * 1000) / 1000;
-      
+      const newMontoPagoVes =
+        Math.round(newMontoPagoUsd * tasaCambioNum * 1000) / 1000;
+
       // Update state variables
       setMontoPagoRealUsd(newMontoPagoUsd);
       setMontoPagoRealVes(newMontoPagoVes);
-      
+
       // Update form values with the newly calculated values
       setValue("fecha_pago", new Date().toISOString().split("T")[0]);
       setValue("metodo_pago", ordenCompra.metodo_pago.id);
@@ -255,25 +279,29 @@ export const ComprasRegistrarPagoDialog = ({
       setValue("monto_pago_ves", newMontoPagoVes);
       setValue("tasa_cambio_aplicada", tasaCambioNum);
       setValue("orden_compra_asociada", ordenCompra.id);
-      
+
       // Update local state
       setTasaCambio(tasaCambioNum.toString());
       setMonto(newMontoPagoUsd.toString());
       setMontoEnOrden(newMontoPagoUsd);
       setSelectedMoneda("USD");
     }
-  }, [ordenCompra, setValue, open]); 
+  }, [ordenCompra, setValue, open]);
 
-  const requiereReferencia = metodosDePago.find(metodo => metodo.id === watch("metodo_pago"))?.requiere_referencia;
+  const requiereReferencia = metodosDePago.find(
+    (metodo) => metodo.id === watch("metodo_pago"),
+  )?.requiere_referencia;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent 
-          className="z-[var(--z-index-over-header-bar)] max-w-xl md:max-h-[90vh] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 "
-          overlayClassName="z-[var(--z-index-over-header-bar)] ">
+      <DialogContent
+        className="z-[var(--z-index-over-header-bar)] max-w-xl md:max-h-[90vh] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 "
+        overlayClassName="z-[var(--z-index-over-header-bar)] "
+      >
         <DialogHeader>
           <DialogTitle className="text-xl font-bold">
-            Registrar Pago - Orden OC-{ordenCompra?.id.toString().padStart(3, "0")}
+            Registrar Pago - Orden OC-
+            {ordenCompra?.id.toString().padStart(3, "0")}
           </DialogTitle>
         </DialogHeader>
 
@@ -287,9 +315,7 @@ export const ComprasRegistrarPagoDialog = ({
               </p>
             </div>
             <div>
-              <p className="text-sm text-muted-foreground mb-1">
-                Total
-              </p>
+              <p className="text-sm text-muted-foreground mb-1">Total</p>
               <p className="text-lg font-bold">
                 ${formatCurrency(montoEnOrden)}
               </p>
@@ -317,7 +343,9 @@ export const ComprasRegistrarPagoDialog = ({
               </Label>
               <ComprasFormSelect
                 id="metodo_pago"
-                value={watch("metodo_pago") ? watch("metodo_pago").toString() : ""}
+                value={
+                  watch("metodo_pago") ? watch("metodo_pago").toString() : ""
+                }
                 onChange={(v: string) => setValue("metodo_pago", Number(v))}
                 placeholder="Selecciona método de pago"
               >
@@ -342,21 +370,35 @@ export const ComprasRegistrarPagoDialog = ({
               </Label>
               <ComprasFormSelect
                 id="compra_asociada"
-                value={watch("compra_asociada") ? watch("compra_asociada")?.toString() || "" : "adelanto"}
+                value={
+                  watch("compra_asociada")
+                    ? watch("compra_asociada")?.toString() || ""
+                    : "adelanto"
+                }
                 onChange={handleCompraAsociadaChange}
                 placeholder="Selecciona compra asociada"
               >
                 <SelectItem value="adelanto">Pago en adelanto</SelectItem>
-                {ordenCompra?.recepciones.map((recepcion: RecepcionOC) => (
-                  recepcion.pagado ? 
-                  <SelectItem  className="text-gray-500" key={recepcion.id} value={'pagado'}>
-                    #{recepcion.id.toString()} - {recepcion.fecha_recepcion} - Pagado
-                  </SelectItem> : (
-                    <SelectItem key={recepcion.id} value={recepcion.id.toString()}>
-                      #{recepcion.id.toString()} - {recepcion.fecha_recepcion} - ${recepcion.monto_pendiente_pago_usd}
+                {ordenCompra?.recepciones.map((recepcion: RecepcionOC) =>
+                  recepcion.pagado ? (
+                    <SelectItem
+                      className="text-gray-500"
+                      key={recepcion.id}
+                      value={"pagado"}
+                    >
+                      #{recepcion.id.toString()} - {recepcion.fecha_recepcion} -
+                      Pagado
                     </SelectItem>
-                  )
-                ))}
+                  ) : (
+                    <SelectItem
+                      key={recepcion.id}
+                      value={recepcion.id.toString()}
+                    >
+                      #{recepcion.id.toString()} - {recepcion.fecha_recepcion} -
+                      ${recepcion.monto_pendiente_pago_usd}
+                    </SelectItem>
+                  ),
+                )}
               </ComprasFormSelect>
               {errors.compra_asociada && (
                 <p className="text-sm text-red-500">
@@ -367,18 +409,18 @@ export const ComprasRegistrarPagoDialog = ({
           )}
           {/* Payment Reference */}
           {requiereReferencia && (
-          <div className="space-y-2">
-            <Label htmlFor="referencia_pago" className="text-sm font-medium">
-              Referencia de Pago <span className="text-red-500">*</span>
-            </Label>
-            <Input
-              id="referencia_pago"
-              type="text"
-              placeholder="Número de referencia, confirmación, etc."
-              className="focus-visible:ring-blue-200"
-              {...register("referencia_pago")}  
-            />
-          </div>
+            <div className="space-y-2">
+              <Label htmlFor="referencia_pago" className="text-sm font-medium">
+                Referencia de Pago <span className="text-red-500">*</span>
+              </Label>
+              <Input
+                id="referencia_pago"
+                type="text"
+                placeholder="Número de referencia, confirmación, etc."
+                className="focus-visible:ring-blue-200"
+                {...register("referencia_pago")}
+              />
+            </div>
           )}
 
           {/* Amount, Currency and Exchange Rate */}
@@ -394,10 +436,15 @@ export const ComprasRegistrarPagoDialog = ({
                 placeholder="0.00"
                 value={monto}
                 onChange={handleMontoChange}
-                className={cn(errors.monto_pago_usd ? "border-red-500" : "", "focus-visible:ring-blue-200")}
+                className={cn(
+                  errors.monto_pago_usd ? "border-red-500" : "",
+                  "focus-visible:ring-blue-200",
+                )}
               />
               {errors.monto_pago_usd && (
-                <p className="text-sm text-red-500">{errors.monto_pago_usd.message}</p>
+                <p className="text-sm text-red-500">
+                  {errors.monto_pago_usd.message}
+                </p>
               )}
             </div>
 
@@ -405,11 +452,13 @@ export const ComprasRegistrarPagoDialog = ({
               <Label htmlFor="moneda" className="text-sm font-medium">
                 Moneda <span className="text-red-500">*</span>
               </Label>
-              <Select
-                defaultValue="USD"
-                onValueChange={handleMonedaChange}
-              >
-                <SelectTrigger className={cn(errors.moneda ? "border-red-500" : "", "focus-visible:ring-blue-200")}>
+              <Select defaultValue="USD" onValueChange={handleMonedaChange}>
+                <SelectTrigger
+                  className={cn(
+                    errors.moneda ? "border-red-500" : "",
+                    "focus-visible:ring-blue-200",
+                  )}
+                >
                   <SelectValue placeholder="Moneda" />
                 </SelectTrigger>
                 <SelectContent>
@@ -433,7 +482,10 @@ export const ComprasRegistrarPagoDialog = ({
                 placeholder="0.00"
                 value={tasaCambio}
                 onChange={handleTasaCambioChange}
-                className={cn(errors.tasa_cambio_aplicada ? "border-red-500" : "", "focus-visible:ring-blue-200")}
+                className={cn(
+                  errors.tasa_cambio_aplicada ? "border-red-500" : "",
+                  "focus-visible:ring-blue-200",
+                )}
               />
               {errors.tasa_cambio_aplicada && (
                 <p className="text-sm text-red-500">
@@ -488,7 +540,13 @@ export const ComprasRegistrarPagoDialog = ({
             </div>
             <div className="flex justify-between text-sm">
               <span className="text-muted-foreground">Método:</span>
-              <span className="font-medium">{metodosDePago.find(metodo => metodo.id === watch("metodo_pago"))?.nombre_metodo}</span>
+              <span className="font-medium">
+                {
+                  metodosDePago.find(
+                    (metodo) => metodo.id === watch("metodo_pago"),
+                  )?.nombre_metodo
+                }
+              </span>
             </div>
             <div className="flex justify-between text-sm">
               <span className="text-muted-foreground">Fecha:</span>
@@ -527,4 +585,3 @@ export const ComprasRegistrarPagoDialog = ({
     </Dialog>
   );
 };
-

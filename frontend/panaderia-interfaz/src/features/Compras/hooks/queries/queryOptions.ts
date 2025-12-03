@@ -9,7 +9,7 @@ import {
   getUnidadesMedida,
 } from "../../api/api";
 
-import type { OrdenesCompraPagination } from "../../types/types"
+import type { OrdenesCompraPagination } from "../../types/types";
 
 export const proveedoresQueryOptions = {
   queryKey: ["proveedores"],
@@ -22,7 +22,8 @@ export const ordenesCompraTableQueryOptions = {
   queryFn: getOrdenesComprasTable,
   initialPageParam: null,
   getNextPageParam: (lastPage: OrdenesCompraPagination) => lastPage.next,
-  getPreviousPageParam: (firstPage: OrdenesCompraPagination) => firstPage.previous,
+  getPreviousPageParam: (firstPage: OrdenesCompraPagination) =>
+    firstPage.previous,
   staleTime: Infinity,
 };
 

@@ -33,7 +33,8 @@ export const OrdersTable = ({ orders, onEditOrder }: OrdersTableProps) => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [ordenToDelete, setOrdenToDelete] = useState<number | null>(null);
 
-  const { mutateAsync: deleteOrdenMutation, isPending: isDeletingOrden } = useDeleteOrdenMutation();
+  const { mutateAsync: deleteOrdenMutation, isPending: isDeletingOrden } =
+    useDeleteOrdenMutation();
 
   const handleDeleteClick = (ordenId: number) => {
     setOrdenToDelete(ordenId);
@@ -53,7 +54,9 @@ export const OrdersTable = ({ orders, onEditOrder }: OrdersTableProps) => {
         setOrdenSeleccionadaId(null);
       }
     } catch (error) {
-      toast.error(`Error al eliminar la orden: ${error instanceof Error ? error.message : "Unknown error"}`);
+      toast.error(
+        `Error al eliminar la orden: ${error instanceof Error ? error.message : "Unknown error"}`,
+      );
     }
   };
 
@@ -77,7 +80,7 @@ export const OrdersTable = ({ orders, onEditOrder }: OrdersTableProps) => {
   };
 
   orders.sort((a, b) => b.id - a.id);
-  
+
   return (
     <div className="border rounded-lg bg-card shadow-sm relative">
       {isFetchingOrdenDetalles && (

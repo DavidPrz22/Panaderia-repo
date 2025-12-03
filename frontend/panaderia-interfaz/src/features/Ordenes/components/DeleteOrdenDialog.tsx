@@ -43,8 +43,8 @@ export const DeleteOrdenDialog = ({
         <AlertDialogHeader>
           <AlertDialogTitle>¿Eliminar orden {ordenId}?</AlertDialogTitle>
           <AlertDialogDescription>
-            Esta acción no se puede deshacer. La orden será eliminada permanentemente del sistema.
-            ¿Estás seguro de que deseas continuar?
+            Esta acción no se puede deshacer. La orden será eliminada
+            permanentemente del sistema. ¿Estás seguro de que deseas continuar?
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
@@ -67,4 +67,3 @@ export const DeleteOrdenDialog = ({
     </AlertDialog>
   );
 };
-

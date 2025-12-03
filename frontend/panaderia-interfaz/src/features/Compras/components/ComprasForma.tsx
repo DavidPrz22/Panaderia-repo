@@ -37,7 +37,10 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { ComprasFormDatePicker } from "./ComprasFormDatePicker";
 import { toast } from "sonner";
 
-import { useCreateOCMutation, useUpdateOCMutation } from "../hooks/mutations/mutations";
+import {
+  useCreateOCMutation,
+  useUpdateOCMutation,
+} from "../hooks/mutations/mutations";
 import { useComprasFormLogic } from "../hooks/useComprasFormLogic";
 import {
   updateItemFromProducto,
@@ -59,28 +62,32 @@ export const ComprasForm = ({ orden, onClose }: ComprasFormProps) => {
     resolver: zodResolver(OrdenCompraSchema),
     defaultValues: orden
       ? {
-        fecha_emision_oc: orden.fecha_emision_oc,
-        fecha_entrega_esperada: orden.fecha_entrega_esperada,
-        fecha_entrega_real: orden.fecha_entrega_real ? orden.fecha_entrega_real : undefined,
-        estado_oc: orden.estado_oc.id,
-        proveedor: orden.proveedor.id,
-        metodo_pago: orden.metodo_pago.id,
-        monto_total_oc_usd: orden.monto_total_oc_usd,
-        monto_total_oc_ves: orden.monto_total_oc_ves,
-        tasa_cambio_aplicada: orden.tasa_cambio_aplicada,
-        direccion_envio: orden.direccion_envio ? orden.direccion_envio : undefined,
-        terminos_pago: orden.terminos_pago ? orden.terminos_pago : undefined,
-        detalles: orden.detalles.map((p, index) => ({
-          id: index,
-          materia_prima: p.materia_prima,
-          producto_reventa: p.producto_reventa,
-          cantidad_solicitada: Number(p.cantidad_solicitada),
-          unidad_medida_compra: p.unidad_medida_compra,
-          costo_unitario_usd: Number(p.costo_unitario_usd),
-          subtotal_linea_usd: Number(p.subtotal_linea_usd),
-        })),
-        notas: orden.notas ? orden.notas : undefined,
-      }
+          fecha_emision_oc: orden.fecha_emision_oc,
+          fecha_entrega_esperada: orden.fecha_entrega_esperada,
+          fecha_entrega_real: orden.fecha_entrega_real
+            ? orden.fecha_entrega_real
+            : undefined,
+          estado_oc: orden.estado_oc.id,
+          proveedor: orden.proveedor.id,
+          metodo_pago: orden.metodo_pago.id,
+          monto_total_oc_usd: orden.monto_total_oc_usd,
+          monto_total_oc_ves: orden.monto_total_oc_ves,
+          tasa_cambio_aplicada: orden.tasa_cambio_aplicada,
+          direccion_envio: orden.direccion_envio
+            ? orden.direccion_envio
+            : undefined,
+          terminos_pago: orden.terminos_pago ? orden.terminos_pago : undefined,
+          detalles: orden.detalles.map((p, index) => ({
+            id: index,
+            materia_prima: p.materia_prima,
+            producto_reventa: p.producto_reventa,
+            cantidad_solicitada: Number(p.cantidad_solicitada),
+            unidad_medida_compra: p.unidad_medida_compra,
+            costo_unitario_usd: Number(p.costo_unitario_usd),
+            subtotal_linea_usd: Number(p.subtotal_linea_usd),
+          })),
+          notas: orden.notas ? orden.notas : undefined,
+        }
       : {
           fecha_emision_oc: new Date().toISOString().split("T")[0],
           fecha_entrega_esperada: new Date().toISOString().split("T")[0],
@@ -107,9 +114,8 @@ export const ComprasForm = ({ orden, onClose }: ComprasFormProps) => {
 
   const { mutateAsync: createOCMutation, isPending: isCreatingOCMutation } =
     useCreateOCMutation();
-  const { mutateAsync: updateOCMutation, isPending: isUpdatingOCMutation } = 
-  useUpdateOCMutation()
-  ;
+  const { mutateAsync: updateOCMutation, isPending: isUpdatingOCMutation } =
+    useUpdateOCMutation();
   const [items, setItems] = useState<DetalleOC[]>(
     orden?.detalles.map((p, idx) => ({
       id: idx,
@@ -177,7 +183,10 @@ export const ComprasForm = ({ orden, onClose }: ComprasFormProps) => {
   const handleSubmitForm = async (data: TOrdenCompraSchema) => {
     try {
       if (isEdit && orden) {
-        const { orden: updatedOrden } = await updateOCMutation({ id: orden!.id, data });
+        const { orden: updatedOrden } = await updateOCMutation({
+          id: orden!.id,
+          data,
+        });
         setOrdenCompra(updatedOrden);
         setShowForm(false);
         toast.success("Orden actualizada exitosamente");
@@ -194,7 +203,7 @@ export const ComprasForm = ({ orden, onClose }: ComprasFormProps) => {
       );
     }
   };
-  console.log(orden)
+  console.log(orden);
   return (
     <div className="mx-8 py-5 relative">
       {(isCreatingOCMutation || isUpdatingOCMutation) && (
@@ -475,12 +484,14 @@ export const ComprasForm = ({ orden, onClose }: ComprasFormProps) => {
                                 `detalles.${item.id}.unidad_medida_compra`,
                               )?.toString() || ""
                             }
-                            onChange={(v: string) =>{
+                            onChange={(v: string) => {
                               setValue(
                                 `detalles.${item.id}.unidad_medida_compra`,
                                 Number(v),
                               );
-                              const rowToUpdate = items.find((i) => i.id === item.id)
+                              const rowToUpdate = items.find(
+                                (i) => i.id === item.id,
+                              );
                               if (rowToUpdate) {
                                 rowToUpdate.unidad_medida_compra = Number(v);
                                 setItems([...items]);
@@ -517,9 +528,7 @@ export const ComprasForm = ({ orden, onClose }: ComprasFormProps) => {
 
                               if (value < 0) {
                                 e.target.value = "0";
-                                toast.error(
-                                  "El Costo No Puede Ser Menor a 0",
-                                );
+                                toast.error("El Costo No Puede Ser Menor a 0");
                                 return;
                               }
 
