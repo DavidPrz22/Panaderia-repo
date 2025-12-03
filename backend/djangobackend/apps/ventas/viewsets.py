@@ -23,7 +23,7 @@ class ClientesViewSet(viewsets.ModelViewSet):
 
 
 class OrdenesTableViewset(viewsets.ModelViewSet):
-    queryset = OrdenVenta.objects.all()
+    queryset = OrdenVenta.objects.order_by('id')
     serializer_class = OrdenesTableSerializer
     pagination_class = StandardResultsSetPagination
 
