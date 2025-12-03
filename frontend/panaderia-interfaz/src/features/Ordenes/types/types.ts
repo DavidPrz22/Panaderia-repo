@@ -123,3 +123,10 @@ export type CancelOrdenResponse = {
   lotes_expirados?: any;
   error?: string;
 };
+
+export type OrdenesPagination = {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: OrdenTable[];
+};

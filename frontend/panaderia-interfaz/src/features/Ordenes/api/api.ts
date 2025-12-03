@@ -4,7 +4,7 @@ import type {
   EstadoOrden,
   MetodoPago,
   OrdenProductosSearch,
-  OrdenTable,
+  OrdenesPagination,
   Orden,
   CancelOrdenResponse,
 } from "../types/types";
@@ -113,9 +113,14 @@ export const updateOrden = async (id: number, data: TOrderSchema) => {
   }
 };
 
-export const getOrdenes = async (): Promise<OrdenTable[]> => {
+export const getOrdenes = async ({
+  pageParam,
+}: {
+  pageParam?: string | null;
+} = {}): Promise<OrdenesPagination> => {
   try {
-    const response = await apiClient.get("/api/ordenes/get_ordenes_table/");
+    const url = pageParam || "/api/ordenes-lista/";
+    const response = await apiClient.get(url);
     return response.data;
   } catch (error) {
     console.error("Error fetching ordenes:", error);

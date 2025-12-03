@@ -24,6 +24,13 @@ import {
 } from "../hooks/queries/queries";
 import { useOrdenesContext } from "@/context/OrdenesContext";
 import { DoubleSpinnerLoading } from "@/components/DoubleSpinnerLoading";
+import { useReducer, useMemo} from "react";
+
+import { Paginator } from "@/components/Paginator";
+
+
+type PaginatorActions = 'next' | 'previous' | 'base';
+
 
 const OrdenesIndex = () => {
   const {
@@ -35,12 +42,47 @@ const OrdenesIndex = () => {
     setOrdenSeleccionadaId,
   } = useOrdenesContext();
 
-  const { data: ordenesTable, isFetching: isFetchingOrdenesTable } =
-    useGetOrdenesTable();
+  const {
+    data: ordenesPagination,
+    fetchNextPage,
+    hasNextPage,
+    isFetching: isFetchingOrdenesTable,
+    isFetched: isFetchedOrdenesTable,
+
+  } = useGetOrdenesTable();
+
   const { data: ordenDetalles, isFetched } = useGetOrdenesDetalles(
     ordenSeleccionadaId!,
   );
+  
+  const [page, setPage] = useReducer((state: number, action: { type: PaginatorActions, payload?: number}) => {
+    
+    if (action.type === 'next' && ordenesPagination) {
 
+      if (state < ordenesPagination.pages.length - 1) 
+        return state + 1;
+      
+      if (hasNextPage) fetchNextPage();
+        return state + 1;
+    }
+    
+    if (action.type === 'previous') {
+        return state - 1;
+    }
+    
+    if (action.type === 'base' && ordenesPagination) {
+
+      if (action.payload! > ordenesPagination.pages.length - 1 || action.payload! < 0) {
+        if (hasNextPage) fetchNextPage();
+        return state + 1;
+      }
+
+      return action.payload!;
+    }
+    
+    return state;
+        }, 0);
+        
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("Todos");
 
@@ -59,6 +101,15 @@ const OrdenesIndex = () => {
   ]);
 
   // Filter orders based on search term and status
+  const ordenesTable = ordenesPagination?.pages?.[page]?.results || [];
+
+  const pages_count = useMemo(() => {
+    const result_count = ordenesPagination?.pages[0].count || 1;
+    const entry_per_page = ordenesPagination?.pages[0].results.length || 1;
+    return  Math.round(result_count / entry_per_page);
+
+  }, [isFetchedOrdenesTable]);
+
   const filteredOrders = (ordenesTable || []).filter((order) => {
     // Search filter: match order ID or client name
     const matchesSearch =
@@ -70,8 +121,8 @@ const OrdenesIndex = () => {
     const matchesStatus =
       statusFilter === "Todos" ||
       order.estado_orden ===
-        estadosOrden?.find((e) => e.id.toString() === statusFilter)
-          ?.nombre_estado;
+      estadosOrden?.find((e) => e.id.toString() === statusFilter)
+        ?.nombre_estado;
 
     return matchesSearch && matchesStatus;
   });
@@ -214,7 +265,20 @@ const OrdenesIndex = () => {
         {isFetchingOrdenesTable ? (
           <DoubleSpinnerLoading extraClassName="size-20" />
         ) : (
-          <OrdersTable orders={filteredOrders} onEditOrder={handleEditOrder} />
+          <>
+            <OrdersTable orders={filteredOrders} onEditOrder={handleEditOrder} />
+            {pages_count > 1 && (
+              <Paginator 
+                    previousPage={page > 0} 
+                    nextPage={ hasNextPage || page < pages_count - 1} 
+                    pages={Array.from({ length: pages_count}, (_, i) => i + 1)}
+                    currentPage={page + 1}
+                    onClickPrev={() => setPage({type:'previous'})}
+                    onClickPage={(p) => setPage({type:'base', payload: p - 1})}
+                    onClickNext={() => setPage({type:'next'})}
+              />
+            )}
+          </>
         )}
       </div>
     </div>

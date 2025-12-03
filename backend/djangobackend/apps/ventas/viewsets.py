@@ -12,6 +12,7 @@ from datetime import datetime
 from django.utils import timezone
 from apps.inventario.models import LotesStatus
 from apps.core.services.services import NotificationService
+from djangobackend.pagination import StandardResultsSetPagination
 import logging
 
 logger = logging.getLogger(__name__)
@@ -19,6 +20,12 @@ logger = logging.getLogger(__name__)
 class ClientesViewSet(viewsets.ModelViewSet):
     queryset = Clientes.objects.all()
     serializer_class = ClientesSerializer
+
+
+class OrdenesTableViewset(viewsets.ModelViewSet):
+    queryset = OrdenVenta.objects.all()
+    serializer_class = OrdenesTableSerializer
+    pagination_class = StandardResultsSetPagination
 
 
 class OrdenesViewSet(viewsets.ModelViewSet):
@@ -104,18 +111,13 @@ class OrdenesViewSet(viewsets.ModelViewSet):
             headers = self.get_success_headers(response_serializer.data)
             return Response(response_serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
-    @action(detail=False, methods=['get'])
-    def get_ordenes_table(self, request):
-
-        ordenes = OrdenVenta.objects.all()
-        serializer = OrdenesTableSerializer(ordenes, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
 
     @action(detail=True, methods=['get'])
     def get_orden_detalles(self, request, pk=None):
         orden = OrdenVenta.objects.get(id=pk)
         serializer = OrdenesDetallesSerializer(orden)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
 
     def update(self, request, *args, **kwargs):
         
