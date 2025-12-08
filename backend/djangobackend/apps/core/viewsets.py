@@ -26,6 +26,7 @@ from .serializers import (
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.decorators import action
+from djangobackend.permissions import IsAllUsersCRUD
 
 class UnidadMedidaViewSet(viewsets.ModelViewSet):
     queryset = UnidadesDeMedida.objects.all()
@@ -86,6 +87,7 @@ class EstadosOrdenCompraViewSet(viewsets.ModelViewSet):
 class NotificacionesViewSet(viewsets.ModelViewSet):
     queryset = Notificaciones.objects.all()
     serializer_class = NotificacionesSerializer
+    permission_classes = [IsAllUsersCRUD]
 
     def list(self, request, *args, **kwargs):
         limit = 100

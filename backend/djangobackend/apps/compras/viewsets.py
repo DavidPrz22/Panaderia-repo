@@ -19,12 +19,13 @@ import os
 import resend
 from datetime import datetime
 
-
 from djangobackend.pagination import StandardResultsSetPagination
+from djangobackend.permissions import IsStaffLevelOnly
 
 class ProveedoresViewSet(viewsets.ModelViewSet):
     queryset = Proveedores.objects.all()
     serializer_class = ProveedoresSerializer
+    permission_classes = [IsStaffLevelOnly]
 
     @action(detail=False, methods=['get'])
     def compra_registro(self, request):
@@ -37,11 +38,13 @@ class OrdenesCompraTableViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = OrdenesCompra.objects.order_by('id')
     serializer_class = OrdenesCompraTableSerializer
     pagination_class = StandardResultsSetPagination
+    permission_classes = [IsStaffLevelOnly]
 
 
 class OrdenesCompraViewSet(viewsets.ModelViewSet):
     queryset = OrdenesCompra.objects.all()
     serializer_class = OrdenesCompraSerializer
+    permission_classes = [IsStaffLevelOnly]
 
     def create(self, request, *args, **kwargs):
         with transaction.atomic():
@@ -239,6 +242,7 @@ class OrdenesCompraViewSet(viewsets.ModelViewSet):
 class ComprasViewSet(viewsets.ModelViewSet):
     queryset = Compras.objects.all()
     serializer_class = RecepcionCompraSerializer
+    permission_classes = [IsStaffLevelOnly]
 
     def create(self, request, *args, **kwargs):
         with transaction.atomic():
@@ -447,6 +451,7 @@ class ComprasViewSet(viewsets.ModelViewSet):
 class PagosProveedoresViewSet(viewsets.ModelViewSet):
     queryset = PagosProveedores.objects.all()
     serializer_class = PagosProveedoresSerializer
+    permission_classes = [IsStaffLevelOnly]
 
     def create(self, request, *args, **kwargs):
         with transaction.atomic():

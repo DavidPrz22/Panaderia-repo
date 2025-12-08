@@ -13,6 +13,7 @@ from django.utils import timezone
 from apps.inventario.models import LotesStatus
 from apps.core.services.services import NotificationService
 from djangobackend.pagination import StandardResultsSetPagination
+from djangobackend.permissions import IsAllUsersCRUD
 import logging
 
 logger = logging.getLogger(__name__)
@@ -20,17 +21,20 @@ logger = logging.getLogger(__name__)
 class ClientesViewSet(viewsets.ModelViewSet):
     queryset = Clientes.objects.all()
     serializer_class = ClientesSerializer
+    permission_classes = [IsAllUsersCRUD]
 
 
 class OrdenesTableViewset(viewsets.ModelViewSet):
     queryset = OrdenVenta.objects.order_by('id')
     serializer_class = OrdenesTableSerializer
     pagination_class = StandardResultsSetPagination
+    permission_classes = [IsAllUsersCRUD]
 
 
 class OrdenesViewSet(viewsets.ModelViewSet):
     queryset = OrdenVenta.objects.all()
     serializer_class = OrdenesSerializer
+    permission_classes = [IsAllUsersCRUD]
 
 
     def create(self, request, *args, **kwargs):

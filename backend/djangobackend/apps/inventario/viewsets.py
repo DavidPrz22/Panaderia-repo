@@ -8,16 +8,18 @@ from apps.core.services.services import NotificationService
 from datetime import datetime
 from collections import defaultdict
 from apps.inventario.models import LotesStatus
+from djangobackend.permissions import IsStaffOrVendedorReadOnly
 
 class MateriaPrimaViewSet(viewsets.ModelViewSet):
     queryset = MateriasPrimas.objects.all()
     serializer_class = MateriaPrimaSerializer
+    permission_classes = [IsStaffOrVendedorReadOnly]
 
 
 class ComponenteSearchViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = MateriasPrimas.objects.none()
     serializer_class = ComponentesSearchSerializer
-
+    
     def list(self, request, *args, **kwargs):
         search_query = request.query_params.get('search')
         stock_requested = request.query_params.get('stock')
@@ -72,6 +74,7 @@ class ComponenteSearchViewSet(viewsets.ReadOnlyModelViewSet):
 class LotesMateriaPrimaViewSet(viewsets.ModelViewSet):
     queryset = LotesMateriasPrimas.objects.all()
     serializer_class = LotesMateriaPrimaSerializer
+    permission_classes = [IsStaffOrVendedorReadOnly]
 
     def get_queryset(self):
         queryset = super().get_queryset()
@@ -167,6 +170,7 @@ class LotesMateriaPrimaViewSet(viewsets.ModelViewSet):
 class ProductosElaboradosViewSet(viewsets.ModelViewSet):
     queryset = ProductosElaborados.objects.all()
     serializer_class = ProductosElaboradosSerializer
+    permission_classes = [IsStaffOrVendedorReadOnly]
 
     @action(detail=True, methods=['post'], url_path='clear-receta-relacionada')
     def clear_receta_relacionada(self, request, *args, **kwargs):
@@ -290,6 +294,7 @@ class ProductosElaboradosViewSet(viewsets.ModelViewSet):
 
 class LotesProductosElaboradosViewSet(viewsets.ModelViewSet):
     queryset = LotesProductosElaborados.objects.all()
+    permission_classes = [IsStaffOrVendedorReadOnly]
     serializer = LotesProductosElaboradosSerializer
     
 
@@ -358,11 +363,13 @@ class LotesProductosElaboradosViewSet(viewsets.ModelViewSet):
 class ProductosIntermediosViewSet(viewsets.ModelViewSet):
     queryset = ProductosIntermedios.objects.all()
     serializer_class = ProductosIntermediosSerializer
+    permission_classes = [IsStaffOrVendedorReadOnly]
 
 
 class ProductosFinalesViewSet(viewsets.ModelViewSet):
     queryset = ProductosFinales.objects.all()
     serializer_class = ProductosFinalesSerializer
+    permission_classes = [IsStaffOrVendedorReadOnly]
 
 
 class ProductosIntermediosDetallesViewSet(viewsets.ReadOnlyModelViewSet):
@@ -422,6 +429,7 @@ class ProductosIntermediosSearchViewSet(viewsets.ReadOnlyModelViewSet):
 class ProductosReventaViewSet(viewsets.ModelViewSet):
     queryset = ProductosReventa.objects.all()
     serializer_class = ProductosReventaSerializer
+    permission_classes = [IsStaffOrVendedorReadOnly]
 
 
 class ProductosReventaDetallesViewSet(viewsets.ReadOnlyModelViewSet):
@@ -432,6 +440,7 @@ class ProductosReventaDetallesViewSet(viewsets.ReadOnlyModelViewSet):
 class LotesProductosReventaViewSet(viewsets.ModelViewSet):
     queryset = LotesProductosReventa.objects.all()
     serializer_class = LotesProductosReventaSerializer
+    permission_classes = [IsStaffOrVendedorReadOnly]
 
     def get_queryset(self):
         queryset = super().get_queryset()

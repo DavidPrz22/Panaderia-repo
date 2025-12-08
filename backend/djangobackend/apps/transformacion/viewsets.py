@@ -11,6 +11,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from django.db import transaction
 from apps.core.services.services import NotificationService
+from djangobackend.permissions import IsStaffLevelOnly
 import logging
 
 logger = logging.getLogger(__name__)
@@ -18,10 +19,12 @@ logger = logging.getLogger(__name__)
 class TransformacionViewSet(viewsets.ModelViewSet):
     queryset = Transformacion.objects.all()
     serializer_class = TransformacionSerializer
+    permission_classes = [IsStaffLevelOnly]
 
 class EjecutarTransformacionViewSet(viewsets.ModelViewSet):
     queryset = EjecutarTransformacion.objects.all()
     serializer_class = EjecutarTransformacionSerializer
+    permission_classes = [IsStaffLevelOnly]
 
     def create(self, request, *args, **kwargs):
         print("Datos recibidos en ejecutar-transformacion:", request.data)

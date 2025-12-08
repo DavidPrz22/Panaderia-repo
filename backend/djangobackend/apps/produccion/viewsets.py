@@ -13,6 +13,7 @@ from apps.produccion.services import ProductionValidationService, StockConsumpti
 from apps.core.services.services import NotificationService
 from decimal import Decimal
 from django.utils import timezone
+from djangobackend.permissions import IsStaffLevelOnly
 import logging
 logger = logging.getLogger(__name__)
 
@@ -20,6 +21,7 @@ logger = logging.getLogger(__name__)
 class RecetasViewSet(viewsets.ModelViewSet):
     queryset = Recetas.objects.all()
     serializer_class = RecetasSerializer
+    permission_classes = [IsStaffLevelOnly]
 
     def create(self, request, *args, **kwargs):
     # Step 1: Manual validation of frontend data
@@ -276,6 +278,7 @@ class RecetasViewSet(viewsets.ModelViewSet):
 class RecetasSearchViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Recetas.objects.all()
     serializer_class = RecetasSearchSerializer
+    permission_classes = [IsStaffLevelOnly]
 
     @action(detail=False, methods=['get'])
     def list_recetas(self, request):
@@ -302,6 +305,7 @@ class RecetasSearchViewSet(viewsets.ReadOnlyModelViewSet):
 class ProduccionesViewSet(viewsets.ModelViewSet):
     queryset = Produccion.objects.all()
     serializer_class = ProduccionSerializer
+    permission_classes = [IsStaffLevelOnly]
 
 
     def create(self, request, *args, **kwargs):
@@ -414,6 +418,7 @@ class ProduccionesViewSet(viewsets.ModelViewSet):
 class ProduccionDetallesViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Produccion.objects.all()
     serializer_class = ProduccionDetallesSerializer
+    permission_classes = [IsStaffLevelOnly]
 
     def list(self, request, *args, **kwargs):
         
