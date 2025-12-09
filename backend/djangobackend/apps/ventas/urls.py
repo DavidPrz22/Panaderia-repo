@@ -4,7 +4,7 @@ from .viewsets import OrdenesViewSet
 from .viewsets import OrdenesTableViewset
 
 router = routers.DefaultRouter()
-router.register(r'cliente', ClientesViewSet)
+router.register(r'clientes', ClientesViewSet)
 router.register(r'ordenes', OrdenesViewSet)
 router.register(r'ordenes-lista', OrdenesTableViewset, basename='ordenes-lista')
 
