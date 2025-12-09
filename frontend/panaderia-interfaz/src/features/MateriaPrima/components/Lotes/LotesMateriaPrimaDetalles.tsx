@@ -19,6 +19,9 @@ import {
   useInactivateLoteMateriaPrimaMutation,
 } from "../../hooks/mutations/materiaPrimaMutations";
 
+import { useAuth } from "@/context/AuthContext";
+import { userHasPermission } from "@/features/Authentication/lib/utils";
+
 export const LotesMateriaPrimaDetalles = () => {
   const {
     materiaprimaDetalles,
@@ -30,6 +33,8 @@ export const LotesMateriaPrimaDetalles = () => {
     setUpdateRegistro,
     setRegistroDelete,
   } = useMateriaPrimaContext();
+
+  const { user } = useAuth();
 
   const { mutateAsync: deleteLote, isPending: isLoadingDelete } =
     useDeleteLoteMateriaPrimaMutation(materiaprimaDetalles?.id, handleClose);
@@ -61,6 +66,9 @@ export const LotesMateriaPrimaDetalles = () => {
       inactivateLote(lotesMateriaPrimaDetalles.id);
     }
   };
+
+  const canUserEditLot = userHasPermission(user!, 'lots', 'edit')
+  const canUserDeleteLot = userHasPermission(user!, 'lots', 'delete')
 
   if (updateRegistro && lotesMateriaPrimaDetalles) {
     return (
@@ -116,18 +124,23 @@ export const LotesMateriaPrimaDetalles = () => {
       <div className="flex justify-between items-center">
         <Title>Detalles de lote de materia prima</Title>
         <div className="flex gap-2">
-          <Button type="edit" onClick={handleEdit}>
-            <div className="flex items-center gap-2">
-              Editar
-              <img src={EditarIcon} alt="Editar" />
-            </div>
-          </Button>
+          {canUserEditLot && (
+
+            <Button type="edit" onClick={handleEdit}>
+              <div className="flex items-center gap-2">
+                Editar
+                <img src={EditarIcon} alt="Editar" />
+              </div>
+            </Button>
+          )}
+          {canUserDeleteLot && (
           <Button type="delete" onClick={() => setRegistroDelete(true)}>
             <div className="flex items-center gap-2">
               Eliminar
               <img src={BorrarIcon} alt="Eliminar" />
             </div>
           </Button>
+          )}
           <div className="ml-6">
             <Button type="close" onClick={handleClose}>
               <img src={CerrarIcon} alt="Cerrar" />

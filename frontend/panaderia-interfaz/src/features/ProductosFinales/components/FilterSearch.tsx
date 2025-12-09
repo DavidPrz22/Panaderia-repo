@@ -4,12 +4,16 @@ import SearchInput from "./SearchInput";
 import { Button } from "@/components/ui/button";
 import { useProductosFinalesContext } from "@/context/ProductosFinalesContext";
 import FiltersPanel from "./FiltersPanel";
-import { PackageX, TrendingDown} from "lucide-react";
+import { PackageX, TrendingDown } from "lucide-react";
+import { useAuth } from "@/context/AuthContext";
+import { userHasPermission } from "@/features/Authentication/lib/utils";
 
 
 export default function FilterSearch() {
 
   const { setShowProductoForm, bajoStockFilter, setBajoStockFilter, agotadosFilter, setAgotadosFilter } = useProductosFinalesContext();
+  const { user } = useAuth();
+  const hasAddPermission = userHasPermission(user!, 'productos_elaborados', 'add');
 
   const toggleBajoStock = () => {
     setBajoStockFilter(!bajoStockFilter);
@@ -34,7 +38,7 @@ export default function FilterSearch() {
           <FilterButton />
           <FiltersPanel />
         </div>
-        <NewButton onClick={() => setShowProductoForm(true)} />
+        {hasAddPermission && <NewButton onClick={() => setShowProductoForm(true)} />}
       </div>
     </div>
   );

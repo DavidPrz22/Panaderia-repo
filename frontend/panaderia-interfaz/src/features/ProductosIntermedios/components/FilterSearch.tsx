@@ -5,9 +5,13 @@ import SearchInput from "@/features/ProductosIntermedios/components/SearchInput"
 import { Button } from "@/components/ui/button";
 import { useProductosIntermediosContext } from "@/context/ProductosIntermediosContext";
 import { PackageX, TrendingDown } from "lucide-react";
+import { useAuth } from "@/context/AuthContext";
+import { userHasPermission } from "@/features/Authentication/lib/utils";
 
 export default function FilterSearch() {
   const { setShowProductosIntermediosForm, bajoStockFilter, setBajoStockFilter, agotadosFilter, setAgotadosFilter } = useProductosIntermediosContext();
+  const { user } = useAuth();
+  const hasAddPermission = userHasPermission(user!, 'productos_elaborados', 'add');
 
   const toggleBajoStock = () => {
     setBajoStockFilter(!bajoStockFilter);
@@ -29,11 +33,13 @@ export default function FilterSearch() {
           Agotados
         </Button>
         <FilterButton />
-        <NewButton
-          onClick={() => {
-            setShowProductosIntermediosForm(true);
-          }}
-        />
+        {hasAddPermission && (
+          <NewButton
+            onClick={() => {
+              setShowProductosIntermediosForm(true);
+            }}
+          />
+        )}
         <PIFiltersPanel />
       </div>
     </div>

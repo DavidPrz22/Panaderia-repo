@@ -137,7 +137,7 @@ export default function Sidebar() {
               Ventas
             </SidebarDropdownCard>
 
-            {userHasPermission(user!, 'view','recetas') && (
+            {userHasPermission(user!, 'recetas','view') && (
               <SidebarCard
               icon={RecetasIcon}
               onclick={handleClick}
@@ -148,7 +148,7 @@ export default function Sidebar() {
             </SidebarCard>
             )}
 
-            {userHasPermission(user!, 'view','produccion') && (
+            {userHasPermission(user!, 'produccion','view') && (
             <SidebarCard
               icon={ProductionIcon}
               onclick={handleClick}
@@ -158,7 +158,7 @@ export default function Sidebar() {
               Producción
             </SidebarCard>
             )}
-            {userHasPermission(user!, 'view','transformacion') && (
+            {userHasPermission(user!, 'transformacion','view') && (
             <SidebarCard
               icon={TransformacionIcon}
               onclick={handleClick}
@@ -168,7 +168,7 @@ export default function Sidebar() {
               Transformación
             </SidebarCard>
             )}
-            {userHasPermission(user!, 'view','compras') && (
+            {userHasPermission(user!, 'compras','view') && (
             <SidebarCard 
               icon={ComprasIcon} 
               onclick={handleClick} 
@@ -178,7 +178,7 @@ export default function Sidebar() {
               Compras
             </SidebarCard>
             )}
-            {userHasPermission(user!, 'view','reportes') && (
+            {userHasPermission(user!, 'reportes','view') && (
             <SidebarCard
               icon={ReportesIcon}
               onclick={handleClick}

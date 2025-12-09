@@ -11,6 +11,8 @@ import { DetallesHeader } from "@/components/DetallesHeader";
 import { LotesProductosIntermediosTable } from "./LotesProductosIntermediosTable";
 import { PILotesDetailsContainer } from "./PILotesDetailsContainer";
 import Title from "@/components/Title";
+import { useAuth } from "@/context/AuthContext";
+import { userHasPermission } from "@/features/Authentication/lib/utils";
 
 export default function ProductosIntermediosDetalles() {
   const {
@@ -37,6 +39,10 @@ export default function ProductosIntermediosDetalles() {
     mutateAsync: deleteProductoIntermedio,
     isPending: isPendingDeleteProductoIntermedio,
   } = useDeleteProductoIntermedioMutation();
+
+  const { user } = useAuth();
+  const userCanEdit = userHasPermission(user!, 'productos_elaborados', 'edit');
+  const userCanDelete = userHasPermission(user!, 'productos_elaborados', 'delete');
 
   useEffect(() => {
     if (isSuccessDetalles && productoIntermediosDetalles && enabledDetalles) {
@@ -92,8 +98,8 @@ export default function ProductosIntermediosDetalles() {
     <div className="flex flex-col gap-5 mx-8 border border-gray-200 p-5 rounded-lg shadow-md h-full relative">
       <DetallesHeader
         title={productoIntermediosDetalles?.nombre_producto}
-        onEdit={() => setUpdateRegistro(true)}
-        onDelete={() => setRegistroDelete(true)}
+        onEdit={userCanEdit ? () => setUpdateRegistro(true) : undefined}
+        onDelete={userCanDelete ? () => setRegistroDelete(true) : undefined}
         onClose={handleClose}
       />
 
@@ -120,7 +126,7 @@ export default function ProductosIntermediosDetalles() {
         />
         <div className="space-y-4 mt-4">
 
-          <Title extraClass="text-blue-600">Lotes de producto intermedio</Title>  
+          <Title extraClass="text-blue-600">Lotes de producto intermedio</Title>
           <LotesProductosIntermediosTable />
         </div>
       </div>

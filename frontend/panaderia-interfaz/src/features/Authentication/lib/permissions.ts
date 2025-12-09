@@ -32,6 +32,9 @@ export const PERMISSIONS: Permissions = {
         // Future: Point of Sale
         'view:punto_venta',
         'add:punto_venta',
+        
+        // Lots
+        'view:lots'
     ],
 
     // Gerente: Full access to everything (same as Admin)
@@ -122,10 +125,16 @@ export const PERMISSIONS: Permissions = {
         'add:punto_venta',
         'edit:punto_venta',
         'delete:punto_venta',
+
+        // Lots
+        'view:lots',
+        'add:lots',
+        'edit:lots',
+        'delete:lots',
     ],
 
     // Admin: Full access to everything (same as Gerente)
-    administrador: [
+    admin: [
         // Materias Primas
         'view:materias_primas',
         'add:materias_primas',
@@ -212,6 +221,12 @@ export const PERMISSIONS: Permissions = {
         'add:punto_venta',
         'edit:punto_venta',
         'delete:punto_venta',
+
+        // Lots
+        'view:lots',
+        'add:lots',
+        'edit:lots',
+        'delete:lots',
 
         // User Management (Admin only)
         'view:usuarios',

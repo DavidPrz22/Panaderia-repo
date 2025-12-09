@@ -1,7 +1,7 @@
 import type { Path, UseFormRegister } from "react-hook-form";
 import type { TLoginUserSchema } from "../schemas/schemas";
 
-export type UserRoles = "vendedor" | "gerente" | "administrador";
+export type UserRoles = "vendedor" | "gerente" | "admin";
 
 export type RegisterUser = {
   username: string;

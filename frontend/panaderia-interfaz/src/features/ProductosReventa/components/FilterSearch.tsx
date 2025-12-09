@@ -4,9 +4,13 @@ import SearchInput from "./SearchInput";
 import { Button } from "@/components/ui/button";
 import { useProductosReventaContext } from "@/context/ProductosReventaContext";
 import { PackageX, TrendingDown } from "lucide-react";
+import { useAuth } from "@/context/AuthContext";
+import { userHasPermission } from "@/features/Authentication/lib/utils";
 
 export default function FilterSearch() {
   const { setShowProductosReventaForm, bajoStockFilter, setBajoStockFilter, agotadosFilter, setAgotadosFilter } = useProductosReventaContext();
+  const { user } = useAuth();
+  const hasAddPermission = userHasPermission(user!, 'productos_reventa', 'add');
 
   const toggleBajoStock = () => {
     setBajoStockFilter(!bajoStockFilter);
@@ -28,11 +32,13 @@ export default function FilterSearch() {
           Agotados
         </Button>
         <FilterButton />
-        <NewButton
-          onClick={() => {
-            setShowProductosReventaForm(true);
-          }}
-        />
+        {hasAddPermission && (
+          <NewButton
+            onClick={() => {
+              setShowProductosReventaForm(true);
+            }}
+          />
+        )}
       </div>
     </div>
   );

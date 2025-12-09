@@ -14,6 +14,8 @@ import { PRLotesDetailsContainer } from "./PRLotesDetailsContainer";
 import { PRLotesFormShared } from "./PRLotesFormShared";
 import Button from "@/components/Button";
 import { PlusCircle } from "@/assets/GeneralIcons/Index";
+import { useAuth } from "@/context/AuthContext";
+import { userHasPermission } from "@/features/Authentication/lib/utils";
 
 export default function ProductosReventaDetalles() {
   const {
@@ -41,6 +43,11 @@ export default function ProductosReventaDetalles() {
     mutateAsync: deleteProductosReventa,
     isPending: isPendingDeleteProductosReventa,
   } = useDeleteProductosReventaMutation();
+
+  const { user } = useAuth();
+  const userCanEdit = userHasPermission(user!, 'productos_reventa', 'edit');
+  const userCanDelete = userHasPermission(user!, 'productos_reventa', 'delete');
+  const userCanAddLot = userHasPermission(user!, 'lots', 'add');
 
   useEffect(() => {
     if (isSuccessDetalles && productosReventaDetalles && enabledDetalles) {
@@ -104,8 +111,8 @@ export default function ProductosReventaDetalles() {
     <div className="flex flex-col gap-5 mx-8 border border-gray-200 p-5 rounded-lg shadow-md h-full relative">
       <DetallesHeader
         title={productosReventaDetalles?.nombre_producto}
-        onEdit={() => setUpdateRegistro(true)}
-        onDelete={() => setRegistroDelete(true)}
+        onEdit={userCanEdit ? () => setUpdateRegistro(true) : undefined}
+        onDelete={userCanDelete ? () => setRegistroDelete(true) : undefined}
         onClose={handleClose}
       />
 
@@ -135,11 +142,13 @@ export default function ProductosReventaDetalles() {
       <div className="space-y-4 mt-4">
         <div className="flex items-center justify-between">
           <Title extraClass="text-blue-600">Lotes de producto de reventa</Title>
-          <Button type="add" onClick={() => setShowPRLotesForm(true)}>
-            <div className="flex items-center gap-2"> 
-              Agregar Lote <PlusCircle className="inline-block ml-2"/>
-            </div>
-          </Button>
+          {userCanAddLot && (
+            <Button type="add" onClick={() => setShowPRLotesForm(true)}>
+              <div className="flex items-center gap-2">
+                Agregar Lote <PlusCircle className="inline-block ml-2" />
+              </div>
+            </Button>
+          )}
         </div>
         <LotesProductosReventaTable />
       </div>

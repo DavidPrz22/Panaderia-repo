@@ -22,6 +22,10 @@ import { useLotesMateriaPrimaQuery } from "../hooks/queries/queries";
 import { TitleDetails } from "@/components/TitleDetails";
 import { DetailsTable } from "./DetailsTable";
 
+import { useAuth } from "@/context/AuthContext";
+import { userHasPermission } from "@/features/Authentication/lib/utils";
+
+
 export const MaterialPrimaDetalles = () => {
   const {
     showMateriaprimaDetalles,
@@ -39,6 +43,8 @@ export const MaterialPrimaDetalles = () => {
     setLotesForm,
     showLotesMateriaPrimaDetalles,
   } = useMateriaPrimaContext();
+
+  const { user } = useAuth();
 
   const { mutateAsync: deleteMateriaPrima, isPending } =
     useDeleteMateriaPrimaMutation(handleClose, materiaprimaId!);
@@ -63,6 +69,10 @@ export const MaterialPrimaDetalles = () => {
   const handleCloseUpdate = () => {
     setUpdateRegistro(false);
   };
+
+  const userCanEdit = userHasPermission(user!, 'materias_primas', 'edit') 
+  const userCanDelete = userHasPermission(user!, 'materias_primas', 'delete') 
+  const userCanAddLot = userHasPermission(user!, 'materias_primas', 'view') 
 
   if (showLotesMateriaPrimaDetalles) {
     return <LotesMateriaPrimaDetalles />;
@@ -103,23 +113,28 @@ export const MaterialPrimaDetalles = () => {
       <div className="flex justify-between items-center">
         <Title>{materiaprimaDetalles?.nombre || "-"}</Title>
         <div className="flex gap-2">
-          <Button type="edit" onClick={() => setUpdateRegistro(true)}>
-            <div className="flex items-center gap-2">
-              Editar
-              <img src={EditarIcon} alt="Editar" />
-            </div>
-          </Button>
-          <Button
-            type="delete"
-            onClick={() => {
-              setRegistroDelete(true);
-            }}
-          >
-            <div className="flex items-center gap-2">
-              Eliminar
-              <img src={BorrarIcon} alt="Eliminar" />
-            </div>
-          </Button>
+          {userCanEdit && (
+            <Button type="edit" onClick={() => setUpdateRegistro(true)}>
+              <div className="flex items-center gap-2">
+                Editar
+                <img src={EditarIcon} alt="Editar" />
+              </div>
+            </Button>
+          )}
+  
+          {userCanDelete && (
+            <Button
+              type="delete"
+              onClick={() => {
+                setRegistroDelete(true);
+              }}
+            >
+              <div className="flex items-center gap-2">
+                Eliminar
+                <img src={BorrarIcon} alt="Eliminar" />
+              </div>
+            </Button>
+          )}
           <div className="ml-6">
             <Button type="close" onClick={handleClose}>
               <img src={CerrarIcon} alt="Cerrar" />
@@ -144,6 +159,7 @@ export const MaterialPrimaDetalles = () => {
       <div className="flex flex-col gap-4 mt-5 h-full">
         <div className="flex justify-between items-center pr-5">
           <Title extraClass="text-blue-600">Lotes de materia prima</Title>
+          {userCanAddLot && (
           <Button
             type="add"
             onClick={() => {
@@ -159,6 +175,7 @@ export const MaterialPrimaDetalles = () => {
               />
             </div>
           </Button>
+          )}
         </div>
         {isLoadingLotes ? (
           <div className="flex justify-center items-center h-full rounded-md border border-gray-300">

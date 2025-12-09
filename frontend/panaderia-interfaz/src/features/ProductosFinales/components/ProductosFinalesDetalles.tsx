@@ -11,6 +11,8 @@ import { DetallesHeader } from "@/components/DetallesHeader";
 import Title from "@/components/Title";
 import { PFLotesTable } from "./PFLotesTable";
 import { PFLotesDetailsContainer } from "./PFLotesDetailsContainer";
+import { useAuth } from "@/context/AuthContext";
+import { userHasPermission } from "@/features/Authentication/lib/utils";
 
 export default function ProductosFinalesDetalles() {
   const {
@@ -37,6 +39,10 @@ export default function ProductosFinalesDetalles() {
     mutateAsync: deleteProductoFinal,
     isPending: isPendingDeleteProductoFinal,
   } = useDeleteProductoFinal();
+
+  const { user } = useAuth();
+  const userCanEdit = userHasPermission(user!, 'productos_elaborados', 'edit');
+  const userCanDelete = userHasPermission(user!, 'productos_elaborados', 'delete');
 
   useEffect(() => {
     if (isSuccessDetalles && productoFinalDetalles && enabledProductoDetalles) {
@@ -93,8 +99,8 @@ export default function ProductosFinalesDetalles() {
     <div className="flex flex-col gap-5 mx-8 border border-gray-200 p-5 rounded-lg shadow-md h-full relative">
       <DetallesHeader
         title={productoFinalDetalles?.nombre_producto}
-        onEdit={() => setUpdateRegistro(true)}
-        onDelete={() => setRegistroDelete(true)}
+        onEdit={userCanEdit ? () => setUpdateRegistro(true) : undefined}
+        onDelete={userCanDelete ? () => setRegistroDelete(true) : undefined}
         onClose={handleClose}
       />
 
@@ -120,9 +126,9 @@ export default function ProductosFinalesDetalles() {
       </div>
 
       <div className="space-y-4 mt-4">
-          <Title extraClass="text-blue-600">Lotes de producto final</Title>  
-          <PFLotesTable />
-        </div>
+        <Title extraClass="text-blue-600">Lotes de producto final</Title>
+        <PFLotesTable />
+      </div>
     </div>
   );
 }
