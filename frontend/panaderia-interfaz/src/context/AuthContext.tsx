@@ -11,19 +11,13 @@ import { jwtDecode } from "jwt-decode";
 import apiClient from "../api/client";
 import type { AxiosError, InternalAxiosRequestConfig } from "axios";
 import { DoubleSpinner } from "@/assets";
+import type { User } from "@/features/Authentication/types/types";
 
 // Extend the axios config type to include our custom _retry property
 interface CustomAxiosRequestConfig extends InternalAxiosRequestConfig {
   _retry?: boolean;
 }
 
-interface User {
-  id: number;
-  username: string;
-  email: string;
-  full_name: string;
-  rol: string;
-}
 
 interface AuthContextType {
   user: User | null;

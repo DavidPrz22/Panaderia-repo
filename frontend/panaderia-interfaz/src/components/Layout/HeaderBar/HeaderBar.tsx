@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import HeaderButton from "./HeaderButton";
 import HeaderPlusButton from "./HeaderPlusButton";
 import HeaderUserButton from "./HeaderUserButton";
-import { NotificationIcon, ConfigIcon } from "@/assets/DashboardAssets";
+import { ConfigIcon } from "@/assets/DashboardAssets";
 
 export default function HeaderBar() {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -25,12 +25,17 @@ export default function HeaderBar() {
         isScrolled ? "shadow-sm" : "border-b border-gray-200"
       }`}
     >
-      <div className="flex items-center justify-center">
+      {/* <div className="flex items-center justify-center">
         <HeaderPlusButton />
       </div>
+    
       <div className="flex items-center justify-end gap-2 pr-8 min-w-[220px]">
         <HeaderUserButton />
-        <HeaderButton icon={NotificationIcon} />
+        <HeaderButton icon={ConfigIcon} />
+      </div>
+      */}
+      <div className="flex flex-1 items-center justify-end gap-2 pr-8">
+        <HeaderUserButton />
         <HeaderButton icon={ConfigIcon} />
       </div>
     </div>
