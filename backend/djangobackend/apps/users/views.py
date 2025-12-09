@@ -74,7 +74,27 @@ class CustomTokenRefreshView(TokenRefreshView):
         except InvalidToken as e:
             raise InvalidToken(e.detail)
 
-        response = Response(serializer.validated_data, status=status.HTTP_200_OK)
+        # Get the new access token
+        access_token = serializer.validated_data['access']
+        
+        # Decode the token to get user_id
+        from rest_framework_simplejwt.tokens import AccessToken
+        token = AccessToken(access_token)
+        user_id = token['user_id']
+        
+        # Fetch user data
+        from apps.users.models import User
+        try:
+            user = User.objects.get(id=user_id)
+            user_data = UserSerializer(user).data
+        except User.DoesNotExist:
+            raise InvalidToken('User not found')
+        
+        response = Response({
+            'access': access_token,
+            'userData': user_data
+        }, status=status.HTTP_200_OK)
+        
         return response
 
 
