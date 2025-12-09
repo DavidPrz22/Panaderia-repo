@@ -28,7 +28,6 @@ export const ComprasTable = ({
   ordenesCompra,
   onEditOrder,
 }: ComprasTableProps) => {
-
   const { compraSeleccionadaId, setCompraSeleccionadaId } = useComprasContext();
 
   const { isFetching: isFetchingOrdenDetalles } = useGetOrdenesCompraDetalles(
@@ -38,7 +37,10 @@ export const ComprasTable = ({
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [ordenToDelete, setOrdenToDelete] = useState<number | null>(null);
 
-  const {mutateAsync: deleteOrdenCompraMutation, isPending: isDeletingOrdenCompra} = useDeleteOrdenCompraMutation();
+  const {
+    mutateAsync: deleteOrdenCompraMutation,
+    isPending: isDeletingOrdenCompra,
+  } = useDeleteOrdenCompraMutation();
 
   const handleDeleteClick = (ordenId: number) => {
     setOrdenToDelete(ordenId);
@@ -57,7 +59,9 @@ export const ComprasTable = ({
         setCompraSeleccionadaId(null);
       }
     } catch (error) {
-      toast.error(`Error al eliminar la orden de compra: ${error instanceof Error ? error.message : "Unknown error"}`);
+      toast.error(
+        `Error al eliminar la orden de compra: ${error instanceof Error ? error.message : "Unknown error"}`,
+      );
     }
   };
 

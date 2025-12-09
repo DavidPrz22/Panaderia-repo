@@ -46,9 +46,8 @@ export const createNewDetalleOC = (id: number): DetalleOC => ({
   unidad_medida_abrev: undefined,
   tipo_medida: undefined,
   costo_unitario_usd: 0,
-  subtotal_linea_usd: 0
+  subtotal_linea_usd: 0,
 });
-
 
 export const formatCurrency = (amount: number) => {
   return new Intl.NumberFormat("es-MX", {

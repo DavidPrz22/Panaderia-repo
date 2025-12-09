@@ -13,7 +13,8 @@ export const PFFormInputContainer = ({
   search,
   setValue,
   initialData,
-}: PFFormInputContainerProps & setValueProps) => {
+  disabled,
+}: PFFormInputContainerProps & setValueProps & { disabled?: boolean }) => {
   return (
     <div className="flex flex-col gap-1">
       <div className="flex items-center gap-2">
@@ -24,12 +25,15 @@ export const PFFormInputContainer = ({
         </div>
         <div className="basis-2/4">
           {search ? (
-            <PFInputFormSearch setValue={setValue} initialData={initialData} />
+            disabled ?
+              <PFInputFormSearch setValue={setValue} initialData={initialData} turned_off={true} />
+            : <PFInputFormSearch setValue={setValue} initialData={initialData} />
           ) : (
             <PFInputForm
               typeInput={inputType}
               name={name}
               register={register}
+              disabled={disabled}
             />
           )}
         </div>

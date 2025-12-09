@@ -7,6 +7,7 @@ import {
   getOrdenes,
   getOrdenesDetalles,
 } from "../../api/api";
+import type { OrdenesPagination } from "../../types/types";
 
 export const clientesQueryOptions = {
   queryKey: ["clientes"],
@@ -42,6 +43,9 @@ export const ordenesTableQueryOptions = {
   queryKey: ["ordenes-table"],
   queryFn: getOrdenes,
   staleTime: Infinity,
+  initialPageParam: null,
+  getNextPageParam: (lastPage: OrdenesPagination) => lastPage.next,
+  getPreviousPageParam: (firstPage: OrdenesPagination) => firstPage.previous,
 };
 
 export const ordenesDetallesQueryOptions = (id: number) => {

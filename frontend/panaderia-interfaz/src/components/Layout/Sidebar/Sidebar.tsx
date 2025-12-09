@@ -20,6 +20,9 @@ import {
   TransformacionIcon,
 } from "@/assets/DashboardAssets";
 
+import { useAuth } from "@/context/AuthContext";
+
+import { userHasPermission } from "@/features/Authentication/lib/utils";
 
 
 export default function Sidebar() {
@@ -29,6 +32,8 @@ export default function Sidebar() {
     setIsOpenDropdownCard,
     isOpenDropdownCard,
   } = useAppContext();
+
+  const { user } = useAuth();
 
   function handleClick(e: React.MouseEvent<HTMLDivElement>) {
     if (refCard.current) {
@@ -49,6 +54,8 @@ export default function Sidebar() {
       setIsOpenDropdownCard(false);
     }
   }
+
+
 
   return (
     <>
@@ -130,7 +137,8 @@ export default function Sidebar() {
               Ventas
             </SidebarDropdownCard>
 
-            <SidebarCard
+            {userHasPermission(user!, 'recetas','view') && (
+              <SidebarCard
               icon={RecetasIcon}
               onclick={handleClick}
               id="recetas"
@@ -138,6 +146,9 @@ export default function Sidebar() {
             >
               Recetas
             </SidebarCard>
+            )}
+
+            {userHasPermission(user!, 'produccion','view') && (
             <SidebarCard
               icon={ProductionIcon}
               onclick={handleClick}
@@ -146,6 +157,8 @@ export default function Sidebar() {
             >
               Producción
             </SidebarCard>
+            )}
+            {userHasPermission(user!, 'transformacion','view') && (
             <SidebarCard
               icon={TransformacionIcon}
               onclick={handleClick}
@@ -154,6 +167,8 @@ export default function Sidebar() {
             >
               Transformación
             </SidebarCard>
+            )}
+            {userHasPermission(user!, 'compras','view') && (
             <SidebarCard 
               icon={ComprasIcon} 
               onclick={handleClick} 
@@ -162,6 +177,8 @@ export default function Sidebar() {
             >
               Compras
             </SidebarCard>
+            )}
+            {userHasPermission(user!, 'reportes','view') && (
             <SidebarCard
               icon={ReportesIcon}
               onclick={handleClick}
@@ -170,6 +187,7 @@ export default function Sidebar() {
             >
               Reportes
             </SidebarCard>
+            )}
           </div>
         </div>
       </div>

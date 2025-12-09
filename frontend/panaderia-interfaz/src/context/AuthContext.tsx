@@ -11,19 +11,13 @@ import { jwtDecode } from "jwt-decode";
 import apiClient from "../api/client";
 import type { AxiosError, InternalAxiosRequestConfig } from "axios";
 import { DoubleSpinner } from "@/assets";
-
+import type { User } from "@/features/Authentication/types/types";
+import { userHasPermission } from "@/features/Authentication/lib/utils";
 // Extend the axios config type to include our custom _retry property
 interface CustomAxiosRequestConfig extends InternalAxiosRequestConfig {
   _retry?: boolean;
 }
 
-interface User {
-  id: number;
-  username: string;
-  email: string;
-  full_name: string;
-  rol: string;
-}
 
 interface AuthContextType {
   user: User | null;
@@ -87,10 +81,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const refreshToken = useCallback(async (): Promise<string | null> => {
     try {
       const response = await apiClient.post("/api/token/refresh/");
-      const newAccessToken = response.data.access;
+      const { access: newAccessToken, userData } = response.data;
       console.log("New access token:", newAccessToken);
+      console.log("User data:", userData);
 
       setAccessToken(newAccessToken);
+      setUser(userData);
+
       return newAccessToken; // Return the new token
     } catch (error) {
       console.error(
@@ -204,12 +201,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
-// HOC for protecting routes
+// HOC for protecting routes with optional permission check
 export const withAuth = <P extends object>(
   WrappedComponent: React.ComponentType<P>,
+  requiredPermission?: string, // e.g., 'recetas', 'produccion', 'compras'
 ): React.FC<P> => {
   return (props: P) => {
-    const { isAuthenticated, isLoading } = useAuth();
+    const { isAuthenticated, isLoading, user } = useAuth();
 
     if (isLoading) {
       return (
@@ -221,6 +219,19 @@ export const withAuth = <P extends object>(
 
     if (!isAuthenticated) {
       return <Navigate to="/login" replace />;
+    }
+
+    if (!user) {
+      return <Navigate to="/login" replace />;
+    }
+
+    // Check permission if required
+    if (requiredPermission) {
+      const hasPermission = userHasPermission(user, requiredPermission, 'view');
+      if (!hasPermission) {
+        // Redirect to dashboard with unauthorized message
+        return <Navigate to="/dashboard" replace />;
+      }
     }
 
     return <WrappedComponent {...props} />;

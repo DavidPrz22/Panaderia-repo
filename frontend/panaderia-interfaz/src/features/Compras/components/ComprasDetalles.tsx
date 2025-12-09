@@ -25,7 +25,7 @@ interface ComprasDetallesProps {
 import type { EstadosOC } from "../types/types";
 import { ComprasFormTotals } from "./ComprasFormTotals";
 import { useEffect } from "react";
-import { useMarcarEnviadaOCMutation} from "../hooks/mutations/mutations";
+import { useMarcarEnviadaOCMutation } from "../hooks/mutations/mutations";
 import { useGetOrdenesCompraDetalles } from "../hooks/queries/queries";
 import { toast } from "sonner";
 import { useComprasContext } from "@/context/ComprasContext";
@@ -46,10 +46,14 @@ export const ComprasDetalles = ({
     isPending: isLoadingMarcarEnviadaOCPending,
   } = useMarcarEnviadaOCMutation();
 
-  const { setShowRecepcionForm, setShowOrdenCompraDetalles, compraSeleccionadaId } =
-    useComprasContext();
+  const {
+    setShowRecepcionForm,
+    setShowOrdenCompraDetalles,
+    compraSeleccionadaId,
+  } = useComprasContext();
 
-  const { isFetching: isFetchingOrdenCompraDetalles } = useGetOrdenesCompraDetalles(compraSeleccionadaId!);
+  const { isFetching: isFetchingOrdenCompraDetalles } =
+    useGetOrdenesCompraDetalles(compraSeleccionadaId!);
 
   useEffect(() => {
     if (ordenCompra) {
@@ -117,9 +121,7 @@ export const ComprasDetalles = ({
     }
   };
 
-
   const handleButtonStates = (estado: EstadosOC) => {
-
     const isPaymentComplete = ordenCompra.monto_pendiente_pago_usd === 0;
 
     switch (estado) {
@@ -153,7 +155,7 @@ export const ComprasDetalles = ({
             >
               Recibir
             </Button>
-            <Button 
+            <Button
               className="cursor-pointer bg-green-600 text-white font-semibold hover:bg-green-700"
               onClick={() => setShowRegistrarPagoDialog(true)}
             >
@@ -175,12 +177,12 @@ export const ComprasDetalles = ({
               Recibir Restante
             </Button>
             {!isPaymentComplete ? (
-            <Button 
-              className="cursor-pointer bg-green-600 text-white hover:bg-green-700"
-              onClick={() => setShowRegistrarPagoDialog(true)}
-            >
-              Registrar Pago
-            </Button>
+              <Button
+                className="cursor-pointer bg-green-600 text-white hover:bg-green-700"
+                onClick={() => setShowRegistrarPagoDialog(true)}
+              >
+                Registrar Pago
+              </Button>
             ) : null}
           </>
         );
@@ -188,9 +190,9 @@ export const ComprasDetalles = ({
         return (
           <>
             {!isPaymentComplete ? (
-            <Button 
-              className="cursor-pointer bg-green-600 text-white hover:bg-green-700"
-              onClick={() => setShowRegistrarPagoDialog(true)}
+              <Button
+                className="cursor-pointer bg-green-600 text-white hover:bg-green-700"
+                onClick={() => setShowRegistrarPagoDialog(true)}
               >
                 Registrar Pago
               </Button>

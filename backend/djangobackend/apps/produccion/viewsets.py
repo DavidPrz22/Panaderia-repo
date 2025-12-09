@@ -10,12 +10,18 @@ from apps.produccion.serializers import RecetasSerializer, RecetasDetallesSerial
 from django.db.models import Q
 from django.core.exceptions import ValidationError
 from apps.produccion.services import ProductionValidationService, StockConsumptionService, ProductionService
+from apps.core.services.services import NotificationService
 from decimal import Decimal
 from django.utils import timezone
+from djangobackend.permissions import IsStaffLevelOnly
+import logging
+logger = logging.getLogger(__name__)
+
 
 class RecetasViewSet(viewsets.ModelViewSet):
     queryset = Recetas.objects.all()
     serializer_class = RecetasSerializer
+    permission_classes = [IsStaffLevelOnly]
 
     def create(self, request, *args, **kwargs):
     # Step 1: Manual validation of frontend data
@@ -272,6 +278,7 @@ class RecetasViewSet(viewsets.ModelViewSet):
 class RecetasSearchViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Recetas.objects.all()
     serializer_class = RecetasSearchSerializer
+    permission_classes = [IsStaffLevelOnly]
 
     @action(detail=False, methods=['get'])
     def list_recetas(self, request):
@@ -298,6 +305,7 @@ class RecetasSearchViewSet(viewsets.ReadOnlyModelViewSet):
 class ProduccionesViewSet(viewsets.ModelViewSet):
     queryset = Produccion.objects.all()
     serializer_class = ProduccionSerializer
+    permission_classes = [IsStaffLevelOnly]
 
 
     def create(self, request, *args, **kwargs):
@@ -378,6 +386,21 @@ class ProduccionesViewSet(viewsets.ModelViewSet):
                     product_id, product_type
                 )
 
+                # Check for stock and expiration notifications after production
+                
+                try:
+                    # Check stock levels for consumed materials
+                    NotificationService.check_low_stock(MateriasPrimas)
+                    NotificationService.check_sin_stock(MateriasPrimas)
+                    NotificationService.check_low_stock(ProductosIntermedios)
+                    NotificationService.check_sin_stock(ProductosIntermedios)
+                    
+                    # Check expiration of new lot created
+                    NotificationService.check_expiration_date(ProductosElaborados, LotesProductosElaborados)
+                except Exception as notif_error:
+                    # Log but don't fail the request
+                    logger.error(f"Failed to create notifications: {str(notif_error)}")
+
                 return Response({
                     "message": "Producción registrada exitosamente",
                     "produccion_id": produccion.id,
@@ -391,9 +414,11 @@ class ProduccionesViewSet(viewsets.ModelViewSet):
             return Response({"error": f"Error interno: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
+
 class ProduccionDetallesViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Produccion.objects.all()
     serializer_class = ProduccionDetallesSerializer
+    permission_classes = [IsStaffLevelOnly]
 
     def list(self, request, *args, **kwargs):
         

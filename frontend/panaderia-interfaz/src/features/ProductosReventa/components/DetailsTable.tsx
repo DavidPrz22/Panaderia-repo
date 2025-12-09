@@ -38,6 +38,9 @@ export const DetailsTable = ({
           Stock actual
         </DetailsField>
         <DetailsField extraClass="min-h-[25px] flex items-center">
+          Punto de Reorden
+        </DetailsField>
+        <DetailsField extraClass="min-h-[25px] flex items-center">
           Precio venta USD
         </DetailsField>
         <DetailsField extraClass="min-h-[25px] flex items-center">
@@ -86,6 +89,9 @@ export const DetailsTable = ({
         </DetailFieldValue>
         <DetailFieldValue extraClass="min-h-[25px] ">
           {productosReventaDetalles.stock_actual}
+        </DetailFieldValue>
+        <DetailFieldValue extraClass="min-h-[25px] ">
+          {productosReventaDetalles.punto_reorden || "N/A"}
         </DetailFieldValue>
         <DetailFieldValue extraClass="min-h-[25px] ">
           ${productosReventaDetalles.precio_venta_usd}

@@ -1,4 +1,4 @@
-import { useQueries, useQuery } from "@tanstack/react-query";
+import { useQueries, useQuery, useInfiniteQuery } from "@tanstack/react-query";
 import {
   clientesQueryOptions,
   metodosDePagoQueryOptions,
@@ -28,7 +28,7 @@ export const useGetBCVRate = () => {
 };
 
 export const useGetOrdenesTable = () => {
-  return useQuery(ordenesTableQueryOptions);
+  return useInfiniteQuery(ordenesTableQueryOptions);
 };
 
 export const useGetOrdenesDetalles = (id: number) => {

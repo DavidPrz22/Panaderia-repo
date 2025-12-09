@@ -12,9 +12,13 @@ export const PITableBody = () => {
     productosIntermediosSearchTerm,
     selectedUnidadesProduccion,
     selectedCategoriasIntermedio,
+    agotadosFilter,
+    bajoStockFilter,
     setSelectedUnidadesProduccion,
     setSelectedCategoriasIntermedio,
     setProductosIntermediosSearchTerm,
+    setBajoStockFilter,
+    setAgotadosFilter,
   } = useProductosIntermediosContext();
 
   let displayData = productosIntermedios || [];
@@ -40,15 +44,28 @@ export const PITableBody = () => {
     );
   }
 
+  if (agotadosFilter && bajoStockFilter) {
+    displayData = displayData.filter((p) => Number(p.stock_actual) === 0 || Number(p.stock_actual) < Number(p.punto_reorden));
+  }
+  else if (agotadosFilter) {
+    displayData = displayData.filter((p) => Number(p.stock_actual) === 0);
+  } else if (bajoStockFilter) {
+    displayData = displayData.filter((p) => Number(p.stock_actual) < Number(p.punto_reorden));
+  }
+
   const anyFilterActive =
     productosIntermediosSearchTerm.length > 0 ||
     selectedUnidadesProduccion.length > 0 ||
-    selectedCategoriasIntermedio.length > 0;
+    selectedCategoriasIntermedio.length > 0 ||
+    agotadosFilter ||
+    bajoStockFilter;
 
   const clearFilters = () => {
     setProductosIntermediosSearchTerm("");
     setSelectedUnidadesProduccion([]);
     setSelectedCategoriasIntermedio([]);
+    setBajoStockFilter(false);
+    setAgotadosFilter(false);
   };
 
   const EmptyState = () => {

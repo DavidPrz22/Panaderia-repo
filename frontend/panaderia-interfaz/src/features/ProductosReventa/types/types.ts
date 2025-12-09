@@ -99,6 +99,7 @@ export type ProductosReventa = {
   categoria_nombre: string;
   unidad_base_inventario_nombre: string | null;
   fecha_creacion_registro: string;
+  punto_reorden: number;
 };
 
 export type ProductosReventaDetalles = {
@@ -120,6 +121,7 @@ export type ProductosReventaDetalles = {
   fecha_modificacion_registro: string;
   convert_inventory_to_sale_units: string;
   convert_sale_to_inventory_units: string;
+  punto_reorden: number;
 };
 
 export type LotesProductosReventa = {

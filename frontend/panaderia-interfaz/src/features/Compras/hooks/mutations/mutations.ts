@@ -9,7 +9,12 @@ import {
   enviarEmailOC,
   deleteOrdenCompra,
 } from "../../api/api";
-import type { TEmailSchema, TOrdenCompraSchema, TPagoSchema, TRecepcionFormSchema } from "../../schemas/schemas";
+import type {
+  TEmailSchema,
+  TOrdenCompraSchema,
+  TPagoSchema,
+  TRecepcionFormSchema,
+} from "../../schemas/schemas";
 import { ordenesCompraTableQueryOptions } from "../queries/queryOptions";
 import { ordenesCompraDetallesQueryOptions } from "@/features/Compras/hooks/queries/queryOptions";
 
@@ -37,7 +42,8 @@ export const useCreateOCMutation = () => {
 export const useUpdateOCMutation = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, data }: { id: number; data: TOrdenCompraSchema }) => updateOrdenCompra(id, data),
+    mutationFn: ({ id, data }: { id: number; data: TOrdenCompraSchema }) =>
+      updateOrdenCompra(id, data),
     onSuccess: (_, { id }) => {
       queryClient.invalidateQueries({
         queryKey: ordenesCompraTableQueryOptions.queryKey,
@@ -76,7 +82,8 @@ export const useCrearRecepcionOCMutation = () => {
         queryKey: ordenesCompraTableQueryOptions.queryKey,
       });
       queryClient.invalidateQueries({
-        queryKey: ordenesCompraDetallesQueryOptions(params.orden_compra_id).queryKey,
+        queryKey: ordenesCompraDetallesQueryOptions(params.orden_compra_id)
+          .queryKey,
       });
     },
     onError: (error) => {
@@ -94,7 +101,9 @@ export const useRegistrarPagoMutation = () => {
         queryKey: ordenesCompraTableQueryOptions.queryKey,
       });
       queryClient.invalidateQueries({
-        queryKey: ordenesCompraDetallesQueryOptions(params.orden_compra_asociada).queryKey,
+        queryKey: ordenesCompraDetallesQueryOptions(
+          params.orden_compra_asociada,
+        ).queryKey,
       });
     },
   });
@@ -103,7 +112,8 @@ export const useRegistrarPagoMutation = () => {
 export const useEnviarEmailOCMutation = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({id, params}: {id: number, params: TEmailSchema}) => enviarEmailOC(id, params),
+    mutationFn: ({ id, params }: { id: number; params: TEmailSchema }) =>
+      enviarEmailOC(id, params),
     onSuccess: (_, { id }) => {
       queryClient.invalidateQueries({
         queryKey: ordenesCompraTableQueryOptions.queryKey,

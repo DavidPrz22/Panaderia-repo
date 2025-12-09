@@ -19,9 +19,13 @@ import os
 import resend
 from datetime import datetime
 
+from djangobackend.pagination import StandardResultsSetPagination
+from djangobackend.permissions import IsStaffLevelOnly
+
 class ProveedoresViewSet(viewsets.ModelViewSet):
     queryset = Proveedores.objects.all()
     serializer_class = ProveedoresSerializer
+    permission_classes = [IsStaffLevelOnly]
 
     @action(detail=False, methods=['get'])
     def compra_registro(self, request):
@@ -30,9 +34,17 @@ class ProveedoresViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
 
+class OrdenesCompraTableViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = OrdenesCompra.objects.order_by('id')
+    serializer_class = OrdenesCompraTableSerializer
+    pagination_class = StandardResultsSetPagination
+    permission_classes = [IsStaffLevelOnly]
+
+
 class OrdenesCompraViewSet(viewsets.ModelViewSet):
     queryset = OrdenesCompra.objects.all()
     serializer_class = OrdenesCompraSerializer
+    permission_classes = [IsStaffLevelOnly]
 
     def create(self, request, *args, **kwargs):
         with transaction.atomic():
@@ -188,12 +200,6 @@ class OrdenesCompraViewSet(viewsets.ModelViewSet):
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
-        
-    @action(detail=False, methods=['get'])
-    def get_ordenes_table(self, request):
-        queryset = OrdenesCompra.objects.all()
-        serializer = OrdenesCompraTableSerializer(queryset, many=True)
-        return Response(serializer.data)
 
     @action(detail=True, methods=['post'], url_path='enviar-email')
     def enviar_email(self, request, pk=None):
@@ -236,6 +242,7 @@ class OrdenesCompraViewSet(viewsets.ModelViewSet):
 class ComprasViewSet(viewsets.ModelViewSet):
     queryset = Compras.objects.all()
     serializer_class = RecepcionCompraSerializer
+    permission_classes = [IsStaffLevelOnly]
 
     def create(self, request, *args, **kwargs):
         with transaction.atomic():
@@ -444,6 +451,7 @@ class ComprasViewSet(viewsets.ModelViewSet):
 class PagosProveedoresViewSet(viewsets.ModelViewSet):
     queryset = PagosProveedores.objects.all()
     serializer_class = PagosProveedoresSerializer
+    permission_classes = [IsStaffLevelOnly]
 
     def create(self, request, *args, **kwargs):
         with transaction.atomic():

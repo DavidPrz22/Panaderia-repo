@@ -5,7 +5,8 @@ export default function PIInputForm({
   name,
   placeholder = "",
   register,
-}: PFFormInputProps) {
+  disabled,
+}: PFFormInputProps & { disabled?: boolean }) {
   let inputElement: React.ReactNode = <></>;
   if (typeInput === "textarea") {
     inputElement = (
@@ -22,6 +23,7 @@ export default function PIInputForm({
   } else {
     inputElement = (
       <input
+        disabled={disabled}
         type={typeInput}
         {...register(name)}
         name={name}

@@ -9,6 +9,8 @@ export const PFTableBody = () => {
     productosFinalesSearchTerm,
     selectedUnidadesVenta,
     selectedCategoriasProductoFinal,
+    agotadosFilter,
+    bajoStockFilter,
     setSelectedUnidadesVenta,
     setSelectedCategoriasProductoFinal,
     setProductosFinalesSearchTerm,
@@ -32,10 +34,21 @@ export const PFTableBody = () => {
       selectedUnidadesVenta.includes(p.unidad_venta),
     );
   }
+
   if (selectedCategoriasProductoFinal.length > 0) {
     displayData = displayData.filter((p) =>
       selectedCategoriasProductoFinal.includes(p.categoria),
     );
+  }
+
+
+  if (agotadosFilter && bajoStockFilter) {
+    displayData = displayData.filter((p) => Number(p.stock_actual) === 0 || Number(p.stock_actual) < Number(p.punto_reorden));
+  } 
+  else if (agotadosFilter) {
+    displayData = displayData.filter((p) => Number(p.stock_actual) === 0);
+  } else if (bajoStockFilter) {
+    displayData = displayData.filter((p) => Number(p.stock_actual) < Number(p.punto_reorden));
   }
 
   // Sort by id ascending

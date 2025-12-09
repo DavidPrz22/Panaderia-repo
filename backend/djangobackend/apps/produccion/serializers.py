@@ -1,10 +1,11 @@
 from rest_framework import serializers
-from .models import Recetas, RecetasDetalles
+from .models import Recetas, RecetasDetalles, RelacionesRecetas
 from apps.produccion.models import Produccion, DetalleProduccionCosumos
 
 class RecetasSerializer(serializers.ModelSerializer):
     componente_receta = serializers.ListField(write_only=True, required=False)
     receta_relacionada = serializers.ListField(write_only=True, required=False)
+    esCompuesta = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = Recetas
@@ -17,7 +18,11 @@ class RecetasSerializer(serializers.ModelSerializer):
                     'notas',
                     'componente_receta',
                     'receta_relacionada',
+                    'esCompuesta'
                 ]
+
+    def get_esCompuesta(self, obj):
+        return RelacionesRecetas.objects.filter(receta_principal=obj).exists()
 
 class RecetasSearchSerializer(serializers.ModelSerializer):
     class Meta:

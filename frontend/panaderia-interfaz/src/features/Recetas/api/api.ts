@@ -16,7 +16,7 @@ export const componentesRecetaSearch = async (
         search,
       },
     });
-    console.log(response.data, "componentesRecetaSearch response.data");
+  
     return response.data;
   } catch (error) {
     console.error("Error fetching componentes receta search:", error);

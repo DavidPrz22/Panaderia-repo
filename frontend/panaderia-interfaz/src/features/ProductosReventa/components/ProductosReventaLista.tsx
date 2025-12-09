@@ -5,7 +5,7 @@ import { PRTableHeader } from "./PRTableHeader";
 import { useGetProductosReventaDetalles } from "../hooks/queries/queries";
 import { useProductosReventaContext } from "@/context/ProductosReventaContext";
 export default function ProductosReventaLista() {
-  
+
   const { productoReventaId } = useProductosReventaContext();
 
 
@@ -21,6 +21,7 @@ export default function ProductosReventaLista() {
             "Nombre",
             "SKU",
             "Stock",
+            "Punto de Reorden",
             "Precio Venta",
             "Categoría",
             "Unidad de inventario",

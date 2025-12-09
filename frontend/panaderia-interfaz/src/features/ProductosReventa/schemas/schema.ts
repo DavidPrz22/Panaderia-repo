@@ -47,6 +47,12 @@ export const productosReventaSchema = z.object({
   precio_venta_usd: z.coerce
     .number()
     .min(0, "El precio de venta debe ser mayor o igual a 0"),
+  punto_reorden: z.coerce
+    .number({
+      required_error: "El punto de reorden es requerido",
+      invalid_type_error: "El punto de reorden no es válido",
+    })
+    .min(0, "El punto de reorden debe ser mayor o igual a 0"),
   pecedero: z.coerce.boolean(),
 });
 

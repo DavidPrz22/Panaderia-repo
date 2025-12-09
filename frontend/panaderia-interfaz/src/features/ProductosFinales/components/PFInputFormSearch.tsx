@@ -11,7 +11,8 @@ import type { receta_relacionada, setValueProps } from "../types/types";
 export default function PFInputFormSearch({
   setValue,
   initialData,
-}: setValueProps & { initialData?: receta_relacionada }) {
+  turned_off
+}: setValueProps & { initialData?: receta_relacionada, turned_off?: boolean }) {
   const {
     searchList,
     searchTimer,
@@ -40,6 +41,7 @@ export default function PFInputFormSearch({
       document.removeEventListener("click", handleClickOutside);
     };
   }, [isFocused, setSearchTimer, setSearchList]);
+
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.value === "") {
@@ -82,18 +84,26 @@ export default function PFInputFormSearch({
     setIsFocused(true);
     setCompleted(false);
   };
+  
+  const tabindex = ()=> {
+    if (turned_off) return -1
+  }
 
   return (
     <div id="receta-search-container" className="flex flex-col relative">
       <div className="relative">
+        {turned_off && <div className="absolute bg-gray-100 border border-gray-300 rounded-md inset-0">
+          </div>}
         <input
           ref={recetaSearchInputRef}
           onChange={handleChange}
           onFocus={handleFocus}
+          tabIndex={tabindex()}
           placeholder="Busca una receta para el producto"
           defaultValue={initialData ? initialData.nombre : ""}
-          disabled={initialData ? true : false}
+          disabled={ initialData ? true : false}
           type="text"
+          data-input='search'
           className="block w-full pl-3 pr-10 py-2.5 border border-gray-300 rounded-md shadow-xs font-[Roboto]
                       focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
         />
@@ -101,6 +111,7 @@ export default function PFInputFormSearch({
         {recetaSearchInputRef.current?.disabled ? (
           <XIconContainer onClick={handleResetSearch} />
         ) : (
+          !turned_off && 
           <SearchIconContainer />
         )}
       </div>

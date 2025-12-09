@@ -18,14 +18,13 @@ const ProtectedLandingPage = withAuth(LandingPage);
 const ProtectedMateriaPrimaPage = withAuth(MateriaPrimaPage);
 const ProtectedProductosIntermediosPage = withAuth(ProductosIntermediosPage);
 const ProtectedProductosFinalesPage = withAuth(ProductosFinalesPage);
-const ProtectedProductionPage = withAuth(ProductionPage);
-const ProtectedRecetasPage = withAuth(RecetasPage);
+const ProtectedProductionPage = withAuth(ProductionPage, 'produccion');
+const ProtectedRecetasPage = withAuth(RecetasPage, 'recetas');
 const ProtectedProductosReventaPage = withAuth(ProductosReventaPage);
-const ProtectedComprasPage = withAuth(ComprasPage);
-// const ProtectedOrdenesPage = withAuth(OrdenesPage);
-
-const ProtectedTransformacionPage = withAuth(TransformacionPage);
-const ProtectedClientesPage = withAuth(ClientesPage); // Temporalmente usa TransformacionPage
+const ProtectedComprasPage = withAuth(ComprasPage, 'compras');
+const ProtectedOrdenesPage = withAuth(OrdenesPage);
+const ProtectedTransformacionPage = withAuth(TransformacionPage, 'transformacion');
+const ProtectedClientesPage = withAuth(ClientesPage);
 
 function Logout() {
   const { logout } = useAuth();
@@ -43,7 +42,7 @@ function App() {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/logout" element={<Logout />} />
-            <Route
+          <Route
             path="/dashboard/materia-prima"
             element={<ProtectedMateriaPrimaPage />}
           />
@@ -55,30 +54,30 @@ function App() {
             path="/dashboard/productos-reventa"
             element={<ProtectedProductosReventaPage />}
           />
-          <Route 
-            path="/dashboard/recetas" 
-            element={<ProtectedRecetasPage />} 
-          />
-          <Route 
-          path="/dashboard/productos-finales" 
-          element={<ProtectedProductosFinalesPage />} 
-          />
-          <Route 
-          path="/dashboard/produccion" 
-          element={<ProtectedProductionPage />} 
-          />
-          <Route 
-          path="/dashboard/pedidos" 
-          element={<OrdenesPage />} 
-          />
-          <Route 
-          path="/dashboard/compras" 
-          element={<ProtectedComprasPage />} 
+          <Route
+            path="/dashboard/recetas"
+            element={<ProtectedRecetasPage />}
           />
           <Route
-          path="/dashboard/transformacion"
-          element={<ProtectedTransformacionPage />}
-        />
+            path="/dashboard/productos-finales"
+            element={<ProtectedProductosFinalesPage />}
+          />
+          <Route
+            path="/dashboard/produccion"
+            element={<ProtectedProductionPage />}
+          />
+          <Route
+            path="/dashboard/pedidos"
+            element={<ProtectedOrdenesPage />}
+          />
+          <Route
+            path="/dashboard/compras"
+            element={<ProtectedComprasPage />}
+          />
+          <Route
+            path="/dashboard/transformacion"
+            element={<ProtectedTransformacionPage />}
+          />
           <Route
             path="/dashboard/clientes"
             element={<ProtectedClientesPage />}

@@ -4,26 +4,22 @@ from apps.produccion.models import Recetas, RecetasDetalles, RelacionesRecetas
 from apps.inventario.serializers import ComponentesSearchSerializer, MateriaPrimaSerializer, LotesMateriaPrimaSerializer, ProductosIntermediosSerializer, ProductosFinalesSerializer, ProductosIntermediosDetallesSerializer, ProductosElaboradosSerializer, ProductosFinalesDetallesSerializer, ProductosFinalesSearchSerializer, ProductosIntermediosSearchSerializer, ProductosFinalesListaTransformacionSerializer, LotesProductosElaboradosSerializer, ProductosReventaSerializer, ProductosReventaDetallesSerializer, LotesProductosReventaSerializer
 from rest_framework.response import Response
 from rest_framework.decorators import action
+from apps.core.services.services import NotificationService
 from datetime import datetime
 from collections import defaultdict
 from apps.inventario.models import LotesStatus
+from djangobackend.permissions import IsStaffOrVendedorReadOnly
 
 class MateriaPrimaViewSet(viewsets.ModelViewSet):
     queryset = MateriasPrimas.objects.all()
     serializer_class = MateriaPrimaSerializer
-
-    def retrieve(self, request, *args, **kwargs):
-        """Retrieve materia prima details after expiring old lots"""
-        # Expire all old lots before returning details
-        ComponentesStockManagement.expirar_todos_lotes_viejos()
-        
-        return super().retrieve(request, *args, **kwargs)
+    permission_classes = [IsStaffOrVendedorReadOnly]
 
 
 class ComponenteSearchViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = MateriasPrimas.objects.none()
     serializer_class = ComponentesSearchSerializer
-
+    
     def list(self, request, *args, **kwargs):
         search_query = request.query_params.get('search')
         stock_requested = request.query_params.get('stock')
@@ -78,6 +74,7 @@ class ComponenteSearchViewSet(viewsets.ReadOnlyModelViewSet):
 class LotesMateriaPrimaViewSet(viewsets.ModelViewSet):
     queryset = LotesMateriasPrimas.objects.all()
     serializer_class = LotesMateriaPrimaSerializer
+    permission_classes = [IsStaffOrVendedorReadOnly]
 
     def get_queryset(self):
         queryset = super().get_queryset()
@@ -93,16 +90,10 @@ class LotesMateriaPrimaViewSet(viewsets.ModelViewSet):
         
         # If filtering by materia prima, expire lots for that material
         if materia_prima_id:
-            try:
                 materia_prima = MateriasPrimas.objects.get(id=materia_prima_id)
-                materia_prima.expirar_lotes_viejos()
-            except MateriasPrimas.DoesNotExist:
-                pass
-        else:
-            # Expire all lots if no filter
-            ComponentesStockManagement.expirar_todos_lotes_viejos()
         
         return super().list(request, *args, **kwargs)
+
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -113,6 +104,16 @@ class LotesMateriaPrimaViewSet(viewsets.ModelViewSet):
         # Save only once through perform_create
         self.perform_create(serializer)
         headers = self.get_success_headers(serializer.data)
+        
+        # Check expiration notifications for newly created lot
+        try:
+            NotificationService.check_expiration_date(MateriasPrimas, LotesMateriasPrimas)
+        except Exception as notif_error:
+            # Log but don't fail the request
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.error(f"Failed to create notifications: {str(notif_error)}")
+        
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
 
@@ -127,6 +128,7 @@ class LotesMateriaPrimaViewSet(viewsets.ModelViewSet):
                 materia_prima = lote_inactivar.materia_prima
                 lote_inactivar.save(update_fields=['estado'])
                 materia_prima.actualizar_stock()
+                
                 return Response(status=status.HTTP_200_OK)
             else:
                 return Response(
@@ -168,6 +170,7 @@ class LotesMateriaPrimaViewSet(viewsets.ModelViewSet):
 class ProductosElaboradosViewSet(viewsets.ModelViewSet):
     queryset = ProductosElaborados.objects.all()
     serializer_class = ProductosElaboradosSerializer
+    permission_classes = [IsStaffOrVendedorReadOnly]
 
     @action(detail=True, methods=['post'], url_path='clear-receta-relacionada')
     def clear_receta_relacionada(self, request, *args, **kwargs):
@@ -284,14 +287,6 @@ class ProductosElaboradosViewSet(viewsets.ModelViewSet):
     def lotes(self, request, *args, **kwargs):
         producto_id = kwargs.get('pk')
         
-        # Expire old lots before returning lot information
-        try:
-            producto = ProductosElaborados.objects.get(id=producto_id)
-            # Use the expirar_todos_lotes_viejos for ProductosElaborados
-            ComponentesStockManagement.expirar_todos_lotes_viejos()
-        except ProductosElaborados.DoesNotExist:
-            pass
-        
         lotes = LotesProductosElaborados.objects.filter(producto_elaborado=producto_id)
         serializer = LotesProductosElaboradosSerializer(lotes, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
@@ -299,15 +294,30 @@ class ProductosElaboradosViewSet(viewsets.ModelViewSet):
 
 class LotesProductosElaboradosViewSet(viewsets.ModelViewSet):
     queryset = LotesProductosElaborados.objects.all()
+    permission_classes = [IsStaffOrVendedorReadOnly]
     serializer = LotesProductosElaboradosSerializer
     
-    def list(self, request, *args, **kwargs):
-        """List lots after expiring old ones"""
-        # Expire all old lots before returning list
-        ComponentesStockManagement.expirar_todos_lotes_viejos()
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        producto = instance.producto_elaborado
+        self.perform_destroy(instance)
         
-        return super().list(request, *args, **kwargs)
+        # Update stock after deletion
+        producto.actualizar_stock()
+        
+        # Check stock notifications after lot deletion
+        try:
+            NotificationService.check_low_stock(ProductosElaborados)
+            NotificationService.check_sin_stock(ProductosElaborados)
+        except Exception as notif_error:
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.error(f"Failed to create notifications: {str(notif_error)}")
+            
+        return Response(status=status.HTTP_204_NO_CONTENT)
     
+
     @action(detail=True, methods=['get'], url_path='change-estado-lote')
     def change_estado_lote(self, request, *args, **kwargs):
         try:
@@ -335,7 +345,16 @@ class LotesProductosElaboradosViewSet(viewsets.ModelViewSet):
                         status=status.HTTP_400_BAD_REQUEST, 
                         data={"error": "Este Lote ya caducó"}
                     )
-        
+            
+            # Check stock notifications after lot state change
+            try:
+                NotificationService.check_low_stock(ProductosElaborados)
+                NotificationService.check_sin_stock(ProductosElaborados)
+            except Exception as notif_error:
+                import logging
+                logger = logging.getLogger(__name__)
+                logger.error(f"Failed to create notifications: {str(notif_error)}")
+            
             return Response({"message": "Estado del lote cambiado correctamente"}, status=status.HTTP_200_OK)
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
@@ -344,40 +363,46 @@ class LotesProductosElaboradosViewSet(viewsets.ModelViewSet):
 class ProductosIntermediosViewSet(viewsets.ModelViewSet):
     queryset = ProductosIntermedios.objects.all()
     serializer_class = ProductosIntermediosSerializer
+    permission_classes = [IsStaffOrVendedorReadOnly]
 
 
 class ProductosFinalesViewSet(viewsets.ModelViewSet):
     queryset = ProductosFinales.objects.all()
     serializer_class = ProductosFinalesSerializer
+    permission_classes = [IsStaffOrVendedorReadOnly]
 
 
 class ProductosIntermediosDetallesViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = ProductosIntermedios.objects.all()
     serializer_class = ProductosIntermediosDetallesSerializer
 
-    def retrieve(self, request, *args, **kwargs):
-        """Retrieve product details after expiring old lots"""
-        # Expire all old lots before returning details
-        ComponentesStockManagement.expirar_todos_lotes_viejos()
-        
-        return super().retrieve(request, *args, **kwargs)
-
 
 class ProductosFinalesDetallesViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = ProductosFinales.objects.all()
     serializer_class = ProductosFinalesDetallesSerializer
 
-    def retrieve(self, request, *args, **kwargs):
-        """Retrieve product details after expiring old lots"""
-        # Expire all old lots before returning details
-        ComponentesStockManagement.expirar_todos_lotes_viejos()
-        
-        return super().retrieve(request, *args, **kwargs)
-
 
 class ProductosFinalesSearchViewset(viewsets.ReadOnlyModelViewSet):
     queryset = ProductosFinales.objects.all()
     serializer_class = ProductosFinalesSearchSerializer
+
+    def list(self, request, *args, **kwargs):
+
+        productos = self.get_queryset()
+        
+        productos_con_recetas_ids = Recetas.objects.filter(
+            producto_elaborado__in=productos
+        ).values_list('producto_elaborado_id', flat=True).distinct()
+        
+        productos = productos.filter(id__in=productos_con_recetas_ids)
+        
+        page = self.paginate_queryset(productos)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+            
+        serializer = self.get_serializer(productos, many=True)
+        return Response(serializer.data)
 
 
 class ProductosFinalesListaTransformacionViewSet(viewsets.ReadOnlyModelViewSet):
@@ -404,26 +429,18 @@ class ProductosIntermediosSearchViewSet(viewsets.ReadOnlyModelViewSet):
 class ProductosReventaViewSet(viewsets.ModelViewSet):
     queryset = ProductosReventa.objects.all()
     serializer_class = ProductosReventaSerializer
+    permission_classes = [IsStaffOrVendedorReadOnly]
 
 
 class ProductosReventaDetallesViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = ProductosReventa.objects.all()
     serializer_class = ProductosReventaDetallesSerializer
 
-    def retrieve(self, request, *args, **kwargs):
-        """Retrieve product details after expiring old lots"""
-        instance = self.get_object()
-        
-        # Expire old lots for this specific product before returning details
-        instance.expirar_lotes_viejos()
-        
-        serializer = self.get_serializer(instance)
-        return Response(serializer.data)
-
 
 class LotesProductosReventaViewSet(viewsets.ModelViewSet):
     queryset = LotesProductosReventa.objects.all()
     serializer_class = LotesProductosReventaSerializer
+    permission_classes = [IsStaffOrVendedorReadOnly]
 
     def get_queryset(self):
         queryset = super().get_queryset()
@@ -445,10 +462,25 @@ class LotesProductosReventaViewSet(viewsets.ModelViewSet):
             except ProductosReventa.DoesNotExist:
                 pass
         else:
-            # Expire all ProductosReventa lots if no filter
             ProductosReventa.expirar_todos_lotes_viejos()
         
         return super().list(request, *args, **kwargs)
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        # Stock update is handled by signals for ProductosReventa
+        self.perform_destroy(instance)
+        
+        # Check stock notifications after lot deletion
+        try:
+            NotificationService.check_low_stock(ProductosReventa)
+            NotificationService.check_sin_stock(ProductosReventa)
+        except Exception as notif_error:
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.error(f"Failed to create notifications: {str(notif_error)}")
+            
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -460,8 +492,18 @@ class LotesProductosReventaViewSet(viewsets.ModelViewSet):
         # Save through perform_create
         self.perform_create(serializer)
         headers = self.get_success_headers(serializer.data)
+        
+        # Check expiration notifications for newly created lot
+        try:
+            NotificationService.check_expiration_date(ProductosReventa, LotesProductosReventa)
+        except Exception as notif_error:
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.error(f"Failed to create notifications: {str(notif_error)}")
+        
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
     
+
     @action(detail=True, methods=['get'], url_path='change-estado-lote')
     def change_estado_lote(self, request, *args, **kwargs):
         try:
@@ -487,7 +529,7 @@ class LotesProductosReventaViewSet(viewsets.ModelViewSet):
                         status=status.HTTP_400_BAD_REQUEST, 
                         data={"error": "Este Lote ya caducó"}
                     )
-        
+            
             return Response({"message": "Estado del lote cambiado correctamente"}, status=status.HTTP_200_OK)
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)

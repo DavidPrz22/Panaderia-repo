@@ -31,7 +31,8 @@ export const ComprasFormDatePicker = ({
     <div className="space-y-2">
       <Label>
         {icon && icon}
-        {label} {optional ? "(Opcional)" : <span className="text-red-500">*</span>}
+        {label}{" "}
+        {optional ? "(Opcional)" : <span className="text-red-500">*</span>}
       </Label>
       <Popover>
         <PopoverTrigger asChild>

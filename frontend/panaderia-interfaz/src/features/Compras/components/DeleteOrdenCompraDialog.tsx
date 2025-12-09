@@ -32,10 +32,12 @@ export const DeleteOrdenCompraDialog = ({
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>¿Eliminar orden de compra {ordenCompraId}?</AlertDialogTitle>
+          <AlertDialogTitle>
+            ¿Eliminar orden de compra {ordenCompraId}?
+          </AlertDialogTitle>
           <AlertDialogDescription>
-            Esta acción no se puede deshacer. La orden de compra será eliminada permanentemente del sistema.
-            ¿Estás seguro de que deseas continuar?
+            Esta acción no se puede deshacer. La orden de compra será eliminada
+            permanentemente del sistema. ¿Estás seguro de que deseas continuar?
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
@@ -58,4 +60,3 @@ export const DeleteOrdenCompraDialog = ({
     </AlertDialog>
   );
 };
-

@@ -18,9 +18,7 @@ export default function SearchInput() {
     [setProductosIntermediosSearchTerm],
   );
 
-  // Keep local input in sync if context changes externally (e.g., clear filters button)
   useEffect(() => {
-    // Only update when the source of truth (context) differs from what user sees
     if (productosIntermediosSearchTerm !== localValue) {
       setLocalValue(productosIntermediosSearchTerm);
     }

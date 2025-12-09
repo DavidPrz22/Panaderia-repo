@@ -307,7 +307,7 @@ export default function FilterButton() {
       </button>
 
       {showFilter && (
-        <div className="absolute top-12 left-[50%] translate-x-[-75%]">
+        <div className="absolute top-12 left-0 translate-x-[-75%]">
           {showFilterContent && (
             <ul
               className={`absolute top-0 right-0 translate-x-[-45%] w-55 p-2 border bg-white rounded-md shadow-2xl border-gray-300`}

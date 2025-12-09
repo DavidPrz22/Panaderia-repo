@@ -5,6 +5,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 from rest_framework_simplejwt.exceptions import InvalidToken
 from django.contrib.auth import authenticate
+from django.contrib.auth.signals import user_logged_in
 from django.conf import settings
 from apps.users.serializers import UserSerializer
 from rest_framework.views import APIView
@@ -35,6 +36,9 @@ class CustomTokenObtainPairView(TokenObtainPairView):
         if response.status_code == 200:
             refresh_token = response.data["refresh"]
             access_token = response.data["access"]
+            
+            # Manually send the user_logged_in signal since JWT doesn't trigger it
+            user_logged_in.send(sender=user.__class__, request=request, user=user)
             
             # Set httpOnly cookie with debug
             response.set_cookie(
@@ -70,7 +74,27 @@ class CustomTokenRefreshView(TokenRefreshView):
         except InvalidToken as e:
             raise InvalidToken(e.detail)
 
-        response = Response(serializer.validated_data, status=status.HTTP_200_OK)
+        # Get the new access token
+        access_token = serializer.validated_data['access']
+        
+        # Decode the token to get user_id
+        from rest_framework_simplejwt.tokens import AccessToken
+        token = AccessToken(access_token)
+        user_id = token['user_id']
+        
+        # Fetch user data
+        from apps.users.models import User
+        try:
+            user = User.objects.get(id=user_id)
+            user_data = UserSerializer(user).data
+        except User.DoesNotExist:
+            raise InvalidToken('User not found')
+        
+        response = Response({
+            'access': access_token,
+            'userData': user_data
+        }, status=status.HTTP_200_OK)
+        
         return response
 
 

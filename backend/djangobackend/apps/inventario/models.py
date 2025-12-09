@@ -8,7 +8,6 @@ from django.utils import timezone
 from django.core.exceptions import ValidationError
 from decimal import Decimal
 
-
 # Create your models here.
 class LotesStatus(models.TextChoices):
     DISPONIBLE = 'DISPONIBLE', 'Disponible para uso'
@@ -216,7 +215,7 @@ class ComponentesStockManagement(models.Model):
         # Update stock for affected productos reventa
         for pr_id in affected_pr_ids:
             pr = ProductosReventa.objects.get(id=pr_id)
-            pr.actualizar_stock()
+            pr.actualizar_product_stock()
 
         return {
             "resumen": resumen, 
@@ -596,7 +595,7 @@ class ProductosReventa(ProductosStockManagement):
     categoria = models.ForeignKey(CategoriasProductosReventa, on_delete=models.CASCADE)
     marca = models.CharField(max_length=100, null=True, blank=True)
     proveedor_preferido = models.ForeignKey('compras.Proveedores', on_delete=models.CASCADE, null=True, blank=True)
-
+    
     # Replace tipo_manejo_venta with separate units
     unidad_base_inventario = models.ForeignKey(
         UnidadesDeMedida, 
@@ -639,7 +638,8 @@ class ProductosReventa(ProductosStockManagement):
     pecedero = models.BooleanField(default=False, null=False)
     fecha_creacion_registro = models.DateField(auto_now_add=True)
     fecha_modificacion_registro = models.DateField(auto_now=True)
-
+    punto_reorden = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True) 
+    
     def expirar_lotes_viejos(self, force=False):
         """Expire old lots for this specific product"""
         ahora = timezone.now().date()
@@ -771,6 +771,10 @@ def update_materia_prima_stock(sender, instance, **kwargs):
 
     MateriasPrimas.objects.filter(id=materia_prima.id).update(stock_actual=total_stock)
 
+    from apps.core.services.services import NotificationService
+    NotificationService.check_low_stock(MateriasPrimas)
+    NotificationService.check_sin_stock(MateriasPrimas)
+
 
 @receiver([post_save, post_delete], sender=LotesProductosReventa)
 def update_producto_reventa_stock(sender, instance, **kwargs):
@@ -793,3 +797,8 @@ def update_producto_reventa_stock(sender, instance, **kwargs):
     ).aggregate(total=Sum('stock_actual_lote'))['total'] or 0
 
     ProductosReventa.objects.filter(id=producto_reventa.id).update(stock_actual=total_stock)
+
+    from apps.core.services.services import NotificationService
+    NotificationService.check_low_stock(ProductosReventa)
+    NotificationService.check_sin_stock(ProductosReventa)
+        

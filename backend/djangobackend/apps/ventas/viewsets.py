@@ -11,15 +11,31 @@ from rest_framework.decorators import action
 from datetime import datetime
 from django.utils import timezone
 from apps.inventario.models import LotesStatus
+from apps.core.services.services import NotificationService
+from djangobackend.pagination import StandardResultsSetPagination
+from djangobackend.permissions import IsAllUsersCRUD
+import logging
+
+logger = logging.getLogger(__name__)
 
 class ClientesViewSet(viewsets.ModelViewSet):
     queryset = Clientes.objects.all()
     serializer_class = ClientesSerializer
+    permission_classes = [IsAllUsersCRUD]
+
+
+class OrdenesTableViewset(viewsets.ModelViewSet):
+    queryset = OrdenVenta.objects.order_by('id')
+    serializer_class = OrdenesTableSerializer
+    pagination_class = StandardResultsSetPagination
+    permission_classes = [IsAllUsersCRUD]
 
 
 class OrdenesViewSet(viewsets.ModelViewSet):
     queryset = OrdenVenta.objects.all()
     serializer_class = OrdenesSerializer
+    permission_classes = [IsAllUsersCRUD]
+
 
     def create(self, request, *args, **kwargs):
 
@@ -100,18 +116,13 @@ class OrdenesViewSet(viewsets.ModelViewSet):
             headers = self.get_success_headers(response_serializer.data)
             return Response(response_serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
-    @action(detail=False, methods=['get'])
-    def get_ordenes_table(self, request):
-
-        ordenes = OrdenVenta.objects.all()
-        serializer = OrdenesTableSerializer(ordenes, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
 
     @action(detail=True, methods=['get'])
     def get_orden_detalles(self, request, pk=None):
         orden = OrdenVenta.objects.get(id=pk)
         serializer = OrdenesDetallesSerializer(orden)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
 
     def update(self, request, *args, **kwargs):
         
@@ -239,6 +250,21 @@ class OrdenesViewSet(viewsets.ModelViewSet):
             
                 orden.estado_orden = EstadosOrdenVenta.objects.get(id=estado_id)
                 orden.save()
+                
+                # Check for stock and delivery notifications after order processing
+                try:
+                    # Check stock for products sold
+                    NotificationService.check_low_stock(ProductosElaborados)
+                    NotificationService.check_sin_stock(ProductosElaborados)
+                    NotificationService.check_low_stock(ProductosReventa)
+                    NotificationService.check_sin_stock(ProductosReventa)
+                    
+                    # Check upcoming deliveries
+                    NotificationService.check_order_date()
+                except Exception as notif_error:
+                    # Log but don't fail the request
+                    logger.error(f"Failed to create notifications: {str(notif_error)}")
+                
                 return Response(status=status.HTTP_200_OK)
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
@@ -289,6 +315,7 @@ class OrdenesViewSet(viewsets.ModelViewSet):
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
+
     def actualizar_lote(self, lote, cantidad_consumida):
         # Restore the consumed quantity back to the lot
         if (lote.fecha_caducidad < timezone.now().date()):
@@ -314,6 +341,7 @@ class OrdenesViewSet(viewsets.ModelViewSet):
         
         lote.save()
     
+
     def register_payment(self, orden, ref, user):
         try:
             Pagos.objects.create(
@@ -330,6 +358,7 @@ class OrdenesViewSet(viewsets.ModelViewSet):
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
+
     def update_payment(self, orden, ref, user):
         try:
             existing_payment = Pagos.objects.filter(orden_venta_asociada=orden).first()
@@ -343,6 +372,7 @@ class OrdenesViewSet(viewsets.ModelViewSet):
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
     
+
     @action(detail=True, methods=['put'])
     def register_payment_reference(self, request, pk=None):
         orden = OrdenVenta.objects.get(id=pk)

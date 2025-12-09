@@ -35,7 +35,11 @@ export type Producto = {
   SKU: string;
   nombre: string;
   precio_compra_usd: number;
-  unidad_medida_compra: { id: number; abreviatura: string; tipo_medida: string };
+  unidad_medida_compra: {
+    id: number;
+    abreviatura: string;
+    tipo_medida: string;
+  };
   tipo: "materia-prima" | "producto-reventa";
 };
 
@@ -138,4 +142,11 @@ export type RecepcionForm = {
   orden_compra_id: number;
   fecha_recepcion: string;
   detalles: DetalleRecepcion[];
+};
+
+export type OrdenesCompraPagination = {
+  previous: string | null;
+  next: string | null;
+  results: OrdenCompraTable[];
+  count: number;
 };

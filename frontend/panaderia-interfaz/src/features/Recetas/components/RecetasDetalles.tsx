@@ -32,7 +32,6 @@ export default function RecetasDetalles() {
     setComponentesListadosReceta,
     setRecetasListadas,
   } = useRecetasContext();
-
   const {
     mutateAsync: deleteRecetaMutation,
     isPending: isDeleteRecetaPending,

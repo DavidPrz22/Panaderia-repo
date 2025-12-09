@@ -27,73 +27,90 @@ export function ComprasRecepcion({
   ordenCompra: OrdenCompra;
   onClose: () => void;
 }) {
-  const { mutateAsync: crearRecepcionOC, isPending: isCreatingRecepcion } = useCrearRecepcionOCMutation();
+  const { mutateAsync: crearRecepcionOC, isPending: isCreatingRecepcion } =
+    useCrearRecepcionOCMutation();
 
-  const isPartial = ordenCompra.estado_oc.nombre_estado === "Recibida Parcial" ? true : false;
+  const isPartial =
+    ordenCompra.estado_oc.nombre_estado === "Recibida Parcial" ? true : false;
 
   // Get today's date in YYYY-MM-DD format
   const getTodayDate = () => {
     const today = new Date();
-    return today.toISOString().split('T')[0];
+    return today.toISOString().split("T")[0];
   };
 
   // Helper functions to calculate initial totals from ordenCompra (not from state)
   const calculateInitialTotalUSD = () => {
     const total = ordenCompra.detalles.reduce((sum, detalle) => {
       if (isPartial && detalle.cantidad_pendiente > 0) {
-        return sum + (detalle.cantidad_pendiente * detalle.costo_unitario_usd);
+        return sum + detalle.cantidad_pendiente * detalle.costo_unitario_usd;
       }
-      return sum + (detalle.cantidad_solicitada * detalle.costo_unitario_usd);
+      return sum + detalle.cantidad_solicitada * detalle.costo_unitario_usd;
     }, 0);
     return Math.round(total * 1000) / 1000;
   };
 
   const calculateInitialTotalVES = () => {
     const totalUSD = calculateInitialTotalUSD();
-    return Math.round(totalUSD * Number(ordenCompra.tasa_cambio_aplicada) * 1000) / 1000;
+    return (
+      Math.round(totalUSD * Number(ordenCompra.tasa_cambio_aplicada) * 1000) /
+      1000
+    );
   };
 
   const calculateInitialTotalUSDConAdelanto = () => {
     const totalUSD = calculateInitialTotalUSD();
-    const adelantoUSD = Number(ordenCompra.pagos_en_adelantado?.monto_pago_usd || 0);
+    const adelantoUSD = Number(
+      ordenCompra.pagos_en_adelantado?.monto_pago_usd || 0,
+    );
     return Math.round(Math.max(0, totalUSD - adelantoUSD) * 1000) / 1000;
   };
 
   const calculateInitialTotalVESConAdelanto = () => {
     const totalVES = calculateInitialTotalVES();
-    const adelantoVES = Number(ordenCompra.pagos_en_adelantado?.monto_pago_ves || 0);
+    const adelantoVES = Number(
+      ordenCompra.pagos_en_adelantado?.monto_pago_ves || 0,
+    );
     return Math.round(Math.max(0, totalVES - adelantoVES) * 1000) / 1000;
   };
 
   // Runtime functions to calculate totals from state
   const getTotalRecepcionUSD = () => {
     const total = receptions.reduce((sum, r) => {
-      const subtotal = r.cantidad_total_recibida * r.linea_oc.costo_unitario_usd;
+      const subtotal =
+        r.cantidad_total_recibida * r.linea_oc.costo_unitario_usd;
       return sum + subtotal;
-    }, 0);  
+    }, 0);
     return Math.round(total * 1000) / 1000;
   };
 
   const getTotalRecepcionVES = () => {
     const totalUSD = getTotalRecepcionUSD();
-    return Math.round(totalUSD * Number(ordenCompra.tasa_cambio_aplicada) * 1000) / 1000;
+    return (
+      Math.round(totalUSD * Number(ordenCompra.tasa_cambio_aplicada) * 1000) /
+      1000
+    );
   };
 
   const getTotalRecepcionUSDConAdelanto = () => {
     const totalUSD = getTotalRecepcionUSD();
-    const adelantoUSD = Number(ordenCompra.pagos_en_adelantado?.monto_pago_usd || 0);
+    const adelantoUSD = Number(
+      ordenCompra.pagos_en_adelantado?.monto_pago_usd || 0,
+    );
     return Math.round(Math.max(0, totalUSD - adelantoUSD) * 1000) / 1000;
   };
 
   const getTotalRecepcionVESConAdelanto = () => {
     const totalVES = getTotalRecepcionVES();
-    const adelantoVES = Number(ordenCompra.pagos_en_adelantado?.monto_pago_ves || 0);
+    const adelantoVES = Number(
+      ordenCompra.pagos_en_adelantado?.monto_pago_ves || 0,
+    );
     return Math.round(Math.max(0, totalVES - adelantoVES) * 1000) / 1000;
   };
 
   const updateMontoTotalRecibido = () => {
     const hasAdelanto = !!ordenCompra.pagos_en_adelantado;
-    
+
     if (hasAdelanto) {
       setValue("monto_total_recibido_usd", getTotalRecepcionUSDConAdelanto());
       setValue("monto_total_recibido_ves", getTotalRecepcionVESConAdelanto());
@@ -105,42 +122,57 @@ export function ComprasRecepcion({
 
   const getFormDefaultData = (): TRecepcionFormSchema => {
     const hasAdelanto = !!ordenCompra.pagos_en_adelantado;
-    
+
     if (isPartial) {
       return {
-      orden_compra_id: ordenCompra.id,
-      fecha_recepcion: getTodayDate(),
-      detalles: ordenCompra.detalles
-      .filter((detalle) => detalle.cantidad_pendiente > 0)
-      .map((detalle) => ({
-        detalle_oc_id: detalle.id,
-        lotes: [{ id: 1, cantidad: detalle.cantidad_pendiente, fecha_caducidad: "" }],
-        cantidad_total_recibida: Number(detalle.cantidad_pendiente),
-      })),
-      recibido_parcialmente: false,
-      monto_total_recibido_usd: hasAdelanto ? calculateInitialTotalUSDConAdelanto() : calculateInitialTotalUSD(),
-      monto_total_recibido_ves: hasAdelanto ? calculateInitialTotalVESConAdelanto() : calculateInitialTotalVES(),
-    };
+        orden_compra_id: ordenCompra.id,
+        fecha_recepcion: getTodayDate(),
+        detalles: ordenCompra.detalles
+          .filter((detalle) => detalle.cantidad_pendiente > 0)
+          .map((detalle) => ({
+            detalle_oc_id: detalle.id,
+            lotes: [
+              {
+                id: 1,
+                cantidad: detalle.cantidad_pendiente,
+                fecha_caducidad: "",
+              },
+            ],
+            cantidad_total_recibida: Number(detalle.cantidad_pendiente),
+          })),
+        recibido_parcialmente: false,
+        monto_total_recibido_usd: hasAdelanto
+          ? calculateInitialTotalUSDConAdelanto()
+          : calculateInitialTotalUSD(),
+        monto_total_recibido_ves: hasAdelanto
+          ? calculateInitialTotalVESConAdelanto()
+          : calculateInitialTotalVES(),
+      };
     }
-    
+
     return {
       orden_compra_id: ordenCompra.id,
       fecha_recepcion: getTodayDate(),
       detalles: ordenCompra.detalles.map((detalle) => ({
         detalle_oc_id: detalle.id,
-        lotes: [{ id: 1, cantidad: detalle.cantidad_solicitada, fecha_caducidad: "" }],
+        lotes: [
+          { id: 1, cantidad: detalle.cantidad_solicitada, fecha_caducidad: "" },
+        ],
         cantidad_total_recibida: Number(detalle.cantidad_solicitada),
       })),
       recibido_parcialmente: false,
-      monto_total_recibido_usd: hasAdelanto ? calculateInitialTotalUSDConAdelanto() : calculateInitialTotalUSD(),
-      monto_total_recibido_ves: hasAdelanto ? calculateInitialTotalVESConAdelanto() : calculateInitialTotalVES(),
+      monto_total_recibido_usd: hasAdelanto
+        ? calculateInitialTotalUSDConAdelanto()
+        : calculateInitialTotalUSD(),
+      monto_total_recibido_ves: hasAdelanto
+        ? calculateInitialTotalVESConAdelanto()
+        : calculateInitialTotalVES(),
     };
-  }
+  };
 
-
-  const { 
-    handleSubmit, 
-    watch, 
+  const {
+    handleSubmit,
+    watch,
     setValue,
     formState: { errors },
   } = useForm<TRecepcionFormSchema>({
@@ -153,10 +185,9 @@ export function ComprasRecepcion({
   );
 
   const handleAddLot = (lineId: number) => {
-
-    const newLotNumber = (
-      ((watch("detalles").find((detalle) => detalle.detalle_oc_id === lineId))?.lotes.length || 0) + 1
-    );
+    const newLotNumber =
+      (watch("detalles").find((detalle) => detalle.detalle_oc_id === lineId)
+        ?.lotes.length || 0) + 1;
 
     setReceptions((prev) =>
       prev.map((reception) => {
@@ -172,11 +203,13 @@ export function ComprasRecepcion({
         return reception;
       }),
     );
-    
-    const detalle_oc_index = watch("detalles").findIndex((detalle) => detalle.detalle_oc_id === lineId);
+
+    const detalle_oc_index = watch("detalles").findIndex(
+      (detalle) => detalle.detalle_oc_id === lineId,
+    );
 
     setValue(`detalles.${detalle_oc_index}.lotes`, [
-      ...watch(`detalles.${detalle_oc_index}.lotes`) || [],
+      ...(watch(`detalles.${detalle_oc_index}.lotes`) || []),
       { id: newLotNumber, cantidad: 0, fecha_caducidad: "" },
     ]);
     setValue(`detalles.${detalle_oc_index}.cantidad_total_recibida`, 0);
@@ -205,76 +238,98 @@ export function ComprasRecepcion({
       return reception;
     });
     setReceptions(newReceptions);
-    
+
     // Sync form state with updated lots
-    updateFormDetalles(lineId, updatedLots.length > 0 ? updatedLots : [{ id: 1, cantidad: 0, fecha_caducidad: "" }], updatedCantidadTotalRecibida);
+    updateFormDetalles(
+      lineId,
+      updatedLots.length > 0
+        ? updatedLots
+        : [{ id: 1, cantidad: 0, fecha_caducidad: "" }],
+      updatedCantidadTotalRecibida,
+    );
   };
 
   const updateFormDetalles = (
-    detalle_oc_id: number, 
-    lotes : LoteRecepcion[], 
-    updatedCantidadTotalRecibida : number,
+    detalle_oc_id: number,
+    lotes: LoteRecepcion[],
+    updatedCantidadTotalRecibida: number,
   ) => {
-    const detalle_oc_index = watch("detalles").findIndex((detalle) => detalle.detalle_oc_id === detalle_oc_id);
+    const detalle_oc_index = watch("detalles").findIndex(
+      (detalle) => detalle.detalle_oc_id === detalle_oc_id,
+    );
     setValue(`detalles.${detalle_oc_index}.lotes`, lotes || []);
-    setValue(`detalles.${detalle_oc_index}.cantidad_total_recibida`, updatedCantidadTotalRecibida);
+    setValue(
+      `detalles.${detalle_oc_index}.cantidad_total_recibida`,
+      updatedCantidadTotalRecibida,
+    );
   };
 
   const updateReceptions = (
-    lineId: number, 
-    lotId: number, 
-    field: "cantidad" | "fecha_caducidad", 
+    lineId: number,
+    lotId: number,
+    field: "cantidad" | "fecha_caducidad",
     value: string | number,
   ) => {
     // Validate negative quantities - return current state if invalid
     if (field === "cantidad" && typeof value === "number" && value < 0) {
-      const currentReception = receptions.find(r => r.linea_oc.id === lineId);
+      const currentReception = receptions.find((r) => r.linea_oc.id === lineId);
       if (currentReception) {
-        return { 
-          updatedLots: currentReception.lotes, 
-          updatedCantidadTotalRecibida: currentReception.cantidad_total_recibida 
+        return {
+          updatedLots: currentReception.lotes,
+          updatedCantidadTotalRecibida:
+            currentReception.cantidad_total_recibida,
         };
       }
       return { updatedLots: [], updatedCantidadTotalRecibida: 0 };
     }
-  
+
     let updatedLots: LoteRecepcion[] = [];
     let updatedCantidadTotalRecibida = 0;
 
     const newReceptions = receptions.map((reception) => {
-        if (reception.linea_oc.id === lineId) { 
-          updatedLots = reception.lotes.map((lot) => {
-            if (lot.id === lotId) {
-              return { ...lot, [field]: value };
-            }
-            return lot;
-          });
-          updatedCantidadTotalRecibida = updatedLots.reduce(
-            (sum, lot) => sum + (Number(lot.cantidad) || 0),
-            0,
-          );
-          return {
-            ...reception,
-            lotes: updatedLots,
-            cantidad_total_recibida: updatedCantidadTotalRecibida,
-          };
-        }
-        return reception;
+      if (reception.linea_oc.id === lineId) {
+        updatedLots = reception.lotes.map((lot) => {
+          if (lot.id === lotId) {
+            return { ...lot, [field]: value };
+          }
+          return lot;
+        });
+        updatedCantidadTotalRecibida = updatedLots.reduce(
+          (sum, lot) => sum + (Number(lot.cantidad) || 0),
+          0,
+        );
+        return {
+          ...reception,
+          lotes: updatedLots,
+          cantidad_total_recibida: updatedCantidadTotalRecibida,
+        };
+      }
+      return reception;
     });
-  
+
     setReceptions(newReceptions);
     return { updatedLots, updatedCantidadTotalRecibida };
   };
 
-  const checkPartiallyReceived = (lineId: number, updatedCantidadTotalRecibida: number) => {
-
-    if (isPartial && updatedCantidadTotalRecibida < ( ordenCompra.detalles.find((detalle) => detalle.id === lineId)?.cantidad_pendiente || 0)) {
-        setValue("recibido_parcialmente", true);
-    }
-    else if (!isPartial && updatedCantidadTotalRecibida < ( ordenCompra.detalles.find((detalle) => detalle.id === lineId)?.cantidad_solicitada || 0)) {
-        setValue("recibido_parcialmente", true);
-    }
-    else {
+  const checkPartiallyReceived = (
+    lineId: number,
+    updatedCantidadTotalRecibida: number,
+  ) => {
+    if (
+      isPartial &&
+      updatedCantidadTotalRecibida <
+        (ordenCompra.detalles.find((detalle) => detalle.id === lineId)
+          ?.cantidad_pendiente || 0)
+    ) {
+      setValue("recibido_parcialmente", true);
+    } else if (
+      !isPartial &&
+      updatedCantidadTotalRecibida <
+        (ordenCompra.detalles.find((detalle) => detalle.id === lineId)
+          ?.cantidad_solicitada || 0)
+    ) {
+      setValue("recibido_parcialmente", true);
+    } else {
       setValue("recibido_parcialmente", false);
     }
   };
@@ -286,10 +341,12 @@ export function ComprasRecepcion({
     value: string | number,
   ) => {
     // Update UI state and get the updated values
-    const {
-      updatedLots, 
-      updatedCantidadTotalRecibida,
-    } = updateReceptions(lineId, lotId, field, value);
+    const { updatedLots, updatedCantidadTotalRecibida } = updateReceptions(
+      lineId,
+      lotId,
+      field,
+      value,
+    );
 
     // Sync changes with react-hook-form state
     updateFormDetalles(lineId, updatedLots, updatedCantidadTotalRecibida);
@@ -333,20 +390,30 @@ export function ComprasRecepcion({
     }
   };
 
-  const getErrorMessage = (lineId: number, lotIndex: number, field: "cantidad" | "fecha_caducidad") => {
-    const lineIndex = watch("detalles").findIndex((detalle) => detalle.detalle_oc_id === lineId);
-    
+  const getErrorMessage = (
+    lineId: number,
+    lotIndex: number,
+    field: "cantidad" | "fecha_caducidad",
+  ) => {
+    const lineIndex = watch("detalles").findIndex(
+      (detalle) => detalle.detalle_oc_id === lineId,
+    );
+
     if (field === "cantidad") {
-      return errors.detalles?.[lineIndex]?.lotes?.[lotIndex]?.cantidad ? errors.detalles?.[lineIndex]?.lotes?.[lotIndex]?.cantidad.message : "";
+      return errors.detalles?.[lineIndex]?.lotes?.[lotIndex]?.cantidad
+        ? errors.detalles?.[lineIndex]?.lotes?.[lotIndex]?.cantidad.message
+        : "";
     }
     if (field === "fecha_caducidad") {
-      return errors.detalles?.[lineIndex]?.lotes?.[lotIndex]?.fecha_caducidad ? errors.detalles?.[lineIndex]?.lotes?.[lotIndex]?.fecha_caducidad.message : "";
+      return errors.detalles?.[lineIndex]?.lotes?.[lotIndex]?.fecha_caducidad
+        ? errors.detalles?.[lineIndex]?.lotes?.[lotIndex]?.fecha_caducidad
+            .message
+        : "";
     }
     return "";
   };
 
-
-  return ( 
+  return (
     <div className="mx-8 py-5 relative">
       {isCreatingRecepcion && (
         <PendingTubeSpinner
@@ -361,7 +428,7 @@ export function ComprasRecepcion({
               <div className="flex items-center gap-2">
                 <Package className="h-5 w-5 text-gray-700" />
                 <h2 className="text-xl font-bold text-gray-900 flex items-center gap-4">
-                  Mercancías a Recepcionar #{ordenCompra.id} 
+                  Mercancías a Recepcionar #{ordenCompra.id}
                   {watch("recibido_parcialmente") ? (
                     <span className="text-sm text-amber-500">
                       (Recibido parcialmente)
@@ -377,7 +444,9 @@ export function ComprasRecepcion({
 
           <div className="m-6 border border-gray-300 rounded-t-lg">
             {/* Header */}
-            <div className={`grid ${isPartial ? "grid-cols-5" : "grid-cols-3"} gap-6 border-b bg-gray-50 px-6 py-3 text-sm uppercase font-semibold tracking-wider text-gray-500 rounded-t-lg`}>
+            <div
+              className={`grid ${isPartial ? "grid-cols-5" : "grid-cols-3"} gap-6 border-b bg-gray-50 px-6 py-3 text-sm uppercase font-semibold tracking-wider text-gray-500 rounded-t-lg`}
+            >
               <div>Producto</div>
               <div className="text-right ">Ordenado</div>
               {isPartial && <div className="text-center ">En inventario</div>}
@@ -390,7 +459,9 @@ export function ComprasRecepcion({
               {receptions.map((reception) => (
                 <div key={reception.linea_oc.id}>
                   {/* Product Row */}
-                  <div className={`grid ${isPartial ? "grid-cols-5" : "grid-cols-3"} gap-6 border-b px-6 py-4 items-center `}>
+                  <div
+                    className={`grid ${isPartial ? "grid-cols-5" : "grid-cols-3"} gap-6 border-b px-6 py-4 items-center `}
+                  >
                     <div className="flex items-center gap-3">
                       <div className="rounded-lg bg-gray-100 p-2">
                         <Package className="h-5 w-5 text-gray-600" />
@@ -401,52 +472,51 @@ export function ComprasRecepcion({
                         </p>
                       </div>
                     </div>
-                    { isPartial ? 
-                    <>
-                      <div className="text-right">
-                        <p className="text-sm font-medium text-gray-900">
-                          {reception.linea_oc.cantidad_solicitada}
-                        </p>
-                      </div>
+                    {isPartial ? (
+                      <>
+                        <div className="text-right">
+                          <p className="text-sm font-medium text-gray-900">
+                            {reception.linea_oc.cantidad_solicitada}
+                          </p>
+                        </div>
 
-                      <div className="text-center">
-                        <span
-                          className={`inline-flex items-center justify-center rounded-full px-3 py-1 text-sm font-semibold bg-blue-100 text-blue-700`}
-                        >
-                          {reception.cantidad_en_inventario}
-                        </span>
-                      </div>
-                      <div className="text-center">
-                        <span className={`inline-flex items-center justify-center rounded-full px-3 py-1 text-sm font-semibold ${getReceivedBadgeColor(reception.cantidad_total_recibida, reception.linea_oc.cantidad_pendiente)}`}>
-                          {reception.linea_oc.cantidad_pendiente}
-                        </span>                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      
-                      </div>
-                      <div className="text-center">
-                        <span
-                          className='inline-flex items-center justify-center rounded-full px-3 py-1 text-sm font-semibold bg-red-100 text-red-700'
-                        >
-                          {reception.cantidad_pendiente}
-                        </span>
-                      </div>
-                    </>
-                    :
-                    <>
-                    <div className="text-right">
-                      <p className="text-sm font-medium text-gray-900">
-                        {reception.linea_oc.cantidad_solicitada}
-                      </p>
-                    </div>
+                        <div className="text-center">
+                          <span
+                            className={`inline-flex items-center justify-center rounded-full px-3 py-1 text-sm font-semibold bg-blue-100 text-blue-700`}
+                          >
+                            {reception.cantidad_en_inventario}
+                          </span>
+                        </div>
+                        <div className="text-center">
+                          <span
+                            className={`inline-flex items-center justify-center rounded-full px-3 py-1 text-sm font-semibold ${getReceivedBadgeColor(reception.cantidad_total_recibida, reception.linea_oc.cantidad_pendiente)}`}
+                          >
+                            {reception.linea_oc.cantidad_pendiente}
+                          </span>
+                        </div>
+                        <div className="text-center">
+                          <span className="inline-flex items-center justify-center rounded-full px-3 py-1 text-sm font-semibold bg-red-100 text-red-700">
+                            {reception.cantidad_pendiente}
+                          </span>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <div className="text-right">
+                          <p className="text-sm font-medium text-gray-900">
+                            {reception.linea_oc.cantidad_solicitada}
+                          </p>
+                        </div>
 
-                    <div className="text-center">
-                      <span
-                        className={`inline-flex items-center justify-center rounded-full px-3 py-1 text-sm font-semibold ${getReceivedBadgeColor(reception.cantidad_total_recibida, reception.linea_oc.cantidad_solicitada)}`}
-                      >
-                        {reception.cantidad_total_recibida}
-                      </span>
-                    </div>
-                    </>
-                    }
-                    
+                        <div className="text-center">
+                          <span
+                            className={`inline-flex items-center justify-center rounded-full px-3 py-1 text-sm font-semibold ${getReceivedBadgeColor(reception.cantidad_total_recibida, reception.linea_oc.cantidad_solicitada)}`}
+                          >
+                            {reception.cantidad_total_recibida}
+                          </span>
+                        </div>
+                      </>
+                    )}
                   </div>
 
                   {/* Lots Section */}
@@ -515,15 +585,22 @@ export function ComprasRecepcion({
                                 icon={<CalendarIcon className="h-4 w-4" />}
                               />
                             </div>
-
                           </div>
                           <div className="grid grid-cols-2 gap-2 text-red-500 text-xs">
-                              <p className="col-span-1 text-red-500 text-sm">
-                                {getErrorMessage(reception.linea_oc.id, lotIndex, "cantidad")}
-                              </p>
-                              <p className="col-span-1 text-red-500 text-sm">
-                                {getErrorMessage(reception.linea_oc.id, lotIndex, "fecha_caducidad")}
-                              </p>
+                            <p className="col-span-1 text-red-500 text-sm">
+                              {getErrorMessage(
+                                reception.linea_oc.id,
+                                lotIndex,
+                                "cantidad",
+                              )}
+                            </p>
+                            <p className="col-span-1 text-red-500 text-sm">
+                              {getErrorMessage(
+                                reception.linea_oc.id,
+                                lotIndex,
+                                "fecha_caducidad",
+                              )}
+                            </p>
                           </div>
                         </div>
                       ))}
@@ -543,41 +620,40 @@ export function ComprasRecepcion({
               ))}
             </div>
           </div>
-            <div className="px-6 py-4">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {/* Expected Totals (Purchase Order) */}
-                <div className="bg-gradient-to-br from-blue-50 to-blue-100/50 rounded-lg border border-blue-200 p-5 shadow-sm">
-                  <div className="flex items-center gap-2 mb-4">
-                    <div className="h-2 w-2 rounded-full bg-blue-500"></div>
-                    <h3 className="text-sm font-semibold text-gray-800 uppercase tracking-wide">
-                      Totales Esperados (Orden de Compra)
-                    </h3>
-                  </div>
-                  <ComprasFormTotals
-                    bcvRate={Number(ordenCompra.tasa_cambio_aplicada)}
-                    totalVes={Number(ordenCompra.monto_total_oc_ves)}
-                    totalUsd={Number(ordenCompra.monto_total_oc_usd)}
-                    formatCurrency={formatCurrency}
-                    showBlueBorder={true}
-                  />
+          <div className="px-6 py-4">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Expected Totals (Purchase Order) */}
+              <div className="bg-gradient-to-br from-blue-50 to-blue-100/50 rounded-lg border border-blue-200 p-5 shadow-sm">
+                <div className="flex items-center gap-2 mb-4">
+                  <div className="h-2 w-2 rounded-full bg-blue-500"></div>
+                  <h3 className="text-sm font-semibold text-gray-800 uppercase tracking-wide">
+                    Totales Esperados (Orden de Compra)
+                  </h3>
                 </div>
-
-                {/* Reception Totals */}
-                <ComprasRecepcionTotals
-                  tasaCambioAplicada={Number(ordenCompra.tasa_cambio_aplicada)}
-                  totalRecepcionUSD={getTotalRecepcionUSD()}
-                  totalRecepcionVES={getTotalRecepcionVES()}
-                  totalRecepcionUSDConAdelanto={getTotalRecepcionUSDConAdelanto()}
-                  totalRecepcionVESConAdelanto={getTotalRecepcionVESConAdelanto()}
-                  pagosEnAdelantado={ordenCompra.pagos_en_adelantado}
+                <ComprasFormTotals
+                  bcvRate={Number(ordenCompra.tasa_cambio_aplicada)}
+                  totalVes={Number(ordenCompra.monto_total_oc_ves)}
+                  totalUsd={Number(ordenCompra.monto_total_oc_usd)}
                   formatCurrency={formatCurrency}
+                  showBlueBorder={true}
                 />
               </div>
+
+              {/* Reception Totals */}
+              <ComprasRecepcionTotals
+                tasaCambioAplicada={Number(ordenCompra.tasa_cambio_aplicada)}
+                totalRecepcionUSD={getTotalRecepcionUSD()}
+                totalRecepcionVES={getTotalRecepcionVES()}
+                totalRecepcionUSDConAdelanto={getTotalRecepcionUSDConAdelanto()}
+                totalRecepcionVESConAdelanto={getTotalRecepcionVESConAdelanto()}
+                pagosEnAdelantado={ordenCompra.pagos_en_adelantado}
+                formatCurrency={formatCurrency}
+              />
             </div>
+          </div>
 
           {/* Footer with summary and save button */}
           <div className="flex justify-between items-end bg-white px-6 py-5 gap-4">
-            
             <div className="flex-1 max-w-xs">
               <ComprasFormDatePicker
                 label="Fecha de Recepción"
@@ -607,7 +683,6 @@ export function ComprasRecepcion({
               Guardar Recepción
             </Button>
           </div>
-
         </div>
       </form>
     </div>

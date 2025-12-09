@@ -54,7 +54,7 @@ export const OrderForm = ({ order, onClose }: OrderFormProps) => {
           cliente: order.cliente.id,
           fecha_creacion_orden: order.fecha_creacion_orden,
           fecha_entrega_solicitada: order.fecha_entrega_solicitada,
-          fecha_entrega_definitiva: order.fecha_entrega_definitiva,
+          fecha_entrega_definitiva: order.fecha_entrega_definitiva || undefined,
           estado_orden: order.estado_orden.id,
           metodo_pago: order.metodo_pago.id,
           productos: order.productos.map((p) => ({
@@ -75,7 +75,7 @@ export const OrderForm = ({ order, onClose }: OrderFormProps) => {
           monto_total_usd: order.monto_total_usd,
           monto_total_ves: order.monto_total_ves,
           tasa_cambio_aplicada: order.tasa_cambio_aplicada,
-          referencia_pago: order.referencia_pago ?? undefined,
+          referencia_pago: order.referencia_pago || undefined,
         }
       : {
           fecha_creacion_orden: format(new Date(), "yyyy-MM-dd"),
@@ -91,7 +91,7 @@ export const OrderForm = ({ order, onClose }: OrderFormProps) => {
           referencia_pago: "",
         },
   });
-
+  console.log(watch())
   const isEdit = !!order;
   const [{ data: clientes }, { data: metodosDePago }] = useGetParametros();
   const { data: estadosOrden } = useGetEstadosOrdenRegistro();

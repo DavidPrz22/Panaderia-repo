@@ -5,6 +5,7 @@ from apps.users.models import User
 from apps.inventario.models import UnidadesDeMedida, ProductosElaborados, ProductosReventa, LotesProductosElaborados, LotesProductosReventa
 from apps.core.models import MetodosDePago, EstadosOrdenVenta
 
+
 # Create your models here.
 class Clientes(models.Model):
     nombre_cliente = models.CharField(max_length=100, null=False, blank=False)
@@ -63,7 +64,6 @@ class DetalleVenta(models.Model):
             producto_nombre = self.producto_reventa.nombre
         return f"Venta #{self.venta.id} - {self.cantidad_vendida} x {producto_nombre}"
 
-    # MEJORA 3: Validación a nivel de aplicación con mensajes de error claros.
     def clean(self):
         super().clean()
         
@@ -88,7 +88,6 @@ class DetalleVenta(models.Model):
             # Aquí la lógica es que un producto de reventa PUEDE o NO tener lote.
             # No se necesita una validación explícita más allá de la consistencia.
 
-    # MEJORA 4 (continuación): Sobrescribir save() para el cálculo.
     def save(self, *args, **kwargs):
         # Calcula el subtotal antes de guardar
         self.subtotal_linea_usd = self.cantidad_vendida * self.precio_unitario_usd
@@ -103,7 +102,6 @@ class DetalleVenta(models.Model):
         verbose_name = "Detalle de Venta"
         verbose_name_plural = "Detalles de Venta"
         
-        # MEJORA 2: Restricciones más simples y específicas.
         constraints = [
             # Restricción 1: Asegura que solo uno de los dos campos de producto tiene valor.
             models.CheckConstraint(
