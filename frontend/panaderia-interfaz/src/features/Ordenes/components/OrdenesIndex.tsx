@@ -110,7 +110,7 @@ const OrdenesIndex = () => {
   const pages_count = useMemo(() => {
     const result_count = ordenesPagination?.pages[0].count || 1;
     const entry_per_page = ordenesPagination?.pages[0].results.length || 1;
-    return Math.round(result_count / entry_per_page);
+    return Math.ceil(result_count / entry_per_page);
   }, [isFetchedOrdenesTable]);
 
   const filteredOrders = (ordenesTable || []).filter((order) => {
