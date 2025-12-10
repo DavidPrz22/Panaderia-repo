@@ -87,4 +87,4 @@ class StockConsumptionService:
         else:
             producto = ProductosFinales.objects.filter(id=product_id).first()
 
-        producto.actualizar_stock()
+        producto.actualizar_product_stock()
