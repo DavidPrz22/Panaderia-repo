@@ -7,6 +7,7 @@ import {
   handleDeleteMateriaPrima,
   handleCreateUpdateLoteMateriaPrima,
   handleCreateUpdateMateriaPrima,
+  uploadCSV
 } from "../../api/api";
 
 import {
@@ -197,3 +198,16 @@ export const useCreateUpdateLoteMateriaPrimaMutation = (
     },
   });
 };
+
+
+export const useImportCSVMutation = ()=>{
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (file: string) => uploadCSV(file),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({
+        queryKey: createMateriaPrimaListQueryOptions().queryKey,
+      });
+    },
+  })
+}

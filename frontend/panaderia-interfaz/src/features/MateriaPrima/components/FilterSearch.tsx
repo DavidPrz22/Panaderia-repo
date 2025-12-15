@@ -1,7 +1,7 @@
 import { useMateriaPrimaContext } from "@/context/MateriaPrimaContext";
 
 import FilterButton from "./FilterButton";
-import ImportCSV from "../../../components/ImportCSV";
+import { ImportCSV } from "../../../components/ImportCSV";
 import NewButton from "../../../components/NewButton";
 import SearchInput from "./SearchInput";
 
@@ -23,7 +23,7 @@ export default function FilterSearch() {
     <div className="flex items-center px-8 justify-between">
       <SearchInput />
       <div className="flex gap-4">
-        {hasPermission && <ImportCSV />}
+        {hasPermission && <ImportCSV descripcion="Selecciona un archivo CSV para importar los datos de las materias primas" />}
         <FilterButton />
         {hasPermission && (
         <NewButton onClick={handleNewButtonClick} />

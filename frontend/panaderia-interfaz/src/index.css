@@ -11,6 +11,7 @@
   --search-list-short-height: 70px;
   --table-header-bg: #f7feff;
   --table-header-text: #1261a0;
+  --z-index-header-bar: 149;
   --z-index-over-header-bar: 150;
 }
 

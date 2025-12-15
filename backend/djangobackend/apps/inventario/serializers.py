@@ -803,3 +803,6 @@ class ProductosReventaDetallesSerializer(serializers.ModelSerializer):
         # Since it's a method that takes parameter, return the factor as example
         return f"Multiply by {obj.factor_conversion}"
 
+
+class RegisterCSVSerializer(serializers.Serializer):
+    file = serializers.CharField(min_length=2)

@@ -1,19 +1,55 @@
 from rest_framework import viewsets, status
 from apps.inventario.models import MateriasPrimas, LotesMateriasPrimas, ProductosIntermedios, ProductosFinales, ProductosElaborados, LotesProductosElaborados, ProductosReventa, LotesProductosReventa, ComponentesStockManagement
 from apps.produccion.models import Recetas, RecetasDetalles, RelacionesRecetas
-from apps.inventario.serializers import ComponentesSearchSerializer, MateriaPrimaSerializer, LotesMateriaPrimaSerializer, ProductosIntermediosSerializer, ProductosFinalesSerializer, ProductosIntermediosDetallesSerializer, ProductosElaboradosSerializer, ProductosFinalesDetallesSerializer, ProductosFinalesSearchSerializer, ProductosIntermediosSearchSerializer, ProductosFinalesListaTransformacionSerializer, LotesProductosElaboradosSerializer, ProductosReventaSerializer, ProductosReventaDetallesSerializer, LotesProductosReventaSerializer
+from apps.inventario.serializers import ComponentesSearchSerializer, MateriaPrimaSerializer, LotesMateriaPrimaSerializer, ProductosIntermediosSerializer, ProductosFinalesSerializer, ProductosIntermediosDetallesSerializer, ProductosElaboradosSerializer, ProductosFinalesDetallesSerializer, ProductosFinalesSearchSerializer, ProductosIntermediosSearchSerializer, ProductosFinalesListaTransformacionSerializer, LotesProductosElaboradosSerializer, ProductosReventaSerializer, ProductosReventaDetallesSerializer, LotesProductosReventaSerializer, RegisterCSVSerializer
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from apps.core.services.services import NotificationService
+from apps.core.models import CategoriasMateriaPrima, UnidadesDeMedida
 from datetime import datetime
 from collections import defaultdict
 from apps.inventario.models import LotesStatus
 from djangobackend.permissions import IsStaffOrVendedorReadOnly
 
+
+
 class MateriaPrimaViewSet(viewsets.ModelViewSet):
     queryset = MateriasPrimas.objects.all()
     serializer_class = MateriaPrimaSerializer
     permission_classes = [IsStaffOrVendedorReadOnly]
+
+    @action(detail=False, methods=['post'], url_path='register-csv',)
+    def register_csv(self, request):
+        import base64
+        import csv
+        import io
+
+        serializer = RegisterCSVSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        
+        file = serializer.validated_data['file']
+        decoded_file = base64.b64decode(file)
+        text_stream = io.TextIOWrapper(io.BytesIO(decoded_file), encoding='utf-8')
+
+        reader = csv.DictReader(text_stream)
+        materias_primas = []
+        for mp in reader:
+            mp_created = MateriasPrimas(
+                nombre=mp['nombre'],
+                SKU=mp['sku'],
+                precio_compra_usd=mp['precio_compra_usd'],
+                nombre_empaque_estandar=mp['nombre_empaque_estandar'] or None,
+                cantidad_empaque_estandar=mp['cantidad_empaque_estandar'] or None,
+                unidad_medida_empaque_estandar=UnidadesDeMedida.objects.get(nombre_completo=mp['unidad_medida_empaque_estandar']) or None,
+                punto_reorden=mp['punto_reorden'],
+                unidad_medida_base=UnidadesDeMedida.objects.get(nombre_completo=mp['unidad_medida_base']) or None,
+                categoria=CategoriasMateriaPrima.objects.get(nombre_categoria=mp['categoria'].capitalize()),
+                descripcion=mp['descripcion']
+            )
+            materias_primas.append(mp_created)
+
+        MateriasPrimas.objects.bulk_create(materias_primas)
+        return Response({'message': "Materias primas registradas exitosamente"}, status=status.HTTP_200_OK)
 
 
 class ComponenteSearchViewSet(viewsets.ReadOnlyModelViewSet):
