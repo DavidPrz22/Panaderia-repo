@@ -7,6 +7,7 @@ import {
   updateLoteProductosReventa,
   deleteLoteProductosReventa,
   changeEstadoLoteProductosReventa,
+  uploadCSV
 } from "../../api/api";
 import type { TProductosReventaSchema, TLoteProductosReventaSchema } from "../../schemas/schema";
 import {
@@ -160,3 +161,19 @@ export const useChangeEstadoLoteProductosReventa = (productoReventaId: number | 
     },
   });
 };
+
+
+export const useUploadCSVProductosReventaMuatation = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (file: string) => uploadCSV(file),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: productosReventaQueryOptions.queryKey,
+      });
+    },
+    onError: (error) => {
+      console.error("Error uploading CSV:", error);
+    },
+  });
+}

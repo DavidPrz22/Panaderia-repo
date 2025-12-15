@@ -116,7 +116,7 @@ export type ProductosReventaDetalles = {
   stock_actual: number;
   precio_venta_usd: number;
   precio_compra_usd: number;
-  pecedero: boolean;
+  perecedero: boolean;
   fecha_creacion_registro: string;
   fecha_modificacion_registro: string;
   convert_inventory_to_sale_units: string;

@@ -635,7 +635,7 @@ class ProductosReventa(ProductosStockManagement):
     )
 
     precio_compra_usd = models.DecimalField(max_digits=10, decimal_places=2, default=0, null=True, blank=True)
-    pecedero = models.BooleanField(default=False, null=False)
+    perecedero = models.BooleanField(default=False, null=False)
     fecha_creacion_registro = models.DateField(auto_now_add=True)
     fecha_modificacion_registro = models.DateField(auto_now=True)
     punto_reorden = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True) 

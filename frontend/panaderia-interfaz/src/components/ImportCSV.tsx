@@ -10,19 +10,27 @@ import {
 } from "@/components/ui/dialog"
 import { UploadIcon, HelpCircleIcon, FileTextIcon, Loader2Icon } from "lucide-react"
 
-import { useImportCSVMutation } from "@/features/MateriaPrima/hooks/mutations/materiaPrimaMutations"
 import { HadleFileConversion, type TFileBase64 } from '@/utils/utils'
 import { toast } from "sonner"
+import type { UseMutateAsyncFunction } from "@tanstack/react-query"
 
 type FileObject = Omit<TFileBase64, 'filename'> & {
   file: File
 }
 
-export const ImportCSV = ({ descripcion }: { descripcion: string }) => {
+type ImportCSVProps = {
+  descripcion: string, 
+  uploadFunction: UseMutateAsyncFunction<{
+    status: number;
+    message: string;
+}, Error, string, unknown>, 
+  isPending: boolean,
+  csvContent: string,
+}
+export const ImportCSV = ({ descripcion, uploadFunction, isPending, csvContent }: ImportCSVProps) => {
+
   const [selectedFile, setSelectedFile] = useState<FileObject | null>(null)
   const [open, setOpen] = useState(false)
-
-  const { mutateAsync: uploadCSV, isPending } = useImportCSVMutation()
 
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
@@ -36,15 +44,11 @@ export const ImportCSV = ({ descripcion }: { descripcion: string }) => {
   }
 
   const handleDownloadTemplate = () => {
-    // Create a sample CSV template
-    const csvContent =
-      "nombre,sku,precio_compra_usd,nombre_empaque_estandar,cantidad_empaque_estandar,unidad_medida_empaque_estandar,punto_reorden,unidad_medida_base,categoria,descripcion\n"
-
     const blob = new Blob([csvContent], { type: "text/csv" })
     const url = window.URL.createObjectURL(blob)
     const link = document.createElement("a")
     link.href = url
-    link.download = "Template-Import-MateriaPrima.csv"
+    link.download = "Template-Import.csv"
     document.body.appendChild(link)
     link.click()
     document.body.removeChild(link)
@@ -54,7 +58,7 @@ export const ImportCSV = ({ descripcion }: { descripcion: string }) => {
   const handleImport = async () => {
     try {
       if (selectedFile) {
-        const res = await uploadCSV(selectedFile.content)
+        const res = await uploadFunction(selectedFile.content)
         toast.success(res.message)
         setOpen(false)
         setSelectedFile(null)

@@ -100,7 +100,7 @@ export const DetailsTable = ({
           ${productosReventaDetalles.precio_compra_usd}
         </DetailFieldValue>
         <DetailFieldValue extraClass="min-h-[25px] ">
-          {productosReventaDetalles.pecedero ? "Sí" : "No"}
+          {productosReventaDetalles.perecedero ? "Sí" : "No"}
         </DetailFieldValue>
         <DetailFieldValue extraClass="min-h-[25px] ">
           {productosReventaDetalles.marca || "N/A"}

@@ -43,7 +43,7 @@ export default function ProductosReventaFormShared({
           factor_conversion: initialData.factor_conversion,
           precio_venta_usd: initialData.precio_venta_usd,
           punto_reorden: initialData.punto_reorden,
-          pecedero: initialData.pecedero,
+          perecedero: initialData.perecedero,
           precio_compra_usd: initialData.precio_compra_usd,
         }
         : {
@@ -52,7 +52,7 @@ export default function ProductosReventaFormShared({
           SKU: "",
           marca: "",
           proveedor_preferido: undefined,
-          pecedero: false,
+          perecedero: false,
         },
   });
 
@@ -259,7 +259,7 @@ export default function ProductosReventaFormShared({
             />
             <PRFormSelectContainer
               title="¿Es perecedero?"
-              name="pecedero"
+              name="perecedero"
               register={register}
               errors={errors}
             >

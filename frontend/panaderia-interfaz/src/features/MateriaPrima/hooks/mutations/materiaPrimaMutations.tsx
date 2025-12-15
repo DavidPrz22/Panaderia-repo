@@ -200,7 +200,7 @@ export const useCreateUpdateLoteMateriaPrimaMutation = (
 };
 
 
-export const useImportCSVMutation = ()=>{
+export const useImportCSVMutationMateriaPrima = ()=>{
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (file: string) => uploadCSV(file),

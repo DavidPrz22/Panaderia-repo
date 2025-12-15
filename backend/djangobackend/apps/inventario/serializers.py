@@ -642,7 +642,7 @@ class ProductosReventaSerializer(serializers.ModelSerializer):
             'punto_reorden',    
             'stock_actual',
             'precio_compra_usd',
-            'pecedero',
+            'perecedero',
             'fecha_creacion_registro',
             'fecha_modificacion_registro',
         ]
@@ -756,7 +756,7 @@ class ProductosReventaDetallesSerializer(serializers.ModelSerializer):
             'punto_reorden',
             'precio_venta_usd',
             'precio_compra_usd',
-            'pecedero',
+            'perecedero',
             'fecha_creacion_registro',
             'fecha_modificacion_registro',
             'convert_inventory_to_sale_units',
