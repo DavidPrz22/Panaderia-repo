@@ -64,7 +64,7 @@ export const ImportCSV = ({ descripcion, uploadFunction, isPending, csvContent }
         setSelectedFile(null)
       }
     } catch (e: any) {
-      toast.error(e.message)
+      toast.error('Error al subir el archivo, verifique que el archivo tenga el formato correcto')
     }
   }
 
