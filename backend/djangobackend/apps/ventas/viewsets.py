@@ -1,19 +1,28 @@
 from apps.core.models import EstadosOrdenVenta
 from rest_framework import viewsets
-from .models import Clientes, OrdenConsumoLoteDetalle, OrdenVenta, DetallesOrdenVenta, OrdenConsumoLote, Pagos
-from .serializers import ClientesSerializer, OrdenesSerializer, OrdenesDetallesSerializer
+from django.core.exceptions import ValidationError, PermissionDenied
+from .models import Clientes, OrdenConsumoLoteDetalle, OrdenVenta, DetallesOrdenVenta, OrdenConsumoLote, Pagos, AperturaCierreCaja, Ventas
+from .serializers import (
+    ClientesSerializer, 
+    OrdenesSerializer, 
+    OrdenesDetallesSerializer, 
+    AperturaCierreCajaSerializer, 
+    AperturaCajaSerializer, 
+    CierreCajaSerializer
+    )
 from apps.inventario.models import ProductosElaborados, ProductosReventa
 from django.db import transaction
 from rest_framework.response import Response
 from rest_framework import status
 from apps.ventas.serializers import OrdenesTableSerializer
+
 from rest_framework.decorators import action
 from datetime import datetime
 from django.utils import timezone
 from apps.inventario.models import LotesStatus
 from apps.core.services.services import NotificationService
 from djangobackend.pagination import StandardResultsSetPagination
-from djangobackend.permissions import IsAllUsersCRUD
+from djangobackend.permissions import IsAllUsersCRUD, IsStaffLevel
 import logging
 
 logger = logging.getLogger(__name__)
@@ -22,6 +31,90 @@ class ClientesViewSet(viewsets.ModelViewSet):
     queryset = Clientes.objects.all()
     serializer_class = ClientesSerializer
     permission_classes = [IsAllUsersCRUD]
+
+class AperturaCierreCajaViewSet(viewsets.ModelViewSet):
+    queryset = AperturaCierreCaja.objects.all()
+    serializer_class = AperturaCierreCajaSerializer
+    permission_classes = [IsStaffLevel]
+
+    def get_serializer_class(self):
+        if self.action == 'create':
+            return AperturaCajaSerializer
+        if self.action == 'update':
+            return CierreCajaSerializer
+        return AperturaCierreCajaSerializer
+    
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        
+        with transaction.atomic():
+            apertura = AperturaCierreCaja.objects.create(
+                usuario_apertura=request.user,
+                **serializer.validated_data
+            )
+            serializer = AperturaCierreCajaSerializer(apertura)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+    @action(detail=False, methods=['POST'], url_path='cerrar')
+    def cerrar_caja(self, request):
+        """Close the POS register"""
+        try:
+            # Get the currently active caja
+            caja = AperturaCierreCaja.objects.filter(esta_activa=True).first()
+            if not caja:
+                return Response(
+                    {'error': 'No hay una caja activa para cerrar.'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            
+            serializer = CierreCajaSerializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+
+            with transaction.atomic():
+                # Calculate totals from sales in this session
+                ventas_en_session = Ventas.objects.filter(apertura_caja=caja)
+                total_usd = sum(v.monto_total_usd for v in ventas_en_session)
+                total_ves = sum(v.monto_total_ves for v in ventas_en_session)
+                
+                # Update closure information
+                caja.fecha_cierre = timezone.now()
+                caja.usuario_cierre = request.user
+                caja.monto_final_usd = serializer.validated_data.get('monto_final_usd')
+                caja.monto_final_ves = serializer.validated_data.get('monto_final_ves')
+                caja.total_ventas_usd = total_usd
+                caja.total_ventas_ves = total_ves
+                caja.diferencia_usd = (caja.monto_inicial_usd + total_usd) - serializer.validated_data.get('monto_final_usd')
+                caja.diferencia_ves = (caja.monto_inicial_ves + total_ves) - serializer.validated_data.get('monto_final_ves')
+                caja.notas_cierre = serializer.validated_data.get('notas_cierre', '')
+                caja.esta_activa = False
+                caja.save()
+                
+                response_serializer = AperturaCierreCajaSerializer(caja)
+                return Response(response_serializer.data, status=status.HTTP_200_OK)
+        except (ValidationError, PermissionDenied) as e:
+            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+    
+    @action(
+        detail=False, 
+        methods=['get'], 
+        url_path='pos-active', 
+        permission_classes=[IsAllUsersCRUD]
+        )
+    def is_active(self, request, pk=None):
+        """Check if there's an active POS session"""
+        caja_activa = AperturaCierreCaja.objects.filter(esta_activa=True).first()
+        if caja_activa:
+            serializer = AperturaCierreCajaSerializer(caja_activa)
+            return Response({
+                'activa': True
+            })
+        return Response({'activa': False})
 
 
 class OrdenesTableViewset(viewsets.ModelViewSet):

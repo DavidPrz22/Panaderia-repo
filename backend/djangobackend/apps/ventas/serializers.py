@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Clientes, OrdenVenta, DetallesOrdenVenta, Pagos   
+from .models import Clientes, OrdenVenta, DetallesOrdenVenta, Pagos, AperturaCierreCaja   
 from apps.core.serializers import MetodosDePagoSerializer, EstadosOrdenVentaSerializer
 from apps.inventario.serializers import ProductosElaboradosSerializer, ProductosReventaSerializer
 
@@ -7,6 +7,32 @@ class ClientesSerializer(serializers.ModelSerializer):
     class Meta:
         model = Clientes
         fields = '__all__'
+
+
+class AperturaCierreCajaSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AperturaCierreCaja
+        fields = '__all__'
+
+
+class AperturaCajaSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AperturaCierreCaja
+        fields = [
+            'monto_inicial_usd',
+            'monto_inicial_ves',
+            'notas_apertura'
+        ]
+
+
+class CierreCajaSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AperturaCierreCaja
+        fields = [
+            'monto_final_usd',
+            'monto_final_ves',
+            'notas_cierre'
+        ]
 
 
 class ProductoSerializer(serializers.Serializer):
@@ -91,8 +117,7 @@ class OrdenesSerializer(serializers.ModelSerializer):
             'productos',
             'referencia_pago',
         ]
-
-        
+     
 
 class OrdenesDetallesSerializer(serializers.ModelSerializer):
     cliente = ClientesSerializer()

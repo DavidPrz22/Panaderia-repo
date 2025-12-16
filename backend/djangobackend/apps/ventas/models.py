@@ -20,17 +20,87 @@ class Clientes(models.Model):
         return self.nombre_cliente
 
 
+class AperturaCierreCaja(models.Model):
+    """
+    Tracks POS (Point of Sale) opening and closing sessions.
+    Only users with proper authorization (managers) can open/close the register.
+    """
+    # Who opened the register
+    usuario_apertura = models.ForeignKey(User, on_delete=models.PROTECT, related_name='aperturas_realizadas')
+    
+    # Cash amount registered at opening
+    monto_inicial_usd = models.DecimalField(max_digits=10, decimal_places=2)
+    monto_inicial_ves = models.DecimalField(max_digits=10, decimal_places=2)
+    
+    # Timing
+    fecha_apertura = models.DateTimeField(auto_now_add=True)
+    fecha_cierre = models.DateTimeField(null=True, blank=True)
+    
+    # Who closed the register (can be different from who opened it)
+    usuario_cierre = models.ForeignKey(User, on_delete=models.PROTECT, null=True, blank=True, related_name='cierres_realizados')
+    
+    # Final amounts at closing
+    monto_final_usd = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    monto_final_ves = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    
+    # Calculated totals from sales
+    total_ventas_usd = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    total_ventas_ves = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    
+    # Difference (expected vs real)
+    diferencia_usd = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    diferencia_ves = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    
+    # Notes
+    notas_apertura = models.TextField(blank=True, null=True)
+    notas_cierre = models.TextField(blank=True, null=True)
+    
+    # State tracking
+    esta_activa = models.BooleanField(default=True)
+
+    def __str__(self):
+        return f"Apertura Cierre Caja {self.id}"
+    
+    @classmethod
+    def obtener_caja_activa(cls):
+        """Get the currently active POS session"""
+        return cls.objects.filter(esta_activa=True).first()
+
+
+    class Meta:
+        ordering = ['-fecha_apertura']
+        verbose_name = "Apertura/Cierre de Caja"
+        verbose_name_plural = "Aperturas/Cierres de Caja"
+
+        constraints = [
+            models.UniqueConstraint(
+                fields=['esta_activa'],
+                condition=models.Q(esta_activa=True),
+                name='solo_una_caja_activa'
+            )
+        ]
+
+
 class Ventas(models.Model):
-    cliente = models.ForeignKey(Clientes, on_delete=models.CASCADE, null=False, blank=False)
-    usuario_cajero = models.ForeignKey(User, on_delete=models.CASCADE, null=False, blank=False)
+    cliente = models.ForeignKey(Clientes, on_delete=models.PROTECT, null=False, blank=False)
+    usuario_cajero = models.ForeignKey(User, on_delete=models.PROTECT, null=False, blank=False)
     fecha_venta = models.DateField(null=False, blank=False)
     monto_total_usd = models.DecimalField(max_digits=10, decimal_places=2, null=False, blank=False)
     monto_total_ves = models.DecimalField(max_digits=10, decimal_places=2, null=False, blank=False)
     tasa_cambio_aplicada = models.DecimalField(max_digits=10, decimal_places=2, null=False, blank=False)
     notas = models.TextField(max_length=255, null=True, blank=True)
+    apertura_caja = models.ForeignKey('AperturaCierreCaja', on_delete=models.PROTECT, null=True, blank=True)
 
     def __str__(self):
         return self.cliente.nombre_cliente
+
+    def clean(self):
+
+        if not self.apertura_caja:
+            caja_activa = AperturaCierreCaja.objects.filter(esta_activa=True).first()
+            if not caja_activa:
+                raise ValidationError("No hay una caja activa. Un gerente debe abrir la caja antes de realizar ventas.")
+            self.apertura_caja = caja_activa
 
 
 class DetalleVenta(models.Model):
