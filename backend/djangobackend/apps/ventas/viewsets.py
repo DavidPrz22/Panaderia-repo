@@ -103,7 +103,7 @@ class AperturaCierreCajaViewSet(viewsets.ModelViewSet):
     @action(
         detail=False, 
         methods=['get'], 
-        url_path='pos-active', 
+        url_path='is-active', 
         permission_classes=[IsAllUsersCRUD]
         )
     def is_active(self, request, pk=None):
@@ -112,9 +112,9 @@ class AperturaCierreCajaViewSet(viewsets.ModelViewSet):
         if caja_activa:
             serializer = AperturaCierreCajaSerializer(caja_activa)
             return Response({
-                'activa': True
+                'is_active': True
             })
-        return Response({'activa': False})
+        return Response({'is_active': False})
 
 
 class OrdenesTableViewset(viewsets.ModelViewSet):

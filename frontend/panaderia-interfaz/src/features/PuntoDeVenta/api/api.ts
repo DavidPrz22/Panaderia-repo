@@ -1,0 +1,48 @@
+import apiClient from "@/api/client";
+import type { TAperturaCaja } from "../schemas/schemas";
+import axios from "axios";
+
+type CheckIsActiveResponse = {
+    is_active: boolean;
+}
+
+export const checkIsActive = async (): Promise<CheckIsActiveResponse> => {
+    try {
+        const response = await apiClient.get("/api/apertura-cierre-caja/is-active/");
+        return response.data;
+    } catch (error) {
+        console.error("Error checking if caja is active:", error);
+        throw error;
+    }
+};
+
+export const aperturaCaja = async (data: TAperturaCaja): Promise<CheckIsActiveResponse> => {
+    try {
+        const response = await apiClient.post("/api/apertura-cierre-caja/", data);
+        return response.data;
+    } catch (error) {
+        console.error("Error opening caja:", error);
+        throw error;
+    }
+};
+
+export type BCVRateType = {
+  fuente: string;
+  nombre: string;
+  compra: number;
+  venta: number;
+  promedio: number;
+  fechaActualizacion: string;
+};
+
+export const BCVRate = async (): Promise<BCVRateType> => {
+  try {
+    const response = await axios.get(
+      `https://ve.dolarapi.com/v1/dolares/oficial`,
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching BCV rate:", error);
+    throw error;
+  }
+};

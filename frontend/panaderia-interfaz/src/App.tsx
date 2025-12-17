@@ -12,7 +12,8 @@ import ProductionPage from "./pages/ProductionPage";
 import OrdenesPage from "./pages/OrdenesPage";
 import ComprasPage from "./pages/ComprasPage";
 import TransformacionPage from "./pages/TransformacionPage";
-import ClientesPage from "./pages/ClientesPage"; // Nuevo import
+import ClientesPage from "./pages/ClientesPage"; 
+import POSPage from "./pages/POSPage";
 
 const ProtectedLandingPage = withAuth(LandingPage);
 const ProtectedMateriaPrimaPage = withAuth(MateriaPrimaPage);
@@ -25,6 +26,7 @@ const ProtectedComprasPage = withAuth(ComprasPage, 'compras');
 const ProtectedOrdenesPage = withAuth(OrdenesPage);
 const ProtectedTransformacionPage = withAuth(TransformacionPage, 'transformacion');
 const ProtectedClientesPage = withAuth(ClientesPage);
+const ProtectedPOSPage = withAuth(POSPage);
 
 function Logout() {
   const { logout } = useAuth();
@@ -81,6 +83,10 @@ function App() {
           <Route
             path="/dashboard/clientes"
             element={<ProtectedClientesPage />}
+          />
+          <Route
+            path="/dashboard/punto-de-venta"
+            element={<ProtectedPOSPage />}
           />
         </Routes>
       </AuthProvider>

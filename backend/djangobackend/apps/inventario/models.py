@@ -210,7 +210,7 @@ class ComponentesStockManagement(models.Model):
         # Update stock for affected elaborated products
         for pe_id in affected_pe_ids:
             pe = ProductosElaborados.objects.get(id=pe_id)
-            pe.actualizar_stock()
+            pe.actualizar_product_stock()
 
         # Update stock for affected productos reventa
         for pr_id in affected_pr_ids:

@@ -129,6 +129,7 @@ export default function Sidebar() {
                   icon: PuntoVentaIcon,
                   title: "Punto de Venta",
                   id: "punto-venta",
+                  link: "/dashboard/punto-de-venta",
                 },
               ]}
               onclick={handleClick}
