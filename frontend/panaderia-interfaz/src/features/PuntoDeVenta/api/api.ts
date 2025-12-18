@@ -1,6 +1,7 @@
 import apiClient from "@/api/client";
 import type { TAperturaCaja } from "../schemas/schemas";
 import axios from "axios";
+import type { Cliente, Producto, Categorias } from "../types/types";
 
 type CheckIsActiveResponse = {
     is_active: boolean;
@@ -45,4 +46,36 @@ export const BCVRate = async (): Promise<BCVRateType> => {
     console.error("Error fetching BCV rate:", error);
     throw error;
   }
+};
+
+export const getClientes = async (): Promise<Cliente[]> => {
+  try {
+    const response = await apiClient.get("/api/clientes/");
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching clientes:", error);
+    throw error;
+  }
+};
+
+export const getProductos = async (): Promise<Producto[]> => {
+    try {
+        const response = await apiClient.get("/api/caja-productos-lista/");
+        console.log(response.data);
+        return response.data;
+    } catch (error) {
+        console.error("Error fetching productos:", error);
+        throw error;
+    }
+};
+
+export const getCategorias = async (): Promise<Categorias> => {
+    try {
+        const response = await apiClient.get("/api/caja-categorias/");
+        console.log(response.data)
+        return response.data;
+    } catch (error) {
+        console.error("Error fetching categorias:", error);
+        throw error;
+    }
 };

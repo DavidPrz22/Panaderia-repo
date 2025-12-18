@@ -804,5 +804,20 @@ class ProductosReventaDetallesSerializer(serializers.ModelSerializer):
         return f"Multiply by {obj.factor_conversion}"
 
 
+class CajaProductosSerializer(serializers.Serializer):
+    def to_representation(self, instance):
+        tipo_producto = 'reventa' if isinstance(instance, ProductosReventa) else 'final'
+        
+        return {
+            'id': instance.id,
+            'nombre': instance.nombre_producto,
+            'categoria': instance.categoria.nombre_categoria if instance.categoria else None,
+            'unidadVenta': instance.unidad_venta.abreviatura if instance.unidad_venta else None,
+            'stock': instance.stock_actual,
+            'sku': instance.SKU,
+            'precio': instance.precio_venta_usd,
+            'tipo': tipo_producto
+        }
+
 class RegisterCSVSerializer(serializers.Serializer):
     file = serializers.CharField(min_length=2)

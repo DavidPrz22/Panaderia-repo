@@ -1,7 +1,11 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from apps.inventario.models import MateriasPrimas, ProductosElaborados, ProductosReventa
+from apps.inventario.models import MateriasPrimas, ProductosElaborados, ProductosReventa, ProductosFinales
+from django.db.models import Value, CharField
+from apps.core.models import CategoriasProductosReventa, CategoriasProductosElaborados
+from apps.inventario.serializers import CajaProductosSerializer
+
 
 class ProductosPedidoSearchView(APIView):
     def get(self, request, *args, **kwargs):
@@ -120,3 +124,32 @@ class ProductosComprasSearchView(APIView):
         combined.sort(key=lambda x: x['nombre'].lower())
         
         return Response({"productos": combined}, status=status.HTTP_200_OK)
+
+    
+class ProductosVentasListaView(APIView):
+    def get(self, request, *args, **kwargs):
+
+        pf = ProductosFinales.objects.filter(stock_actual__gt=0).select_related('categoria', 'unidad_venta')
+        pr = ProductosReventa.objects.filter(stock_actual__gt=0).select_related('categoria', 'unidad_venta')
+        
+        productos_combinados = list(pf) + list(pr)
+        productos_combinados.sort(key=lambda x: x.nombre_producto.lower())
+        
+        serializer = CajaProductosSerializer(productos_combinados, many=True)
+        productos = serializer.data
+        
+        return Response({"productos": productos}, status=status.HTTP_200_OK)
+
+
+class CategoriasProductosView(APIView):
+    def get(self, request, *args, **kwargs):
+        categorias_pf = CategoriasProductosElaborados.objects.filter(es_intermediario=False).values_list('nombre_categoria', flat=True)
+        categorias_pr = CategoriasProductosReventa.objects.values_list('nombre_categoria', flat=True)
+        
+        categorias = { 
+            'todos': list(categorias_pf) + list(categorias_pr), 
+            'final': list(categorias_pf), 
+            'reventa': list(categorias_pr)
+        }
+        
+        return Response({"categorias": categorias}, status=status.HTTP_200_OK)

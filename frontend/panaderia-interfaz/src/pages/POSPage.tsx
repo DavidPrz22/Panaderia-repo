@@ -1,4 +1,4 @@
-import { PaginaInicio,  } from "@/features/PuntoDeVenta/componentes/PosPantallaInicio";  
+import { PaginaInicio,  } from "@/features/PuntoDeVenta/componentes/POSPantallaInicio";  
 import Sidebar from "@/components/Layout/Sidebar/Sidebar";
 import HeaderBar from "@/components/Layout/HeaderBar/HeaderBar";
 import { POSProvider } from "@/context/POSContext";

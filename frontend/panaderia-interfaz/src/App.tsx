@@ -12,7 +12,7 @@ import ProductionPage from "./pages/ProductionPage";
 import OrdenesPage from "./pages/OrdenesPage";
 import ComprasPage from "./pages/ComprasPage";
 import TransformacionPage from "./pages/TransformacionPage";
-import ClientesPage from "./pages/ClientesPage"; 
+import ClientesPage from "./pages/ClientesPage";
 import POSPage from "./pages/POSPage";
 
 const ProtectedLandingPage = withAuth(LandingPage);
