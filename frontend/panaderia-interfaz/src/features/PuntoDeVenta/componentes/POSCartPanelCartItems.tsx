@@ -1,8 +1,10 @@
 import { CartItem } from "./POSCartItem.tsx";
 import { ShoppingBag } from "lucide-react";
 import { usePOSContext } from "@/context/POSContext";
+import type { WatchSetValue } from "../types/types.ts";
+import { useEffect } from "react";
 
-export const POSCartPanelCartItems = () => {
+export const POSCartPanelCartItems = ({watch, setValue}: WatchSetValue) => {
 
     const { carrito, setCarrito } = usePOSContext();
 
@@ -19,6 +21,26 @@ export const POSCartPanelCartItems = () => {
       const updatedCart = carrito.filter((item) => item.id !== id);
       setCarrito(updatedCart);
     };
+
+    const handleCarritoUpdate = () => {
+      const venta_detalles = carrito.map((item) => {
+        return {
+          producto_elaborado_id: item.tipo === 'final' ? item.id : null,
+          producto_reventa_id: item.tipo === 'reventa' ? item.id : null,
+          cantidad: item.cantidad,
+          precio_unitario_usd: item.precio,
+          subtotal_linea_usd: item.subtotal,
+          precio_unitario_ves: Math.round((item.precio * watch!('tasa_cambio_aplicada')) * 100) / 100,
+          subtotal_linea_ves: Math.round((item.subtotal * watch!('tasa_cambio_aplicada')) * 100) / 100,
+        }
+      })
+
+      setValue!('venta_detalles', venta_detalles);
+    }
+    
+    useEffect(() => {
+      handleCarritoUpdate();
+    }, [carrito])
 
     return (
         <div className="flex-1 overflow-auto p-4 scrollbar-thin">
@@ -41,9 +63,9 @@ export const POSCartPanelCartItems = () => {
               </div>
             ) : (
               <div className="space-y-2">
-                {carrito.map((item) => (
+                {carrito.map((item, index) => (
                   <CartItem
-                    key={item.id}
+                    key={index}
                     item={item}
                     onUpdateQuantity={(id, quantity) => updateQuantity(id, quantity)}
                     onRemove={(id) => removeFromCart(id)}

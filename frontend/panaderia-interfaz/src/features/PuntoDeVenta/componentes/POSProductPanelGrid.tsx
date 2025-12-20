@@ -20,7 +20,6 @@ export const POSProductPanelGrid = () => {
         return matchesCategoria && matchesTipo && matchesSearch;
     }))
 
-
     return (
         <div className="flex-1 overflow-auto scrollbar-thin">
 

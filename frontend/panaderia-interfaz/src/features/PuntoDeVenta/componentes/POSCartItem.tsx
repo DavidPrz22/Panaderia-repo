@@ -2,7 +2,6 @@ import { Minus, Plus, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import type { CarritoItem } from "../types/types";
 
-
 interface CartItemProps {
   item: CarritoItem;
   onUpdateQuantity: (id: number, quantity: number) => void;
@@ -10,6 +9,8 @@ interface CartItemProps {
 }
 
 export function CartItem({ item, onUpdateQuantity, onRemove }: CartItemProps) {
+
+
   const handleQuantityChange = (value: string) => {
     const num = parseInt(value, 10);
     if (!isNaN(num) && num >= 0) {
@@ -26,7 +27,7 @@ export function CartItem({ item, onUpdateQuantity, onRemove }: CartItemProps) {
 
   return (
     <div className="flex items-start gap-3 rounded-lg border border-border bg-card p-3 animate-scale-in">
-      <div className="flex-1 min-w-0">
+      <div className="flex-1 min-w-0 font-[Roboto]">
         <h4 className="font-medium text-sm text-card-foreground truncate">
           {item.nombre}
         </h4>

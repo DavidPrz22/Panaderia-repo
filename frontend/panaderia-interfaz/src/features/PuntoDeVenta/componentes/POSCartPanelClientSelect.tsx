@@ -10,13 +10,18 @@ import { useClientesQuery } from "../hooks/queries/queries";
 import { useState } from "react";
 
 
-export const POSCartPanelClientSelect = () => {
+type props = {
+  onSetCliente: (clienteId: number) => void
+}
+export const POSCartPanelClientSelect = ({onSetCliente}: props) => {
     const { data: clientes } = useClientesQuery();
     const [selectedClient, setSelectedClient] = useState<string>('');
     
     const handleChangeClient = (client: string) => {
         setSelectedClient(client);
+        onSetCliente(Number(client))
     }
+
     return (
         <div className="border-b border-border p-4">
             <label className="mb-2 flex items-center gap-2 text-sm font-medium text-muted-foreground">

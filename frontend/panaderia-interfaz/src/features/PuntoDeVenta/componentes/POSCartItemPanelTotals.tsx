@@ -1,10 +1,20 @@
 import { Button } from "@/components/ui/button";
 import { Trash2 } from "lucide-react";
 import { usePOSContext } from "@/context/POSContext";
+import { useEffect } from "react";
+import { useBCVRateQuery } from "@/features/PuntoDeVenta/hooks/queries/queries";
 
-export const POSCartItemPanelTotals = () => {
+type Props = {
+  onSetTotals: (total_usd: number, tasa_cambio: number) => void;
+}
+export const POSCartItemPanelTotals = ({onSetTotals} : Props) => {
     const { carrito } = usePOSContext();
+    const { data: bcvRate } = useBCVRateQuery();
     const total = carrito.reduce((sum, item) => sum + item.subtotal, 0);
+
+    useEffect(()=> {
+      onSetTotals(total, bcvRate?.promedio || 0);
+    }, [total])
 
     const handleCheckout = () => {
         console.log("Checkout");
