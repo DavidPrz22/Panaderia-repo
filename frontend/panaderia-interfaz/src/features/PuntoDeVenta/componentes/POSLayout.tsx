@@ -56,8 +56,6 @@ export function POSLayout() {
   const [showCheckout, setShowCheckout] = useState(false);
   const currentCategories = categoriesByType[productType];
 
-  const { data: categorias } = useCategoriasQuery();
-  const { data: productos } = useProductosQuery();
 
   const filteredProducts = useMemo(() => {
     return mockProducts.filter((product) => {

@@ -13,6 +13,8 @@
   --table-header-text: #1261a0;
   --z-index-header-bar: 149;
   --z-index-over-header-bar: 150;
+  --pos-product-final: #C25400;
+  --pos-product-reventa: #DB0085;
 }
 
 @theme inline {

@@ -1,5 +1,5 @@
 import { createContext, useContext, useState } from "react";
-import type { CarritoItem } from "../features/PuntoDeVenta/types/types";
+import type { CarritoItem, TipoProducto } from "../features/PuntoDeVenta/types/types";
 
 type POSContextType = {
     POSEnabled: boolean;
@@ -12,8 +12,8 @@ type POSContextType = {
     setSearch: (value: string) => void;
     categoriaSeleccionada: string | null;
     setCategoriaSeleccionada: (value: string | null) => void;
-    tipoProductoSeleccionado: string;
-    setTipoProductoSeleccionado: (value: string) => void;
+    tipoProductoSeleccionado: TipoProducto;
+    setTipoProductoSeleccionado: (value: TipoProducto) => void;
 };
 
 const POSContextProvider = createContext<POSContextType | null>(null);
@@ -25,7 +25,7 @@ export function POSProvider({ children }: { children: React.ReactNode }) {
   const [carrito, setCarrito] = useState<CarritoItem[]>([]);
   const [search, setSearch] = useState<string>("");
   const [categoriaSeleccionada, setCategoriaSeleccionada] = useState<string | null>(null);
-  const [tipoProductoSeleccionado, setTipoProductoSeleccionado] = useState<string>("todos");
+  const [tipoProductoSeleccionado, setTipoProductoSeleccionado] = useState<TipoProducto>("todos");
   
   return (
     <POSContextProvider.Provider value={{

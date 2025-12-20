@@ -147,7 +147,7 @@ class CategoriasProductosView(APIView):
         categorias_pr = CategoriasProductosReventa.objects.values_list('nombre_categoria', flat=True)
         
         categorias = { 
-            'todos': list(categorias_pf) + list(categorias_pr), 
+            'todos': list(set(list(categorias_pf) + list(categorias_pr))), 
             'final': list(categorias_pf), 
             'reventa': list(categorias_pr)
         }

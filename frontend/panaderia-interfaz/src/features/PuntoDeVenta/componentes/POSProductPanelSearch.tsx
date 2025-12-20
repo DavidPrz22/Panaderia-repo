@@ -14,7 +14,7 @@ export const POSProductPanelSearch = () => {
                 placeholder="Buscar productos por nombre o SKU..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="h-11 pl-10 text-base bg-card"
+                className="h-11 pl-10 text-base bg-card focus-visible:ring-blue-300"
             />
         </div>
     )

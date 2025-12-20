@@ -15,7 +15,7 @@ import { aperturaCajaSchema, type TAperturaCaja } from "../schemas/schemas"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useAperturaCajaMutation } from "../hooks/mutations/mutations"
-import { POSLayout } from "./POSLayout"
+import POSInterfazVenta from "./POSInterfazVenta"
 
 
 type MontosForm = {
@@ -195,7 +195,7 @@ export const PaginaInicio = () => {
       {
         isFetching ? <PendingTubeSpinner extraClass="h-full" size={40} /> :
 
-          is_active ? <POSLayout /> : <AperturaCaja />
+          is_active ? <POSInterfazVenta /> : <AperturaCaja />
       }
     </>
   )

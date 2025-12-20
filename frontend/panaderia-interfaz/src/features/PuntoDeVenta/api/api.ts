@@ -58,7 +58,9 @@ export const getClientes = async (): Promise<Cliente[]> => {
   }
 };
 
-export const getProductos = async (): Promise<Producto[]> => {
+
+
+export const getProductos = async (): Promise<{productos: Producto[]}> => {
     try {
         const response = await apiClient.get("/api/caja-productos-lista/");
         console.log(response.data);
@@ -69,7 +71,7 @@ export const getProductos = async (): Promise<Producto[]> => {
     }
 };
 
-export const getCategorias = async (): Promise<Categorias> => {
+export const getCategorias = async (): Promise<{categorias: Categorias}> => {
     try {
         const response = await apiClient.get("/api/caja-categorias/");
         console.log(response.data)

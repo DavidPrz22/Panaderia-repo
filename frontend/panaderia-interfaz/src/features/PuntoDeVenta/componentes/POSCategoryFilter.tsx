@@ -1,37 +1,54 @@
 import { cn } from "@/lib/utils";
+import { useCategoriasQuery } from "../hooks/queries/queries";
+import { usePOSContext } from "@/context/POSContext";
+import { SkeletonTag } from "@/components/SkeletonTag";
 
-interface CategoryFilterProps {
-  categories: string[];
-  selected: string | null;
-  onSelect: (category: string | null) => void;
-}
+export function CategoryFilter() {
+  const { data, isPending } = useCategoriasQuery();
+  const categorias = data?.categorias || { todos:[], final:[], reventa:[] };
 
-export function CategoryFilter({ categories, selected, onSelect }: CategoryFilterProps) {
+  const { tipoProductoSeleccionado, categoriaSeleccionada, setCategoriaSeleccionada } = usePOSContext();
+  const categoriasMostrar = categorias[tipoProductoSeleccionado];
+
   return (
-    <div className="flex flex-wrap gap-2">
+
+    <div className="flex flex-wrap gap-2 font-[Roboto]">
       <button
-        onClick={() => onSelect(null)}
+        onClick={() => {
+          setCategoriaSeleccionada(null);
+        }}
         className={cn(
-          "rounded-full px-4 py-1.5 text-sm font-medium transition-all duration-150",
-          selected === null
-            ? "bg-primary text-primary-foreground"
+          "rounded-full px-4 py-1.5 text-sm transition-all duration-150 cursor-pointer",
+          categoriaSeleccionada === null
+            ? "bg-blue-900 text-white"
             : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
         )}
       >
         Todos
       </button>
-      {categories.map((category) => (
+
+      { isPending ? 
+        <>
+          {
+            Array.from({length:6}).map((_, index) => (
+              <SkeletonTag key={index} width={100}/>
+            ))
+          }
+        </>
+      : categoriasMostrar.map((categoria, index) => (
         <button
-          key={category}
-          onClick={() => onSelect(category)}
-          className={cn(
-            "rounded-full px-4 py-1.5 text-sm font-medium transition-all duration-150",
-            selected === category
-              ? "bg-primary text-primary-foreground"
+          key={index}
+          onClick={() => {
+            setCategoriaSeleccionada(categoria);
+          }}
+          className={cn(  
+            "rounded-full px-4 py-1.5 text-sm transition-all duration-150 cursor-pointer",
+            categoriaSeleccionada === categoria
+              ? "bg-blue-900 text-white"
               : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
           )}
         >
-          {category}
+          {categoria}
         </button>
       ))}
     </div>

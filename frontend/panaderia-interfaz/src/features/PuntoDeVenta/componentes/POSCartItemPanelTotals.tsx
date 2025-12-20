@@ -14,7 +14,7 @@ export const POSCartItemPanelTotals = () => {
     };
 
     return (
-        <div className="border-t border-border p-4 space-y-3">
+        <div className="border-t border-border p-4 space-y-3 font-[Roboto]">
             <div className="flex items-center justify-between">
               <span className="text-sm font-medium text-muted-foreground">Total</span>
               <span className="text-2xl font-bold text-foreground">
@@ -24,7 +24,7 @@ export const POSCartItemPanelTotals = () => {
 
             <Button
               onClick={handleCheckout}
-              className="w-full h-12 text-base font-semibold"
+              className="w-full h-12 bg-blue-900 text-white font-semibold"
               disabled={carrito.length === 0}
             >
               Ir a Cobrar
