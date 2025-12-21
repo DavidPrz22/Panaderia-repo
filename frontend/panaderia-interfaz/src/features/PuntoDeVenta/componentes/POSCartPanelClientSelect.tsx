@@ -15,7 +15,7 @@ type props = {
 }
 export const POSCartPanelClientSelect = ({onSetCliente}: props) => {
     const { data: clientes } = useClientesQuery();
-    const [selectedClient, setSelectedClient] = useState<string>('');
+    const [selectedClient, setSelectedClient] = useState<string>('13');
     
     const handleChangeClient = (client: string) => {
         setSelectedClient(client);
@@ -23,13 +23,13 @@ export const POSCartPanelClientSelect = ({onSetCliente}: props) => {
     }
 
     return (
-        <div className="border-b border-border p-4">
+        <div className="basis-1/9 border-b border-border p-4">
             <label className="mb-2 flex items-center gap-2 text-sm font-medium text-muted-foreground">
               <User className="h-4 w-4" />
               Cliente
             </label>
             <Select value={selectedClient} onValueChange={handleChangeClient}>
-              <SelectTrigger className="w-full bg-background">
+              <SelectTrigger className="w-full bg-background focus-visible:ring-blue-200">
                 <SelectValue placeholder="Seleccionar cliente" />
               </SelectTrigger>
               <SelectContent>

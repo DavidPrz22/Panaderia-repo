@@ -8,7 +8,7 @@ type Props = {
   onSetTotals: (total_usd: number, tasa_cambio: number) => void;
 }
 export const POSCartItemPanelTotals = ({onSetTotals} : Props) => {
-    const { carrito } = usePOSContext();
+    const { carrito, setCarrito, setShowCheckout } = usePOSContext();
     const { data: bcvRate } = useBCVRateQuery();
     const total = carrito.reduce((sum, item) => sum + item.subtotal, 0);
 
@@ -17,14 +17,14 @@ export const POSCartItemPanelTotals = ({onSetTotals} : Props) => {
     }, [total])
 
     const handleCheckout = () => {
-        console.log("Checkout");
+      setShowCheckout(true);
     };
     const clearCart = () => {
-        console.log("Clear cart");
+       setCarrito([]);
     };
 
     return (
-        <div className="border-t border-border p-4 space-y-3 font-[Roboto]">
+        <div className="border-t border-border p-4 space-y-3 font-[Roboto] basis-5/9">
             <div className="flex items-center justify-between">
               <span className="text-sm font-medium text-muted-foreground">Total</span>
               <span className="text-2xl font-bold text-foreground">

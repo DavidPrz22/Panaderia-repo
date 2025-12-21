@@ -14,6 +14,8 @@ type POSContextType = {
     setCategoriaSeleccionada: (value: string | null) => void;
     tipoProductoSeleccionado: TipoProducto;
     setTipoProductoSeleccionado: (value: TipoProducto) => void;
+    showCheckout: boolean;
+    setShowCheckout: (value: boolean) => void;
 };
 
 const POSContextProvider = createContext<POSContextType | null>(null);
@@ -26,7 +28,8 @@ export function POSProvider({ children }: { children: React.ReactNode }) {
   const [search, setSearch] = useState<string>("");
   const [categoriaSeleccionada, setCategoriaSeleccionada] = useState<string | null>(null);
   const [tipoProductoSeleccionado, setTipoProductoSeleccionado] = useState<TipoProducto>("todos");
-  
+  const [showCheckout, setShowCheckout] = useState<boolean>(false);
+
   return (
     <POSContextProvider.Provider value={{
       POSEnabled,
@@ -40,7 +43,9 @@ export function POSProvider({ children }: { children: React.ReactNode }) {
       categoriaSeleccionada,
       setCategoriaSeleccionada,
       tipoProductoSeleccionado,
-      setTipoProductoSeleccionado
+      setTipoProductoSeleccionado,
+      showCheckout,
+      setShowCheckout,
       }}>
         {children}
     </POSContextProvider.Provider>
