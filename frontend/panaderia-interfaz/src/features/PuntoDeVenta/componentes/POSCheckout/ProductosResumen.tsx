@@ -1,42 +1,37 @@
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Separator } from "@/components/ui/separator";
+import { usePOSContext } from "@/context/POSContext";
 
-interface CartProduct {
-  id: string;
-  name: string;
-  price: number;
-  quantity: number;
-}
+export function ProductsSummary() {
+  const { carrito } = usePOSContext();
 
-interface ProductsSummaryProps {
-  items: CartProduct[];
-  total: number;
-}
+  // Calculate total from carrito
+  const total = carrito.reduce((sum, item) => sum + item.subtotal, 0);
+  const taxAmount = total * 0.16;
+  const totalWithTax = total * 1.16;
 
-export function ProductsSummary({ items, total }: ProductsSummaryProps) {
   return (
-    <div className="flex h-full flex-col rounded-2xl bg-card p-6 shadow-card">
+    <div className="flex h-full flex-col rounded-2xl bg-card p-5 pt-2 shadow-card border border-border">
       <h2 className="mb-4 text-lg font-semibold text-foreground">Resumen del Pedido</h2>
-      
+
       <ScrollArea className="flex-1">
         <div className="space-y-3 pr-4">
-          {items.map((item) => (
+          {carrito.map((item) => (
             <div key={item.id} className="flex items-center justify-between">
               <div className="flex-1">
-                <p className="font-medium text-foreground">{item.name}</p>
+                <p className="font-medium text-foreground">{item.nombre}</p>
                 <p className="text-sm text-muted-foreground">
-                  {item.quantity} × ${item.price.toFixed(2)}
+                  {item.cantidad} × ${item.precio.toFixed(2)}
                 </p>
               </div>
               <p className="font-semibold text-foreground">
-                ${(item.price * item.quantity).toFixed(2)}
+                ${item.subtotal.toFixed(2)}
               </p>
             </div>
           ))}
         </div>
       </ScrollArea>
 
-      <Separator className="my-4" />
+      <div className="my-4" />
 
       <div className="space-y-2">
         <div className="flex justify-between text-sm text-muted-foreground">
@@ -45,12 +40,12 @@ export function ProductsSummary({ items, total }: ProductsSummaryProps) {
         </div>
         <div className="flex justify-between text-sm text-muted-foreground">
           <span>IVA (16%)</span>
-          <span>${(total * 0.16).toFixed(2)}</span>
+          <span>${taxAmount.toFixed(2)}</span>
         </div>
-        <Separator className="my-2" />
-        <div className="flex justify-between text-xl font-bold text-foreground">
+        <div className="my-2" />
+        <div className="flex justify-between text-xl font-bold text-foreground mb-9">
           <span>Total</span>
-          <span>${(total * 1.16).toFixed(2)}</span>
+          <span>${totalWithTax.toFixed(2)}</span>
         </div>
       </div>
     </div>
