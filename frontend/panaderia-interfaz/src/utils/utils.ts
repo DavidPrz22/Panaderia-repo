@@ -53,4 +53,5 @@ export const HadleFileConversion = async (file: File): Promise<TFileBase64 | nul
       return null;
     }
   };
-  
+
+export const RoundToTwo = (num: number) => Math.round(num * 100) / 100

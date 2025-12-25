@@ -36,6 +36,7 @@ export function SplitPaymentPanel({
             method,
             amount: 0,
             reference: "",
+            change: undefined,
         };
         const updatedPayments = [...payments, newPayment];
         onPaymentsChange(updatedPayments);

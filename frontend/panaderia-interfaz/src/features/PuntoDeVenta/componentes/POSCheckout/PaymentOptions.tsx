@@ -19,7 +19,7 @@ export function PaymentOptions({
   const showReference = selectedMethod && METHODS_WITH_REFERENCE.includes(selectedMethod);
 
   return (
-    <div className="flex h-full flex-col rounded-2xl bg-card p-5 pt-2 shadow-card border border-border">
+    <div className="flex h-full flex-col rounded-2xl bg-card p-5 pt-2 shadow-card border border-border overflow-y-auto">
       <h2 className="mb-6 text-lg font-semibold text-foreground">Método de Pago</h2>
 
       <div className="flex flex-1 flex-col gap-4">
@@ -43,7 +43,7 @@ export function PaymentOptions({
             placeholder="Ingrese la referencia del pago"
             value={reference}
             onChange={(e) => onReferenceChange(e.target.value)}
-            className="w-full"
+            className="w-full focus-visible:ring-blue-200"
           />
         </div>
       )}

@@ -275,6 +275,8 @@ class Pagos(models.Model):
     monto_pago_ves = models.DecimalField(max_digits=10, decimal_places=2, null=False, blank=False)
     fecha_pago = models.DateField(null=False, blank=False)
     referencia_pago = models.CharField(max_length=100, null=True, blank=True)
+    cambio_efectivo_usd = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    cambio_efectivo_ves = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     usuario_registrador = models.ForeignKey(User, on_delete=models.CASCADE, null=False, blank=False)
     tasa_cambio_aplicada = models.DecimalField(max_digits=10, decimal_places=2, null=False, blank=False)
     notas = models.TextField(max_length=255, null=True, blank=True)

@@ -3,7 +3,7 @@ import { POSCartPanel } from "./POSCartPanel";
 
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { aperturaCajaSchema } from "../schemas/schemas";
+import { ventaSchema } from "../schemas/schemas";
 import { usePOSContext } from "@/context/POSContext";
 import { CheckoutScreen } from "./POSCheckout";
 
@@ -11,7 +11,17 @@ import { CheckoutScreen } from "./POSCheckout";
 export default function POSInterfazVenta() {
 
     const { watch, setValue } = useForm({
-        resolver: zodResolver(aperturaCajaSchema),
+        resolver: zodResolver(ventaSchema),
+        defaultValues: {
+            pagos: [{
+                metodo_pago: 'efectivo',
+                monto_pago_usd: 0,
+                monto_pago_ves: 0,
+                referencia_pago: undefined,
+                cambio_efectivo_usd: undefined,
+                cambio_efectivo_ves: undefined,
+            }]
+        }
     });
     const { showCheckout, setShowCheckout, setCarrito } = usePOSContext();
 
@@ -28,6 +38,8 @@ export default function POSInterfazVenta() {
         <div className="flex min-h-screen w-full bg-background">
             {showCheckout ? (
                 <CheckoutScreen
+                    watch={watch}
+                    setValue={setValue}
                     onBack={handleBackToCart}
                     onComplete={handleCompleteCheckout}
                 />

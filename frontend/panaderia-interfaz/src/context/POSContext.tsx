@@ -1,5 +1,6 @@
 import { createContext, useContext, useState } from "react";
 import type { CarritoItem, TipoProducto } from "../features/PuntoDeVenta/types/types";
+import type { PaymentMethod, SplitPayment } from "@/features/PuntoDeVenta/componentes/POSCheckout";
 
 type POSContextType = {
     POSEnabled: boolean;
@@ -15,7 +16,13 @@ type POSContextType = {
     tipoProductoSeleccionado: TipoProducto;
     setTipoProductoSeleccionado: (value: TipoProducto) => void;
     showCheckout: boolean;
-    setShowCheckout: (value: boolean) => void;
+    setShowCheckout: (value: boolean ) => void;
+    selectedPaymentMethod: PaymentMethod | null;
+    setSelectedPaymentMethod: (value: PaymentMethod | null) => void;
+    calculatorInputValue: string;
+    setCalculatorInputValue: (value: string) => void;
+    splitPayments: SplitPayment[];
+    setSplitPayments: (value: SplitPayment[]) => void;
 };
 
 const POSContextProvider = createContext<POSContextType | null>(null);
@@ -29,6 +36,9 @@ export function POSProvider({ children }: { children: React.ReactNode }) {
   const [categoriaSeleccionada, setCategoriaSeleccionada] = useState<string | null>(null);
   const [tipoProductoSeleccionado, setTipoProductoSeleccionado] = useState<TipoProducto>("todos");
   const [showCheckout, setShowCheckout] = useState<boolean>(false);
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<PaymentMethod | null>('efectivo');
+  const [calculatorInputValue, setCalculatorInputValue ] = useState<string>('');
+  const [splitPayments, setSplitPayments] = useState<SplitPayment[]>([]);
 
   return (
     <POSContextProvider.Provider value={{
@@ -46,6 +56,12 @@ export function POSProvider({ children }: { children: React.ReactNode }) {
       setTipoProductoSeleccionado,
       showCheckout,
       setShowCheckout,
+      selectedPaymentMethod,
+      setSelectedPaymentMethod,
+      calculatorInputValue,
+      setCalculatorInputValue,
+      splitPayments,
+      setSplitPayments,
       }}>
         {children}
     </POSContextProvider.Provider>

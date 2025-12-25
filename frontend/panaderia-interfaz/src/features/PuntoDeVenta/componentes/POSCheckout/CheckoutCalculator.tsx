@@ -3,43 +3,87 @@ import { Button } from "@/components/ui/button";
 import { Check } from "lucide-react";
 import { CalculatorKeypad } from "./shared/components/CalculatorKeypad";
 import { QuickAmountButtons } from "./shared/components/QuickAmountButtons";
+import type { PaymentMethod, SplitPayment } from "./shared/checkout-types";
+import { RoundToTwo } from "@/utils/utils";
+import { usePOSContext } from "@/context/POSContext";
 
 interface PaymentCalculatorProps {
     total: number;
+    paymentMethod: PaymentMethod;
     onConfirmPayment?: (amount: number) => void;
     mode?: "normal" | "split";
     splitAmount?: number;
-    onSplitAmountChange?: (amount: number) => void;
+    onSplitAmountChange?: (amount: number, change?: number) => void;
     splitMethodLabel?: string;
+    selectedSplitPayment?: SplitPayment;
 }
 
 export function PaymentCalculator({
     total,
+    paymentMethod,
     onConfirmPayment,
     mode = "normal",
     splitAmount,
     onSplitAmountChange,
-    splitMethodLabel
+    splitMethodLabel,
+    selectedSplitPayment
 }: PaymentCalculatorProps) {
-    const [inputValue, setInputValue] = useState("");
+
+    const {
+        calculatorInputValue: inputValue,
+        setCalculatorInputValue: setInputValue,
+    } = usePOSContext()
 
     // Sync with split amount when in split mode
     useEffect(() => {
         if (mode === "split" && splitAmount !== undefined) {
-            setInputValue(splitAmount > 0 ? splitAmount.toFixed(2) : "");
+            setInputValue(splitAmount > 0 ? splitAmount.toString() : "");
         }
     }, [mode, splitAmount]);
 
-    const numericValue = parseFloat(inputValue) || 0;
+    useEffect(() => {
+        if (paymentMethod !== 'efectivo' && parseFloat(inputValue) > total) {
+            setInputValue(total.toFixed(2));
+        }
+    }, [paymentMethod]);
+
+    useEffect(() => {
+        setInputValue(total.toFixed(2));
+    }, []);
+
+
+    const numericValue = RoundToTwo(parseFloat(inputValue)) || 0;
     const change = numericValue - total;
+
+
+    const handlBiggerThanAllow = (value: string | number) => {
+        const numericValue = typeof value === 'string' ? parseFloat(value) : value;
+        if (paymentMethod !== 'efectivo' && numericValue > total && value !== '.') {
+            setInputValue(total.toString());
+            return true;
+        } else {
+            setInputValue(value.toString());
+            return false;
+        }
+    }
 
     const handleNumberClick = (num: string) => {
         if (num === "." && inputValue.includes(".")) return;
         if (inputValue.includes(".") && inputValue.split(".")[1]?.length >= 2) return;
+
         const newValue = inputValue + num;
-        setInputValue(newValue);
+        const isBiggerThanAllow = handlBiggerThanAllow(newValue);
+
         if (mode === "split" && onSplitAmountChange) {
-            onSplitAmountChange(parseFloat(newValue) || 0);
+
+            const shouldReturnTotal = isBiggerThanAllow ? inputValue ? total + parseFloat(inputValue) : total : parseFloat(newValue) || 0
+            console.log(shouldReturnTotal)
+            const shouldReturnChange = paymentMethod === 'efectivo' && change > 0 ? change : undefined
+
+            onSplitAmountChange(
+                shouldReturnTotal,
+                shouldReturnChange
+            );
         }
     };
 
@@ -54,28 +98,32 @@ export function PaymentCalculator({
         const newValue = inputValue.slice(0, -1);
         setInputValue(newValue);
         if (mode === "split" && onSplitAmountChange) {
-            onSplitAmountChange(parseFloat(newValue) || 0);
+            const newNumericValue = parseFloat(newValue) || 0;
+            const newChange = newNumericValue - total;
+            const shouldReturnChange = paymentMethod === 'efectivo' && newChange > 0 ? newChange : undefined;
+            onSplitAmountChange(newNumericValue, shouldReturnChange);
         }
     };
 
     const handleQuickAmount = (amount: number) => {
-        setInputValue(amount.toFixed(2));
+        handlBiggerThanAllow(amount);
         if (mode === "split" && onSplitAmountChange) {
-            onSplitAmountChange(amount);
+            const shouldReturnChange = paymentMethod === 'efectivo' && change > 0 ? change : undefined
+            onSplitAmountChange(amount > total ? total : amount, shouldReturnChange);
         }
     };
 
     const handleExactAmount = () => {
-        setInputValue(total.toFixed(2));
+        setInputValue(inputValue ? total.toFixed(2) + inputValue : total.toFixed(2));
         if (mode === "split" && onSplitAmountChange) {
-            onSplitAmountChange(total);
+            // When setting exact amount, there's no change
+            onSplitAmountChange(inputValue ? total + parseFloat(inputValue) : total, undefined);
         }
     };
-
     const isSplitMode = mode === "split";
 
     return (
-        <div className="flex h-full flex-col rounded-2xl bg-card p-5 pt-2 shadow-card border border-border">
+        <div className="flex h-full flex-col rounded-2xl bg-card p-5 pt-2 shadow-card border border-border overflow-y-auto">
             <h2 className="mb-4 text-base lg:text-lg font-semibold text-foreground">
                 {isSplitMode ? `Monto: ${splitMethodLabel || "Selecciona un método"}` : "Monto Recibido"}
             </h2>
@@ -93,11 +141,12 @@ export function PaymentCalculator({
                     {isSplitMode ? "Monto asignado" : "Monto recibido"}
                 </p>
                 <p className="text-2xl lg:text-3xl font-bold text-blue-900">
-                    ${inputValue || "0.00"}
+                    ${(RoundToTwo(Number(inputValue)) || "0.00")}
                 </p>
             </div>
 
-            {!isSplitMode && change >= 0 && numericValue > 0 && (
+            {/* Show change for efectivo payments in both normal and split mode */}
+            {change > 0 && numericValue > 0 && paymentMethod === "efectivo" && (
                 <div className="mb-4 rounded-xl bg-emerald-500/10 px-4 py-1">
                     <p className="text-xs lg:text-sm text-emerald-600">Cambio</p>
                     <p className="text-xl lg:text-2xl font-bold text-emerald-600">${change.toFixed(2)}</p>

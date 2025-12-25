@@ -1,7 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ProductsSummary } from "./ProductosResumen";
-import { PaymentOptions } from "./PaymentOptions";
-import type { PaymentMethod } from "./shared/checkout-types";
+import { PaymentOptions, type PaymentMethod } from "./PaymentOptions";
 import { PaymentCalculator } from "./CheckoutCalculator";
 import { SplitPaymentPanel, type SplitPayment } from "./SplitPaymentPanel";
 import { CheckoutHeader } from "./shared/components/CheckoutHeader";
@@ -13,25 +12,40 @@ import {
     formatSplitPaymentMethods,
     calculateChange
 } from "./shared/checkout-utils";
+import { RoundToTwo } from "@/utils/utils";
 import { PAYMENT_METHOD_LABELS } from "./shared/checkout-constants";
+import type { WatchSetValue } from "../../types/types";
+import { useBCVRateQuery } from "../../hooks/queries/queries";
 
 interface CheckoutScreenProps {
     onBack: () => void;
     onComplete: () => void;
 }
 
-export function CheckoutScreen({ onBack, onComplete }: CheckoutScreenProps) {
-    const { carrito } = usePOSContext();
-    const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<PaymentMethod | null>(null);
+export function CheckoutScreen({ onBack, onComplete, watch, setValue }: CheckoutScreenProps & WatchSetValue) {
+    const { carrito, selectedPaymentMethod, setSelectedPaymentMethod, splitPayments, setSplitPayments } = usePOSContext();
     const [paymentReference, setPaymentReference] = useState("");
-    const [splitPayments, setSplitPayments] = useState<SplitPayment[]>([]);
     const [selectedSplitIndex, setSelectedSplitIndex] = useState<number | null>(null);
     const { toast } = useToast();
+    const { data } = useBCVRateQuery()
 
     // Calculate total from carrito
-    const total = carrito.reduce((sum, item) => sum + item.subtotal, 0);
-    const totalWithTax = calculateTotalWithTax(total);
-
+    const total = RoundToTwo(carrito.reduce((sum, item) => sum + item.subtotal, 0));
+    const totalWithTax = RoundToTwo(calculateTotalWithTax(total));
+    console.log(watch?.("pagos"))
+    useEffect(() => {
+        const pago_con_formato = splitPayments.map((pago) => {
+            return {
+                metodo_pago: pago.method,
+                monto_pago_usd: pago.amount,
+                monto_pago_ves: pago.amount * data!.promedio || 0,
+                referencia_pago: pago.reference || undefined,
+                cambio_efectivo_usd: undefined,
+                cambio_efectivo_ves: undefined,
+            };
+        });
+        setValue?.("pagos", pago_con_formato);
+    }, [splitPayments, setValue]);
 
     const handleConfirmPayment = (amount: number) => {
         if (!selectedPaymentMethod) {
@@ -71,16 +85,20 @@ export function CheckoutScreen({ onBack, onComplete }: CheckoutScreenProps) {
         onComplete();
     };
 
+    const handleChangePaymentOption = (value: PaymentMethod) => {
+        setSelectedPaymentMethod(value)
+    }
+
     const handleCancelSplit = () => {
         setSelectedPaymentMethod(null);
         setSplitPayments([]);
         setSelectedSplitIndex(null);
     };
 
-    const handleSplitAmountChange = (amount: number) => {
+    const handleSplitAmountChange = (amount: number, change: number | undefined) => {
         if (selectedSplitIndex !== null && selectedSplitIndex < splitPayments.length) {
             const updated = [...splitPayments];
-            updated[selectedSplitIndex] = { ...updated[selectedSplitIndex], amount };
+            updated[selectedSplitIndex] = { ...updated[selectedSplitIndex], amount, change: change };
             setSplitPayments(updated);
         }
     };
@@ -116,7 +134,7 @@ export function CheckoutScreen({ onBack, onComplete }: CheckoutScreenProps) {
                     ) : (
                         <PaymentOptions
                             selectedMethod={selectedPaymentMethod}
-                            onSelectMethod={setSelectedPaymentMethod}
+                            onSelectMethod={handleChangePaymentOption}
                             reference={paymentReference}
                             onReferenceChange={setPaymentReference}
                         />
@@ -127,11 +145,13 @@ export function CheckoutScreen({ onBack, onComplete }: CheckoutScreenProps) {
                 <div className="w-1/3">
                     <PaymentCalculator
                         total={isSplitMode ? remainingForSplit : totalWithTax}
+                        paymentMethod={selectedPaymentMethod!}
                         onConfirmPayment={isSplitMode ? undefined : handleConfirmPayment}
                         mode={isSplitMode ? "split" : "normal"}
                         splitAmount={selectedSplitPayment?.amount}
                         onSplitAmountChange={handleSplitAmountChange}
                         splitMethodLabel={selectedSplitPayment ? PAYMENT_METHOD_LABELS[selectedSplitPayment.method] : undefined}
+                        selectedSplitPayment={isSplitMode ? selectedSplitPayment! : undefined}
                     />
                 </div>
             </div>
