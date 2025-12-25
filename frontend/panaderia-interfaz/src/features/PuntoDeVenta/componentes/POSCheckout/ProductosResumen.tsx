@@ -14,7 +14,7 @@ export function ProductsSummary() {
       <h2 className="mb-4 text-lg font-semibold text-foreground">Resumen del Pedido</h2>
 
       <ScrollArea className="flex-1">
-        <div className="space-y-3 pr-4">
+        <div className="space-y-3 pr-4 font-[Roboto]">
           {carrito.map((item) => (
             <div key={item.id} className="flex items-center justify-between">
               <div className="flex-1">

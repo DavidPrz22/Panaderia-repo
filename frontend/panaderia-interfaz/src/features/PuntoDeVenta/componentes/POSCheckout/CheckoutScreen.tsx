@@ -90,7 +90,7 @@ export function CheckoutScreen({ onBack, onComplete }: CheckoutScreenProps) {
     const remainingForSplit = totalWithTax - splitPayments.reduce((sum, p) => sum + p.amount, 0);
 
     return (
-        <div className="flex h-screen flex-col bg-gray-50 w-full ">
+        <div className="flex h-screen flex-col bg-gray-50 w-full">
             {/* Header */}
             <CheckoutHeader onBack={onBack} />
 
