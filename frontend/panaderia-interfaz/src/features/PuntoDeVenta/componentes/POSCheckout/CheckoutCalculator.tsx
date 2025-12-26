@@ -46,6 +46,7 @@ export function PaymentCalculator({
     useEffect(() => {
         if (paymentMethod !== 'efectivo' && parseFloat(inputValue) > total) {
             setInputValue(total.toFixed(2));
+            onNormalAmountChange(total, undefined);
         }
     }, [paymentMethod]);
 
@@ -104,10 +105,10 @@ export function PaymentCalculator({
                 shouldReturnChange
             );
         } else {
-            const shouldReturnTotal = isBiggerThanAllow ? inputValue ? total + parseFloat(inputValue) : total : parseFloat(newValue) || 0
+            const shouldReturnTotal = isBiggerThanAllow ? total : parseFloat(newValue) || 0
 
             const shouldReturnChange = paymentMethod === 'efectivo' && change > 0 ? change : undefined
-
+            console.log('shouldReturnTotal')
             onNormalAmountChange(
                 shouldReturnTotal,
                 shouldReturnChange
