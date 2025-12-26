@@ -68,12 +68,12 @@ export function PaymentCalculator({
         }
     }
 
-    const handlBiggerThanAllowSplit = (value: string | number)  : { value: number, isTrue: boolean } => {
+    const handlBiggerThanAllowSplit = (value: string | number): { value: number, isTrue: boolean } => {
         const numericValue = typeof value === 'string' ? parseFloat(value) : value;
 
-        
+
         if (paymentMethod !== 'efectivo' && numericValue > total && value !== '.') {
-            const amount = parseFloat(inputValue) > total && (splitAmount || 0) > numericValue? numericValue : total
+            const amount = parseFloat(inputValue) > total && (splitAmount || 0) > numericValue ? numericValue : total
             if (amount > total) {
                 setInputValue(amount.toString());
                 return { value: Number(amount), isTrue: true };
@@ -145,7 +145,7 @@ export function PaymentCalculator({
                 }
             } else {
                 const { value, isTrue } = handlBiggerThanAllowSplit(amount);
-                if (isTrue) 
+                if (isTrue)
                     onSplitAmountChange(value, undefined);
                 else onSplitAmountChange(value, undefined)
             }
@@ -194,7 +194,7 @@ export function PaymentCalculator({
                     {isSplitMode ? "Monto asignado" : "Monto recibido"}
                 </p>
                 <p className="text-2xl lg:text-3xl font-bold text-blue-900">
-                    ${(RoundToTwo(Number(inputValue)) || "0.00")}
+                    ${inputValue === "" ? "0.00" : inputValue.startsWith(".") ? "0" + inputValue : inputValue}
                 </p>
             </div>
 

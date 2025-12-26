@@ -36,6 +36,17 @@ export function PaymentOptions({
       }]);
   }, [selectedMethod])
 
+  useEffect(()=>{
+    const data = splitPayments[0]
+    setSplitPayments(
+      [{
+        method: selectedMethod && selectedMethod !== 'dividir' ? selectedMethod : data.method,
+        amount: data ? data.amount : 0,
+        change: data ? data.change : 0, 
+        reference: reference || ""
+      }]);
+  }, [reference])
+  
   return (
     <div className="flex h-full flex-col rounded-2xl bg-card p-5 pt-2 shadow-card border border-border overflow-y-auto">
       <h2 className="mb-6 text-lg font-semibold text-foreground">Método de Pago</h2>
