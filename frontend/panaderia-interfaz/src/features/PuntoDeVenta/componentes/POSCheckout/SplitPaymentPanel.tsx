@@ -91,7 +91,7 @@ export function SplitPaymentPanel({
                         "font-bold",
                         remaining > 0 ? "text-orange-600" : remaining < 0 ? "text-red-600" : "text-green-600"
                     )}>
-                        ${remaining.toFixed(2)}
+                        ${remaining > 0 ? remaining.toFixed(2) : 0}
                     </span>
                 </div>
             </div>
@@ -148,6 +148,14 @@ export function SplitPaymentPanel({
                                         onClick={(e) => e.stopPropagation()}
                                         className="text-sm h-8 focus-visible:ring-blue-200"
                                     />
+                                )}
+
+                                {payment.change && (
+                                    <div className="flex justify-between items-center text-sm font-semibold text-foreground border border-border rounded-md px-4 py-1 w-full ">
+                                        <span>
+                                            Cambio:
+                                        </span> ${payment.change.toFixed(2)}
+                                    </div>
                                 )}
                             </div>
                         );

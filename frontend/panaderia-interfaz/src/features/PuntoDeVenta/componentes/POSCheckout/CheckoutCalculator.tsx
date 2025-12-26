@@ -51,19 +51,37 @@ export function PaymentCalculator({
         setInputValue(total.toFixed(2));
     }, []);
 
-
     const numericValue = RoundToTwo(parseFloat(inputValue)) || 0;
     const change = numericValue - total;
-
 
     const handlBiggerThanAllow = (value: string | number) => {
         const numericValue = typeof value === 'string' ? parseFloat(value) : value;
         if (paymentMethod !== 'efectivo' && numericValue > total && value !== '.') {
             setInputValue(total.toString());
+            console.log('uwuw', total)
             return true;
         } else {
             setInputValue(value.toString());
             return false;
+        }
+    }
+
+    const handlBiggerThanAllowSplit = (value: string | number)  : { value: number, isTrue: boolean } => {
+        const numericValue = typeof value === 'string' ? parseFloat(value) : value;
+
+        
+        if (paymentMethod !== 'efectivo' && numericValue > total && value !== '.') {
+            const amount = parseFloat(inputValue) > total && (splitAmount || 0) > numericValue? numericValue : total
+            if (amount > total) {
+                setInputValue(amount.toString());
+                return { value: Number(amount), isTrue: true };
+            }
+
+            setInputValue(total.toString());
+            return { value: Number(total), isTrue: true };
+        } else {
+            setInputValue(value.toString());
+            return { value: Number(value), isTrue: false };
         }
     }
 
@@ -77,7 +95,7 @@ export function PaymentCalculator({
         if (mode === "split" && onSplitAmountChange) {
 
             const shouldReturnTotal = isBiggerThanAllow ? inputValue ? total + parseFloat(inputValue) : total : parseFloat(newValue) || 0
-            console.log(shouldReturnTotal)
+
             const shouldReturnChange = paymentMethod === 'efectivo' && change > 0 ? change : undefined
 
             onSplitAmountChange(
@@ -106,20 +124,35 @@ export function PaymentCalculator({
     };
 
     const handleQuickAmount = (amount: number) => {
-        handlBiggerThanAllow(amount);
         if (mode === "split" && onSplitAmountChange) {
-            const shouldReturnChange = paymentMethod === 'efectivo' && change > 0 ? change : undefined
-            onSplitAmountChange(amount > total ? total : amount, shouldReturnChange);
+            if (selectedSplitPayment?.method === 'efectivo') {
+                const change = RoundToTwo(amount - total)
+                if (change > 0) {
+                    onSplitAmountChange(amount, change);
+                } else {
+                    onSplitAmountChange(amount, undefined);
+                }
+            } else {
+                const { value, isTrue } = handlBiggerThanAllowSplit(amount);
+                if (isTrue) 
+                    onSplitAmountChange(value, undefined);
+                else onSplitAmountChange(value, undefined)
+            }
+        } else {
+            handlBiggerThanAllow(amount);
         }
     };
 
     const handleExactAmount = () => {
-        setInputValue(inputValue ? total.toFixed(2) + inputValue : total.toFixed(2));
         if (mode === "split" && onSplitAmountChange) {
             // When setting exact amount, there's no change
+            setInputValue(inputValue ? total.toFixed(2) + inputValue : total.toFixed(2));
             onSplitAmountChange(inputValue ? total + parseFloat(inputValue) : total, undefined);
+            return;
         }
+        setInputValue(total.toFixed(2));
     };
+
     const isSplitMode = mode === "split";
 
     return (

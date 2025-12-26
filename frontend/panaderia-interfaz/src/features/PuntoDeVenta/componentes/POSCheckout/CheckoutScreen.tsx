@@ -32,16 +32,16 @@ export function CheckoutScreen({ onBack, onComplete, watch, setValue }: Checkout
     // Calculate total from carrito
     const total = RoundToTwo(carrito.reduce((sum, item) => sum + item.subtotal, 0));
     const totalWithTax = RoundToTwo(calculateTotalWithTax(total));
-    console.log(watch?.("pagos"))
+    
     useEffect(() => {
         const pago_con_formato = splitPayments.map((pago) => {
             return {
                 metodo_pago: pago.method,
                 monto_pago_usd: pago.amount,
-                monto_pago_ves: pago.amount * data!.promedio || 0,
+                monto_pago_ves: RoundToTwo(pago.amount * data!.promedio) || 0,
                 referencia_pago: pago.reference || undefined,
-                cambio_efectivo_usd: undefined,
-                cambio_efectivo_ves: undefined,
+                cambio_efectivo_usd: pago.change ? RoundToTwo(pago.change) : undefined,
+                cambio_efectivo_ves: pago.change ? RoundToTwo(pago.change * data!.promedio) : undefined,
             };
         });
         setValue?.("pagos", pago_con_formato);
@@ -152,6 +152,7 @@ export function CheckoutScreen({ onBack, onComplete, watch, setValue }: Checkout
                         onSplitAmountChange={handleSplitAmountChange}
                         splitMethodLabel={selectedSplitPayment ? PAYMENT_METHOD_LABELS[selectedSplitPayment.method] : undefined}
                         selectedSplitPayment={isSplitMode ? selectedSplitPayment! : undefined}
+
                     />
                 </div>
             </div>
