@@ -10,7 +10,6 @@ interface CartItemProps {
 
 export function CartItem({ item, onUpdateQuantity, onRemove }: CartItemProps) {
 
-
   const handleQuantityChange = (value: string) => {
     const num = parseInt(value, 10);
     if (!isNaN(num) && num >= 0) {

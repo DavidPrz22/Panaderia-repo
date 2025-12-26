@@ -14,7 +14,7 @@ export const POSCartPanelCartItems = ({ watch, setValue }: WatchSetValue) => {
 
   const updateQuantity = (id: number, quantity: number) => {
     const updatedCart = carrito.map((item) =>
-      item.id === id ? { ...item, cantidad: quantity } : item
+      item.id === id ? { ...item, cantidad: quantity, subtotal: item.precio * quantity } : item
     );
     setCarrito(updatedCart);
   };

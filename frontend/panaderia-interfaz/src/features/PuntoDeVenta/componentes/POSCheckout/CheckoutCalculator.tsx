@@ -14,6 +14,7 @@ interface PaymentCalculatorProps {
     mode?: "normal" | "split";
     splitAmount?: number;
     onSplitAmountChange?: (amount: number, change?: number) => void;
+    onNormalAmountChange: (amount: number, change?: number) => void;
     splitMethodLabel?: string;
     selectedSplitPayment?: SplitPayment;
 }
@@ -25,6 +26,7 @@ export function PaymentCalculator({
     mode = "normal",
     splitAmount,
     onSplitAmountChange,
+    onNormalAmountChange,
     splitMethodLabel,
     selectedSplitPayment
 }: PaymentCalculatorProps) {
@@ -58,7 +60,6 @@ export function PaymentCalculator({
         const numericValue = typeof value === 'string' ? parseFloat(value) : value;
         if (paymentMethod !== 'efectivo' && numericValue > total && value !== '.') {
             setInputValue(total.toString());
-            console.log('uwuw', total)
             return true;
         } else {
             setInputValue(value.toString());
@@ -102,6 +103,15 @@ export function PaymentCalculator({
                 shouldReturnTotal,
                 shouldReturnChange
             );
+        } else {
+            const shouldReturnTotal = isBiggerThanAllow ? inputValue ? total + parseFloat(inputValue) : total : parseFloat(newValue) || 0
+
+            const shouldReturnChange = paymentMethod === 'efectivo' && change > 0 ? change : undefined
+
+            onNormalAmountChange(
+                shouldReturnTotal,
+                shouldReturnChange
+            );
         }
     };
 
@@ -139,6 +149,14 @@ export function PaymentCalculator({
                 else onSplitAmountChange(value, undefined)
             }
         } else {
+            if (paymentMethod === "efectivo") {
+                const change = RoundToTwo(amount - total)
+                if (change > 0) {
+                    onNormalAmountChange(amount, change);
+                } else {
+                    onNormalAmountChange(amount, undefined);
+                }
+            }
             handlBiggerThanAllow(amount);
         }
     };
@@ -151,6 +169,7 @@ export function PaymentCalculator({
             return;
         }
         setInputValue(total.toFixed(2));
+        onNormalAmountChange(total, undefined);
     };
 
     const isSplitMode = mode === "split";

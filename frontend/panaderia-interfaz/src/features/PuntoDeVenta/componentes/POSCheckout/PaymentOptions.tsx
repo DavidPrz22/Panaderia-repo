@@ -2,21 +2,39 @@ import { Input } from "@/components/ui/input";
 import { PAYMENT_METHODS, METHODS_WITH_REFERENCE } from "./shared/checkout-constants";
 import { PaymentMethodCard } from "./shared/components/PaymentMethodCard";
 import type { PaymentMethod } from "./shared/checkout-types";
+import type { WatchSetValue } from "../../types/types";
+import { useEffect } from "react";
+import { usePOSContext } from "@/context/POSContext";
 
 interface PaymentOptionsProps {
   selectedMethod: PaymentMethod | null;
   onSelectMethod: (method: PaymentMethod) => void;
   reference: string;
   onReferenceChange: (reference: string) => void;
+  
 }
-
 export function PaymentOptions({
   selectedMethod,
   onSelectMethod,
   reference,
-  onReferenceChange
-}: PaymentOptionsProps) {
+  onReferenceChange,
+  watch,
+  setValue
+}: (PaymentOptionsProps & WatchSetValue)) {
   const showReference = selectedMethod && METHODS_WITH_REFERENCE.includes(selectedMethod);
+
+  const { splitPayments, setSplitPayments } = usePOSContext()
+  useEffect(()=>{
+
+    const data = splitPayments[0]
+    setSplitPayments(
+      [{
+        method: selectedMethod && selectedMethod !== 'dividir' ? selectedMethod : data.method,
+        amount: data ? data.amount : 0,
+        change: data ? data.change : 0, 
+        reference: reference || ""
+      }]);
+  }, [selectedMethod])
 
   return (
     <div className="flex h-full flex-col rounded-2xl bg-card p-5 pt-2 shadow-card border border-border overflow-y-auto">
