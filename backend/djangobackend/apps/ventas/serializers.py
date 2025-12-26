@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Clientes, OrdenVenta, DetallesOrdenVenta, Pagos, AperturaCierreCaja   
+from .models import Clientes, OrdenVenta, DetallesOrdenVenta, Pagos, AperturaCierreCaja, Ventas
 from apps.core.serializers import MetodosDePagoSerializer, EstadosOrdenVentaSerializer
 from apps.inventario.serializers import ProductosElaboradosSerializer, ProductosReventaSerializer
 
@@ -179,3 +179,9 @@ class OrdenesTableSerializer(serializers.ModelSerializer):
             'metodo_pago': instance.metodo_pago.nombre_metodo,
             'total': instance.monto_total_usd,
         }
+
+
+class VentasSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Ventas
+        fields = '__all__'

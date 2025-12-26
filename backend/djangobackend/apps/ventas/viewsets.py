@@ -8,7 +8,8 @@ from .serializers import (
     OrdenesDetallesSerializer, 
     AperturaCierreCajaSerializer, 
     AperturaCajaSerializer, 
-    CierreCajaSerializer
+    CierreCajaSerializer,
+    VentasSerializer
     )
 from apps.inventario.models import ProductosElaborados, ProductosReventa
 from django.db import transaction
@@ -125,6 +126,7 @@ class OrdenesTableViewset(viewsets.ModelViewSet):
 
 
 class OrdenesViewSet(viewsets.ModelViewSet):
+
     queryset = OrdenVenta.objects.all()
     serializer_class = OrdenesSerializer
     permission_classes = [IsAllUsersCRUD]
@@ -473,3 +475,9 @@ class OrdenesViewSet(viewsets.ModelViewSet):
 
         self.register_payment(orden, ref, request.user)
         return Response(status=status.HTTP_200_OK)
+
+
+class VentasViewSet(viewsets.ModelViewSet):
+    queryset = Ventas.objects.all()
+    serializer_class = VentasSerializer
+    permission_classes = [IsAllUsersCRUD]

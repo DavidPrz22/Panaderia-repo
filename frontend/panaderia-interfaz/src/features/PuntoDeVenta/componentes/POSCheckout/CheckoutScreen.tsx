@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { ProductsSummary } from "./ProductosResumen";
-import { PaymentOptions, type PaymentMethod } from "./PaymentOptions";
+import { PaymentOptions } from "./PaymentOptions";
 import { PaymentCalculator } from "./CheckoutCalculator";
 import { SplitPaymentPanel, type SplitPayment } from "./SplitPaymentPanel";
 import { CheckoutHeader } from "./shared/components/CheckoutHeader";
@@ -27,47 +27,56 @@ export function CheckoutScreen({ onBack, onComplete, watch, setValue }: Checkout
     const [paymentReference, setPaymentReference] = useState("");
     const [selectedSplitIndex, setSelectedSplitIndex] = useState<number | null>(null);
     const { toast } = useToast();
-    const { data } = useBCVRateQuery()
+    const { data } = useBCVRateQuery();
 
-    // Calculate total from carrito
+    // Calculate totals
     const total = RoundToTwo(carrito.reduce((sum, item) => sum + item.subtotal, 0));
     const totalWithTax = RoundToTwo(calculateTotalWithTax(total));
-
     const isSplitMode = selectedPaymentMethod === "dividir";
 
+    // Format payments for form submission
     useEffect(() => {
-        const pago_con_formato = splitPayments.map((pago) => {
-            return {
-                metodo_pago: pago.method,
-                monto_pago_usd: RoundToTwo(pago.amount),
-                monto_pago_ves: RoundToTwo(pago.amount * data!.promedio) || 0,
-                referencia_pago: pago.reference || undefined,
-                cambio_efectivo_usd: pago.change ? RoundToTwo(pago.change) : undefined,
-                cambio_efectivo_ves: pago.change ? RoundToTwo(pago.change * data!.promedio) : undefined,
-            };
-        });
+        const pago_con_formato = splitPayments.map((pago) => ({
+            metodo_pago: pago.method,
+            monto_pago_usd: RoundToTwo(pago.amount),
+            monto_pago_ves: RoundToTwo(pago.amount * (data?.promedio || 0)),
+            referencia_pago: pago.reference || undefined, // Sync reference
+            cambio_efectivo_usd: pago.change ? RoundToTwo(pago.change) : undefined,
+            cambio_efectivo_ves: pago.change ? RoundToTwo(pago.change * (data?.promedio || 0)) : undefined,
+        }));
         setValue?.("pagos", pago_con_formato);
-    }, [splitPayments, setValue]);
-    console.log("splitPayments", splitPayments);
-    console.log("pagos", watch?.("pagos"));
+    }, [splitPayments, setValue, data]);
+
+    // Initialize Split Payments logic when switching modes
     useEffect(() => {
         if (isSplitMode) {
+            // Just entered split mode
             setSplitPayments([]);
             setSelectedSplitIndex(null);
-        }
-    }, [isSplitMode])
-
-    useEffect(() => {
-        if (isSplitMode) return;
-        setSplitPayments([
-            {
-                method: selectedPaymentMethod ? selectedPaymentMethod : "efectivo",
+            setPaymentReference("");
+        } else if (selectedPaymentMethod) {
+            // Entered normal payment mode (or switched method within normal)
+            setSplitPayments([{
+                method: selectedPaymentMethod,
                 amount: totalWithTax,
                 change: 0,
-                reference: paymentReference
+                reference: ""
+            }]);
+            setPaymentReference("");
+        }
+    }, [isSplitMode, selectedPaymentMethod]); // Intentionally omitting totalWithTax to avoid resetting on minor updates, but logically should reset if total lines change.
+
+    // Sync local reference state to splitPayments (for normal mode)
+    useEffect(() => {
+        if (!isSplitMode && splitPayments.length > 0) {
+            const current = splitPayments[0];
+            if (current.reference !== paymentReference) {
+                const updated = [...splitPayments];
+                updated[0] = { ...current, reference: paymentReference };
+                setSplitPayments(updated);
             }
-        ])
-    }, []);
+        }
+    }, [paymentReference, isSplitMode]); // splitPayments intentionally omitted to avoid loop
 
     const handleConfirmPayment = (amount: number) => {
         if (!selectedPaymentMethod) {
@@ -82,7 +91,7 @@ export function CheckoutScreen({ onBack, onComplete, watch, setValue }: Checkout
         const change = calculateChange(amount, totalWithTax);
         toast({
             title: "Pago completado",
-            description: `Pago de $${totalWithTax.toFixed(2)} recibido con ${selectedPaymentMethod}. Cambio: $${change.toFixed(2)}`,
+            description: `Pago de $${totalWithTax.toFixed(2)} recibido con ${PAYMENT_METHOD_LABELS[selectedPaymentMethod]}. Cambio: $${change.toFixed(2)}`,
         });
         onComplete();
     };
@@ -107,47 +116,62 @@ export function CheckoutScreen({ onBack, onComplete, watch, setValue }: Checkout
         onComplete();
     };
 
-    const handleChangePaymentOption = (value: PaymentMethod) => {
-        setSelectedPaymentMethod(value)
-    }
-
     const handleCancelSplit = () => {
-        setSelectedPaymentMethod(null);
-        setSplitPayments([]);
+        setSelectedPaymentMethod("efectivo");
+        setSplitPayments([{
+            method: "efectivo",
+            amount: totalWithTax,
+            change: 0,
+            reference: ""
+        }]);
         setSelectedSplitIndex(null);
+        setPaymentReference("");
     };
 
-    const handleSplitAmountChange = (amount: number, change: number | undefined) => {
-        if (selectedSplitIndex !== null && selectedSplitIndex < splitPayments.length) {
-            const updated = [...splitPayments];
-            updated[selectedSplitIndex] = { ...updated[selectedSplitIndex], amount, change: change };
-            setSplitPayments(updated);
+    // Unified Amount Change Handler
+    const handleAmountChange = (amount: number, change: number | undefined) => {
+        if (isSplitMode) {
+            if (selectedSplitIndex !== null && selectedSplitIndex < splitPayments.length) {
+                const updated = [...splitPayments];
+                updated[selectedSplitIndex] = { ...updated[selectedSplitIndex], amount, change };
+                setSplitPayments(updated);
+            }
+        } else {
+            // Normal Mode
+            if (selectedPaymentMethod) {
+                // Update the single payment entry
+                // We preserve reference if it exists in state
+                const updated: SplitPayment[] = [{
+                    method: selectedPaymentMethod,
+                    amount,
+                    change,
+                    reference: paymentReference // Use state reference
+                }];
+                setSplitPayments(updated);
+            }
         }
     };
 
-    const handleNormalAmountChange = (amount: number, change: number | undefined) => {
-        if (selectedSplitIndex === null && selectedPaymentMethod && selectedPaymentMethod !== "dividir") {
-            const updated: SplitPayment[] = [{ method: selectedPaymentMethod, amount: amount, change: change }];
-            setSplitPayments(updated);
-        }
-    };
+    const selectedSplitPayment = selectedSplitIndex !== null ? splitPayments[selectedSplitIndex] : undefined;
 
-    const selectedSplitPayment = selectedSplitIndex !== null ? splitPayments[selectedSplitIndex] : null;
-    const remainingForSplit = totalWithTax - splitPayments.reduce((sum, p) => sum + p.amount, 0);
+    // For Calculator: In split mode, the 'total' passed is the remaining amount to be paid.
+    // However, the Calculator logic for split mode adds 'splitAmount' to 'total' to find the Max limit.
+    // So distinct from 'totalWithTax'.
+    const remainingForSplit = RoundToTwo(totalWithTax - splitPayments.reduce((sum, p) => sum + p.amount, 0));
 
+    console.log("splitPayments", splitPayments);
+    console.log("pagos", watch?.("pagos"));
     return (
         <div className="flex h-screen flex-col bg-gray-50 w-full">
-            {/* Header */}
             <CheckoutHeader onBack={onBack} />
 
-            {/* Main content */}
             <div className="flex flex-1 gap-6 overflow-hidden px-6 pb-6 pt-3">
-                {/* Left - Products summary */}
+                {/* Left - Products */}
                 <div className="w-1/3">
                     <ProductsSummary />
                 </div>
 
-                {/* Middle - Payment options or Split Payment */}
+                {/* Middle - Payment options / Split */}
                 <div className="w-1/3">
                     {isSplitMode ? (
                         <SplitPaymentPanel
@@ -162,7 +186,7 @@ export function CheckoutScreen({ onBack, onComplete, watch, setValue }: Checkout
                     ) : (
                         <PaymentOptions
                             selectedMethod={selectedPaymentMethod}
-                            onSelectMethod={handleChangePaymentOption}
+                            onSelectMethod={setSelectedPaymentMethod}
                             reference={paymentReference}
                             onReferenceChange={setPaymentReference}
                         />
@@ -172,16 +196,21 @@ export function CheckoutScreen({ onBack, onComplete, watch, setValue }: Checkout
                 {/* Right - Calculator */}
                 <div className="w-1/3">
                     <PaymentCalculator
+                        // In split mode, pass remaining. In normal, totalWithTax.
                         total={isSplitMode ? remainingForSplit : totalWithTax}
-                        paymentMethod={selectedPaymentMethod!}
+                        paymentMethod={isSplitMode ? (selectedSplitPayment?.method || "efectivo") : (selectedPaymentMethod || "efectivo")}
+
                         onConfirmPayment={isSplitMode ? undefined : handleConfirmPayment}
                         mode={isSplitMode ? "split" : "normal"}
-                        splitAmount={selectedSplitPayment?.amount}
-                        onSplitAmountChange={handleSplitAmountChange}
-                        onNormalAmountChange={handleNormalAmountChange}
-                        splitMethodLabel={selectedSplitPayment ? PAYMENT_METHOD_LABELS[selectedSplitPayment.method] : undefined}
-                        selectedSplitPayment={isSplitMode ? selectedSplitPayment! : undefined}
 
+                        // Split specific
+                        splitAmount={selectedSplitPayment?.amount}
+                        selectedSplitPayment={selectedSplitPayment}
+                        splitMethodLabel={selectedSplitPayment ? PAYMENT_METHOD_LABELS[selectedSplitPayment.method] : undefined}
+
+                        // Handlers
+                        onSplitAmountChange={handleAmountChange}
+                        onNormalAmountChange={handleAmountChange}
                     />
                 </div>
             </div>

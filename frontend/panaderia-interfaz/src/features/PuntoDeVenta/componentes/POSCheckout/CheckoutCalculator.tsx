@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Check } from "lucide-react";
 import { CalculatorKeypad } from "./shared/components/CalculatorKeypad";
@@ -30,150 +30,146 @@ export function PaymentCalculator({
     splitMethodLabel,
     selectedSplitPayment
 }: PaymentCalculatorProps) {
-
     const {
         calculatorInputValue: inputValue,
         setCalculatorInputValue: setInputValue,
-    } = usePOSContext()
+    } = usePOSContext();
 
-    // Sync with split amount when in split mode
+    const isSplitMode = mode === "split";
+
+    // Calculate maximum allowed amount based on mode and total
+    // For split mode: max is the remaining pool + current amount of this payment
+    // For normal mode: max is the total to pay
+    const maxAllowedAmount = isSplitMode
+        ? RoundToTwo(total + (splitAmount || 0))
+        : total;
+
+    // Initialize/Sync input value
     useEffect(() => {
-        if (mode === "split" && splitAmount !== undefined) {
-            setInputValue(splitAmount > 0 ? splitAmount.toString() : "");
-        }
-    }, [mode, splitAmount]);
+        if (isSplitMode) {
+            // In split mode, if we have a splitAmount, show it
+            if (splitAmount !== undefined) {
+                const change = selectedSplitPayment?.change || 0;
+                // Reconstruct what the user "tendered"
+                const totalTendered = RoundToTwo(splitAmount + change);
+                const currentVal = parseFloat(inputValue) || 0;
 
-    useEffect(() => {
-        if (paymentMethod !== 'efectivo' && parseFloat(inputValue) > total) {
-            setInputValue(total.toFixed(2));
-            onNormalAmountChange(total, undefined);
-        }
-    }, [paymentMethod]);
-
-    useEffect(() => {
-        setInputValue(total.toFixed(2));
-    }, []);
-
-    const numericValue = RoundToTwo(parseFloat(inputValue)) || 0;
-    const change = numericValue - total;
-
-    const handlBiggerThanAllow = (value: string | number) => {
-        const numericValue = typeof value === 'string' ? parseFloat(value) : value;
-        if (paymentMethod !== 'efectivo' && numericValue > total && value !== '.') {
-            setInputValue(total.toString());
-            return true;
+                // Only update input if it significantly disagrees with current input
+                // This prevents overwriting user input while typing (e.g. "100.")
+                // and avoids infinite loops logic
+                if (Math.abs(currentVal - totalTendered) > 0.005) {
+                    setInputValue(totalTendered > 0 ? totalTendered.toString() : "");
+                }
+            }
         } else {
-            setInputValue(value.toString());
-            return false;
+            // In normal mode, default to total
+            // Only update if value is different to avoid resetting if user is typing (though typically total is constant)
+            const currentVal = parseFloat(inputValue) || 0;
+            if (Math.abs(currentVal - total) > 0.005) {
+                setInputValue(total.toFixed(2));
+            }
         }
-    }
+    }, [mode, isSplitMode, splitAmount, total, setInputValue, selectedSplitPayment]);
 
-    const handlBiggerThanAllowSplit = (value: string | number): { value: number, isTrue: boolean } => {
-        const numericValue = typeof value === 'string' ? parseFloat(value) : value;
+    // Validate amount when payment method changes (e.g., switching from Efectivo to Tarjeta)
+    useEffect(() => {
+        if (paymentMethod !== 'efectivo' && inputValue) {
+            const currentVal = parseFloat(inputValue) || 0;
+            if (currentVal > maxAllowedAmount) {
+                handleValueChange(maxAllowedAmount.toString());
+            }
+        }
+    }, [paymentMethod, maxAllowedAmount]);
 
+    const calculateChange = (amount: number, totalToPay: number) => {
+        if (paymentMethod !== 'efectivo') return undefined; // Only cash generates change
+        const diff = RoundToTwo(amount - totalToPay);
+        return diff > 0 ? diff : undefined;
+    };
 
-        if (paymentMethod !== 'efectivo' && numericValue > total && value !== '.') {
-            const amount = parseFloat(inputValue) > total && (splitAmount || 0) > numericValue ? numericValue : total
-            if (amount > total) {
-                setInputValue(amount.toString());
-                return { value: Number(amount), isTrue: true };
+    const handleValueChange = useCallback((newValueStr: string) => {
+        // Prevent multiple decimals
+        if ((newValueStr.match(/\./g) || []).length > 1) return;
+
+        // Limit to 2 decimal places
+        if (newValueStr.includes(".")) {
+            const [, decimals] = newValueStr.split(".");
+            if (decimals && decimals.length > 2) return;
+        }
+
+        let numericValue = parseFloat(newValueStr) || 0;
+        let finalStr = newValueStr;
+
+        // Enforce max limit for non-cash methods
+        if (paymentMethod !== 'efectivo' && numericValue > maxAllowedAmount) {
+            numericValue = maxAllowedAmount;
+            finalStr = maxAllowedAmount.toString();
+        }
+
+        setInputValue(finalStr);
+
+        // Notify parent
+        // For change calculation, we strictly use the numericValue (tendered) vs maxAllowedAmount (debt)
+        const change = calculateChange(numericValue, isSplitMode ? maxAllowedAmount : total);
+
+        if (isSplitMode && onSplitAmountChange) {
+            // In split mode, the 'total' passed is 'remaining'.
+            // Logic in parent expects "Applied Amount" for this payment slot.
+            // If paying with cash and overpaying, we cap the Applied Amount to maxAllowedAmount.
+            // The excess is stored in 'change'.
+            let appliedAmount = numericValue;
+            if (paymentMethod === 'efectivo' && numericValue > maxAllowedAmount) {
+                appliedAmount = maxAllowedAmount;
             }
 
-            setInputValue(total.toString());
-            return { value: Number(total), isTrue: true };
-        } else {
-            setInputValue(value.toString());
-            return { value: Number(value), isTrue: false };
+            onSplitAmountChange(appliedAmount, change);
+        } else if (!isSplitMode) {
+            onNormalAmountChange(numericValue, change);
         }
-    }
+    }, [paymentMethod, maxAllowedAmount, isSplitMode, total, onSplitAmountChange, onNormalAmountChange, setInputValue]);
+
 
     const handleNumberClick = (num: string) => {
         if (num === "." && inputValue.includes(".")) return;
-        if (inputValue.includes(".") && inputValue.split(".")[1]?.length >= 2) return;
-
-        const newValue = inputValue + num;
-        const isBiggerThanAllow = handlBiggerThanAllow(newValue);
-
-        if (mode === "split" && onSplitAmountChange) {
-
-            const shouldReturnTotal = isBiggerThanAllow ? inputValue ? total + parseFloat(inputValue) : total : parseFloat(newValue) || 0
-
-            const shouldReturnChange = paymentMethod === 'efectivo' && change > 0 ? change : undefined
-
-            onSplitAmountChange(
-                shouldReturnTotal,
-                shouldReturnChange
-            );
-        } else {
-            const shouldReturnTotal = isBiggerThanAllow ? total : parseFloat(newValue) || 0
-
-            const shouldReturnChange = paymentMethod === 'efectivo' && change > 0 ? change : undefined
-            console.log('shouldReturnTotal')
-            onNormalAmountChange(
-                shouldReturnTotal,
-                shouldReturnChange
-            );
-        }
-    };
-
-    const handleClear = () => {
-        setInputValue("");
-        if (mode === "split" && onSplitAmountChange) {
-            onSplitAmountChange(0);
-        }
+        handleValueChange(inputValue + num);
     };
 
     const handleDelete = () => {
         const newValue = inputValue.slice(0, -1);
-        setInputValue(newValue);
-        if (mode === "split" && onSplitAmountChange) {
-            const newNumericValue = parseFloat(newValue) || 0;
-            const newChange = newNumericValue - total;
-            const shouldReturnChange = paymentMethod === 'efectivo' && newChange > 0 ? newChange : undefined;
-            onSplitAmountChange(newNumericValue, shouldReturnChange);
-        }
+        handleValueChange(newValue);
+    };
+
+    const handleClear = () => {
+        handleValueChange("");
     };
 
     const handleQuickAmount = (amount: number) => {
-        if (mode === "split" && onSplitAmountChange) {
-            if (selectedSplitPayment?.method === 'efectivo') {
-                const change = RoundToTwo(amount - total)
-                if (change > 0) {
-                    onSplitAmountChange(amount, change);
-                } else {
-                    onSplitAmountChange(amount, undefined);
-                }
-            } else {
-                const { value, isTrue } = handlBiggerThanAllowSplit(amount);
-                if (isTrue)
-                    onSplitAmountChange(value, undefined);
-                else onSplitAmountChange(value, undefined)
-            }
-        } else {
-            if (paymentMethod === "efectivo") {
-                const change = RoundToTwo(amount - total)
-                if (change > 0) {
-                    onNormalAmountChange(amount, change);
-                } else {
-                    onNormalAmountChange(amount, undefined);
-                }
-            }
-            handlBiggerThanAllow(amount);
-        }
+        handleValueChange(amount.toString());
     };
 
     const handleExactAmount = () => {
-        if (mode === "split" && onSplitAmountChange) {
-            // When setting exact amount, there's no change
-            setInputValue(inputValue ? total.toFixed(2) + inputValue : total.toFixed(2));
-            onSplitAmountChange(inputValue ? total + parseFloat(inputValue) : total, undefined);
-            return;
+        if (isSplitMode) {
+            // For split, exact means the max allowed (remaining + current)
+            handleValueChange(maxAllowedAmount.toString());
+        } else {
+            handleValueChange(maxAllowedAmount.toFixed(2));
         }
-        setInputValue(total.toFixed(2));
-        onNormalAmountChange(total, undefined);
     };
 
-    const isSplitMode = mode === "split";
+    // Derived display values
+    const numericInputValue = parseFloat(inputValue) || 0;
+    // Calculate display change. 
+    // For display, we want to show potential change against the target.
+    // In normal mode, target is 'total'.
+    // In split mode, calculating change is tricky because 'total' is remaining. 
+    // But logically, change is (Paid - Owed).
+    // User sees "Monto asignado" vs "Total/Restante".
+    const displayChange = numericInputValue > (isSplitMode ? maxAllowedAmount : total)
+        ? RoundToTwo(numericInputValue - (isSplitMode ? maxAllowedAmount : total))
+        : 0;
+
+    // Only show change if payment method is cash
+    const showChange = displayChange > 0 && paymentMethod === "efectivo";
 
     return (
         <div className="flex h-full flex-col rounded-2xl bg-card p-5 pt-2 shadow-card border border-border overflow-y-auto">
@@ -181,7 +177,7 @@ export function PaymentCalculator({
                 {isSplitMode ? `Monto: ${splitMethodLabel || "Selecciona un método"}` : "Monto Recibido"}
             </h2>
 
-            {/* Display */}
+            {/* Display Total - Only in Normal Mode */}
             {!isSplitMode && (
                 <div className="mb-4 rounded-xl bg-muted px-4 py-1">
                     <p className="text-xs lg:text-sm text-muted-foreground">Total a pagar</p>
@@ -189,6 +185,7 @@ export function PaymentCalculator({
                 </div>
             )}
 
+            {/* Display Input Amount */}
             <div className="mb-4 rounded-xl border-2 border-blue-900/30 bg-blue-900/5 px-4 py-1">
                 <p className="text-xs lg:text-sm text-muted-foreground">
                     {isSplitMode ? "Monto asignado" : "Monto recibido"}
@@ -198,11 +195,11 @@ export function PaymentCalculator({
                 </p>
             </div>
 
-            {/* Show change for efectivo payments in both normal and split mode */}
-            {change > 0 && numericValue > 0 && paymentMethod === "efectivo" && (
+            {/* Display Change */}
+            {showChange && (
                 <div className="mb-4 rounded-xl bg-emerald-500/10 px-4 py-1">
                     <p className="text-xs lg:text-sm text-emerald-600">Cambio</p>
-                    <p className="text-xl lg:text-2xl font-bold text-emerald-600">${change.toFixed(2)}</p>
+                    <p className="text-xl lg:text-2xl font-bold text-emerald-600">${displayChange.toFixed(2)}</p>
                 </div>
             )}
 
@@ -215,7 +212,7 @@ export function PaymentCalculator({
                 />
             </div>
 
-            {/* Calculator */}
+            {/* Calculator Keypad */}
             <CalculatorKeypad
                 onNumberClick={handleNumberClick}
                 onDelete={handleDelete}
@@ -229,8 +226,8 @@ export function PaymentCalculator({
                     </Button>
                     <Button
                         className="flex-1 gap-2 h-10 cursor-pointer bg-blue-900 hover:bg-blue-900/80"
-                        disabled={numericValue < total}
-                        onClick={() => onConfirmPayment?.(numericValue)}
+                        disabled={numericInputValue < total}
+                        onClick={() => onConfirmPayment?.(numericInputValue)}
                     >
                         <Check className="h-4 w-4" />
                         Confirmar

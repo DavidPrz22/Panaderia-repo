@@ -1,5 +1,5 @@
 import apiClient from "@/api/client";
-import type { TAperturaCaja } from "../schemas/schemas";
+import type { TAperturaCaja, TVenta } from "../schemas/schemas";
 import axios from "axios";
 import type { Cliente, Producto, Categorias } from "../types/types";
 
@@ -81,3 +81,14 @@ export const getCategorias = async (): Promise<{categorias: Categorias}> => {
         throw error;
     }
 };
+
+
+export const createVenta = async (data: TVenta): Promise<{message: string}> => {
+    try {
+        const response = await apiClient.post("/api/pos-venta/", data);
+        return response.data;
+    } catch (error) {
+        console.error("Error creating venta:", error);
+        throw error;
+    }
+}

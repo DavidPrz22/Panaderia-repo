@@ -3,14 +3,15 @@ import { POSCartPanel } from "./POSCartPanel";
 
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ventaSchema } from "../schemas/schemas";
+import { ventaSchema, type TVenta } from "../schemas/schemas";
 import { usePOSContext } from "@/context/POSContext";
 import { CheckoutScreen } from "./POSCheckout";
+import { useCreateVentaMutation } from "../hooks/mutations/mutations";
 
 
 export default function POSInterfazVenta() {
 
-    const { watch, setValue } = useForm({
+    const { watch, setValue, handleSubmit } = useForm({
         resolver: zodResolver(ventaSchema),
         defaultValues: {
             pagos: [{
@@ -23,16 +24,30 @@ export default function POSInterfazVenta() {
             }]
         }
     });
-    const { showCheckout, setShowCheckout, setCarrito } = usePOSContext();
+    const { showCheckout, setShowCheckout, setCarrito, setSelectedPaymentMethod } = usePOSContext();
+    const { mutateAsync: createVenta } = useCreateVentaMutation();
 
     const handleBackToCart = () => {
         setShowCheckout(false);
     };
 
-    const handleCompleteCheckout = () => {
-        setShowCheckout(false);
-        setCarrito([]); // Clear cart after successful checkout
+    const handleCompleteCheckout = async (data: TVenta) => {
+        console.log(data)
+        return;
+        try {
+            await createVenta(data)
+            setShowCheckout(false);
+            setCarrito([]); // Clear cart after successful checkout
+            setSelectedPaymentMethod('efectivo');
+        } catch (error) {
+            console.error('Error al crear la venta:', error);
+        }
     };
+
+    const handleSumitForm = () => {
+        handleSubmit(handleCompleteCheckout)();
+    }
+
 
     return (
         <div className="flex min-h-screen w-full bg-background">
@@ -41,7 +56,7 @@ export default function POSInterfazVenta() {
                     watch={watch}
                     setValue={setValue}
                     onBack={handleBackToCart}
-                    onComplete={handleCompleteCheckout}
+                    onComplete={handleSumitForm}
                 />
             ) :
                 <div className="flex flex-1">

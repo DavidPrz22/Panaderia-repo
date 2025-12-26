@@ -2,7 +2,6 @@ import { Input } from "@/components/ui/input";
 import { PAYMENT_METHODS, METHODS_WITH_REFERENCE } from "./shared/checkout-constants";
 import { PaymentMethodCard } from "./shared/components/PaymentMethodCard";
 import type { PaymentMethod } from "./shared/checkout-types";
-import type { WatchSetValue } from "../../types/types";
 import { useEffect } from "react";
 import { usePOSContext } from "@/context/POSContext";
 
@@ -18,9 +17,7 @@ export function PaymentOptions({
   onSelectMethod,
   reference,
   onReferenceChange,
-  watch,
-  setValue
-}: (PaymentOptionsProps & WatchSetValue)) {
+}: (PaymentOptionsProps)) {
   const showReference = selectedMethod && METHODS_WITH_REFERENCE.includes(selectedMethod);
 
   const { splitPayments, setSplitPayments } = usePOSContext()
@@ -46,7 +43,7 @@ export function PaymentOptions({
         reference: reference || ""
       }]);
   }, [reference])
-  
+
   return (
     <div className="flex h-full flex-col rounded-2xl bg-card p-5 pt-2 shadow-card border border-border overflow-y-auto">
       <h2 className="mb-6 text-lg font-semibold text-foreground">Método de Pago</h2>
