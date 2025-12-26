@@ -44,8 +44,8 @@ export default function POSInterfazVenta() {
         }
     };
 
-    const handleSumitForm = () => {
-        handleSubmit(handleCompleteCheckout)();
+    const handleSubmitForm = () => {
+        handleSubmit(handleCompleteCheckout, (errors) => console.log("Validation Errors:", errors))();
     }
 
 
@@ -56,7 +56,7 @@ export default function POSInterfazVenta() {
                     watch={watch}
                     setValue={setValue}
                     onBack={handleBackToCart}
-                    onComplete={handleSumitForm}
+                    onComplete={handleSubmitForm}
                 />
             ) :
                 <div className="flex flex-1">
