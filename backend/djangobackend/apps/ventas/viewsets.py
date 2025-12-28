@@ -99,12 +99,15 @@ class AperturaCierreCajaViewSet(viewsets.ModelViewSet):
                 # Update closure information
                 caja.fecha_cierre = timezone.now()
                 caja.usuario_cierre = request.user
-                caja.monto_final_usd = serializer.validated_data.get('monto_final_usd')
-                caja.monto_final_ves = serializer.validated_data.get('monto_final_ves')
+                final_usd = serializer.validated_data.get('monto_final_usd') or Decimal('0')
+                final_ves = serializer.validated_data.get('monto_final_ves') or Decimal('0')
+
+                caja.monto_final_usd = final_usd
+                caja.monto_final_ves = final_ves
                 caja.total_ventas_usd = total_usd
                 caja.total_ventas_ves = total_ves
-                caja.diferencia_usd = (caja.monto_inicial_usd + total_usd) - serializer.validated_data.get('monto_final_usd')
-                caja.diferencia_ves = (caja.monto_inicial_ves + total_ves) - serializer.validated_data.get('monto_final_ves')
+                caja.diferencia_usd = (caja.monto_inicial_usd + total_usd) - final_usd
+                caja.diferencia_ves = (caja.monto_inicial_ves + total_ves) - final_ves
                 caja.notas_cierre = serializer.validated_data.get('notas_cierre', '')
                 caja.esta_activa = False
                 caja.save()

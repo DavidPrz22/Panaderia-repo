@@ -1,6 +1,6 @@
 import { useMutation } from "@tanstack/react-query";
 import type { TAperturaCaja, TVenta } from "../../schemas/schemas";
-import { aperturaCaja, createVenta} from "../../api/api";
+import { aperturaCaja, createVenta, cerrarCaja, type TCierreCaja } from "../../api/api";
 import { toast } from 'sonner'
 import { useQueryClient } from "@tanstack/react-query";
 import { isActiveCajaOptions, productosQueryOptions } from "../queries/options";
@@ -31,6 +31,21 @@ export const useCreateVentaMutation = () => {
         },
         onError: () => {
             toast.error("Error al crear la venta");
+        }
+    });
+}
+
+export const useCerrarCajaMutation = () => {
+    const queryClient = useQueryClient()
+
+    return useMutation({
+        mutationFn: (data: TCierreCaja) => cerrarCaja(data),
+        onSuccess: () => {
+            toast.success("Caja cerrada exitosamente");
+            queryClient.invalidateQueries({ queryKey: isActiveCajaOptions.queryKey })
+        },
+        onError: () => {
+            toast.error("Error al cerrar la caja");
         }
     });
 }

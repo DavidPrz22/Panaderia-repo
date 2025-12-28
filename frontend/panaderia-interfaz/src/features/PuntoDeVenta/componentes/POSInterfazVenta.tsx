@@ -7,9 +7,13 @@ import { ventaSchema, type TVenta } from "../schemas/schemas";
 import { usePOSContext } from "@/context/POSContext";
 import { CheckoutScreen } from "./POSCheckout/CheckoutScreen";
 import { useCreateVentaMutation } from "../hooks/mutations/mutations";
-
+import { ClosePOSButton } from "./ClosePOSButton";
+import { useAuth } from "@/context/AuthContext"
+import { userHasPermission } from "@/features/Authentication/lib/utils"
 export default function POSInterfazVenta() {
     const [isProcessing, setIsProcessing] = useState(false);
+    const { user } = useAuth();
+    const hasPermission = userHasPermission(user!, "punto_venta", "edit");
 
     const { watch, setValue, handleSubmit } = useForm({
         resolver: zodResolver(ventaSchema),
@@ -52,6 +56,10 @@ export default function POSInterfazVenta() {
 
     return (
         <div className="flex min-h-screen w-full bg-background">
+
+
+            {hasPermission && !showCheckout && <ClosePOSButton />}
+
             {showCheckout ? (
                 <CheckoutScreen
                     watch={watch}
