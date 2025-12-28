@@ -3,7 +3,8 @@ import { ShoppingBag } from "lucide-react";
 import { usePOSContext } from "@/context/POSContext";
 import type { WatchSetValue } from "../types/types";
 import { useEffect } from "react";
-import { EmptyState, SectionHeader } from "./shared";
+import { EmptyState } from "./shared/components/EmptyState";
+import { SectionHeader } from "./shared/components/SectionHeader";
 
 
 export const POSCartPanelCartItems = ({ watch, setValue }: WatchSetValue) => {

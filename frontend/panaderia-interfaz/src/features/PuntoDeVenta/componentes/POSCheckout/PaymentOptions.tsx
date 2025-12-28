@@ -21,7 +21,7 @@ export function PaymentOptions({
   const showReference = selectedMethod && METHODS_WITH_REFERENCE.includes(selectedMethod);
 
   const { splitPayments, setSplitPayments } = usePOSContext()
-  useEffect(()=>{
+  useEffect(() => {
 
     const data = splitPayments[0]
     setSplitPayments(
@@ -70,6 +70,7 @@ export function PaymentOptions({
             value={reference}
             onChange={(e) => onReferenceChange(e.target.value)}
             className="w-full focus-visible:ring-blue-200"
+            id="payment-reference"
           />
         </div>
       )}

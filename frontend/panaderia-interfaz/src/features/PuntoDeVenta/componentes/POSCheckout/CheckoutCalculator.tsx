@@ -1,6 +1,6 @@
 import { useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
-import { Check } from "lucide-react";
+import { Check, Loader2 } from "lucide-react";
 import { CalculatorKeypad } from "./shared/components/CalculatorKeypad";
 import { QuickAmountButtons } from "./shared/components/QuickAmountButtons";
 import type { PaymentMethod, SplitPayment } from "./shared/checkout-types";
@@ -10,13 +10,14 @@ import { usePOSContext } from "@/context/POSContext";
 interface PaymentCalculatorProps {
     total: number;
     paymentMethod: PaymentMethod;
-    onConfirmPayment?: (amount: number) => void;
+    onConfirmPayment?: () => void;
     mode?: "normal" | "split";
     splitAmount?: number;
     onSplitAmountChange?: (amount: number, change?: number) => void;
     onNormalAmountChange: (amount: number, change?: number) => void;
     splitMethodLabel?: string;
     selectedSplitPayment?: SplitPayment;
+    isProcessing?: boolean;
 }
 
 export function PaymentCalculator({
@@ -28,7 +29,8 @@ export function PaymentCalculator({
     onSplitAmountChange,
     onNormalAmountChange,
     splitMethodLabel,
-    selectedSplitPayment
+    selectedSplitPayment,
+    isProcessing
 }: PaymentCalculatorProps) {
     const {
         calculatorInputValue: inputValue,
@@ -37,6 +39,8 @@ export function PaymentCalculator({
 
     const isSplitMode = mode === "split";
 
+
+    console.log("isloading", isProcessing);
     // Calculate maximum allowed amount based on mode and total
     // For split mode: max is the remaining pool + current amount of this payment
     // For normal mode: max is the total to pay
@@ -174,7 +178,7 @@ export function PaymentCalculator({
     return (
         <div className="flex h-full flex-col rounded-2xl bg-card p-5 pt-2 shadow-card border border-border overflow-y-auto">
             <h2 className="mb-4 text-base lg:text-lg font-semibold text-foreground">
-                {isSplitMode ? `Monto: ${splitMethodLabel || "Selecciona un método"}` : "Monto Recibido"}
+                {isSplitMode ? `Monto: ${splitMethodLabel || "Selecciona un método"} ` : "Monto Recibido"}
             </h2>
 
             {/* Display Total - Only in Normal Mode */}
@@ -226,10 +230,14 @@ export function PaymentCalculator({
                     </Button>
                     <Button
                         className="flex-1 gap-2 h-10 cursor-pointer bg-blue-900 hover:bg-blue-900/80"
-                        disabled={numericInputValue < total}
-                        onClick={() => onConfirmPayment?.(numericInputValue)}
+                        disabled={numericInputValue < total || isProcessing}
+                        onClick={() => onConfirmPayment?.()}
                     >
-                        <Check className="h-4 w-4" />
+                        {isProcessing ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                            <Check className="h-4 w-4" />
+                        )}
                         Confirmar
                     </Button>
                 </div>

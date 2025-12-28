@@ -51,3 +51,19 @@ export function formatSplitPaymentMethods(splitPayments: SplitPayment[]): string
 export function calculateChange(received: number, total: number): number {
     return Math.max(0, received - total);
 }
+
+export function validateReferences(splitPayments: SplitPayment[]): { valid: boolean; error?: string } {
+    const hasReferences = splitPayments.every((p) => {
+        if (p.method !== 'efectivo' && p.reference === "") {
+            return false;
+        }
+        return true;
+    });
+    if (!hasReferences) {
+        return {
+            valid: false,
+            error: "Debes agregar una referencia para cada método de pago que lo requiera",
+        };
+    }
+    return { valid: true };
+}

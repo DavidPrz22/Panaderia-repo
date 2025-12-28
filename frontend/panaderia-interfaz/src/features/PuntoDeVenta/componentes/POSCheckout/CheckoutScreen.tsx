@@ -9,8 +9,7 @@ import { usePOSContext } from "@/context/POSContext";
 import {
     validateSplitPayments,
     calculateTotalWithTax,
-    formatSplitPaymentMethods,
-    calculateChange
+    validateReferences
 } from "./shared/checkout-utils";
 import { RoundToTwo } from "@/utils/utils";
 import { PAYMENT_METHOD_LABELS } from "./shared/checkout-constants";
@@ -20,9 +19,10 @@ import { useBCVRateQuery } from "../../hooks/queries/queries";
 interface CheckoutScreenProps {
     onBack: () => void;
     onComplete: () => void;
+    isProcessing?: boolean;
 }
 
-export function CheckoutScreen({ onBack, onComplete, watch, setValue }: CheckoutScreenProps & WatchSetValue) {
+export function CheckoutScreen({ onBack, onComplete, setValue, isProcessing }: CheckoutScreenProps & WatchSetValue) {
     const { carrito, selectedPaymentMethod, setSelectedPaymentMethod, splitPayments, setSplitPayments } = usePOSContext();
     const [paymentReference, setPaymentReference] = useState("");
     const [selectedSplitIndex, setSelectedSplitIndex] = useState<number | null>(null);
@@ -78,7 +78,26 @@ export function CheckoutScreen({ onBack, onComplete, watch, setValue }: Checkout
         }
     }, [paymentReference, isSplitMode]); // splitPayments intentionally omitted to avoid loop
 
-    const handleConfirmPayment = (amount: number) => {
+    const handleValidateReferences = () => {
+        const validation = validateReferences(splitPayments);
+        if (!validation.valid) {
+            toast({
+                title: "Referencia inválida",
+                description: validation.error,
+                variant: "destructive",
+            });
+
+            (document.querySelectorAll("#payment-reference") as NodeListOf<HTMLInputElement>)?.
+                forEach((el) => {
+                    el.classList.add("border-red-200");
+                });
+
+            return false;
+        }
+        return true;
+    };
+
+    const handleConfirmPayment = () => {
         if (!selectedPaymentMethod) {
             toast({
                 title: "Selecciona un método de pago",
@@ -88,11 +107,10 @@ export function CheckoutScreen({ onBack, onComplete, watch, setValue }: Checkout
             return;
         }
 
-        const change = calculateChange(amount, totalWithTax);
-        toast({
-            title: "Pago completado",
-            description: `Pago de $${totalWithTax.toFixed(2)} recibido con ${PAYMENT_METHOD_LABELS[selectedPaymentMethod]}. Cambio: $${change.toFixed(2)}`,
-        });
+        if (!handleValidateReferences()) {
+            return;
+        }
+
         onComplete();
     };
 
@@ -108,11 +126,10 @@ export function CheckoutScreen({ onBack, onComplete, watch, setValue }: Checkout
             return;
         }
 
-        const methodsUsed = formatSplitPaymentMethods(splitPayments);
-        toast({
-            title: "Pago completado",
-            description: `Pago dividido de $${totalWithTax.toFixed(2)} completado (${methodsUsed})`,
-        });
+        if (!handleValidateReferences()) {
+            return;
+        }
+
         onComplete();
     };
 
@@ -181,6 +198,7 @@ export function CheckoutScreen({ onBack, onComplete, watch, setValue }: Checkout
                             onConfirm={handleConfirmSplitPayment}
                             selectedPaymentIndex={selectedSplitIndex}
                             onSelectPayment={setSelectedSplitIndex}
+                            isProcessing={isProcessing}
                         />
                     ) : (
                         <PaymentOptions
@@ -210,6 +228,7 @@ export function CheckoutScreen({ onBack, onComplete, watch, setValue }: Checkout
                         // Handlers
                         onSplitAmountChange={handleAmountChange}
                         onNormalAmountChange={handleAmountChange}
+                        isProcessing={isProcessing}
                     />
                 </div>
             </div>

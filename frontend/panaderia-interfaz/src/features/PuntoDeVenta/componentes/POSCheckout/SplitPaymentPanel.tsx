@@ -1,11 +1,12 @@
 import { useState } from "react";
-import { Plus, X, ArrowLeft, Check } from "lucide-react";
+import { Plus, X, ArrowLeft, Check, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { SPLIT_PAYMENT_METHODS, PAYMENT_METHOD_LABELS } from "./shared/checkout-constants";
 import type { SplitPayment } from "./shared/checkout-types";
+
 
 interface SplitPaymentPanelProps {
     total: number;
@@ -15,6 +16,7 @@ interface SplitPaymentPanelProps {
     onConfirm: () => void;
     selectedPaymentIndex: number | null;
     onSelectPayment: (index: number | null) => void;
+    isProcessing?: boolean;
 }
 
 export function SplitPaymentPanel({
@@ -24,7 +26,8 @@ export function SplitPaymentPanel({
     onCancel,
     onConfirm,
     selectedPaymentIndex,
-    onSelectPayment
+    onSelectPayment,
+    isProcessing
 }: SplitPaymentPanelProps) {
     const [showMethodSelector, setShowMethodSelector] = useState(false);
 
@@ -147,6 +150,7 @@ export function SplitPaymentPanel({
                                         onChange={(e) => updatePaymentReference(index, e.target.value)}
                                         onClick={(e) => e.stopPropagation()}
                                         className="text-sm h-8 focus-visible:ring-blue-200"
+                                        id="payment-reference"
                                     />
                                 )}
 
@@ -213,8 +217,16 @@ export function SplitPaymentPanel({
                     <ArrowLeft className="h-4 w-4 mr-2" />
                     Volver
                 </Button>
-                <Button onClick={onConfirm} className="flex-1">
-                    <Check className="h-4 w-4 mr-2" />
+                <Button
+                    onClick={onConfirm}
+                    className="flex-1 bg-blue-900 hover:bg-blue-800 cursor-pointer"
+                    disabled={isProcessing}
+                >
+                    {isProcessing ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                        <Check className="h-4 w-4 mr-2" />
+                    )}
                     Confirmar
                 </Button>
             </div>
