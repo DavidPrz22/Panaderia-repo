@@ -1,7 +1,20 @@
+from decimal import Decimal
 from apps.core.models import EstadosOrdenVenta
 from rest_framework import viewsets
 from django.core.exceptions import ValidationError, PermissionDenied
-from .models import Clientes, OrdenConsumoLoteDetalle, OrdenVenta, DetallesOrdenVenta, OrdenConsumoLote, Pagos, AperturaCierreCaja, Ventas
+
+from .models import (
+    Clientes, 
+    OrdenConsumoLoteDetalle,
+    OrdenVenta,
+    DetallesOrdenVenta, 
+    OrdenConsumoLote, 
+    Pagos, 
+    AperturaCierreCaja, 
+    Ventas,
+    DetalleVenta
+    )
+
 from .serializers import (
     ClientesSerializer, 
     OrdenesSerializer, 
@@ -11,7 +24,8 @@ from .serializers import (
     CierreCajaSerializer,
     VentasSerializer
     )
-from apps.inventario.models import ProductosElaborados, ProductosReventa
+
+from apps.inventario.models import ProductosElaborados, ProductosReventa, ProductosFinales
 from django.db import transaction
 from rest_framework.response import Response
 from rest_framework import status
@@ -24,6 +38,8 @@ from apps.inventario.models import LotesStatus
 from apps.core.services.services import NotificationService
 from djangobackend.pagination import StandardResultsSetPagination
 from djangobackend.permissions import IsAllUsersCRUD, IsStaffLevel
+
+from apps.core.models import TiposMetodosDePago, MetodosDePago
 import logging
 
 logger = logging.getLogger(__name__)
@@ -481,3 +497,94 @@ class VentasViewSet(viewsets.ModelViewSet):
     queryset = Ventas.objects.all()
     serializer_class = VentasSerializer
     permission_classes = [IsAllUsersCRUD]
+
+
+    def create(self, request):
+        data = request.data
+        serializer = self.get_serializer(data=data)
+        serializer.is_valid(raise_exception=True)
+        
+        detalles = serializer.validated_data.get('venta_detalles')
+        pagos = serializer.validated_data.get('pagos')
+        caja_activa = AperturaCierreCaja.obtener_caja_activa()
+
+        if not caja_activa:
+            return Response({'error': 'No hay una caja activa para registrar la venta'}, status=status.HTTP_400_BAD_REQUEST)
+
+        with transaction.atomic():
+
+            venta = Ventas.objects.create(
+                cliente_id=data['cliente'],
+                monto_total_usd=data['monto_total_usd'],
+                monto_total_ves=data['monto_total_ves'],
+                tasa_cambio_aplicada=data['tasa_cambio_aplicada'],
+                usuario_cajero=request.user,
+                apertura_caja=caja_activa,
+                fecha_venta=timezone.now().date()
+            )
+
+            # --- 1. Process Stock & Details ---
+            DetalleVentaRegistro = []
+            for detalle in detalles:
+                elaborado_id = detalle.get('producto_elaborado_id')
+                reventa_id = detalle.get('producto_reventa_id')
+                cantidad_total = Decimal(str(detalle['cantidad']))
+                
+                producto = ProductosFinales.objects.filter(id=elaborado_id).first() if elaborado_id else ProductosReventa.objects.filter(id=reventa_id).first()
+                if not producto:
+                    raise ValidationError(f'El producto con ID {elaborado_id or reventa_id} no existe')
+                
+                # consume_product_stock returns a list of dictionaries with lot info
+                lotes_consumidos = producto.consume_product_stock(detalle.get('cantidad'))
+                    
+                venta_detalle = DetalleVenta(
+                    venta=venta,
+                    producto_elaborado_id=detalle.get('producto_elaborado_id'),
+                    producto_reventa_id=detalle.get('producto_reventa_id'),
+                    lote_producto_elaborado_vendido=lotes_consumidos[0].get('lote_producto_elaborado', None),
+                    lote_producto_reventa_vendido=lotes_consumidos[0].get('lote_producto_reventa', None),
+                    unidad_medida_venta=producto.unidad_venta,
+                    cantidad_vendida=detalle['cantidad'],
+                    precio_unitario_usd=detalle['precio_unitario_usd'],
+                    precio_unitario_ves=detalle['precio_unitario_ves'],
+                    subtotal_linea_usd=detalle['subtotal_linea_usd'],
+                    subtotal_linea_ves=detalle['subtotal_linea_ves']
+                )
+                DetalleVentaRegistro.append(venta_detalle)
+
+            DetalleVenta.objects.bulk_create(DetalleVentaRegistro)
+
+            # --- 2. Process Payments ---
+            PagosRegistro = []
+
+            for pago in pagos:
+                try:
+                    metodo_enum = TiposMetodosDePago(pago['metodo_pago'])
+                except ValueError:
+                     return Response({'error': f"Método de pago inválido: {pago['metodo_pago']}"}, status=status.HTTP_400_BAD_REQUEST)
+
+                metodo_pago_obj = MetodosDePago.objects.filter(nombre_metodo__iexact=metodo_enum.label).first()
+                if not metodo_pago_obj:
+                    return Response({'error': f"El método '{metodo_enum.label}' no está configurado en el sistema."}, status=status.HTTP_400_BAD_REQUEST)
+               
+                pago_ref = Pagos(
+                    venta_asociada=venta,
+                    metodo_pago=metodo_pago_obj,
+                    monto_pago_usd=pago['monto_pago_usd'],
+                    monto_pago_ves=pago['monto_pago_ves'],
+                    cambio_efectivo_usd=pago.get('cambio_efectivo_usd', 0),
+                    cambio_efectivo_ves=pago.get('cambio_efectivo_ves', 0),
+                    referencia_pago=pago.get('referencia_pago', ''),
+                    usuario_registrador=request.user,
+                    tasa_cambio_aplicada=data['tasa_cambio_aplicada'],
+                    fecha_pago=timezone.now().date()
+                )
+                PagosRegistro.append(pago_ref)
+
+            Pagos.objects.bulk_create(PagosRegistro)
+            
+            # --- 3. Recalculate Caja Totals ---
+            caja_activa.calcular_totales_por_metodo_pago()
+            caja_activa.save()
+            
+        return Response(serializer.data, status=status.HTTP_201_CREATED)

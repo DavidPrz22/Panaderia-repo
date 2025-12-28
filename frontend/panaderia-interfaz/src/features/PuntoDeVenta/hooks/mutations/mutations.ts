@@ -3,7 +3,7 @@ import type { TAperturaCaja, TVenta } from "../../schemas/schemas";
 import { aperturaCaja, createVenta} from "../../api/api";
 import { toast } from 'sonner'
 import { useQueryClient } from "@tanstack/react-query";
-import { isActiveCajaOptions } from "../queries/options";
+import { isActiveCajaOptions, productosQueryOptions } from "../queries/options";
 
 export const useAperturaCajaMutation = () => {
 
@@ -22,10 +22,12 @@ export const useAperturaCajaMutation = () => {
 }
 
 export const useCreateVentaMutation = () => {
+    const queryClient = useQueryClient()
     return useMutation({
         mutationFn: (data: TVenta) => createVenta(data),
         onSuccess: () => {
             toast.success("Venta creada exitosamente");
+            queryClient.invalidateQueries({ queryKey: productosQueryOptions.queryKey })
         },
         onError: () => {
             toast.error("Error al crear la venta");

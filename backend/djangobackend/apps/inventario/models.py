@@ -197,25 +197,26 @@ class ComponentesStockManagement(models.Model):
         affected_pr_ids = list(expired_pr_lots.values_list('producto_reventa_id', flat=True).distinct())
 
         # Update lot statuses
-        mp_count = expired_mp_lots.update(estado=LotesStatus.EXPIRADO)
-        pe_count = expired_pe_lots.update(estado=LotesStatus.EXPIRADO)
-        pr_count = expired_pr_lots.update(estado=LotesStatus.EXPIRADO)
-        total_count = mp_count + pe_count + pr_count
+        with transaction.atomic():
+            mp_count = expired_mp_lots.update(estado=LotesStatus.EXPIRADO)
+            pe_count = expired_pe_lots.update(estado=LotesStatus.EXPIRADO)
+            pr_count = expired_pr_lots.update(estado=LotesStatus.EXPIRADO)
+            total_count = mp_count + pe_count + pr_count
 
-        # Update stock for affected raw materials
-        for mp_id in affected_mp_ids:
-            mp = MateriasPrimas.objects.get(id=mp_id)
-            mp.actualizar_stock()
+            # Update stock for affected raw materials
+            for mp_id in affected_mp_ids:
+                mp = MateriasPrimas.objects.get(id=mp_id)
+                mp.actualizar_stock()
 
-        # Update stock for affected elaborated products
-        for pe_id in affected_pe_ids:
-            pe = ProductosElaborados.objects.get(id=pe_id)
-            pe.actualizar_product_stock()
+            # Update stock for affected elaborated products
+            for pe_id in affected_pe_ids:
+                pe = ProductosElaborados.objects.get(id=pe_id)
+                pe.actualizar_product_stock()
 
-        # Update stock for affected productos reventa
-        for pr_id in affected_pr_ids:
-            pr = ProductosReventa.objects.get(id=pr_id)
-            pr.actualizar_product_stock()
+            # Update stock for affected productos reventa
+            for pr_id in affected_pr_ids:
+                pr = ProductosReventa.objects.get(id=pr_id)
+                pr.actualizar_product_stock()
 
         return {
             "resumen": resumen, 

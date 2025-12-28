@@ -181,7 +181,28 @@ class OrdenesTableSerializer(serializers.ModelSerializer):
         }
 
 
-class VentasSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Ventas
-        fields = '__all__'
+class VentasDetallesSerializer(serializers.Serializer):
+    producto_elaborado_id = serializers.IntegerField(allow_null=True, required=False)
+    producto_reventa_id = serializers.IntegerField(allow_null=True, required=False)
+    cantidad = serializers.DecimalField(max_digits=10, decimal_places=2)
+    precio_unitario_usd = serializers.DecimalField(max_digits=10, decimal_places=2)
+    precio_unitario_ves = serializers.DecimalField(max_digits=10, decimal_places=2)
+    subtotal_linea_usd = serializers.DecimalField(max_digits=10, decimal_places=2)
+    subtotal_linea_ves = serializers.DecimalField(max_digits=10, decimal_places=2)
+
+class VentasPagosSerializer(serializers.Serializer):
+    metodo_pago = serializers.CharField()
+    monto_pago_usd = serializers.DecimalField(max_digits=10, decimal_places=2)
+    monto_pago_ves = serializers.DecimalField(max_digits=10, decimal_places=2)
+    referencia_pago = serializers.CharField(required=False)
+    cambio_efectivo_usd = serializers.DecimalField(max_digits=10, decimal_places=2, required=False)
+    cambio_efectivo_ves = serializers.DecimalField(max_digits=10, decimal_places=2, required=False)
+
+
+class VentasSerializer(serializers.Serializer):
+    cliente = serializers.IntegerField()
+    monto_total_usd = serializers.DecimalField(max_digits=10, decimal_places=2)
+    monto_total_ves = serializers.DecimalField(max_digits=10, decimal_places=2)
+    tasa_cambio_aplicada = serializers.DecimalField(max_digits=10, decimal_places=2)
+    venta_detalles = VentasDetallesSerializer(many=True)
+    pagos = VentasPagosSerializer(many=True)

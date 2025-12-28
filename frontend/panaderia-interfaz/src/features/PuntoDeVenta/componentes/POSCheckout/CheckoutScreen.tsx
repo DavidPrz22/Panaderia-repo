@@ -159,8 +159,7 @@ export function CheckoutScreen({ onBack, onComplete, watch, setValue }: Checkout
     // So distinct from 'totalWithTax'.
     const remainingForSplit = RoundToTwo(totalWithTax - splitPayments.reduce((sum, p) => sum + p.amount, 0));
 
-    console.log("splitPayments", splitPayments);
-    console.log("pagos", watch?.("pagos"));
+
     return (
         <div className="flex h-screen flex-col bg-gray-50 w-full">
             <CheckoutHeader onBack={onBack} />

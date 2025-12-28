@@ -32,8 +32,7 @@ export default function POSInterfazVenta() {
     };
 
     const handleCompleteCheckout = async (data: TVenta) => {
-        console.log(data)
-        return;
+
         try {
             await createVenta(data)
             setShowCheckout(false);

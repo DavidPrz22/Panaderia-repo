@@ -43,13 +43,35 @@ class AperturaCierreCaja(models.Model):
     monto_final_usd = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     monto_final_ves = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     
-    # Calculated totals from sales
-    total_ventas_usd = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
-    total_ventas_ves = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    # === CALCULATED TOTALS BY PAYMENT METHOD (from sales during this session) ===
+    # These are automatically calculated from Pagos records
     
-    # Difference (expected vs real)
-    diferencia_usd = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
-    diferencia_ves = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    # 1. Cash (Affects physical drawer balance)
+    total_efectivo_usd = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, default=0)
+    total_efectivo_ves = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, default=0)
+    
+    # 2. Non-Cash (Goes directly to bank)
+    total_tarjeta_usd = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, default=0)
+    total_tarjeta_ves = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, default=0)
+    
+    total_transferencia_usd = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, default=0)
+    total_transferencia_ves = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, default=0)
+    
+    total_pago_movil_usd = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, default=0)
+    total_pago_movil_ves = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, default=0)
+    
+    # 3. Change Given (Subtracts from physical drawer)
+    total_cambio_usd = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, default=0)
+    total_cambio_ves = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, default=0)
+    
+    # === TOTAL REVENUE (All methods combined) ===
+    # Used for reporting total sales performance
+    total_ventas_usd = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, default=0)
+    total_ventas_ves = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, default=0)
+    
+    # === RECONCILIATION ===
+    diferencia_usd = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, default=0)
+    diferencia_ves = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, default=0)
     
     # Notes
     notas_apertura = models.TextField(blank=True, null=True)
@@ -60,11 +82,112 @@ class AperturaCierreCaja(models.Model):
 
     def __str__(self):
         return f"Apertura Cierre Caja {self.id}"
-    
+
+    @property
+    def efectivo_en_caja_usd(self):
+        """Initial Cash + All Cash Payments - All Change Given"""
+        from decimal import Decimal
+        return (self.monto_inicial_usd or Decimal('0')) + \
+               (self.total_efectivo_usd or Decimal('0')) - \
+               (self.total_cambio_usd or Decimal('0'))
+
     @classmethod
     def obtener_caja_activa(cls):
         """Get the currently active POS session"""
         return cls.objects.filter(esta_activa=True).first()
+
+    def calcular_totales_por_metodo_pago(self):
+        """
+        Calculate payment totals by payment method from all sales during this session.
+        This should be called before closing the register.
+        """
+        from django.db.models import Sum
+        from decimal import Decimal
+        
+        # Get all payments from sales in this session
+        pagos = Pagos.objects.filter(venta_asociada__apertura_caja=self)
+        
+        # Initialize totals dictionary
+        totales = {
+            'efectivo_usd': Decimal('0'), 'efectivo_ves': Decimal('0'),
+            'tarjeta_usd': Decimal('0'), 'tarjeta_ves': Decimal('0'),
+            'transferencia_usd': Decimal('0'), 'transferencia_ves': Decimal('0'),
+            'pago_movil_usd': Decimal('0'), 'pago_movil_ves': Decimal('0'),
+            'cambio_usd': Decimal('0'), 'cambio_ves': Decimal('0'),
+            'total_ventas_usd': Decimal('0'), 'total_ventas_ves': Decimal('0')
+        }
+        
+        # Calculate totals per method
+        metodos_map = {
+            'efectivo': ('efectivo_usd', 'efectivo_ves'),
+            'tarjeta': ('tarjeta_usd', 'tarjeta_ves'),
+            'transferencia': ('transferencia_usd', 'transferencia_ves'),
+            'pago_movil': ('pago_movil_usd', 'pago_movil_ves'),
+        }
+        
+        for metodo_nombre, (key_usd, key_ves) in metodos_map.items():
+            result = pagos.filter(metodo_pago__nombre_metodo__iexact=metodo_nombre).aggregate(
+                total_usd=Sum('monto_pago_usd'),
+                total_ves=Sum('monto_pago_ves')
+            )
+            totales[key_usd] = result['total_usd'] or Decimal('0')
+            totales[key_ves] = result['total_ves'] or Decimal('0')
+
+        # Calculate Change (only cash)
+        cambio = pagos.filter(metodo_pago__nombre_metodo__iexact='efectivo').aggregate(
+            total_cambio_usd=Sum('cambio_efectivo_usd'),
+            total_cambio_ves=Sum('cambio_efectivo_ves')
+        )
+        totales['cambio_usd'] = cambio['total_cambio_usd'] or Decimal('0')
+        totales['cambio_ves'] = cambio['total_cambio_ves'] or Decimal('0')
+        
+        # Calculate Total Sales Revenue (Sum of all payments - change)
+        # Note: We subtract change because the payment amount includes the change given back
+        # Example: Sale $15. Payment $20. Change $5. Revenue is $15 ($20 - $5).
+        
+        total_pagos_usd = sum([totales[k] for k in totales if k.endswith('_usd') and 'cambio' not in k and 'total' not in k])
+        total_pagos_ves = sum([totales[k] for k in totales if k.endswith('_ves') and 'cambio' not in k and 'total' not in k])
+        
+        totales['total_ventas_usd'] = total_pagos_usd - totales['cambio_usd']
+        totales['total_ventas_ves'] = total_pagos_ves - totales['cambio_ves']
+
+        # Update Model Fields
+        self.total_efectivo_usd = totales['efectivo_usd']
+        self.total_efectivo_ves = totales['efectivo_ves']
+        self.total_tarjeta_usd = totales['tarjeta_usd']
+        self.total_tarjeta_ves = totales['tarjeta_ves']
+        self.total_transferencia_usd = totales['transferencia_usd']
+        self.total_transferencia_ves = totales['transferencia_ves']
+        self.total_pago_movil_usd = totales['pago_movil_usd']
+        self.total_pago_movil_ves = totales['pago_movil_ves']
+        self.total_cambio_usd = totales['cambio_usd']
+        self.total_cambio_ves = totales['cambio_ves']
+        self.total_ventas_usd = totales['total_ventas_usd']
+        self.total_ventas_ves = totales['total_ventas_ves']
+        
+        return totales
+
+    def calcular_efectivo_esperado(self):
+        """
+        Calculate expected cash in drawer.
+        Formula: Initial + Cash Sales - Change Given
+        """
+        from decimal import Decimal
+        expected_usd = (self.monto_inicial_usd or Decimal('0')) + (self.total_efectivo_usd or Decimal('0')) - (self.total_cambio_usd or Decimal('0'))
+        expected_ves = (self.monto_inicial_ves or Decimal('0')) + (self.total_efectivo_ves or Decimal('0')) - (self.total_cambio_ves or Decimal('0'))
+        return expected_usd, expected_ves
+
+    def calcular_diferencia_efectivo(self):
+        """
+        Calculate difference between expected and counted cash.
+        """
+        from decimal import Decimal
+        expected_usd, expected_ves = self.calcular_efectivo_esperado()
+        
+        self.diferencia_usd = (self.monto_final_usd or Decimal('0')) - expected_usd
+        self.diferencia_ves = (self.monto_final_ves or Decimal('0')) - expected_ves
+        
+        return self.diferencia_usd, self.diferencia_ves
 
 
     class Meta:
@@ -122,9 +245,12 @@ class DetalleVenta(models.Model):
     unidad_medida_venta = models.ForeignKey(UnidadesDeMedida, on_delete=models.PROTECT)
     
     cantidad_vendida = models.DecimalField(max_digits=10, decimal_places=2) # Decimal por si vendes fracciones (ej. 1.5 kg)
-    precio_unitario_usd = models.DecimalField(max_digits=10, decimal_places=2)
     
-    subtotal_linea_usd = models.DecimalField(max_digits=12, decimal_places=2, editable=False)
+    precio_unitario_usd = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    precio_unitario_ves = models.DecimalField(max_digits=10, decimal_places=2, editable=False, default=0.00)
+
+    subtotal_linea_usd = models.DecimalField(max_digits=10, decimal_places=2, editable=False, default=0.00)
+    subtotal_linea_ves = models.DecimalField(max_digits=10, decimal_places=2, editable=False, default=0.00)
 
     def __str__(self):
         producto_nombre = ""

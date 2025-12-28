@@ -15,7 +15,7 @@ export const POSCartItemPanelTotals = ({onSetTotals} : Props) => {
     useEffect(()=> {
       onSetTotals(total, bcvRate?.promedio || 0);
     }, [total])
-    console.log(total)
+
     const handleCheckout = () => {
       setShowCheckout(true);
     };
