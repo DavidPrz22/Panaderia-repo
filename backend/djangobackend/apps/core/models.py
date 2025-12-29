@@ -69,6 +69,13 @@ class CategoriasProductosReventa(models.Model):
         return self.nombre_categoria
 
 
+class TiposMetodosDePago(models.TextChoices):
+    EFECTIVO = 'efectivo', 'Efectivo'
+    TARJETA = 'tarjeta', 'Tarjeta'
+    TRANSFERENCIA = 'transferencia', 'Transferencia'
+    PAGO_MOVIL = 'pago_movil', 'Pago Móvil'
+
+
 class MetodosDePago(models.Model):
     nombre_metodo = models.CharField(max_length=100, null=False, blank=False)
     requiere_referencia = models.BooleanField(default=False)

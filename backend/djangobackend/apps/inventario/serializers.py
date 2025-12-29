@@ -642,7 +642,7 @@ class ProductosReventaSerializer(serializers.ModelSerializer):
             'punto_reorden',    
             'stock_actual',
             'precio_compra_usd',
-            'pecedero',
+            'perecedero',
             'fecha_creacion_registro',
             'fecha_modificacion_registro',
         ]
@@ -756,7 +756,7 @@ class ProductosReventaDetallesSerializer(serializers.ModelSerializer):
             'punto_reorden',
             'precio_venta_usd',
             'precio_compra_usd',
-            'pecedero',
+            'perecedero',
             'fecha_creacion_registro',
             'fecha_modificacion_registro',
             'convert_inventory_to_sale_units',
@@ -803,3 +803,21 @@ class ProductosReventaDetallesSerializer(serializers.ModelSerializer):
         # Since it's a method that takes parameter, return the factor as example
         return f"Multiply by {obj.factor_conversion}"
 
+
+class CajaProductosSerializer(serializers.Serializer):
+    def to_representation(self, instance):
+        tipo_producto = 'reventa' if isinstance(instance, ProductosReventa) else 'final'
+        
+        return {
+            'id': instance.id,
+            'nombre': instance.nombre_producto,
+            'categoria': instance.categoria.nombre_categoria if instance.categoria else None,
+            'unidadVenta': instance.unidad_venta.abreviatura if instance.unidad_venta else None,
+            'stock': instance.stock_actual,
+            'sku': instance.SKU,
+            'precio': instance.precio_venta_usd,
+            'tipo': tipo_producto
+        }
+
+class RegisterCSVSerializer(serializers.Serializer):
+    file = serializers.CharField(min_length=2)

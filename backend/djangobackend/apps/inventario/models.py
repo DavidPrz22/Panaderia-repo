@@ -7,6 +7,7 @@ from django.dispatch import receiver
 from django.utils import timezone
 from django.core.exceptions import ValidationError
 from decimal import Decimal
+from django.db import transaction
 
 # Create your models here.
 class LotesStatus(models.TextChoices):
@@ -197,25 +198,26 @@ class ComponentesStockManagement(models.Model):
         affected_pr_ids = list(expired_pr_lots.values_list('producto_reventa_id', flat=True).distinct())
 
         # Update lot statuses
-        mp_count = expired_mp_lots.update(estado=LotesStatus.EXPIRADO)
-        pe_count = expired_pe_lots.update(estado=LotesStatus.EXPIRADO)
-        pr_count = expired_pr_lots.update(estado=LotesStatus.EXPIRADO)
-        total_count = mp_count + pe_count + pr_count
+        with transaction.atomic():
+            mp_count = expired_mp_lots.update(estado=LotesStatus.EXPIRADO)
+            pe_count = expired_pe_lots.update(estado=LotesStatus.EXPIRADO)
+            pr_count = expired_pr_lots.update(estado=LotesStatus.EXPIRADO)
+            total_count = mp_count + pe_count + pr_count
 
-        # Update stock for affected raw materials
-        for mp_id in affected_mp_ids:
-            mp = MateriasPrimas.objects.get(id=mp_id)
-            mp.actualizar_stock()
+            # Update stock for affected raw materials
+            for mp_id in affected_mp_ids:
+                mp = MateriasPrimas.objects.get(id=mp_id)
+                mp.actualizar_stock()
 
-        # Update stock for affected elaborated products
-        for pe_id in affected_pe_ids:
-            pe = ProductosElaborados.objects.get(id=pe_id)
-            pe.actualizar_stock()
+            # Update stock for affected elaborated products
+            for pe_id in affected_pe_ids:
+                pe = ProductosElaborados.objects.get(id=pe_id)
+                pe.actualizar_product_stock()
 
-        # Update stock for affected productos reventa
-        for pr_id in affected_pr_ids:
-            pr = ProductosReventa.objects.get(id=pr_id)
-            pr.actualizar_product_stock()
+            # Update stock for affected productos reventa
+            for pr_id in affected_pr_ids:
+                pr = ProductosReventa.objects.get(id=pr_id)
+                pr.actualizar_product_stock()
 
         return {
             "resumen": resumen, 
@@ -635,7 +637,7 @@ class ProductosReventa(ProductosStockManagement):
     )
 
     precio_compra_usd = models.DecimalField(max_digits=10, decimal_places=2, default=0, null=True, blank=True)
-    pecedero = models.BooleanField(default=False, null=False)
+    perecedero = models.BooleanField(default=False, null=False)
     fecha_creacion_registro = models.DateField(auto_now_add=True)
     fecha_modificacion_registro = models.DateField(auto_now=True)
     punto_reorden = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True) 

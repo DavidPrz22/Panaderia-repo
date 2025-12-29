@@ -56,7 +56,7 @@ export const ComprasIndex = () => {
     const result_count = ordenesCompraPagination?.pages[0].count || 1;
     const entry_per_page =
       ordenesCompraPagination?.pages[0].results.length || 1;
-    return Math.round(result_count / entry_per_page);
+    return Math.ceil(result_count / entry_per_page);
   }, [isFetchedAfterMount]);
 
   const [page, setPage] = useReducer(

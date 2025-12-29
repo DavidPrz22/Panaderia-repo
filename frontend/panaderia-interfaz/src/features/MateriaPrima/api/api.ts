@@ -177,7 +177,7 @@ export const handleCreateUpdateLoteMateriaPrima = async (
 // API CALL FOR PROVEEDORES
 export const handleProveedores = async (): Promise<Proveedor[]> => {
   try {
-    const response = await apiClient.get("/api/proveedores/");
+    const response = await apiClient.get("/api/compras/proveedores/");
     return response.data;
   } catch (error) {
     const axiosError = error as AxiosError<{ detail?: string }>;
@@ -241,3 +241,15 @@ export const handleInactivateLoteMateriaPrima = async (
     );
   }
 };
+
+export const uploadCSV = async (Base64File: string): Promise<{ status: number, message: string }> => {
+  try {
+    const response = await apiClient.post('/api/materiaprima/register-csv/', { file: Base64File });
+    return response.data;
+  } catch (error) {
+    const axiosError = error as AxiosError<{ detail?: string }>;
+    throw new Error(
+      axiosError.response?.data?.detail || "Failed to upload CSV",
+    );
+  }
+}

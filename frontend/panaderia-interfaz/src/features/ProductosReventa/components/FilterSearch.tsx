@@ -6,10 +6,14 @@ import { useProductosReventaContext } from "@/context/ProductosReventaContext";
 import { PackageX, TrendingDown } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { userHasPermission } from "@/features/Authentication/lib/utils";
+import { ImportCSV } from "@/components/ImportCSV";
+import { useUploadCSVProductosReventaMuatation } from '@/features/ProductosReventa/hooks/mutations/productosReventaMutations'
 
 export default function FilterSearch() {
   const { setShowProductosReventaForm, bajoStockFilter, setBajoStockFilter, agotadosFilter, setAgotadosFilter } = useProductosReventaContext();
+  const { mutateAsync, isPending } = useUploadCSVProductosReventaMuatation()
   const { user } = useAuth();
+
   const hasAddPermission = userHasPermission(user!, 'productos_reventa', 'add');
 
   const toggleBajoStock = () => {
@@ -18,6 +22,7 @@ export default function FilterSearch() {
   const toggleAgotados = () => {
     setAgotadosFilter(!agotadosFilter);
   }
+
 
   return (
     <div className="flex items-center px-8 justify-between">
@@ -31,7 +36,17 @@ export default function FilterSearch() {
           <PackageX />
           Agotados
         </Button>
+
+        {hasAddPermission && (
+          <ImportCSV 
+            descripcion="Selecciona un archivo CSV para importar los datos de los productos de reventa"
+            uploadFunction={mutateAsync}
+            isPending={isPending}
+            csvContent={"nombre_producto,sku,categoria,precio_venta_usd,precio_compra_usd,punto_reorden,unidad_medida_base,marca,proveedor_preferido,unidad_base_inventario,unidad_venta,factor_conversion,descripcion,perecedero\n"}
+          />
+        )}
         <FilterButton />
+        
         {hasAddPermission && (
           <NewButton
             onClick={() => {

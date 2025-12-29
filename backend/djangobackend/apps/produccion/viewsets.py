@@ -414,7 +414,6 @@ class ProduccionesViewSet(viewsets.ModelViewSet):
             return Response({"error": f"Error interno: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-
 class ProduccionDetallesViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Produccion.objects.all()
     serializer_class = ProduccionDetallesSerializer

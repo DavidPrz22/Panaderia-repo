@@ -53,7 +53,7 @@ export const productosReventaSchema = z.object({
       invalid_type_error: "El punto de reorden no es válido",
     })
     .min(0, "El punto de reorden debe ser mayor o igual a 0"),
-  pecedero: z.coerce.boolean(),
+  perecedero: z.coerce.boolean(),
 });
 
 export const loteProductosReventaSchema = z

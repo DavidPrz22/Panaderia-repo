@@ -31,7 +31,6 @@ export const PERMISSIONS: Permissions = {
 
         // Future: Point of Sale
         'view:punto_venta',
-        'add:punto_venta',
         
         // Lots
         'view:lots'
