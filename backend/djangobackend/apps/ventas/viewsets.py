@@ -12,7 +12,8 @@ from .models import (
     Pagos, 
     AperturaCierreCaja, 
     Ventas,
-    DetalleVenta
+    DetalleVenta,
+    VentasLotesVendidos
     )
 
 from .serializers import (
@@ -528,6 +529,7 @@ class VentasViewSet(viewsets.ModelViewSet):
 
             # --- 1. Process Stock & Details ---
             DetalleVentaRegistro = []
+            LotesVendidosRegistro = []
             for detalle in detalles:
                 elaborado_id = detalle.get('producto_elaborado_id')
                 reventa_id = detalle.get('producto_reventa_id')
@@ -539,13 +541,11 @@ class VentasViewSet(viewsets.ModelViewSet):
                 
                 # consume_product_stock returns a list of dictionaries with lot info
                 lotes_consumidos = producto.consume_product_stock(detalle.get('cantidad'))
-                    
+
                 venta_detalle = DetalleVenta(
                     venta=venta,
                     producto_elaborado_id=detalle.get('producto_elaborado_id'),
                     producto_reventa_id=detalle.get('producto_reventa_id'),
-                    lote_producto_elaborado_vendido=lotes_consumidos[0].get('lote_producto_elaborado', None),
-                    lote_producto_reventa_vendido=lotes_consumidos[0].get('lote_producto_reventa', None),
                     unidad_medida_venta=producto.unidad_venta,
                     cantidad_vendida=detalle['cantidad'],
                     precio_unitario_usd=detalle['precio_unitario_usd'],
@@ -553,9 +553,19 @@ class VentasViewSet(viewsets.ModelViewSet):
                     subtotal_linea_usd=detalle['subtotal_linea_usd'],
                     subtotal_linea_ves=detalle['subtotal_linea_ves']
                 )
+
+                for lote in lotes_consumidos:
+                    venta_lote = VentasLotesVendidos(
+                        detalle_venta_asociada=venta_detalle,
+                        lote_producto_elaborado=lote.get('lote_producto_elaborado', None),
+                        lote_producto_reventa=lote.get('lote_producto_reventa', None),
+                        cantidad_consumida=lote.get('cantidad_consumida')
+                    )
+                LotesVendidosRegistro.append(venta_lote)
                 DetalleVentaRegistro.append(venta_detalle)
 
             DetalleVenta.objects.bulk_create(DetalleVentaRegistro)
+            VentasLotesVendidos.objects.bulk_create(LotesVendidosRegistro)
 
             # --- 2. Process Payments ---
             PagosRegistro = []

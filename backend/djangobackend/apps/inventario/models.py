@@ -7,6 +7,7 @@ from django.dispatch import receiver
 from django.utils import timezone
 from django.core.exceptions import ValidationError
 from decimal import Decimal
+from django.db import transaction
 
 # Create your models here.
 class LotesStatus(models.TextChoices):

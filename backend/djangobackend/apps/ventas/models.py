@@ -236,11 +236,7 @@ class DetalleVenta(models.Model):
     # Un detalle debe estar asociado a un producto, pero solo a uno de los dos tipos.
     producto_elaborado = models.ForeignKey(ProductosElaborados, on_delete=models.PROTECT, null=True, blank=True)
     producto_reventa = models.ForeignKey(ProductosReventa, on_delete=models.PROTECT, null=True, blank=True)
-    
-    # El lote específico que se está vendiendo.
-    lote_producto_elaborado_vendido = models.ForeignKey(LotesProductosElaborados, on_delete=models.PROTECT, null=True, blank=True)
-    lote_producto_reventa_vendido = models.ForeignKey(LotesProductosReventa, on_delete=models.PROTECT, null=True, blank=True)
-    
+
     # --- Campos de la Venta ---
     unidad_medida_venta = models.ForeignKey(UnidadesDeMedida, on_delete=models.PROTECT)
     
@@ -270,20 +266,6 @@ class DetalleVenta(models.Model):
         if not self.producto_elaborado and not self.producto_reventa:
             raise ValidationError("Un detalle de venta debe estar asociado a un producto elaborado o a un producto de reventa.")
             
-        # --- Reglas para Producto Elaborado ---
-        if self.producto_elaborado:
-            if not self.lote_producto_elaborado_vendido:
-                raise ValidationError("Si se vende un producto elaborado, se debe especificar el lote.")
-            if self.producto_reventa or self.lote_producto_reventa_vendido:
-                raise ValidationError("Un detalle de producto elaborado no puede tener campos de producto de reventa.")
-
-        # --- Reglas para Producto de Reventa ---
-        if self.producto_reventa:
-            if self.producto_elaborado or self.lote_producto_elaborado_vendido:
-                raise ValidationError("Un detalle de producto de reventa no puede tener campos de producto elaborado.")
-            # Aquí la lógica es que un producto de reventa PUEDE o NO tener lote.
-            # No se necesita una validación explícita más allá de la consistencia.
-
     def save(self, *args, **kwargs):
         # Calcula el subtotal antes de guardar
         self.subtotal_linea_usd = self.cantidad_vendida * self.precio_unitario_usd
@@ -307,19 +289,27 @@ class DetalleVenta(models.Model):
                 ),
                 name='detalle_venta_un_solo_tipo_de_producto'
             ),
-            # Restricción 2: Si hay producto elaborado, DEBE haber lote elaborado.
+        ]
+
+
+class VentasLotesVendidos(models.Model):
+    detalle_venta_asociada = models.ForeignKey(DetalleVenta, on_delete=models.CASCADE, related_name="lotes_vendidos")
+    # Using consistent names makes life easier
+    lote_producto_elaborado = models.ForeignKey(LotesProductosElaborados, on_delete=models.PROTECT, null=True, blank=True)
+    lote_producto_reventa = models.ForeignKey(LotesProductosReventa, on_delete=models.PROTECT, null=True, blank=True)
+    cantidad_consumida = models.DecimalField(max_digits=10, decimal_places=3)
+    fecha_consumo = models.DateTimeField(auto_now_add=True)
+    
+    def __str__(self):
+        return f"Consumo #{self.id} - {self.detalle_venta_asociada.id}"
+    
+    class Meta:
+        constraints = [
             models.CheckConstraint(
-                check=Q(producto_elaborado__isnull=True) | Q(lote_producto_elaborado_vendido__isnull=False),
-                name='producto_elaborado_requiere_lote'
-            ),
-            # Restricción 3: No se puede tener un lote sin su producto correspondiente (consistencia).
-            models.CheckConstraint(
-                check=Q(producto_elaborado__isnull=False) | Q(lote_producto_elaborado_vendido__isnull=True),
-                name='lote_elaborado_solo_con_producto_elaborado'
-            ),
-            models.CheckConstraint(
-                check=Q(producto_reventa__isnull=False) | Q(lote_producto_reventa_vendido__isnull=True),
-                name='lote_reventa_solo_con_producto_reventa'
+                # FIX: Field names must match the model definitions above
+                check=(Q(lote_producto_elaborado__isnull=False) & Q(lote_producto_reventa__isnull=True)) | 
+                      (Q(lote_producto_elaborado__isnull=True) & Q(lote_producto_reventa__isnull=False)),
+                name='venta_lotes_vendidos_un_solo_tipo'
             )
         ]
 
@@ -367,7 +357,7 @@ class DetallesOrdenVenta(models.Model):
 
 
 class OrdenConsumoLote(models.Model):
-    orden_venta_asociada = models.ForeignKey(OrdenVenta, on_delete=models.CASCADE, related_name="consumos")
+    orden_venta_asociada = models.ForeignKey(OrdenVenta, on_delete=models.CASCADE, related_name="consumos_lotes_orden_venta")
     detalle_orden_venta = models.ForeignKey(DetallesOrdenVenta, on_delete=models.CASCADE)
     fecha_registro = models.DateTimeField(auto_now_add=True)
     
