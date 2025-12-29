@@ -92,24 +92,25 @@ class AperturaCierreCajaViewSet(viewsets.ModelViewSet):
             serializer.is_valid(raise_exception=True)
 
             with transaction.atomic():
-                # Calculate totals from sales in this session
-                ventas_en_session = Ventas.objects.filter(apertura_caja=caja)
-                total_usd = sum(v.monto_total_usd for v in ventas_en_session)
-                total_ves = sum(v.monto_total_ves for v in ventas_en_session)
+                # 1. Calculate totals from sales in this session using the Model method
+                # This updates all total_* fields on the instance
+                caja.calcular_totales_por_metodo_pago()
                 
-                # Update closure information
+                # 2. Update closure basics
                 caja.fecha_cierre = timezone.now()
                 caja.usuario_cierre = request.user
+                caja.notas_cierre = serializer.validated_data.get('notas_cierre', '')
+                
+                # 3. Set Final Counts (Counted by cashier)
                 final_usd = serializer.validated_data.get('monto_final_usd') or Decimal('0')
                 final_ves = serializer.validated_data.get('monto_final_ves') or Decimal('0')
-
                 caja.monto_final_usd = final_usd
                 caja.monto_final_ves = final_ves
-                caja.total_ventas_usd = total_usd
-                caja.total_ventas_ves = total_ves
-                caja.diferencia_usd = (caja.monto_inicial_usd + total_usd) - final_usd
-                caja.diferencia_ves = (caja.monto_inicial_ves + total_ves) - final_ves
-                caja.notas_cierre = serializer.validated_data.get('notas_cierre', '')
+
+                # 4. Calculate Discrepancy (Expected vs Counted) using Model method
+                caja.calcular_diferencia_efectivo()
+
+                # 5. Deactivate and Save
                 caja.esta_activa = False
                 caja.save()
                 

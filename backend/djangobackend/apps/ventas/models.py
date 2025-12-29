@@ -383,6 +383,7 @@ class OrdenConsumoLoteDetalle(models.Model):
             )
         ]
 
+
 class Pagos(models.Model):
     venta_asociada = models.ForeignKey(Ventas, on_delete=models.CASCADE, null=True, blank=True)
     orden_venta_asociada = models.ForeignKey(OrdenVenta, on_delete=models.CASCADE, null=True, blank=True)
