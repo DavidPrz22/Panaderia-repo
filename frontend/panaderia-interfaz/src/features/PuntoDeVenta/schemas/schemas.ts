@@ -7,6 +7,10 @@ export const aperturaCajaSchema = z.object({
     notas_apertura: z.string().refine((value) => !value || value.length >= 3, "Por favor, ingresa notas").optional(),
 });
 
+export const cierreCajaSchema = z.object({
+    notas_cierre: z.string().optional(),
+});
+
 
 // Ventas SCHEMA
 
@@ -39,4 +43,5 @@ export const ventaSchema = z.object({
 })
 
 export type TAperturaCaja = z.infer<typeof aperturaCajaSchema>;
+export type TCierreCaja = z.infer<typeof cierreCajaSchema>;
 export type TVenta = z.infer<typeof ventaSchema>

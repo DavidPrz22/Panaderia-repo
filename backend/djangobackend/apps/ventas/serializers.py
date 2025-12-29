@@ -26,6 +26,10 @@ class AperturaCajaSerializer(serializers.ModelSerializer):
 
 
 class CierreCajaSerializer(serializers.ModelSerializer):
+    monto_final_usd = serializers.DecimalField(max_digits=10, decimal_places=2, required=False, allow_null=True)
+    monto_final_ves = serializers.DecimalField(max_digits=10, decimal_places=2, required=False, allow_null=True)
+    notas_cierre = serializers.CharField(required=False, allow_blank=True)
+
     class Meta:
         model = AperturaCierreCaja
         fields = [
