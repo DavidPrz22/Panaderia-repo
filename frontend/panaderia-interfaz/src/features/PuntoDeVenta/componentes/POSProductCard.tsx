@@ -2,6 +2,7 @@ import { cn } from "@/lib/utils";
 import { Plus } from "lucide-react";
 import type { Producto } from '../types/types'
 import { usePOSContext } from "@/context/POSContext";
+import { useBCVRateQuery } from "@/features/PuntoDeVenta/hooks/queries/queries";
 
 interface ProductCardProps {
   product: Producto;
@@ -11,6 +12,7 @@ interface ProductCardProps {
 export function ProductCard({ product, onAdd }: ProductCardProps) {
   const isLowStock = product.stock <= 5;
   const { carrito, setCarrito } = usePOSContext();
+  const { data: bcvRate } = useBCVRateQuery();
 
 
   const handleAddProduct = (producto: Producto) => {
@@ -63,6 +65,9 @@ export function ProductCard({ product, onAdd }: ProductCardProps) {
       <div className="mt-auto pt-3 flex items-end justify-between">
         <div>
           <p className="text-lg font-bold text-card-foreground">
+            Bs. {(product.precio * (bcvRate?.promedio || 0)).toFixed(2)}
+          </p>
+          <p className="text-xs font-semibold text-muted-foreground">
             ${product.precio.toFixed(2)}
           </p>
           <p
