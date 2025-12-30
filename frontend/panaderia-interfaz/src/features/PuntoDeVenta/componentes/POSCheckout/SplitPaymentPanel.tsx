@@ -40,6 +40,7 @@ export function SplitPaymentPanel({
             amount: 0,
             reference: "",
             change: undefined,
+            changeDelivery: "efectivo",
         };
         const updatedPayments = [...payments, newPayment];
         onPaymentsChange(updatedPayments);

@@ -201,6 +201,8 @@ class VentasPagosSerializer(serializers.Serializer):
     referencia_pago = serializers.CharField(required=False)
     cambio_efectivo_usd = serializers.DecimalField(max_digits=10, decimal_places=2, required=False)
     cambio_efectivo_ves = serializers.DecimalField(max_digits=10, decimal_places=2, required=False)
+    cambio_pago_movil_usd = serializers.DecimalField(max_digits=10, decimal_places=2, required=False)
+    cambio_pago_movil_ves = serializers.DecimalField(max_digits=10, decimal_places=2, required=False)
 
 
 class VentasSerializer(serializers.Serializer):

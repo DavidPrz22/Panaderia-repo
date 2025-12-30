@@ -28,7 +28,8 @@ export function PaymentOptions({
       [{
         method: selectedMethod && selectedMethod !== 'dividir' ? selectedMethod : data.method,
         amount: data ? data.amount : 0,
-        change: data ? data.change : 0, 
+        change: data ? data.change : 0,
+        changeDelivery: data?.changeDelivery || "efectivo",
         reference: reference || ""
       }]);
   }, [selectedMethod])
@@ -39,7 +40,8 @@ export function PaymentOptions({
       [{
         method: selectedMethod && selectedMethod !== 'dividir' ? selectedMethod : data.method,
         amount: data ? data.amount : 0,
-        change: data ? data.change : 0, 
+        change: data ? data.change : 0,
+        changeDelivery: data?.changeDelivery || "efectivo",
         reference: reference || ""
       }]);
   }, [reference])

@@ -588,6 +588,8 @@ class VentasViewSet(viewsets.ModelViewSet):
                     monto_pago_ves=pago['monto_pago_ves'],
                     cambio_efectivo_usd=pago.get('cambio_efectivo_usd', 0),
                     cambio_efectivo_ves=pago.get('cambio_efectivo_ves', 0),
+                    cambio_pago_movil_usd=pago.get('cambio_pago_movil_usd', 0),
+                    cambio_pago_movil_ves=pago.get('cambio_pago_movil_ves', 0),
                     referencia_pago=pago.get('referencia_pago', ''),
                     usuario_registrador=request.user,
                     tasa_cambio_aplicada=data['tasa_cambio_aplicada'],

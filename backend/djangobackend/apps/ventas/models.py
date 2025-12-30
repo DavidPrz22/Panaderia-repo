@@ -60,7 +60,14 @@ class AperturaCierreCaja(models.Model):
     total_pago_movil_usd = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, default=0)
     total_pago_movil_ves = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, default=0)
     
-    # 3. Change Given (Subtracts from physical drawer)
+    # 3. Change Given
+    # We separate cash vs Pago Móvil for better auditing.
+    total_cambio_efectivo_usd = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, default=0)
+    total_cambio_efectivo_ves = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, default=0)
+    total_cambio_pago_movil_usd = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, default=0)
+    total_cambio_pago_movil_ves = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, default=0)
+
+    # Legacy aggregated change (all methods combined)
     total_cambio_usd = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, default=0)
     total_cambio_ves = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, default=0)
     
@@ -85,11 +92,11 @@ class AperturaCierreCaja(models.Model):
 
     @property
     def efectivo_en_caja_usd(self):
-        """Initial Cash + All Cash Payments - All Change Given"""
+        """Initial Cash + All Cash Payments - Cash Change Given"""
         from decimal import Decimal
         return (self.monto_inicial_usd or Decimal('0')) + \
                (self.total_efectivo_usd or Decimal('0')) - \
-               (self.total_cambio_usd or Decimal('0'))
+               (self.total_cambio_efectivo_usd or Decimal('0'))
 
     @classmethod
     def obtener_caja_activa(cls):
@@ -113,6 +120,10 @@ class AperturaCierreCaja(models.Model):
             'tarjeta_usd': Decimal('0'), 'tarjeta_ves': Decimal('0'),
             'transferencia_usd': Decimal('0'), 'transferencia_ves': Decimal('0'),
             'pago_movil_usd': Decimal('0'), 'pago_movil_ves': Decimal('0'),
+            # Change breakdown by method
+            'cambio_efectivo_usd': Decimal('0'), 'cambio_efectivo_ves': Decimal('0'),
+            'cambio_pago_movil_usd': Decimal('0'), 'cambio_pago_movil_ves': Decimal('0'),
+            # Aggregated change (all methods)
             'cambio_usd': Decimal('0'), 'cambio_ves': Decimal('0'),
             'total_ventas_usd': Decimal('0'), 'total_ventas_ves': Decimal('0')
         }
@@ -133,13 +144,29 @@ class AperturaCierreCaja(models.Model):
             totales[key_usd] = result['total_usd'] or Decimal('0')
             totales[key_ves] = result['total_ves'] or Decimal('0')
 
-        # Calculate Change (only cash)
-        cambio = pagos.filter(metodo_pago__nombre_metodo__iexact='efectivo').aggregate(
-            total_cambio_usd=Sum('cambio_efectivo_usd'),
-            total_cambio_ves=Sum('cambio_efectivo_ves')
+        # Calculate Change breakdown
+        # Cash change (only for payments whose method is EFECTIVO)
+        cambio_efectivo = pagos.filter(
+            metodo_pago__nombre_metodo__iexact='efectivo'
+        ).aggregate(
+            total_cambio_efectivo_usd=Sum('cambio_efectivo_usd'),
+            total_cambio_efectivo_ves=Sum('cambio_efectivo_ves'),
         )
-        totales['cambio_usd'] = cambio['total_cambio_usd'] or Decimal('0')
-        totales['cambio_ves'] = cambio['total_cambio_ves'] or Decimal('0')
+
+        # Pago Móvil change (stored on the payment record)
+        cambio_pago_movil = pagos.aggregate(
+            total_cambio_pago_movil_usd=Sum('cambio_pago_movil_usd'),
+            total_cambio_pago_movil_ves=Sum('cambio_pago_movil_ves'),
+        )
+
+        totales['cambio_efectivo_usd'] = cambio_efectivo['total_cambio_efectivo_usd'] or Decimal('0')
+        totales['cambio_efectivo_ves'] = cambio_efectivo['total_cambio_efectivo_ves'] or Decimal('0')
+        totales['cambio_pago_movil_usd'] = cambio_pago_movil['total_cambio_pago_movil_usd'] or Decimal('0')
+        totales['cambio_pago_movil_ves'] = cambio_pago_movil['total_cambio_pago_movil_ves'] or Decimal('0')
+
+        # Aggregate total change (all methods)
+        totales['cambio_usd'] = totales['cambio_efectivo_usd'] + totales['cambio_pago_movil_usd']
+        totales['cambio_ves'] = totales['cambio_efectivo_ves'] + totales['cambio_pago_movil_ves']
         
         # Calculate Total Sales Revenue (Sum of all payments - change)
         # Note: We subtract change because the payment amount includes the change given back
@@ -173,8 +200,10 @@ class AperturaCierreCaja(models.Model):
         Formula: Initial + Cash Sales - Change Given
         """
         from decimal import Decimal
-        expected_usd = (self.monto_inicial_usd or Decimal('0')) + (self.total_efectivo_usd or Decimal('0')) - (self.total_cambio_usd or Decimal('0'))
-        expected_ves = (self.monto_inicial_ves or Decimal('0')) + (self.total_efectivo_ves or Decimal('0')) - (self.total_cambio_ves or Decimal('0'))
+        # Only cash change reduces expected cash in drawer. Change delivered via Pago Móvil
+        # is tracked separately and does not affect the physical cash balance.
+        expected_usd = (self.monto_inicial_usd or Decimal('0')) + (self.total_efectivo_usd or Decimal('0')) - (self.total_cambio_efectivo_usd or Decimal('0'))
+        expected_ves = (self.monto_inicial_ves or Decimal('0')) + (self.total_efectivo_ves or Decimal('0')) - (self.total_cambio_efectivo_ves or Decimal('0'))
         return expected_usd, expected_ves
 
     def calcular_diferencia_efectivo(self):
@@ -394,6 +423,9 @@ class Pagos(models.Model):
     referencia_pago = models.CharField(max_length=100, null=True, blank=True)
     cambio_efectivo_usd = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     cambio_efectivo_ves = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    # Optional: change given via Pago Móvil, even when the original payment is in cash.
+    cambio_pago_movil_usd = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    cambio_pago_movil_ves = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     usuario_registrador = models.ForeignKey(User, on_delete=models.CASCADE, null=False, blank=False)
     tasa_cambio_aplicada = models.DecimalField(max_digits=10, decimal_places=2, null=False, blank=False)
     notas = models.TextField(max_length=255, null=True, blank=True)
