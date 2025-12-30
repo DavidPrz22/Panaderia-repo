@@ -29,23 +29,26 @@ export function CheckoutScreen({ onBack, onComplete, setValue, isProcessing }: C
     const { toast } = useToast();
     const { data } = useBCVRateQuery();
 
-    // Calculate totals
-    const total = RoundToTwo(carrito.reduce((sum, item) => sum + item.subtotal, 0));
-    const totalWithTax = RoundToTwo(calculateTotalWithTax(total));
+    const rate = data?.promedio || 0;
+
+    // Calculate totals in Bolívares (Bs.) as base currency
+    const totalBs = RoundToTwo(carrito.reduce((sum, item) => sum + item.subtotal * rate, 0));
+    const totalWithTax = RoundToTwo(calculateTotalWithTax(totalBs));
     const isSplitMode = selectedPaymentMethod === "dividir";
 
     // Format payments for form submission
     useEffect(() => {
         const pago_con_formato = splitPayments.map((pago) => ({
             metodo_pago: pago.method,
-            monto_pago_usd: RoundToTwo(pago.amount),
-            monto_pago_ves: RoundToTwo(pago.amount * (data?.promedio || 0)),
+            // Base currency is now Bolívares (Bs.)
+            monto_pago_ves: RoundToTwo(pago.amount),
+            monto_pago_usd: rate ? RoundToTwo(pago.amount / rate) : 0,
             referencia_pago: pago.reference || undefined, // Sync reference
-            cambio_efectivo_usd: pago.change ? RoundToTwo(pago.change) : undefined,
-            cambio_efectivo_ves: pago.change ? RoundToTwo(pago.change * (data?.promedio || 0)) : undefined,
+            cambio_efectivo_ves: pago.change ? RoundToTwo(pago.change) : undefined,
+            cambio_efectivo_usd: pago.change && rate ? RoundToTwo(pago.change / rate) : undefined,
         }));
         setValue?.("pagos", pago_con_formato);
-    }, [splitPayments, setValue, data]);
+    }, [splitPayments, setValue, rate]);
 
     // Initialize Split Payments logic when switching modes
     useEffect(() => {

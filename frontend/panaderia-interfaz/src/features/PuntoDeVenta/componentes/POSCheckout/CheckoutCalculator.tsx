@@ -185,7 +185,7 @@ export function PaymentCalculator({
             {!isSplitMode && (
                 <div className="mb-4 rounded-xl bg-muted px-4 py-1">
                     <p className="text-xs lg:text-sm text-muted-foreground">Total a pagar</p>
-                    <p className="text-xl lg:text-2xl font-bold text-foreground">${total.toFixed(2)}</p>
+                    <p className="text-xl lg:text-2xl font-bold text-foreground">Bs. {total.toFixed(2)}</p>
                 </div>
             )}
 
@@ -195,7 +195,7 @@ export function PaymentCalculator({
                     {isSplitMode ? "Monto asignado" : "Monto recibido"}
                 </p>
                 <p className="text-2xl lg:text-3xl font-bold text-blue-900">
-                    ${inputValue === "" ? "0.00" : inputValue.startsWith(".") ? "0" + inputValue : inputValue}
+                    Bs. {inputValue === "" ? "0.00" : inputValue.startsWith(".") ? "0" + inputValue : inputValue}
                 </p>
             </div>
 
@@ -203,7 +203,7 @@ export function PaymentCalculator({
             {showChange && (
                 <div className="mb-4 rounded-xl bg-emerald-500/10 px-4 py-1">
                     <p className="text-xs lg:text-sm text-emerald-600">Cambio</p>
-                    <p className="text-xl lg:text-2xl font-bold text-emerald-600">${displayChange.toFixed(2)}</p>
+                    <p className="text-xl lg:text-2xl font-bold text-emerald-600">Bs. {displayChange.toFixed(2)}</p>
                 </div>
             )}
 

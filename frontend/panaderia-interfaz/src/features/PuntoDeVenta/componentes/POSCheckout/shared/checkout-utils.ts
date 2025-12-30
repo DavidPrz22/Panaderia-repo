@@ -23,8 +23,8 @@ export function validateSplitPayments(
             valid: false,
             error:
                 remaining > 0
-                    ? `Falta asignar $${remaining.toFixed(2)}`
-                    : `El monto excede el total por $${Math.abs(remaining).toFixed(2)}`,
+                    ? `Falta asignar Bs. ${remaining.toFixed(2)}`
+                    : `El monto excede el total por Bs. ${Math.abs(remaining).toFixed(2)}`,
         };
     }
 
