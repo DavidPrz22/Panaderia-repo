@@ -42,18 +42,20 @@ export const PosApertura = () => {
   const { setOpenPOS } = usePOSContext();
 
   const [cantidad, setCantidad] = useReducer((state: MontosForm, action: Action) => {
-    
     if (action.type === 'Update') {
-      const monto_inicial_usd = Number(action.payload)
-      const monto_inicial_ves = Math.round((monto_inicial_usd * promedio) * 100) / 100
+      const rawValue = action.payload.trim();
+      const monto_inicial_ves = rawValue === "" ? 0 : Number(rawValue);
+      const monto_inicial_usd = promedio > 0
+        ? Math.round(((monto_inicial_ves / promedio) || 0) * 100) / 100
+        : 0;
 
-      setValue('monto_inicial_usd', monto_inicial_usd)
-      setValue('monto_inicial_ves', monto_inicial_ves)
+      setValue('monto_inicial_ves', monto_inicial_ves);
+      setValue('monto_inicial_usd', monto_inicial_usd);
+
       return {
-        monto_inicial_usd: monto_inicial_usd,
-        monto_inicial_ves: monto_inicial_ves,
-
-      }
+        monto_inicial_usd,
+        monto_inicial_ves,
+      };
     }
     return state;
   },
@@ -89,19 +91,42 @@ export const PosApertura = () => {
           <CardContent>
             <form className="space-y-6" onSubmit={handleSubmit(handleSumbitApertura)}>
               <div className="space-y-2">
-                <Label htmlFor="amount">Monto Inicial en Caja ($)</Label>
+                <Label htmlFor="amount">Monto Inicial en Caja (Bs.)</Label>
                 <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground font-semibold">$</span>
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground font-semibold">Bs.</span>
                   <Input
                     id="amount"
                     type="number"
-                    placeholder={cantidad.monto_inicial_usd.toFixed(2)}
+                    inputMode="decimal"
+                    placeholder={cantidad.monto_inicial_ves.toFixed(2)}
                     min={0}
                     step="0.01"
-                    className="pl-7 text-lg font-medium h-11 focus-visible:ring-blue-200"
+                    className="pl-12 text-lg font-medium h-11 focus-visible:ring-blue-200"
                     required
                     onKeyDown={(e) => {
-                      if (["-", "e"].includes(e.key)) {
+                      const allowedNavigationKeys = [
+                        'Backspace', 'Tab', 'ArrowLeft', 'ArrowRight', 'Delete', 'Home', 'End'
+                      ];
+
+                      if (allowedNavigationKeys.includes(e.key)) {
+                        return;
+                      }
+
+                      // Allow common shortcuts (Ctrl/Cmd + A/C/V/X)
+                      if ((e.ctrlKey || e.metaKey) && ['a', 'c', 'v', 'x'].includes(e.key.toLowerCase())) {
+                        return;
+                      }
+
+                      // Allow one decimal separator, but not as the first character
+                      if (e.key === '.') {
+                        if (e.currentTarget.value.includes('.') || e.currentTarget.value === '') {
+                          e.preventDefault();
+                        }
+                        return;
+                      }
+
+                      // Block anything that is not a digit
+                      if (!/^\d$/.test(e.key)) {
                         e.preventDefault();
                       }
                     }}
@@ -109,6 +134,13 @@ export const PosApertura = () => {
                     autoFocus
                   />
                 </div>
+                {promedio > 0 && (
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Equivalente aproximado: <span className="font-semibold">${cantidad.monto_inicial_usd.toFixed(2)}</span>
+                    {" "}
+                    (Tasa: {promedio.toFixed(2)} Bs/$)
+                  </p>
+                )}
               </div>
 
               <div className="space-y-2">
