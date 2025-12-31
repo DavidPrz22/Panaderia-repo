@@ -31,6 +31,8 @@ export const productosReventaQueryOptions = {
   staleTime: Infinity,
 };
 
+
+export const PRODUCTOS_REVENTA_KEY = ["productos-reventa"];
 export const productosReventaDetallesQueryOptions = (id: number) => ({
   queryKey: ["productos-reventa-detalles", id],
   queryFn: () => getProductosReventaDetalles(id),

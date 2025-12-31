@@ -30,13 +30,14 @@ export const createMateriaPrimaListQueryOptions = () => {
     staleTime: Infinity,
   };
 };
+export const MATERIA_PRIMA_PK_KEY = "materiaPrimaListPK";
 
 export const createMateriaPrimaListPKQueryOptions = (pk: number | null) => {
   if (!pk) {
     throw new Error("pk is required");
   }
   return {
-    queryKey: ["materiaPrimaListPK", pk],
+    queryKey: [MATERIA_PRIMA_PK_KEY, pk],
     queryFn: () => handleMateriaPrimaListPK(pk),
     staleTime: Infinity,
   };
