@@ -224,7 +224,7 @@ export function PaymentCalculator({
                                 type="button"
                                 className={`flex-1 rounded-md border px-2 py-1 text-xs lg:text-sm ${
                                     effectiveChangeDelivery === "efectivo"
-                                        ? "border-emerald-600 bg-emerald-50 text-emerald-700"
+                                        ? "bg-black text-white"
                                         : "border-border bg-background text-foreground"
                                 }`}
                                 onClick={() => onChangeDeliveryChange?.("efectivo")}
@@ -235,7 +235,7 @@ export function PaymentCalculator({
                                 type="button"
                                 className={`flex-1 rounded-md border px-2 py-1 text-xs lg:text-sm ${
                                     effectiveChangeDelivery === "pago_movil"
-                                        ? "border-emerald-600 bg-emerald-50 text-emerald-700"
+                                        ? "bg-black text-white"
                                         : "border-border bg-background text-foreground"
                                 }`}
                                 onClick={() => onChangeDeliveryChange?.("pago_movil")}
