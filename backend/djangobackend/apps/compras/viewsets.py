@@ -35,7 +35,7 @@ class ProveedoresViewSet(viewsets.ModelViewSet):
 
 
 class OrdenesCompraTableViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = OrdenesCompra.objects.order_by('id')
+    queryset = OrdenesCompra.objects.order_by('-id')
     serializer_class = OrdenesCompraTableSerializer
     pagination_class = StandardResultsSetPagination
     permission_classes = [IsStaffLevelOnly]

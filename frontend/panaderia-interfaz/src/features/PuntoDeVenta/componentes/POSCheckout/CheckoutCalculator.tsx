@@ -222,9 +222,9 @@ export function PaymentCalculator({
                         <div className="flex gap-2">
                             <button
                                 type="button"
-                                className={`flex-1 rounded-md border px-2 py-1 text-xs lg:text-sm ${
+                                className={`flex-1 rounded-md border px-2 py-1 text-xs lg:text-sm cursor-pointer ${
                                     effectiveChangeDelivery === "efectivo"
-                                        ? "bg-black text-white"
+                                        ? "bg-black text-white border-transparent"
                                         : "border-border bg-background text-foreground"
                                 }`}
                                 onClick={() => onChangeDeliveryChange?.("efectivo")}
@@ -233,9 +233,9 @@ export function PaymentCalculator({
                             </button>
                             <button
                                 type="button"
-                                className={`flex-1 rounded-md border px-2 py-1 text-xs lg:text-sm ${
+                                className={`flex-1 rounded-md border px-2 py-1 text-xs lg:text-sm cursor-pointer ${
                                     effectiveChangeDelivery === "pago_movil"
-                                        ? "bg-black text-white"
+                                        ? "bg-black text-white border-transparent"
                                         : "border-border bg-background text-foreground"
                                 }`}
                                 onClick={() => onChangeDeliveryChange?.("pago_movil")}

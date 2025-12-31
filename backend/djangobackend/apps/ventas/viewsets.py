@@ -140,7 +140,7 @@ class AperturaCierreCajaViewSet(viewsets.ModelViewSet):
 
 
 class OrdenesTableViewset(viewsets.ModelViewSet):
-    queryset = OrdenVenta.objects.order_by('id')
+    queryset = OrdenVenta.objects.order_by('-id')
     serializer_class = OrdenesTableSerializer
     pagination_class = StandardResultsSetPagination
     permission_classes = [IsAllUsersCRUD]
