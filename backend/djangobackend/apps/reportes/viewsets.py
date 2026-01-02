@@ -190,6 +190,17 @@ class InventoryReportViewSet(viewsets.ViewSet):
         serializer = InventoryItemSerializer(data, many=True)
         return Response(serializer.data)
 
+    @action(detail=False, methods=['get'])
+    def resumen(self, request):
+        """Get counts for all inventory types"""
+        counts = {
+            'materias_primas': MateriasPrimas.objects.count(),
+            'productos_finales': ProductosElaborados.objects.filter(es_intermediario=False).count(),
+            'productos_intermedios': ProductosElaborados.objects.filter(es_intermediario=True).count(),
+            'productos_reventa': ProductosReventa.objects.count(),
+        }
+        return Response(counts)
+
 
 class SalesReportViewSet(viewsets.ViewSet):
     """ViewSet for sales reports"""
@@ -220,6 +231,12 @@ class SalesReportViewSet(viewsets.ViewSet):
         
         serializer = SessionReportSerializer(queryset, many=True)
         return Response(serializer.data)
+
+    @action(detail=False, methods=['get'])
+    def resumen(self, request):
+        """Get summary count for sales sessions"""
+        count = AperturaCierreCaja.objects.count()
+        return Response({'count': count})
     
     @action(detail=True, methods=['get'], url_path='detalle')
     def session_detail(self, request, pk=None):

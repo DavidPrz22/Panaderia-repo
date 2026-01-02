@@ -8,6 +8,10 @@ import {
   type SalesReport,
   type SessionDetail,
   type ItemsVendidos,
+  type InventorySummary,
+  type SalesSummary,
+  inventorySummarySchema,
+  salesSummarySchema,
 } from '../schemas/schemas';
 
 // Inventory Reports
@@ -31,6 +35,11 @@ export const fetchProductosReventaReport = async (): Promise<InventoryReport> =>
   return inventoryReportSchema.parse(response.data);
 };
 
+export const fetchInventorySummary = async (): Promise<InventorySummary> => {
+  const response = await apiClient.get('/api/reportes/inventario/resumen/');
+  return inventorySummarySchema.parse(response.data);
+};
+
 // Sales Reports
 export const fetchSalesSessions = async (params?: {
   start_date?: string;
@@ -38,6 +47,11 @@ export const fetchSalesSessions = async (params?: {
 }): Promise<SalesReport> => {
   const response = await apiClient.get('/api/reportes/ventas/sesiones/', { params });
   return salesReportSchema.parse(response.data);
+};
+
+export const fetchSalesSummary = async (): Promise<SalesSummary> => {
+  const response = await apiClient.get('/api/reportes/ventas/resumen/');
+  return salesSummarySchema.parse(response.data);
 };
 
 export const fetchSessionDetail = async (sessionId: number): Promise<SessionDetail> => {

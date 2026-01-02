@@ -20,6 +20,15 @@ export const inventoryReportSchema = z.array(inventoryItemSchema);
 
 export type InventoryReport = z.infer<typeof inventoryReportSchema>;
 
+export const inventorySummarySchema = z.object({
+    materias_primas: z.number(),
+    productos_finales: z.number(),
+    productos_intermedios: z.number(),
+    productos_reventa: z.number(),
+});
+
+export type InventorySummary = z.infer<typeof inventorySummarySchema>;
+
 // Sales Report Schemas
 export const sessionReportSchema = z.object({
     id: z.number(),
@@ -53,6 +62,12 @@ export type SessionReport = z.infer<typeof sessionReportSchema>;
 export const salesReportSchema = z.array(sessionReportSchema);
 
 export type SalesReport = z.infer<typeof salesReportSchema>;
+
+export const salesSummarySchema = z.object({
+    count: z.number(),
+});
+
+export type SalesSummary = z.infer<typeof salesSummarySchema>;
 
 // Item Vendido Schema
 export const itemVendidoSchema = z.object({

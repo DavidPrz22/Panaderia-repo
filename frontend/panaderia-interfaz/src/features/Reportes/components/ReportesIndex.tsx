@@ -27,6 +27,8 @@ import {
     useProductosReventaReportQuery,
     useSalesSessionsQuery,
     useSessionDetailQuery,
+    useInventorySummaryQuery,
+    useSalesSummaryQuery,
 } from "../hooks/queries/queries";
 import { downloadSalesReportPDF } from "../api/api";
 import type { InventoryItem } from "../schemas/schemas";
@@ -41,15 +43,19 @@ const Reportes = () => {
     const [isDetailsOpen, setIsDetailsOpen] = useState(false);
     const [isDownloading, setIsDownloading] = useState(false);
 
-    // Queries
-    const { data: materiaPrimaData, isLoading: isLoadingMP } = useMateriaPrimaReportQuery();
-    const { data: productosFinalesData, isLoading: isLoadingPF } = useProductosFinalesReportQuery();
-    const { data: productosIntermediosData, isLoading: isLoadingPI } = useProductosIntermediosReportQuery();
-    const { data: productosReventaData, isLoading: isLoadingPR } = useProductosReventaReportQuery();
+    // Summaries
+    const { data: inventorySummary } = useInventorySummaryQuery();
+    const { data: salesSummary } = useSalesSummaryQuery();
+
+    // Queries (Lazy loaded based on currentView)
+    const { data: materiaPrimaData, isLoading: isLoadingMP } = useMateriaPrimaReportQuery(currentView === "materias-primas");
+    const { data: productosFinalesData, isLoading: isLoadingPF } = useProductosFinalesReportQuery(currentView === "productos-finales");
+    const { data: productosIntermediosData, isLoading: isLoadingPI } = useProductosIntermediosReportQuery(currentView === "productos-intermedios");
+    const { data: productosReventaData, isLoading: isLoadingPR } = useProductosReventaReportQuery(currentView === "productos-reventa");
     const { data: salesData, isLoading: isLoadingSales } = useSalesSessionsQuery({
         start_date: startDate || undefined,
         end_date: endDate || undefined,
-    });
+    }, currentView === "ventas");
     const { data: sessionDetail, isLoading: isLoadingDetail } = useSessionDetailQuery(selectedSessionId);
 
     const getStockBadge = (estado: string) => {
@@ -452,9 +458,9 @@ const Reportes = () => {
         {
             id: "materias-primas" as const,
             title: "Materias Primas",
-            description: "Inventario de ingredientes y materiales base",
+            description: "Inventario de ingredientes and materiales base",
             icon: Wheat,
-            count: materiaPrimaData?.length || 0,
+            count: inventorySummary?.materias_primas ?? 0,
             color: "text-amber-600"
         },
         {
@@ -462,7 +468,7 @@ const Reportes = () => {
             title: "Productos Finales",
             description: "Productos listos para la venta",
             icon: ChefHat,
-            count: productosFinalesData?.length || 0,
+            count: inventorySummary?.productos_finales ?? 0,
             color: "text-blue-600"
         },
         {
@@ -470,7 +476,7 @@ const Reportes = () => {
             title: "Productos Intermedios",
             description: "Productos en proceso de elaboración",
             icon: Box,
-            count: productosIntermediosData?.length || 0,
+            count: inventorySummary?.productos_intermedios ?? 0,
             color: "text-green-600"
         },
         {
@@ -478,7 +484,7 @@ const Reportes = () => {
             title: "Productos de Reventa",
             description: "Productos comprados para revender",
             icon: ShoppingBag,
-            count: productosReventaData?.length || 0,
+            count: inventorySummary?.productos_reventa ?? 0,
             color: "text-purple-600"
         },
         {
@@ -486,7 +492,7 @@ const Reportes = () => {
             title: "Ventas por Apertura/Cierre",
             description: "Reportes de ventas por sesión de caja",
             icon: TrendingUp,
-            count: salesData?.length || 0,
+            count: salesSummary?.count ?? 0,
             color: "text-primary"
         },
     ];
