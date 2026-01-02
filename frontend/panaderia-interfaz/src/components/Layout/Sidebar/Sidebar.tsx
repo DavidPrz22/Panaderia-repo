@@ -138,56 +138,56 @@ export default function Sidebar() {
               Ventas
             </SidebarDropdownCard>
 
-            {userHasPermission(user!, 'recetas','view') && (
+            {userHasPermission(user!, 'recetas', 'view') && (
               <SidebarCard
-              icon={RecetasIcon}
-              onclick={handleClick}
-              id="recetas"
-              link="/dashboard/recetas"
-            >
-              Recetas
-            </SidebarCard>
+                icon={RecetasIcon}
+                onclick={handleClick}
+                id="recetas"
+                link="/dashboard/recetas"
+              >
+                Recetas
+              </SidebarCard>
             )}
 
-            {userHasPermission(user!, 'produccion','view') && (
-            <SidebarCard
-              icon={ProductionIcon}
-              onclick={handleClick}
-              id="produccion"
-              link="/dashboard/produccion"
-            >
-              Producción
-            </SidebarCard>
+            {userHasPermission(user!, 'produccion', 'view') && (
+              <SidebarCard
+                icon={ProductionIcon}
+                onclick={handleClick}
+                id="produccion"
+                link="/dashboard/produccion"
+              >
+                Producción
+              </SidebarCard>
             )}
-            {userHasPermission(user!, 'transformacion','view') && (
-            <SidebarCard
-              icon={TransformacionIcon}
-              onclick={handleClick}
-              id="transformacion"
-              link="/dashboard/transformacion"
-            >
-              Transformación
-            </SidebarCard>
+            {userHasPermission(user!, 'transformacion', 'view') && (
+              <SidebarCard
+                icon={TransformacionIcon}
+                onclick={handleClick}
+                id="transformacion"
+                link="/dashboard/transformacion"
+              >
+                Transformación
+              </SidebarCard>
             )}
-            {userHasPermission(user!, 'compras','view') && (
-            <SidebarCard 
-              icon={ComprasIcon} 
-              onclick={handleClick} 
-              id="compras"
-              link="/dashboard/compras"
-            >
-              Compras
-            </SidebarCard>
+            {userHasPermission(user!, 'compras', 'view') && (
+              <SidebarCard
+                icon={ComprasIcon}
+                onclick={handleClick}
+                id="compras"
+                link="/dashboard/compras"
+              >
+                Compras
+              </SidebarCard>
             )}
-            {userHasPermission(user!, 'reportes','view') && (
-            <SidebarCard
-              icon={ReportesIcon}
-              onclick={handleClick}
-              id="reportes"
-              link="/dashboard/shadcn"
-            >
-              Reportes
-            </SidebarCard>
+            {userHasPermission(user!, 'reportes', 'view') && (
+              <SidebarCard
+                icon={ReportesIcon}
+                onclick={handleClick}
+                id="reportes"
+                link="/dashboard/reportes"
+              >
+                Reportes
+              </SidebarCard>
             )}
           </div>
         </div>
