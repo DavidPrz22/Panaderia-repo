@@ -1,6 +1,6 @@
 import { useState } from "react";
 import {
-    Package,
+    ChefHat,
     Wheat,
     Box,
     ShoppingBag,
@@ -249,10 +249,10 @@ const Reportes = () => {
                                 {session.fecha_cierre && ` - ${format(new Date(session.fecha_cierre), 'HH:mm', { locale: es })}`}
                             </TableCell>
                             <TableCell>{session.cajero_nombre}</TableCell>
-                            <TableCell className="text-right">${session.monto_inicial_usd?.toFixed(2) || '0.00'}</TableCell>
-                            <TableCell className="text-right">${session.total_efectivo_usd?.toFixed(2) || '0.00'}</TableCell>
-                            <TableCell className="text-right">${session.total_tarjeta_usd?.toFixed(2) || '0.00'}</TableCell>
-                            <TableCell className="text-right font-semibold">${session.total_ventas_usd?.toFixed(2) || '0.00'}</TableCell>
+                            <TableCell className="text-right">Bs. {session.monto_inicial_ves?.toFixed(2) || '0.00'}</TableCell>
+                            <TableCell className="text-right">Bs. {session.total_efectivo_ves?.toFixed(2) || '0.00'}</TableCell>
+                            <TableCell className="text-right">Bs. {session.total_tarjeta_ves?.toFixed(2) || '0.00'}</TableCell>
+                            <TableCell className="text-right font-semibold">Bs. {session.total_ventas_ves?.toFixed(2) || '0.00'}</TableCell>
                             <TableCell className="text-right">{session.numero_transacciones}</TableCell>
                             <TableCell>
                                 {session.esta_activa && (
@@ -325,7 +325,7 @@ const Reportes = () => {
                                     <CardTitle className="text-sm font-medium">Efectivo Inicial</CardTitle>
                                 </CardHeader>
                                 <CardContent>
-                                    <div className="text-2xl font-bold">${sessionDetail.monto_inicial_usd?.toFixed(2) || '0.00'}</div>
+                                    <div className="text-2xl font-bold">Bs. {sessionDetail.monto_inicial_ves?.toFixed(2) || '0.00'}</div>
                                 </CardContent>
                             </Card>
                             <Card>
@@ -333,7 +333,7 @@ const Reportes = () => {
                                     <CardTitle className="text-sm font-medium">Efectivo Final</CardTitle>
                                 </CardHeader>
                                 <CardContent>
-                                    <div className="text-2xl font-bold">${sessionDetail.monto_final_usd?.toFixed(2) || '0.00'}</div>
+                                    <div className="text-2xl font-bold">Bs. {sessionDetail.monto_final_ves?.toFixed(2) || '0.00'}</div>
                                 </CardContent>
                             </Card>
                         </div>
@@ -345,36 +345,36 @@ const Reportes = () => {
                             <CardContent className="space-y-2">
                                 <div className="flex justify-between">
                                     <span className="text-muted-foreground">Efectivo:</span>
-                                    <span className="font-medium">${sessionDetail.total_efectivo_usd?.toFixed(2) || '0.00'}</span>
+                                    <span className="font-medium">Bs. {sessionDetail.total_efectivo_ves?.toFixed(2) || '0.00'}</span>
                                 </div>
                                 <div className="flex justify-between">
                                     <span className="text-muted-foreground">Tarjeta:</span>
-                                    <span className="font-medium">${sessionDetail.total_tarjeta_usd?.toFixed(2) || '0.00'}</span>
+                                    <span className="font-medium">Bs. {sessionDetail.total_tarjeta_ves?.toFixed(2) || '0.00'}</span>
                                 </div>
                                 <div className="flex justify-between">
                                     <span className="text-muted-foreground">Transferencia:</span>
-                                    <span className="font-medium">${sessionDetail.total_transferencia_usd?.toFixed(2) || '0.00'}</span>
+                                    <span className="font-medium">Bs. {sessionDetail.total_transferencia_ves?.toFixed(2) || '0.00'}</span>
                                 </div>
                                 <div className="flex justify-between">
                                     <span className="text-muted-foreground">Pago Móvil:</span>
-                                    <span className="font-medium">${sessionDetail.total_pago_movil_usd?.toFixed(2) || '0.00'}</span>
+                                    <span className="font-medium">Bs. {sessionDetail.total_pago_movil_ves?.toFixed(2) || '0.00'}</span>
                                 </div>
                                 <hr className="my-4 border-t" />
                                 <div className="flex justify-between text-lg font-bold">
                                     <span>Total Ventas:</span>
-                                    <span>${sessionDetail.total_ventas_usd?.toFixed(2) || '0.00'}</span>
+                                    <span>Bs. {sessionDetail.total_ventas_ves?.toFixed(2) || '0.00'}</span>
                                 </div>
                             </CardContent>
                         </Card>
 
-                        {sessionDetail.diferencia_usd !== null && sessionDetail.diferencia_usd !== 0 && (
-                            <Card className={sessionDetail.diferencia_usd < 0 ? 'border-red-500' : 'border-green-500'}>
+                        {sessionDetail.diferencia_ves !== null && sessionDetail.diferencia_ves !== 0 && (
+                            <Card className={sessionDetail.diferencia_ves < 0 ? 'border-red-500' : 'border-green-500'}>
                                 <CardHeader>
                                     <CardTitle className="text-base">Diferencia de Caja</CardTitle>
                                 </CardHeader>
                                 <CardContent>
-                                    <div className={`text-2xl font-bold ${sessionDetail.diferencia_usd < 0 ? 'text-red-600' : 'text-green-600'}`}>
-                                        ${sessionDetail.diferencia_usd.toFixed(2)}
+                                    <div className={`text-2xl font-bold ${sessionDetail.diferencia_ves < 0 ? 'text-red-600' : 'text-green-600'}`}>
+                                        Bs. {sessionDetail.diferencia_ves.toFixed(2)}
                                     </div>
                                 </CardContent>
                             </Card>
@@ -399,7 +399,7 @@ const Reportes = () => {
                                     <TableHead>ID</TableHead>
                                     <TableHead>Cliente</TableHead>
                                     <TableHead>Fecha</TableHead>
-                                    <TableHead className="text-right">Total USD</TableHead>
+                                    <TableHead className="text-right">Total Bs.</TableHead>
                                     <TableHead className="text-right">Items</TableHead>
                                 </TableRow>
                             </TableHeader>
@@ -411,7 +411,7 @@ const Reportes = () => {
                                         <TableCell>
                                             {format(new Date(transaccion.fecha_venta), 'dd/MM/yyyy HH:mm', { locale: es })}
                                         </TableCell>
-                                        <TableCell className="text-right">${transaccion.monto_total_usd.toFixed(2)}</TableCell>
+                                        <TableCell className="text-right">Bs. {transaccion.monto_total_ves.toFixed(2)}</TableCell>
                                         <TableCell className="text-right">{transaccion.numero_items}</TableCell>
                                     </TableRow>
                                 ))}
@@ -426,7 +426,7 @@ const Reportes = () => {
                                     <TableHead>Producto</TableHead>
                                     <TableHead>Tipo</TableHead>
                                     <TableHead className="text-right">Cantidad</TableHead>
-                                    <TableHead className="text-right">Subtotal USD</TableHead>
+                                    <TableHead className="text-right">Subtotal Bs.</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
@@ -437,7 +437,7 @@ const Reportes = () => {
                                             <Badge variant="outline">{item.tipo_producto}</Badge>
                                         </TableCell>
                                         <TableCell className="text-right">{item.cantidad_total.toFixed(2)}</TableCell>
-                                        <TableCell className="text-right">${item.subtotal_usd.toFixed(2)}</TableCell>
+                                        <TableCell className="text-right">Bs. {item.subtotal_ves.toFixed(2)}</TableCell>
                                     </TableRow>
                                 ))}
                             </TableBody>
@@ -461,9 +461,9 @@ const Reportes = () => {
             id: "productos-finales" as const,
             title: "Productos Finales",
             description: "Productos listos para la venta",
-            icon: Package,
+            icon: ChefHat,
             count: productosFinalesData?.length || 0,
-            color: "text-accent"
+            color: "text-blue-600"
         },
         {
             id: "productos-intermedios" as const,
@@ -471,7 +471,7 @@ const Reportes = () => {
             description: "Productos en proceso de elaboración",
             icon: Box,
             count: productosIntermediosData?.length || 0,
-            color: "text-blue-600"
+            color: "text-green-600"
         },
         {
             id: "productos-reventa" as const,
