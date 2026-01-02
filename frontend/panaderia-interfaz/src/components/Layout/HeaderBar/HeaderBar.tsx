@@ -2,10 +2,16 @@ import { useState, useEffect } from "react";
 import HeaderButton from "./HeaderButton";
 import HeaderPlusButton from "./HeaderPlusButton";
 import HeaderUserButton from "./HeaderUserButton";
-import { ConfigIcon } from "@/assets/DashboardAssets";
+import { useAuth } from "@/context/AuthContext";
+import { LogOut } from "lucide-react";
 
 export default function HeaderBar() {
   const [isScrolled, setIsScrolled] = useState(false);
+  const { logout } = useAuth();
+
+  const handleLogout = async () => {
+    await logout();
+  };
 
   useEffect(() => {
     const handleScroll = () => {
@@ -34,9 +40,17 @@ export default function HeaderBar() {
         <HeaderButton icon={ConfigIcon} />
       </div>
       */}
-      <div className="flex flex-1 items-center justify-end gap-2 pr-8">
+      <div className="flex flex-1 items-center justify-end gap-3 pr-8">
         <HeaderUserButton />
-        <HeaderButton icon={ConfigIcon} />
+        <button
+          type="button"
+          onClick={handleLogout}
+          aria-label="Cerrar sesión"
+          className="flex items-center gap-2 cursor-pointer hover:bg-gray-200 rounded-full px-3 py-2 transition-colors duration-200 bg-transparent border-none outline-none text-sm font-medium text-red-600"
+        >
+          <LogOut className="w-4 h-4" />
+          <span>Cerrar sesión</span>
+        </button>
       </div>
     </div>
   );
