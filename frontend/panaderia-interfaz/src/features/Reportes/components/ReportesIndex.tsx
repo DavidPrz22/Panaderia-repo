@@ -30,7 +30,7 @@ import {
     useInventorySummaryQuery,
     useSalesSummaryQuery,
 } from "../hooks/queries/queries";
-import { downloadSalesReportPDF } from "../api/api";
+import { downloadSalesReportPDF, downloadInventoryReportPDF } from "../api/api";
 import type { InventoryItem } from "../schemas/schemas";
 
 type ReportView = "menu" | "materias-primas" | "productos-finales" | "productos-intermedios" | "productos-reventa" | "ventas";
@@ -85,6 +85,26 @@ const Reportes = () => {
             window.URL.revokeObjectURL(url);
         } catch (error) {
             console.error("Error downloading PDF:", error);
+        } finally {
+            setIsDownloading(false);
+        }
+    };
+
+    const handleDownloadInventoryPDF = async () => {
+        try {
+            setIsDownloading(true);
+            const blob = await downloadInventoryReportPDF(currentView);
+
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', `reporte_${currentView}_${new Date().toISOString().split('T')[0]}.pdf`);
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            window.URL.revokeObjectURL(url);
+        } catch (error) {
+            console.error("Error downloading inventory PDF:", error);
         } finally {
             setIsDownloading(false);
         }
@@ -541,23 +561,40 @@ const Reportes = () => {
 
         return (
             <Card>
-                <CardHeader className="flex flex-row items-center gap-4">
-                    <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => setCurrentView("menu")}
-                    >
-                        <ArrowLeft className="h-5 w-5" />
-                    </Button>
-                    <div>
-                        <CardTitle>{getViewTitle()}</CardTitle>
-                        <CardDescription>
-                            {currentView === "ventas"
-                                ? "Reporte de ventas por cada apertura y cierre de caja"
-                                : `Inventario actual de ${getViewTitle().toLowerCase()}`
-                            }
-                        </CardDescription>
+                <CardHeader className="flex flex-row items-center justify-between gap-4">
+                    <div className="flex items-center gap-4">
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => setCurrentView("menu")}
+                        >
+                            <ArrowLeft className="h-5 w-5" />
+                        </Button>
+                        <div>
+                            <CardTitle>{getViewTitle()}</CardTitle>
+                            <CardDescription>
+                                {currentView === "ventas"
+                                    ? "Reporte de ventas por cada apertura y cierre de caja"
+                                    : `Inventario actual de ${getViewTitle().toLowerCase()}`
+                                }
+                            </CardDescription>
+                        </div>
                     </div>
+                    {currentView !== "ventas" && (
+                        <Button
+                            onClick={handleDownloadInventoryPDF}
+                            disabled={isDownloading}
+                            variant="outline"
+                            className="gap-2"
+                        >
+                            {isDownloading ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : (
+                                <Download className="h-4 w-4" />
+                            )}
+                            {isDownloading ? "Generando..." : "Descargar PDF"}
+                        </Button>
+                    )}
                 </CardHeader>
                 <CardContent>
                     {currentView === "materias-primas" && renderInventoryTable(materiaPrimaData, false, isLoadingMP)}

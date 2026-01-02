@@ -201,6 +201,107 @@ class InventoryReportViewSet(viewsets.ViewSet):
         }
         return Response(counts)
 
+    @action(detail=False, methods=['get'], url_path='pdf')
+    def pdf(self, request):
+        """Generate PDF report for inventory"""
+        report_type = request.query_params.get('type', 'materias-primas')
+        
+        # Determine items and title based on report_type
+        if report_type == 'materias-primas':
+            items_qs = MateriasPrimas.objects.all()
+            title = "Reporte de Inventario - Materias Primas"
+            show_price = False
+            get_name = lambda x: x.nombre
+            get_unit = lambda x: x.unidad_medida_base.nombre_completo
+            get_mod_date = lambda x: x.fecha_ultima_actualizacion
+            get_lots_count = lambda x: LotesMateriasPrimas.objects.filter(
+                materia_prima=x, estado=LotesStatus.DISPONIBLE, fecha_caducidad__gt=timezone.now().date()
+            ).count()
+        elif report_type == 'productos-finales':
+            items_qs = ProductosElaborados.objects.filter(es_intermediario=False)
+            title = "Reporte de Inventario - Productos Finales"
+            show_price = True
+            get_name = lambda x: x.nombre_producto
+            get_unit = lambda x: x.unidad_venta.nombre_completo if x.unidad_venta else 'N/A'
+            get_mod_date = lambda x: x.fecha_modificacion_registro
+            get_lots_count = lambda x: LotesProductosElaborados.objects.filter(
+                producto_elaborado=x, estado=LotesStatus.DISPONIBLE, fecha_caducidad__gt=timezone.now().date()
+            ).count()
+        elif report_type == 'productos-intermedios':
+            items_qs = ProductosElaborados.objects.filter(es_intermediario=True)
+            title = "Reporte de Inventario - Productos Intermedios"
+            show_price = False
+            get_name = lambda x: x.nombre_producto
+            get_unit = lambda x: x.unidad_produccion.nombre_completo if x.unidad_produccion else 'N/A'
+            get_mod_date = lambda x: x.fecha_modificacion_registro
+            get_lots_count = lambda x: LotesProductosElaborados.objects.filter(
+                producto_elaborado=x, estado=LotesStatus.DISPONIBLE, fecha_caducidad__gt=timezone.now().date()
+            ).count()
+        elif report_type == 'productos-reventa':
+            items_qs = ProductosReventa.objects.all()
+            title = "Reporte de Inventario - Productos de Reventa"
+            show_price = True
+            get_name = lambda x: x.nombre_producto
+            get_unit = lambda x: x.unidad_venta.nombre_completo if x.unidad_venta else 'N/A'
+            get_mod_date = lambda x: x.fecha_modificacion_registro
+            get_lots_count = lambda x: LotesProductosReventa.objects.filter(
+                producto_reventa=x, estado=LotesStatus.DISPONIBLE, fecha_caducidad__gt=timezone.now().date()
+            ).count()
+        else:
+            return Response({'error': 'Tipo de reporte no válido'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Create PDF response
+        response = HttpResponse(content_type='application/pdf')
+        filename = f"reporte_{report_type}_{timezone.now().strftime('%Y%m%d_%H%M%S')}.pdf"
+        response['Content-Disposition'] = f'attachment; filename="{filename}"'
+        
+        # Setup PDF
+        doc = SimpleDocTemplate(response, pagesize=letter)
+        elements = []
+        styles = getSampleStyleSheet()
+        
+        # Title
+        title_style = ParagraphStyle('CustomTitle', parent=styles['Heading1'], fontSize=16, spaceAfter=20)
+        elements.append(Paragraph(title, title_style))
+        elements.append(Paragraph(f"Fecha de generación: {timezone.now().strftime('%d/%m/%Y %H:%M')}", styles['Normal']))
+        elements.append(Spacer(1, 12))
+        
+        # Table content
+        headers = ['Nombre', 'Unidad', 'Stock Actual', 'Stock Mín.', 'Lotes']
+        if show_price:
+            headers.append('Precio USD')
+        
+        data = [headers]
+        for item in items_qs:
+            punto_reorden = item.punto_reorden if hasattr(item, 'punto_reorden') else 0
+            row = [
+                get_name(item),
+                get_unit(item),
+                f"{item.stock_actual:.2f}",
+                f"{punto_reorden:.2f}" if punto_reorden is not None else "0.00",
+                str(get_lots_count(item))
+            ]
+            if show_price:
+                price = getattr(item, 'precio_venta_usd', 0)
+                row.append(f"${price:.2f}" if price is not None else "-")
+            data.append(row)
+            
+        table = Table(data, repeatRows=1)
+        table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+            ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+            ('GRID', (0, 0), (-1, -1), 1, colors.black),
+            ('FONTSIZE', (0, 0), (-1, -1), 8),
+        ]))
+        
+        elements.append(table)
+        doc.build(elements)
+        return response
+
 
 class SalesReportViewSet(viewsets.ViewSet):
     """ViewSet for sales reports"""
