@@ -8,10 +8,12 @@ export const PRTableBody = () => {
   const {
     productosReventaSearchTerm,
     selectedCategoriasReventa,
+    selectedUnidadesInventario,
     agotadosFilter,
     bajoStockFilter,
     setProductosReventaSearchTerm,
     setSelectedCategoriasReventa,
+    setSelectedUnidadesInventario,
     setBajoStockFilter,
     setAgotadosFilter,
   } = useProductosReventaContext();
@@ -35,6 +37,12 @@ export const PRTableBody = () => {
     );
   }
 
+  if (selectedUnidadesInventario.length > 0) {
+    displayData = displayData.filter((p) =>
+      p.unidad_base_inventario_nombre && selectedUnidadesInventario.includes(p.unidad_base_inventario_nombre)
+    );
+  }
+
   if (agotadosFilter && bajoStockFilter) {
     displayData = displayData.filter((p) => Number(p.stock_actual) === 0 || Number(p.stock_actual) < Number(p.punto_reorden));
   }
@@ -47,12 +55,14 @@ export const PRTableBody = () => {
   const anyFilterActive =
     productosReventaSearchTerm.length > 0 ||
     selectedCategoriasReventa.length > 0 ||
+    selectedUnidadesInventario.length > 0 ||
     agotadosFilter ||
     bajoStockFilter;
 
   const clearFilters = () => {
     setProductosReventaSearchTerm("");
     setSelectedCategoriasReventa([]);
+    setSelectedUnidadesInventario([]);
     setBajoStockFilter(false);
     setAgotadosFilter(false);
   };
