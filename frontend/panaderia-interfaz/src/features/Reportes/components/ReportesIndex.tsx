@@ -64,7 +64,7 @@ const Reportes = () => {
         } else if (estado === 'bajo') {
             return <Badge className="bg-orange-500 hover:bg-orange-600">Bajo</Badge>;
         }
-        return <Badge className="bg-accent hover:bg-accent/90">OK</Badge>;
+        return <Badge className="bg-green-500 hover:bg-green-600">OK</Badge>;
     };
 
     const handleDownloadPDF = async () => {
@@ -134,16 +134,16 @@ const Reportes = () => {
 
         return (
             <Table>
-                <TableHeader>
+                <TableHeader className="bg-blue-50">
                     <TableRow>
-                        <TableHead>Nombre</TableHead>
-                        <TableHead>Unidad</TableHead>
-                        <TableHead className="text-right">Stock</TableHead>
-                        <TableHead className="text-right">Stock Mín.</TableHead>
-                        <TableHead className="text-right">Lotes Disponibles</TableHead>
-                        {showPrice && <TableHead className="text-right">Precio</TableHead>}
-                        <TableHead>Estado</TableHead>
-                        <TableHead>Última Actualización</TableHead>
+                        <TableHead className="font-semibold">Nombre</TableHead>
+                        <TableHead className="font-semibold">Unidad</TableHead>
+                        <TableHead className="text-right font-semibold">Stock</TableHead>
+                        <TableHead className="text-right font-semibold">Stock Mín.</TableHead>
+                        <TableHead className="text-right font-semibold">Lotes Disponibles</TableHead>
+                        {showPrice && <TableHead className="text-right font-semibold">Precio</TableHead>}
+                        <TableHead className="font-semibold">Estado</TableHead>
+                        <TableHead className="font-semibold">Última Actualización</TableHead>
                     </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -153,7 +153,7 @@ const Reportes = () => {
                             <TableCell>{item.unidad_medida}</TableCell>
                             <TableCell className="text-right">{item.stock_actual.toFixed(2)}</TableCell>
                             <TableCell className="text-right">{item.punto_reorden.toFixed(2)}</TableCell>
-                            <TableCell className="text-right">{item.lotes_disponibles}</TableCell>
+                            <TableCell className="text-right">{item.lotes_disponibles === 0 ? 'Ninguno' : item.lotes_disponibles}</TableCell>
                             {showPrice && item.precio_venta_usd !== null && item.precio_venta_usd !== undefined && (
                                 <TableCell className="text-right">${item.precio_venta_usd.toFixed(2)}</TableCell>
                             )}
