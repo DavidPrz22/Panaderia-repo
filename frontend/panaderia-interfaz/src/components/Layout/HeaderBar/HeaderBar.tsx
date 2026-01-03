@@ -1,6 +1,4 @@
 import { useState, useEffect } from "react";
-import HeaderButton from "./HeaderButton";
-import HeaderPlusButton from "./HeaderPlusButton";
 import HeaderUserButton from "./HeaderUserButton";
 import { useAuth } from "@/context/AuthContext";
 import { LogOut } from "lucide-react";

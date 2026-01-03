@@ -10,6 +10,7 @@ from decimal import Decimal
 # ReportLab imports
 from reportlab.lib.pagesizes import letter
 from reportlab.lib import colors
+from reportlab.lib.colors import HexColor
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import inch
@@ -258,18 +259,34 @@ class InventoryReportViewSet(viewsets.ViewSet):
         # Setup PDF
         doc = SimpleDocTemplate(response, pagesize=letter)
         elements = []
+        # Custom styles
         styles = getSampleStyleSheet()
+        title_style = ParagraphStyle(
+            'CustomTitle', 
+            parent=styles['Heading1'], 
+            fontSize=22, 
+            textColor=HexColor('#2c3e50'),
+            alignment=1, # Center
+            spaceAfter=20,
+            fontName='Helvetica-Bold'
+        )
         
-        # Title
-        title_style = ParagraphStyle('CustomTitle', parent=styles['Heading1'], fontSize=16, spaceAfter=20)
+        subtitle_style = ParagraphStyle(
+            'Subtitle',
+            parent=styles['Normal'],
+            fontSize=10,
+            textColor=HexColor('#7f8c8d'),
+            alignment=1, # Center
+            spaceAfter=30,
+        )
+
         elements.append(Paragraph(title, title_style))
-        elements.append(Paragraph(f"Fecha de generación: {timezone.now().strftime('%d/%m/%Y %H:%M')}", styles['Normal']))
-        elements.append(Spacer(1, 12))
+        elements.append(Paragraph(f"Generado el: {timezone.now().strftime('%d/%m/%Y a las %H:%M')}", subtitle_style))
         
         # Table content
-        headers = ['Nombre', 'Unidad', 'Stock Actual', 'Stock Mín.', 'Lotes']
+        headers = ['Producto', 'Unidad', 'Stock', 'Mínimo', 'Lotes']
         if show_price:
-            headers.append('Precio USD')
+            headers.append('Precio (USD)')
         
         data = [headers]
         for item in items_qs:
@@ -286,16 +303,34 @@ class InventoryReportViewSet(viewsets.ViewSet):
                 row.append(f"${price:.2f}" if price is not None else "-")
             data.append(row)
             
+        # Modern Table Style
         table = Table(data, repeatRows=1)
         table.setStyle(TableStyle([
-            ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
-            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
-            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+            # Fonts
+            ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
             ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (-1, -1), 10),
+            ('FONTSIZE', (0, 0), (-1, 0), 11),
+            
+            # Alignment
+            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+            ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+            
+            # Header Style
+            ('BACKGROUND', (0, 0), (-1, 0), HexColor('#2c3e50')),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
             ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
-            ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
-            ('GRID', (0, 0), (-1, -1), 1, colors.black),
-            ('FONTSIZE', (0, 0), (-1, -1), 8),
+            ('TOPPADDING', (0, 0), (-1, 0), 12),
+            
+            # Row Style
+            ('TEXTCOLOR', (0, 1), (-1, -1), HexColor('#2c3e50')),
+            ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, HexColor('#f8f9fa')]),
+            ('BOTTOMPADDING', (0, 1), (-1, -1), 8),
+            ('TOPPADDING', (0, 1), (-1, -1), 8),
+            
+            # Borders (Horizontal lines only for cleaner look)
+            ('LINEBELOW', (0, 0), (-1, 0), 2, HexColor('#34495e')), # Thicker below header
+            ('LINEBELOW', (0, 1), (-1, -1), 0.5, HexColor('#bdc3c7')), # Thin below rows
         ]))
         
         elements.append(table)
@@ -447,14 +482,35 @@ class SalesReportViewSet(viewsets.ViewSet):
         title_style = ParagraphStyle(
             'CustomTitle',
             parent=styles['Heading1'],
-            fontSize=16,
-            spaceAfter=30
+            fontSize=24,
+            textColor=HexColor('#2c3e50'),
+            alignment=1, # Center
+            spaceAfter=10,
+            fontName='Helvetica-Bold'
         )
-        elements.append(Paragraph("Reporte de Ventas - Panadería", title_style))
-        elements.append(Paragraph(f"Periodo: {title_date_range}", styles['Normal']))
-        elements.append(Spacer(1, 12))
         
-        # Summary
+        subtitle_style = ParagraphStyle(
+            'Subtitle',
+            parent=styles['Normal'],
+            fontSize=11,
+            textColor=HexColor('#7f8c8d'),
+            alignment=1, # Center
+            spaceAfter=30,
+        )
+
+        elements.append(Paragraph("Reporte de Ventas", title_style))
+        elements.append(Paragraph(f"{title_date_range}", subtitle_style))
+        
+        # Summary Section
+        summary_style = ParagraphStyle(
+            'Summary',
+            parent=styles['Normal'],
+            fontSize=12,
+            textColor=HexColor('#2c3e50'),
+            spaceAfter=6,
+            leftIndent=20
+        )
+        
         total_ventas = queryset.aggregate(
             total=Sum('total_ventas_usd')
         )['total'] or 0
@@ -463,9 +519,10 @@ class SalesReportViewSet(viewsets.ViewSet):
             apertura_caja__in=queryset
         ).count()
         
-        elements.append(Paragraph(f"Total Ventas (USD): ${total_ventas:.2f}", styles['Normal']))
-        elements.append(Paragraph(f"Total Transacciones: {total_transacciones}", styles['Normal']))
-        elements.append(Spacer(1, 20))
+        elements.append(Paragraph("<b>Resumen General:</b>", summary_style))
+        elements.append(Paragraph(f"Total Ventas (USD): <b>${total_ventas:.2f}</b>", summary_style))
+        elements.append(Paragraph(f"Total Transacciones: <b>{total_transacciones}</b>", summary_style))
+        elements.append(Spacer(1, 25))
         
         # Table of sessions
         data = [['Fecha', 'Cajero', 'Efectivo', 'Tarjeta', 'Total']]
@@ -473,7 +530,7 @@ class SalesReportViewSet(viewsets.ViewSet):
         for session in queryset:
             cajero_name = session.usuario_apertura.get_full_name() if session.usuario_apertura else "N/A"
             row = [
-                session.fecha_apertura.strftime('%d/%m/%Y %H:%M'),
+                session.fecha_apertura.strftime('%d/%m/%Y'),
                 cajero_name,
                 f"${session.total_efectivo_usd:.2f}",
                 f"${session.total_tarjeta_usd:.2f}",
@@ -481,15 +538,33 @@ class SalesReportViewSet(viewsets.ViewSet):
             ]
             data.append(row)
             
-        table = Table(data)
+        table = Table(data, repeatRows=1)
         table.setStyle(TableStyle([
-            ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
-            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
-            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+            # Fonts
+            ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
             ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (-1, -1), 10),
+            ('FONTSIZE', (0, 0), (-1, 0), 11),
+            
+            # Alignment
+            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+            ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+            
+            # Header Style
+            ('BACKGROUND', (0, 0), (-1, 0), HexColor('#2c3e50')),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
             ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
-            ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
-            ('GRID', (0, 0), (-1, -1), 1, colors.black),
+            ('TOPPADDING', (0, 0), (-1, 0), 12),
+            
+            # Row Style
+            ('TEXTCOLOR', (0, 1), (-1, -1), HexColor('#2c3e50')),
+            ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, HexColor('#f8f9fa')]),
+            ('BOTTOMPADDING', (0, 1), (-1, -1), 8),
+            ('TOPPADDING', (0, 1), (-1, -1), 8),
+            
+            # Borders
+            ('LINEBELOW', (0, 0), (-1, 0), 2, HexColor('#34495e')),
+            ('LINEBELOW', (0, 1), (-1, -1), 0.5, HexColor('#bdc3c7')),
         ]))
         
         elements.append(table)
