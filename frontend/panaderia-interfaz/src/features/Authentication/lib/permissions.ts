@@ -17,8 +17,6 @@ export const PERMISSIONS: Permissions = {
         // Full CRUD - Sales Orders
         'view:ordenes_venta',
         'add:ordenes_venta',
-        'edit:ordenes_venta',
-        'delete:ordenes_venta',
 
         // Full CRUD - Notifications
         'view:notificaciones',

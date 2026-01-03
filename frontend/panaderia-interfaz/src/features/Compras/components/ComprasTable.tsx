@@ -29,7 +29,7 @@ export const ComprasTable = ({
   onEditOrder,
 }: ComprasTableProps) => {
   const { compraSeleccionadaId, setCompraSeleccionadaId } = useComprasContext();
-
+  
   const { isFetching: isFetchingOrdenDetalles } = useGetOrdenesCompraDetalles(
     compraSeleccionadaId!,
   );
@@ -88,6 +88,7 @@ export const ComprasTable = ({
     return b.id - a.id;
   });
 
+
   return (
     <div className="border rounded-lg bg-card shadow-sm relative">
       {isFetchingOrdenDetalles && (
@@ -141,26 +142,26 @@ export const ComprasTable = ({
                   {formatCurrency(ordenCompra.monto_total_oc_usd)}
                 </TableCell>
                 <TableCell onClick={(e) => e.stopPropagation()}>
-                  <div className="flex gap-1 justify-center">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => onEditOrder(ordenCompra)}
-                      className="hover:bg-gray-400 "
-                      title="Editar"
-                    >
-                      <Pencil className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => handleDeleteClick(ordenCompra.id)}
-                      className="hover:bg-red-100 text-red-600 hover:text-red-700"
-                      title="Eliminar"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
+                    <div className="flex gap-1 justify-center">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => onEditOrder(ordenCompra)}
+                        className="hover:bg-gray-400 "
+                        title="Editar"
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleDeleteClick(ordenCompra.id)}
+                        className="hover:bg-red-100 text-red-600 hover:text-red-700"
+                        title="Eliminar"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
                 </TableCell>
               </TableRow>
             ))

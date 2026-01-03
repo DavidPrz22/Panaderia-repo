@@ -38,7 +38,7 @@ from django.utils import timezone
 from apps.inventario.models import LotesStatus
 from apps.core.services.services import NotificationService
 from djangobackend.pagination import StandardResultsSetPagination
-from djangobackend.permissions import IsAllUsersCRUD, IsStaffLevel
+from djangobackend.permissions import IsAllUsersCRUD, IsStaffLevel, IsStafforVendedorReadandCreate
 
 from apps.core.models import TiposMetodosDePago, MetodosDePago
 import logging
@@ -147,7 +147,7 @@ class OrdenesTableViewset(viewsets.ModelViewSet):
     queryset = OrdenVenta.objects.order_by('-id')
     serializer_class = OrdenesTableSerializer
     pagination_class = StandardResultsSetPagination
-    permission_classes = [IsAllUsersCRUD]
+    permission_classes = [IsStafforVendedorReadandCreate]
 
 
 class OrdenesViewSet(viewsets.ModelViewSet):
