@@ -145,10 +145,8 @@ class AperturaCierreCaja(models.Model):
             totales[key_ves] = result['total_ves'] or Decimal('0')
 
         # Calculate Change breakdown
-        # Cash change (only for payments whose method is EFECTIVO)
-        cambio_efectivo = pagos.filter(
-            metodo_pago__nombre_metodo__iexact='efectivo'
-        ).aggregate(
+        # Cash change (sum from all payments that might have generated change in cash)
+        cambio_efectivo = pagos.aggregate(
             total_cambio_efectivo_usd=Sum('cambio_efectivo_usd'),
             total_cambio_efectivo_ves=Sum('cambio_efectivo_ves'),
         )
@@ -187,6 +185,13 @@ class AperturaCierreCaja(models.Model):
         self.total_transferencia_ves = totales['transferencia_ves']
         self.total_pago_movil_usd = totales['pago_movil_usd']
         self.total_pago_movil_ves = totales['pago_movil_ves']
+        
+        # Update detailed change totals
+        self.total_cambio_efectivo_usd = totales['cambio_efectivo_usd']
+        self.total_cambio_efectivo_ves = totales['cambio_efectivo_ves']
+        self.total_cambio_pago_movil_usd = totales['cambio_pago_movil_usd']
+        self.total_cambio_pago_movil_ves = totales['cambio_pago_movil_ves']
+        
         self.total_cambio_usd = totales['cambio_usd']
         self.total_cambio_ves = totales['cambio_ves']
         self.total_ventas_usd = totales['total_ventas_usd']

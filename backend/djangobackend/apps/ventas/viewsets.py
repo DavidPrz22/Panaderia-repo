@@ -102,10 +102,14 @@ class AperturaCierreCajaViewSet(viewsets.ModelViewSet):
                 caja.notas_cierre = serializer.validated_data.get('notas_cierre', '')
                 
                 # 3. Set Final Counts (Counted by cashier)
-                final_usd = serializer.validated_data.get('monto_final_usd') or Decimal('0')
-                final_ves = serializer.validated_data.get('monto_final_ves') or Decimal('0')
-                caja.monto_final_usd = final_usd
-                caja.monto_final_ves = final_ves
+                # If not provided, assume valid (expected) amount to avoid massive "missing" money in reports
+                esperado_usd, esperado_ves = caja.calcular_efectivo_esperado()
+                
+                final_usd = serializer.validated_data.get('monto_final_usd')
+                final_ves = serializer.validated_data.get('monto_final_ves')
+                
+                caja.monto_final_usd = final_usd if final_usd is not None else esperado_usd
+                caja.monto_final_ves = final_ves if final_ves is not None else esperado_ves
 
                 # 4. Calculate Discrepancy (Expected vs Counted) using Model method
                 caja.calcular_diferencia_efectivo()

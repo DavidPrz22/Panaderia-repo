@@ -122,6 +122,8 @@ export const sessionDetailSchema = z.object({
     total_pago_movil_ves: z.string().transform(Number).nullable(),
     total_cambio_usd: z.string().transform(Number).nullable(),
     total_cambio_ves: z.string().transform(Number).nullable(),
+    total_cambio_efectivo_ves: z.string().transform(Number).nullable(),
+    total_cambio_pago_movil_ves: z.string().transform(Number).nullable(),
     total_ventas_usd: z.string().transform(Number).nullable(),
     total_ventas_ves: z.string().transform(Number).nullable(),
     diferencia_usd: z.string().transform(Number).nullable(),

@@ -123,6 +123,8 @@ class SessionDetailSerializer(serializers.ModelSerializer):
             'total_pago_movil_ves',
             'total_cambio_usd',
             'total_cambio_ves',
+            'total_cambio_efectivo_ves',
+            'total_cambio_pago_movil_ves',
             'total_ventas_usd',
             'total_ventas_ves',
             'diferencia_usd',

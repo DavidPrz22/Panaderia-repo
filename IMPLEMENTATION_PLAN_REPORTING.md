@@ -92,6 +92,23 @@ Define Zod schemas matching the backend response.
 3. [x] Finish the "Details Panel" in the frontend UI.
 4. [x] Connect "Download PDF" button to the backend endpoint.
 
+### Proposed Changes
+
+### [Backend] [serializers.py](file:///home/davidprz/projects/PanaderiaSystem/backend/djangobackend/apps/reportes/serializers.py)
+#### [MODIFY] Add `total_cambio_efectivo_ves` and `total_cambio_pago_movil_ves` to `SessionDetailSerializer`.
+
+### [Frontend] [schemas.ts](file:///home/davidprz/projects/PanaderiaSystem/frontend/panaderia-interfaz/src/features/Reportes/schemas/schemas.ts)
+#### [MODIFY] Update `sessionDetailSchema` to include the new change fields.
+
+### [Frontend] [ReportesIndex.tsx](file:///home/davidprz/projects/PanaderiaSystem/frontend/panaderia-interfaz/src/features/Reportes/components/ReportesIndex.tsx)
+#### [MODIFY] Update "Resumen de Totales" tab:
+- Add a new "Efectivo en Caja (Teórico)" card calculated as `Monto Inicial + Ventas Efectivo - Cambio en Efectivo`.
+- Add a "Desglose de Cambio" section showing:
+    - Cambio en Efectivo
+    - Cambio en Pago Móvil
+    - Total Cambio
+- Clarify "Monto Inicial" and "Monto Final" are general totals.
+
 ### Phase 4: Testing & Polish
 1. [ ] Verify stock counts match actual data in database.
 2. [ ] Test date filtering across months/years.

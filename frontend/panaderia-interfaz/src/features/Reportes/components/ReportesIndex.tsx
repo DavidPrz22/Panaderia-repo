@@ -248,15 +248,15 @@ const Reportes = () => {
         return (
             <Table>
                 <TableHeader>
-                    <TableRow>
-                        <TableHead>Fecha</TableHead>
-                        <TableHead>Horario</TableHead>
-                        <TableHead>Cajero</TableHead>
-                        <TableHead className="text-right">Efectivo Inicial</TableHead>
-                        <TableHead className="text-right">Ventas Efectivo</TableHead>
-                        <TableHead className="text-right">Ventas Tarjeta</TableHead>
-                        <TableHead className="text-right">Total Ventas</TableHead>
-                        <TableHead className="text-right">Transacciones</TableHead>
+                    <TableRow className="bg-blue-100">
+                        <TableHead className="font-semibold">Fecha</TableHead>
+                        <TableHead className="font-semibold">Horario</TableHead>
+                        <TableHead className="font-semibold">Cajero</TableHead>
+                        <TableHead className="text-right font-semibold">Efectivo Inicial</TableHead>
+                        <TableHead className="text-right font-semibold">Ventas Efectivo</TableHead>
+                        <TableHead className="text-right font-semibold">Ventas Tarjeta</TableHead>
+                        <TableHead className="text-right font-semibold">Total Ventas</TableHead>
+                        <TableHead className="text-right font-semibold">Transacciones</TableHead>
                         <TableHead></TableHead>
                     </TableRow>
                 </TableHeader>
@@ -307,6 +307,10 @@ const Reportes = () => {
             return null;
         }
 
+        const efectivoEnCaja = (sessionDetail.monto_inicial_ves || 0) +
+            (sessionDetail.total_efectivo_ves || 0) -
+            (sessionDetail.total_cambio_efectivo_ves || 0);
+
         return (
             <div className="space-y-6">
                 {/* Session Header */}
@@ -348,21 +352,40 @@ const Reportes = () => {
                         <div className="grid grid-cols-2 gap-4">
                             <Card>
                                 <CardHeader className="pb-3">
-                                    <CardTitle className="text-sm font-medium">Efectivo Inicial</CardTitle>
+                                    <CardTitle className="text-sm font-medium">Monto Inicial (General)</CardTitle>
                                 </CardHeader>
                                 <CardContent>
                                     <div className="text-2xl font-bold">Bs. {sessionDetail.monto_inicial_ves?.toFixed(2) || '0.00'}</div>
+                                    <p className="text-xs text-muted-foreground mt-1">Base de caja</p>
                                 </CardContent>
                             </Card>
                             <Card>
                                 <CardHeader className="pb-3">
-                                    <CardTitle className="text-sm font-medium">Efectivo Final</CardTitle>
+                                    <CardTitle className="text-sm font-medium">Monto Final (General)</CardTitle>
                                 </CardHeader>
                                 <CardContent>
                                     <div className="text-2xl font-bold">Bs. {sessionDetail.monto_final_ves?.toFixed(2) || '0.00'}</div>
+                                    <p className="text-xs text-muted-foreground mt-1">Total contado al cierre</p>
                                 </CardContent>
                             </Card>
                         </div>
+
+                        <Card className="bg-primary/5 border-primary/20">
+                            <CardHeader className="pb-3">
+                                <CardTitle className="text-base font-semibold flex items-center gap-2">
+                                    <ShoppingBag className="h-4 w-4" />
+                                    Efectivo en Caja (Teórico)
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="text-3xl font-bold text-primary">Bs. {efectivoEnCaja.toFixed(2)}</div>
+                                <p className="text-sm text-muted-foreground mt-1">
+                                    Inicial ({sessionDetail.monto_inicial_ves?.toFixed(2)}) +
+                                    Ventas Efectivo ({sessionDetail.total_efectivo_ves?.toFixed(2)}) -
+                                    Cambio Efectivo ({sessionDetail.total_cambio_efectivo_ves?.toFixed(2) || '0.00'})
+                                </p>
+                            </CardContent>
+                        </Card>
 
                         <Card>
                             <CardHeader>
@@ -389,6 +412,27 @@ const Reportes = () => {
                                 <div className="flex justify-between text-lg font-bold">
                                     <span>Total Ventas:</span>
                                     <span>Bs. {sessionDetail.total_ventas_ves?.toFixed(2) || '0.00'}</span>
+                                </div>
+                            </CardContent>
+                        </Card>
+
+                        <Card>
+                            <CardHeader>
+                                <CardTitle className="text-base">Desglose de Cambio (Vuelto)</CardTitle>
+                            </CardHeader>
+                            <CardContent className="space-y-2">
+                                <div className="flex justify-between">
+                                    <span className="text-muted-foreground">Cambio en Efectivo:</span>
+                                    <span className="font-medium text-orange-600">- Bs. {sessionDetail.total_cambio_efectivo_ves?.toFixed(2) || '0.00'}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                    <span className="text-muted-foreground">Cambio en Pago Móvil:</span>
+                                    <span className="font-medium text-orange-600">- Bs. {sessionDetail.total_cambio_pago_movil_ves?.toFixed(2) || '0.00'}</span>
+                                </div>
+                                <hr className="my-2 border-t border-dashed" />
+                                <div className="flex justify-between font-semibold">
+                                    <span>Total Cambio Otorgado:</span>
+                                    <span className="text-orange-700">- Bs. {sessionDetail.total_cambio_ves?.toFixed(2) || '0.00'}</span>
                                 </div>
                             </CardContent>
                         </Card>
