@@ -4,90 +4,82 @@ import type * as types from "../types";
 
 const BASE_URL = "/api/dashboard";
 
-const handleDashboardError = (error: unknown, message: string): never => {
-  // Centralized logging for dashboard API errors
-  // You can later hook this into a toast system or monitoring tool
-  console.error(message, error);
-
-  if (error instanceof Error) {
+export const getSalesToday = async (): Promise<types.SalesToday | undefined> => {
+  try {
+    const response = await apiClient.get(`${BASE_URL}/sales-today/`);
+    return schemas.SalesTodaySchema.parse(response.data);
+  } catch (error) {
+    console.error("Error al obtener ventas del día", error);
     throw error;
   }
-
-  throw new Error(message);
 };
 
-export const dashboardApi = {
-  // Card endpoints
-  async getSalesToday(): Promise<types.SalesToday> {
-    try {
-      const response = await apiClient.get(`${BASE_URL}/sales-today/`);
-      return schemas.SalesTodaySchema.parse(response.data);
-    } catch (error) {
-      handleDashboardError(error, "Error al obtener ventas del día");
-    }
-  },
+export const getPendingOrders = async (): Promise<types.PendingOrders | undefined> => {
+  try {
+    const response = await apiClient.get(`${BASE_URL}/pending-orders/`);
+    return schemas.PendingOrdersSchema.parse(response.data);
+  } catch (error) {
+    console.error("Error al obtener pedidos pendientes", error);
+    throw error;
+  }
+};
 
-  async getPendingOrders(): Promise<types.PendingOrders> {
-    try {
-      const response = await apiClient.get(`${BASE_URL}/pending-orders/`);
-      return schemas.PendingOrdersSchema.parse(response.data);
-    } catch (error) {
-      handleDashboardError(error, "Error al obtener pedidos pendientes");
-    }
-  },
+export const getStockAlerts = async (): Promise<types.StockAlerts | undefined> => {
+  try {
+    const response = await apiClient.get(`${BASE_URL}/stock-alerts/`);
+    return schemas.StockAlertsSchema.parse(response.data);
+  } catch (error) {
+    console.error("Error al obtener alertas de stock", error);
+    throw error;
+  }
+};
 
-  async getStockAlerts(): Promise<types.StockAlerts> {
-    try {
-      const response = await apiClient.get(`${BASE_URL}/stock-alerts/`);
-      return schemas.StockAlertsSchema.parse(response.data);
-    } catch (error) {
-      handleDashboardError(error, "Error al obtener alertas de stock");
-    }
-  },
+export const getRecentProductions = async (): Promise<types.RecentProductions | undefined> => {
+  try {
+    const response = await apiClient.get(`${BASE_URL}/recent-productions/`);
+    return schemas.RecentProductionsSchema.parse(response.data);
+  } catch (error) {
+    console.error("Error al obtener producción reciente", error);
+    throw error;
+  }
+};
 
-  async getRecentProductions(): Promise<types.RecentProductions> {
-    try {
-      const response = await apiClient.get(`${BASE_URL}/recent-productions/`);
-      return schemas.RecentProductionsSchema.parse(response.data);
-    } catch (error) {
-      handleDashboardError(error, "Error al obtener producción reciente");
-    }
-  },
+export const getSalesTrends = async (): Promise<types.SalesTrendData | undefined> => {
+  try {
+    const response = await apiClient.get(`${BASE_URL}/sales-trends/`);
+    return schemas.SalesTrendDataSchema.parse(response.data);
+  } catch (error) {
+    console.error("Error al obtener tendencias de ventas", error);
+    throw error;
+  }
+};
 
-  // Grid section endpoints
-  async getSalesTrends(): Promise<types.SalesTrendData> {
-    try {
-      const response = await apiClient.get(`${BASE_URL}/sales-trends/`);
-      return schemas.SalesTrendDataSchema.parse(response.data);
-    } catch (error) {
-      handleDashboardError(error, "Error al obtener tendencias de ventas");
-    }
-  },
+export const getTopProducts = async (): Promise<types.TopProductsData | undefined> => {
+  try {
+    const response = await apiClient.get(`${BASE_URL}/top-products/`);
+    return schemas.TopProductsDataSchema.parse(response.data);
+  } catch (error) {
+    console.error("Error al obtener productos más vendidos", error);
+    throw error;
+  }
+};
 
-  async getTopProducts(): Promise<types.TopProductsData> {
-    try {
-      const response = await apiClient.get(`${BASE_URL}/top-products/`);
-      return schemas.TopProductsDataSchema.parse(response.data);
-    } catch (error) {
-      handleDashboardError(error, "Error al obtener productos más vendidos");
-    }
-  },
+export const getRecentPurchases = async (): Promise<types.RecentPurchases | undefined> => {
+  try {
+    const response = await apiClient.get(`${BASE_URL}/recent-purchases/`);
+    return schemas.RecentPurchasesSchema.parse(response.data);
+  } catch (error) {
+    console.error("Error al obtener compras recientes", error);
+    throw error;
+  }
+};
 
-  async getRecentPurchases(): Promise<types.RecentPurchases> {
-    try {
-      const response = await apiClient.get(`${BASE_URL}/recent-purchases/`);
-      return schemas.RecentPurchasesSchema.parse(response.data);
-    } catch (error) {
-      handleDashboardError(error, "Error al obtener compras recientes");
-    }
-  },
-
-  async getRecentSales(): Promise<types.RecentSales> {
-    try {
-      const response = await apiClient.get(`${BASE_URL}/recent-sales/`);
-      return schemas.RecentSalesSchema.parse(response.data);
-    } catch (error) {
-      handleDashboardError(error, "Error al obtener ventas recientes");
-    }
-  },
+export const getRecentSales = async (): Promise<types.RecentSales | undefined> => {
+  try {
+    const response = await apiClient.get(`${BASE_URL}/recent-sales/`);
+    return schemas.RecentSalesSchema.parse(response.data);
+  } catch (error) {
+    console.error("Error al obtener ventas recientes", error);
+    throw error;
+  }
 };
