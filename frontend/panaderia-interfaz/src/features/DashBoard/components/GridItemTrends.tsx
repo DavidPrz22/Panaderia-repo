@@ -11,7 +11,7 @@ export const GridItemTrends = () => {
 
   if (isLoading) {
     return (
-      <div className="bg-white lg:col-start-1 lg:col-end-7 row-start-1 row-end-2 h-full min-h-[400px]">
+      <div className="lg:col-start-1 lg:col-end-7 row-start-1 row-end-2 h-full min-h-[400px]">
         <ChartSkeleton />
       </div>
     );

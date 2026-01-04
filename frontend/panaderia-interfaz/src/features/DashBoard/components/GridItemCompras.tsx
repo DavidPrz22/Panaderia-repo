@@ -17,7 +17,7 @@ export const GridItemCompras = () => {
 
   if (isLoading) {
     return (
-      <div className="lg:col-start-1 lg:col-end-6 min-h-[300px]">
+      <div className="lg:col-start-1 lg:col-end-6 h-full min-h-[300px]">
         <TableSkeleton />
       </div>
     );

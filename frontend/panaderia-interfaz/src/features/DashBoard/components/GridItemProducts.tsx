@@ -21,7 +21,7 @@ export const GridItemProducts = () => {
 
   if (isLoading) {
     return (
-      <div className="bg-white lg:col-start-7 lg:col-end-11 h-full min-h-[400px]">
+      <div className="lg:col-start-7 lg:col-end-11 h-full min-h-[400px]">
         <ChartSkeleton />
       </div>
     );

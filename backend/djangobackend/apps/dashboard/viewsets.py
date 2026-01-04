@@ -90,9 +90,9 @@ class DashboardViewSet(viewsets.ViewSet):
         today = timezone.now().date()
         two_days_from_now = today + timedelta(days=2)
 
-        # Get pending orders based on estado_orden (adjust status filtering as needed)
+        # Get pending orders based on estado_orden
         pending_orders = OrdenVenta.objects.filter(
-            estado_orden__nombre_estado__in=['Pendiente', 'En Proceso']  # Use the correct field name from EstadosOrdenVenta
+            estado_orden__nombre_estado__in=['Pendiente', 'En Proceso']
         )
 
         total_pending = pending_orders.count()
@@ -159,8 +159,7 @@ class DashboardViewSet(viewsets.ViewSet):
         expired = expired_mp + expired_pe + expired_pr
 
         # Count lots under reorder point (we'll assume a simple threshold)
-        # You can adjust this logic based on your reorder point field
-        under_reorder = 0  # This would need custom logic based on your reorder point setup
+        under_reorder = 0 
 
         total_alerts = under_reorder + out_of_stock + expired
         critical_count = out_of_stock + expired
@@ -339,7 +338,10 @@ class DashboardViewSet(viewsets.ViewSet):
         """
         recent_sales = Ventas.objects.select_related(
             'cliente'
-        ).order_by('-fecha_venta')[:10]
+        ).prefetch_related(
+            'pagos_set',
+            'pagos_set__metodo_pago'
+        ).order_by('-fecha_venta', '-id')[:10]
 
         sales_data = [
             {
@@ -361,6 +363,25 @@ class DashboardViewSet(viewsets.ViewSet):
         """
         Helper to determine primary payment method for a sale.
         """
-        # Since Ventas uses Pagos model, we'll return a generic method for now
-        # You can enhance this by checking the related Pagos records
-        return 'mixto'
+        pagos = sale.pagos_set.all()
+        if not pagos:
+            return 'pendiente'
+            
+        methods = {p.metodo_pago.nombre_metodo.lower() for p in pagos}
+        
+        if len(methods) > 1:
+            return 'mixto'
+            
+        method = list(methods)[0]
+        
+        # Normalize method names
+        if 'efectivo' in method:
+            return 'efectivo'
+        elif 'pago m' in method or 'movil' in method or 'móvil' in method:
+            return 'pago_movil'
+        elif 'punto' in method or 'tarjeta' in method or 'debito' in method or 'débito' in method or 'credito' in method or 'crédito' in method:
+            return 'tarjeta'
+        elif 'transf' in method or 'zelle' in method:
+            return 'transferencia'
+            
+        return method
