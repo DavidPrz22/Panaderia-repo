@@ -31,6 +31,8 @@ type ProductosReventaContextType = {
   setProductosReventaSearchTerm: React.Dispatch<React.SetStateAction<string>>;
   selectedCategoriasReventa: string[];
   setSelectedCategoriasReventa: React.Dispatch<React.SetStateAction<string[]>>;
+  selectedUnidadesInventario: string[];
+  setSelectedUnidadesInventario: React.Dispatch<React.SetStateAction<string[]>>;
   showPRFiltersPanel: boolean;
   setShowPRFiltersPanel: React.Dispatch<React.SetStateAction<boolean>>;
   bajoStockFilter: boolean;
@@ -72,6 +74,7 @@ export const ProductosReventaProvider = ({ children }: childrenProp) => {
   // Search & filters state
   const [productosReventaSearchTerm, setProductosReventaSearchTerm] = useState("");
   const [selectedCategoriasReventa, setSelectedCategoriasReventa] = useState<string[]>([]);
+  const [selectedUnidadesInventario, setSelectedUnidadesInventario] = useState<string[]>([]);
   const [showPRFiltersPanel, setShowPRFiltersPanel] = useState(false);
   const [bajoStockFilter, setBajoStockFilter] = useState(false);
   const [agotadosFilter, setAgotadosFilter] = useState(false);
@@ -107,6 +110,8 @@ export const ProductosReventaProvider = ({ children }: childrenProp) => {
         setProductosReventaSearchTerm,
         selectedCategoriasReventa,
         setSelectedCategoriasReventa,
+        selectedUnidadesInventario,
+        setSelectedUnidadesInventario,
         showPRFiltersPanel,
         setShowPRFiltersPanel,
         bajoStockFilter,

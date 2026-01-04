@@ -67,6 +67,38 @@ class IsStaffOrVendedorReadOnly(permissions.BasePermission):
         return (staff_permission.has_object_permission(request, view, obj) or 
                 vendedor_permission.has_object_permission(request, view, obj))
 
+class IsStafforVendedorReadandCreate(permissions.BasePermission):
+    """
+    Composite permission:
+    - Admin and Gerente have full access (via IsStaffLevel)
+    - Vendedor has read and create access (via IsVendedor)
+    
+    Used for: Materias Primas, Products
+    """
+
+    def has_permission(self, request, view):
+        # 1. Check for Staff Level (Admin/Manager) - Full Access
+        if IsStaffLevel().has_permission(request, view):
+            return True
+            
+        # 2. Check for Vendedor - Read & Create Access Only
+        if request.user.is_authenticated and request.user.rol == UserRoles.SALES:
+            # Allow SAFE methods (GET, HEAD, OPTIONS) OR POST (Create)
+            return request.method in permissions.SAFE_METHODS or request.method == 'POST'
+            
+        return False
+
+    def has_object_permission(self, request, view, obj):
+        # 1. Check for Staff Level - Full Access
+        if IsStaffLevel().has_object_permission(request, view, obj):
+             return True
+
+        # 2. Check for Vendedor - Read Only object access
+        # (They can create via POST in has_permission, but usually can't EDIT/DELETE objects)
+        if request.user.is_authenticated and request.user.rol == UserRoles.SALES:
+            return request.method in permissions.SAFE_METHODS
+            
+        return False
 
 class IsStaffLevelOnly(permissions.BasePermission):
     """

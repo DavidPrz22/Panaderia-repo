@@ -52,8 +52,8 @@ export const PAYMENT_METHOD_LABELS: Record<string, string> = {
 // Methods that require reference number
 export const METHODS_WITH_REFERENCE: PaymentMethod[] = ["tarjeta", "transferencia", "pago_movil"];
 
-// Quick amount presets
-export const QUICK_AMOUNTS = [50, 100, 200, 500, 1000];
+// Quick amount presets (in Bs.)
+export const QUICK_AMOUNTS = [500, 1000, 2000, 5000, 10000];
 
 // Tax rate
 export const TAX_RATE = 0.16;

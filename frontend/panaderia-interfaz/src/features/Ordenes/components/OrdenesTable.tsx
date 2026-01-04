@@ -16,6 +16,9 @@ import { useDeleteOrdenMutation } from "../hooks/mutations/mutations";
 import { toast } from "sonner";
 import { useOrdenesContext } from "@/context/OrdenesContext";
 
+import { useAuth } from "@/context/AuthContext";
+import { userHasPermission } from "@/features/Authentication/lib/utils";
+
 interface OrdersTableProps {
   orders: OrdenTable[];
   onEditOrder: (order: OrdenTable) => void;
@@ -29,6 +32,8 @@ export const OrdersTable = ({ orders, onEditOrder }: OrdersTableProps) => {
   const { isFetching: isFetchingOrdenDetalles } = useGetOrdenesDetalles(
     ordenSeleccionadaId!,
   );
+
+  const { user } = useAuth();
 
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [ordenToDelete, setOrdenToDelete] = useState<number | null>(null);
@@ -81,6 +86,8 @@ export const OrdersTable = ({ orders, onEditOrder }: OrdersTableProps) => {
 
   orders.sort((a, b) => b.id - a.id);
 
+  const canAccessActions = userHasPermission(user!, 'edit', 'ordenes_venta') && userHasPermission(user!, 'delete', 'ordenes_venta')
+
   return (
     <div className="border rounded-lg bg-card shadow-sm relative">
       {isFetchingOrdenDetalles && (
@@ -98,8 +105,10 @@ export const OrdersTable = ({ orders, onEditOrder }: OrdersTableProps) => {
             <TableHead className="font-semibold">Entrega</TableHead>
             <TableHead className="font-semibold">Estado</TableHead>
             <TableHead className="font-semibold">Pago</TableHead>
-            <TableHead className="font-semibold text-right">Total</TableHead>
-            <TableHead className="font-semibold text-center"></TableHead>
+            <TableHead className="font-semibold text-right pr-4">Total</TableHead>
+            {canAccessActions && (
+              <TableHead className="font-semibold text-center"></TableHead>
+            )}
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -125,30 +134,32 @@ export const OrdersTable = ({ orders, onEditOrder }: OrdersTableProps) => {
                 />
               </TableCell>
               <TableCell>{order.metodo_pago}</TableCell>
-              <TableCell className="text-right font-medium">
+              <TableCell className="text-right font-medium pr-4">
                 {formatCurrency(order.total)}
               </TableCell>
-              <TableCell onClick={(e) => e.stopPropagation()}>
-                <div className="flex gap-1 justify-center">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => onEditOrder(order)}
-                    title="Editar"
-                  >
-                    <Pencil className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => handleDeleteClick(order.id)}
-                    className="hover:bg-red-100 text-red-600 hover:text-red-700"
-                    title="Eliminar"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
-              </TableCell>
+              { canAccessActions && (
+                <TableCell onClick={(e) => e.stopPropagation()}>
+                  <div className="flex gap-1 justify-center">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => onEditOrder(order)}
+                      title="Editar"
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handleDeleteClick(order.id)}
+                      className="hover:bg-red-100 text-red-600 hover:text-red-700"
+                      title="Eliminar"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </TableCell>
+              )}
             </TableRow>
           ))}
         </TableBody>

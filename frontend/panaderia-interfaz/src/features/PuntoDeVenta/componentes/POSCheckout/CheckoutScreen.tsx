@@ -29,23 +29,37 @@ export function CheckoutScreen({ onBack, onComplete, setValue, isProcessing }: C
     const { toast } = useToast();
     const { data } = useBCVRateQuery();
 
-    // Calculate totals
-    const total = RoundToTwo(carrito.reduce((sum, item) => sum + item.subtotal, 0));
-    const totalWithTax = RoundToTwo(calculateTotalWithTax(total));
+    const rate = data?.promedio || 0;
+
+    // Calculate totals in Bolívares (Bs.) as base currency
+    const totalBs = RoundToTwo(carrito.reduce((sum, item) => sum + item.subtotal * rate, 0));
+    const totalWithTax = RoundToTwo(calculateTotalWithTax(totalBs));
     const isSplitMode = selectedPaymentMethod === "dividir";
 
     // Format payments for form submission
     useEffect(() => {
-        const pago_con_formato = splitPayments.map((pago) => ({
-            metodo_pago: pago.method,
-            monto_pago_usd: RoundToTwo(pago.amount),
-            monto_pago_ves: RoundToTwo(pago.amount * (data?.promedio || 0)),
-            referencia_pago: pago.reference || undefined, // Sync reference
-            cambio_efectivo_usd: pago.change ? RoundToTwo(pago.change) : undefined,
-            cambio_efectivo_ves: pago.change ? RoundToTwo(pago.change * (data?.promedio || 0)) : undefined,
-        }));
+        const pago_con_formato = splitPayments.map((pago) => {
+            const hasChange = !!pago.change && pago.change > 0;
+            const changeBs = hasChange ? RoundToTwo(pago.change!) : 0;
+            const changeUsd = hasChange && rate ? RoundToTwo(changeBs / rate) : 0;
+
+            const isCambioPagoMovil = pago.changeDelivery === "pago_movil";
+
+            return {
+                metodo_pago: pago.method,
+                // Base currency is now Bolívares (Bs.)
+                monto_pago_ves: RoundToTwo(pago.amount),
+                monto_pago_usd: rate ? RoundToTwo(pago.amount / rate) : 0,
+                referencia_pago: pago.reference || undefined, // Sync reference
+                // Split change between efectivo vs pago_movil for audits
+                cambio_efectivo_ves: hasChange && !isCambioPagoMovil ? changeBs : undefined,
+                cambio_efectivo_usd: hasChange && !isCambioPagoMovil ? changeUsd : undefined,
+                cambio_pago_movil_ves: hasChange && isCambioPagoMovil ? changeBs : undefined,
+                cambio_pago_movil_usd: hasChange && isCambioPagoMovil ? changeUsd : undefined,
+            };
+        });
         setValue?.("pagos", pago_con_formato);
-    }, [splitPayments, setValue, data]);
+    }, [splitPayments, setValue, rate]);
 
     // Initialize Split Payments logic when switching modes
     useEffect(() => {
@@ -60,7 +74,8 @@ export function CheckoutScreen({ onBack, onComplete, setValue, isProcessing }: C
                 method: selectedPaymentMethod,
                 amount: totalWithTax,
                 change: 0,
-                reference: ""
+                reference: "",
+                changeDelivery: "efectivo",
             }]);
             setPaymentReference("");
         }
@@ -139,7 +154,8 @@ export function CheckoutScreen({ onBack, onComplete, setValue, isProcessing }: C
             method: "efectivo",
             amount: totalWithTax,
             change: 0,
-            reference: ""
+            reference: "",
+            changeDelivery: "efectivo",
         }]);
         setSelectedSplitIndex(null);
         setPaymentReference("");
@@ -150,7 +166,14 @@ export function CheckoutScreen({ onBack, onComplete, setValue, isProcessing }: C
         if (isSplitMode) {
             if (selectedSplitIndex !== null && selectedSplitIndex < splitPayments.length) {
                 const updated = [...splitPayments];
-                updated[selectedSplitIndex] = { ...updated[selectedSplitIndex], amount, change };
+                const current = updated[selectedSplitIndex];
+                updated[selectedSplitIndex] = {
+                    ...current,
+                    amount,
+                    change,
+                    // Default change delivery to efectivo when we first have change
+                    changeDelivery: change && change > 0 ? (current.changeDelivery || "efectivo") : current.changeDelivery,
+                };
                 setSplitPayments(updated);
             }
         } else {
@@ -158,11 +181,13 @@ export function CheckoutScreen({ onBack, onComplete, setValue, isProcessing }: C
             if (selectedPaymentMethod) {
                 // Update the single payment entry
                 // We preserve reference if it exists in state
+                const prev = splitPayments[0];
                 const updated: SplitPayment[] = [{
                     method: selectedPaymentMethod,
                     amount,
                     change,
-                    reference: paymentReference // Use state reference
+                    reference: paymentReference, // Use state reference
+                    changeDelivery: change && change > 0 ? (prev?.changeDelivery || "efectivo") : prev?.changeDelivery,
                 }];
                 setSplitPayments(updated);
             }
@@ -170,6 +195,31 @@ export function CheckoutScreen({ onBack, onComplete, setValue, isProcessing }: C
     };
 
     const selectedSplitPayment = selectedSplitIndex !== null ? splitPayments[selectedSplitIndex] : undefined;
+
+    const handleChangeDeliveryChange = (delivery: "efectivo" | "pago_movil") => {
+        if (isSplitMode) {
+            if (selectedSplitIndex !== null && selectedSplitIndex < splitPayments.length) {
+                const updated = [...splitPayments];
+                const current = updated[selectedSplitIndex];
+                updated[selectedSplitIndex] = {
+                    ...current,
+                    changeDelivery: delivery,
+                };
+                setSplitPayments(updated);
+            }
+        } else {
+            // Normal mode: only one payment
+            if (splitPayments.length > 0) {
+                const current = splitPayments[0];
+                setSplitPayments([
+                    {
+                        ...current,
+                        changeDelivery: delivery,
+                    },
+                ]);
+            }
+        }
+    };
 
     // For Calculator: In split mode, the 'total' passed is the remaining amount to be paid.
     // However, the Calculator logic for split mode adds 'splitAmount' to 'total' to find the Max limit.
@@ -229,6 +279,8 @@ export function CheckoutScreen({ onBack, onComplete, setValue, isProcessing }: C
                         onSplitAmountChange={handleAmountChange}
                         onNormalAmountChange={handleAmountChange}
                         isProcessing={isProcessing}
+                        changeDelivery={isSplitMode ? selectedSplitPayment?.changeDelivery : splitPayments[0]?.changeDelivery}
+                        onChangeDeliveryChange={handleChangeDeliveryChange}
                     />
                 </div>
             </div>

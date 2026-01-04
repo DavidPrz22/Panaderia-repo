@@ -18,6 +18,9 @@ interface PaymentCalculatorProps {
     splitMethodLabel?: string;
     selectedSplitPayment?: SplitPayment;
     isProcessing?: boolean;
+    // How the change is delivered when paymentMethod is "efectivo"
+    changeDelivery?: "efectivo" | "pago_movil";
+    onChangeDeliveryChange?: (delivery: "efectivo" | "pago_movil") => void;
 }
 
 export function PaymentCalculator({
@@ -30,7 +33,9 @@ export function PaymentCalculator({
     onNormalAmountChange,
     splitMethodLabel,
     selectedSplitPayment,
-    isProcessing
+    isProcessing,
+    changeDelivery,
+    onChangeDeliveryChange,
 }: PaymentCalculatorProps) {
     const {
         calculatorInputValue: inputValue,
@@ -175,6 +180,8 @@ export function PaymentCalculator({
     // Only show change if payment method is cash
     const showChange = displayChange > 0 && paymentMethod === "efectivo";
 
+    const effectiveChangeDelivery = changeDelivery || "efectivo";
+
     return (
         <div className="flex h-full flex-col rounded-2xl bg-card p-5 pt-2 shadow-card border border-border overflow-y-auto">
             <h2 className="mb-4 text-base lg:text-lg font-semibold text-foreground">
@@ -185,7 +192,7 @@ export function PaymentCalculator({
             {!isSplitMode && (
                 <div className="mb-4 rounded-xl bg-muted px-4 py-1">
                     <p className="text-xs lg:text-sm text-muted-foreground">Total a pagar</p>
-                    <p className="text-xl lg:text-2xl font-bold text-foreground">${total.toFixed(2)}</p>
+                    <p className="text-xl lg:text-2xl font-bold text-foreground">Bs. {total.toFixed(2)}</p>
                 </div>
             )}
 
@@ -195,15 +202,48 @@ export function PaymentCalculator({
                     {isSplitMode ? "Monto asignado" : "Monto recibido"}
                 </p>
                 <p className="text-2xl lg:text-3xl font-bold text-blue-900">
-                    ${inputValue === "" ? "0.00" : inputValue.startsWith(".") ? "0" + inputValue : inputValue}
+                    Bs. {inputValue === "" ? "0.00" : inputValue.startsWith(".") ? "0" + inputValue : inputValue}
                 </p>
             </div>
 
             {/* Display Change */}
             {showChange && (
-                <div className="mb-4 rounded-xl bg-emerald-500/10 px-4 py-1">
-                    <p className="text-xs lg:text-sm text-emerald-600">Cambio</p>
-                    <p className="text-xl lg:text-2xl font-bold text-emerald-600">${displayChange.toFixed(2)}</p>
+                <div className="mb-4 rounded-xl bg-emerald-500/10 px-4 py-2 space-y-2">
+                    <div>
+                        <p className="text-xs lg:text-sm text-emerald-600">Cambio</p>
+                        <p className="text-xl lg:text-2xl font-bold text-emerald-600">Bs. {displayChange.toFixed(2)}</p>
+                    </div>
+
+                    {/* Selector: how will the change be delivered? */}
+                    <div className="flex flex-col gap-1">
+                        <p className="text-[11px] lg:text-xs text-emerald-700 font-medium">
+                            ¿Cómo entregarás el cambio?
+                        </p>
+                        <div className="flex gap-2">
+                            <button
+                                type="button"
+                                className={`flex-1 rounded-md border px-2 py-1 text-xs lg:text-sm cursor-pointer ${
+                                    effectiveChangeDelivery === "efectivo"
+                                        ? "bg-black text-white border-transparent"
+                                        : "border-border bg-background text-foreground"
+                                }`}
+                                onClick={() => onChangeDeliveryChange?.("efectivo")}
+                            >
+                                Efectivo
+                            </button>
+                            <button
+                                type="button"
+                                className={`flex-1 rounded-md border px-2 py-1 text-xs lg:text-sm cursor-pointer ${
+                                    effectiveChangeDelivery === "pago_movil"
+                                        ? "bg-black text-white border-transparent"
+                                        : "border-border bg-background text-foreground"
+                                }`}
+                                onClick={() => onChangeDeliveryChange?.("pago_movil")}
+                            >
+                                Pago Móvil
+                            </button>
+                        </div>
+                    </div>
                 </div>
             )}
 

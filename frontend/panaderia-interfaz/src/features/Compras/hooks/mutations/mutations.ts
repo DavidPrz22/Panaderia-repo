@@ -17,6 +17,8 @@ import type {
 } from "../../schemas/schemas";
 import { ordenesCompraTableQueryOptions } from "../queries/queryOptions";
 import { ordenesCompraDetallesQueryOptions } from "@/features/Compras/hooks/queries/queryOptions";
+import { createMateriaPrimaListQueryOptions, MATERIA_PRIMA_PK_KEY } from "@/features/MateriaPrima/hooks/queries/materiaPrimaQueryOptions";
+import { productosReventaQueryOptions, PRODUCTOS_REVENTA_KEY } from "@/features/ProductosReventa/hooks/queries/queryOptions"
 
 export const useProductosSearchMutation = () => {
   return useMutation({
@@ -84,6 +86,19 @@ export const useCrearRecepcionOCMutation = () => {
       queryClient.invalidateQueries({
         queryKey: ordenesCompraDetallesQueryOptions(params.orden_compra_id)
           .queryKey,
+      });
+      queryClient.invalidateQueries({
+        queryKey: createMateriaPrimaListQueryOptions().queryKey,
+      });
+      queryClient.invalidateQueries({
+        queryKey: [MATERIA_PRIMA_PK_KEY],
+      });
+
+      queryClient.invalidateQueries({
+        queryKey: productosReventaQueryOptions.queryKey,
+      });
+      queryClient.invalidateQueries({
+        queryKey: [PRODUCTOS_REVENTA_KEY],
       });
     },
     onError: (error) => {

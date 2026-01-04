@@ -89,6 +89,7 @@ INSTALLED_APPS = [
     'apps.compras.apps.ComprasConfig',
     'apps.ventas.apps.VentasConfig',
     'apps.transformacion.apps.TransformacionConfig',
+    'apps.reportes.apps.ReportesConfig',
 ]
 
 MIDDLEWARE = [

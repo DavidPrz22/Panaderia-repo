@@ -40,6 +40,7 @@ export function SplitPaymentPanel({
             amount: 0,
             reference: "",
             change: undefined,
+            changeDelivery: "efectivo",
         };
         const updatedPayments = [...payments, newPayment];
         onPaymentsChange(updatedPayments);
@@ -81,11 +82,11 @@ export function SplitPaymentPanel({
             <div className="mb-4 rounded-xl bg-muted p-4">
                 <div className="flex justify-between text-sm mb-2">
                     <span className="text-muted-foreground">Total a pagar</span>
-                    <span className="font-semibold text-foreground">${total.toFixed(2)}</span>
+                    <span className="font-semibold text-foreground">Bs. {total.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between text-sm mb-2">
                     <span className="text-muted-foreground">Asignado</span>
-                    <span className="font-semibold text-foreground">${allocatedTotal.toFixed(2)}</span>
+                    <span className="font-semibold text-foreground">Bs. {allocatedTotal.toFixed(2)}</span>
                 </div>
                 <div className="h-px bg-border my-2" />
                 <div className="flex justify-between text-sm">
@@ -94,7 +95,7 @@ export function SplitPaymentPanel({
                         "font-bold",
                         remaining > 0 ? "text-orange-600" : remaining < 0 ? "text-red-600" : "text-green-600"
                     )}>
-                        ${remaining > 0 ? remaining.toFixed(2) : 0}
+                        Bs. {remaining > 0 ? remaining.toFixed(2) : "0.00"}
                     </span>
                 </div>
             </div>
@@ -128,7 +129,7 @@ export function SplitPaymentPanel({
                                         {PAYMENT_METHOD_LABELS[payment.method]}
                                     </span>
                                     <span className="font-bold text-primary">
-                                        ${payment.amount.toFixed(2)}
+                                        Bs. {payment.amount.toFixed(2)}
                                     </span>
                                     <button
                                         onClick={(e) => {
@@ -158,7 +159,7 @@ export function SplitPaymentPanel({
                                     <div className="flex justify-between items-center text-sm font-semibold text-foreground border border-border rounded-md px-4 py-1 w-full ">
                                         <span>
                                             Cambio:
-                                        </span> ${payment.change.toFixed(2)}
+                                        </span> Bs. {payment.change.toFixed(2)}
                                     </div>
                                 )}
                             </div>

@@ -38,7 +38,7 @@ from django.utils import timezone
 from apps.inventario.models import LotesStatus
 from apps.core.services.services import NotificationService
 from djangobackend.pagination import StandardResultsSetPagination
-from djangobackend.permissions import IsAllUsersCRUD, IsStaffLevel
+from djangobackend.permissions import IsAllUsersCRUD, IsStaffLevel, IsStafforVendedorReadandCreate
 
 from apps.core.models import TiposMetodosDePago, MetodosDePago
 import logging
@@ -102,10 +102,14 @@ class AperturaCierreCajaViewSet(viewsets.ModelViewSet):
                 caja.notas_cierre = serializer.validated_data.get('notas_cierre', '')
                 
                 # 3. Set Final Counts (Counted by cashier)
-                final_usd = serializer.validated_data.get('monto_final_usd') or Decimal('0')
-                final_ves = serializer.validated_data.get('monto_final_ves') or Decimal('0')
-                caja.monto_final_usd = final_usd
-                caja.monto_final_ves = final_ves
+                # If not provided, assume valid (expected) amount to avoid massive "missing" money in reports
+                esperado_usd, esperado_ves = caja.calcular_efectivo_esperado()
+                
+                final_usd = serializer.validated_data.get('monto_final_usd')
+                final_ves = serializer.validated_data.get('monto_final_ves')
+                
+                caja.monto_final_usd = final_usd if final_usd is not None else esperado_usd
+                caja.monto_final_ves = final_ves if final_ves is not None else esperado_ves
 
                 # 4. Calculate Discrepancy (Expected vs Counted) using Model method
                 caja.calcular_diferencia_efectivo()
@@ -140,10 +144,10 @@ class AperturaCierreCajaViewSet(viewsets.ModelViewSet):
 
 
 class OrdenesTableViewset(viewsets.ModelViewSet):
-    queryset = OrdenVenta.objects.order_by('id')
+    queryset = OrdenVenta.objects.order_by('-id')
     serializer_class = OrdenesTableSerializer
     pagination_class = StandardResultsSetPagination
-    permission_classes = [IsAllUsersCRUD]
+    permission_classes = [IsStafforVendedorReadandCreate]
 
 
 class OrdenesViewSet(viewsets.ModelViewSet):
@@ -588,6 +592,8 @@ class VentasViewSet(viewsets.ModelViewSet):
                     monto_pago_ves=pago['monto_pago_ves'],
                     cambio_efectivo_usd=pago.get('cambio_efectivo_usd', 0),
                     cambio_efectivo_ves=pago.get('cambio_efectivo_ves', 0),
+                    cambio_pago_movil_usd=pago.get('cambio_pago_movil_usd', 0),
+                    cambio_pago_movil_ves=pago.get('cambio_pago_movil_ves', 0),
                     referencia_pago=pago.get('referencia_pago', ''),
                     usuario_registrador=request.user,
                     tasa_cambio_aplicada=data['tasa_cambio_aplicada'],

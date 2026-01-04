@@ -30,7 +30,7 @@ export function QuickAmountButtons({
                     onClick={() => onAmountSelect(amount)}
                     className="text-xs h-8 lg:h-9 cursor-pointer"
                 >
-                    ${amount}
+                    Bs. {amount}
                 </Button>
             ))}
         </div>

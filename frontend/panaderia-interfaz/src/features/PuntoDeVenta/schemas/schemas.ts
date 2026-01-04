@@ -31,6 +31,8 @@ const pagoSchema = z.object({
     referencia_pago: z.string().min(1, "Por favor, ingresa una referencia").optional(),
     cambio_efectivo_usd: z.number().min(0, "El cambio debe ser mayor a 0").max(1000000, "El cambio debe ser menor a 1000000").optional(),
     cambio_efectivo_ves: z.number().min(0, "El cambio debe ser mayor a 0").max(1000000, "El cambio debe ser menor a 1000000").optional(),
+    cambio_pago_movil_usd: z.number().min(0, "El cambio debe ser mayor a 0").max(1000000, "El cambio debe ser menor a 1000000").optional(),
+    cambio_pago_movil_ves: z.number().min(0, "El cambio debe ser mayor a 0").max(1000000, "El cambio debe ser menor a 1000000").optional(),
 })
 
 export const ventaSchema = z.object({

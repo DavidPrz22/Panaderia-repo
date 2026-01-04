@@ -56,6 +56,7 @@ export const ComprasFormDatePicker = ({
           <Calendar
             mode="single"
             selected={parsedValue ? parsedValue : undefined}
+            disabled={(date) => date < new Date() && date.toDateString() !== new Date().toDateString()}
             onSelect={(date) => date && onChange(format(date, "yyyy-MM-dd"))}
             className="pointer-events-auto"
           />
