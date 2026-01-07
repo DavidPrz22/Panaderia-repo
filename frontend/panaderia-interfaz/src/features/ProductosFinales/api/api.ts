@@ -116,6 +116,16 @@ export const removeRecetaRelacionada = async (id: number) => {
   }
 };
 
+export const deleteLoteProductoElaborado = async (id: number) => {
+  try {
+    const response = await apiClient.delete(`/api/lotes-productos-elaborados/${id}/`);
+    return response.data;
+  } catch (error) {
+    console.error("Error deleting lote producto elaborado:", error);
+    throw error;
+  }
+};
+
 
 export const getLotesProductosFinales = async (id: number): Promise<LotesProductosFinales[]> => {
   try {

@@ -13,9 +13,10 @@ import {
 import {
   createLotesMateriaPrimaQueryOptions,
   createMateriaPrimaListQueryOptions,
+  createMateriaPrimaListPKQueryOptions,
 } from "../../hooks/queries/materiaPrimaQueryOptions";
 
-import { createMateriaPrimaListPKQueryOptions } from "../../hooks/queries/materiaPrimaQueryOptions";
+
 import { useQueryClient } from "@tanstack/react-query";
 
 import type {
@@ -124,6 +125,9 @@ export const useDeleteLoteMateriaPrimaMutation = (
             createLotesMateriaPrimaQueryOptions(materiaprimaId).queryKey,
         });
         await queryClient.invalidateQueries({ queryKey: createMateriaPrimaListQueryOptions().queryKey });
+        await queryClient.invalidateQueries({
+          queryKey: createMateriaPrimaListPKQueryOptions(materiaprimaId).queryKey,
+        });
         handleClose();
       }
     },
@@ -200,7 +204,7 @@ export const useCreateUpdateLoteMateriaPrimaMutation = (
 };
 
 
-export const useImportCSVMutationMateriaPrima = ()=>{
+export const useImportCSVMutationMateriaPrima = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (file: string) => uploadCSV(file),

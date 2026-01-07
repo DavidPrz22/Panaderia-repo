@@ -131,6 +131,24 @@ class LotesMateriaPrimaViewSet(viewsets.ModelViewSet):
         
         return super().list(request, *args, **kwargs)
 
+    def destroy(self, request, *args, **kwargs):
+        from django.db import transaction
+        try:
+            instance = self.get_object()
+            materia_prima = instance.materia_prima
+            
+            with transaction.atomic():
+                self.perform_destroy(instance)
+                try:
+                    NotificationService.check_low_stock(MateriasPrimas)
+                    NotificationService.check_sin_stock(MateriasPrimas)
+                except Exception as notif_error:
+                    import logging
+                    logger = logging.getLogger(__name__)
+                    logger.error(f"Failed to create notifications: {str(notif_error)}")
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -336,23 +354,26 @@ class LotesProductosElaboradosViewSet(viewsets.ModelViewSet):
     
 
     def destroy(self, request, *args, **kwargs):
-        instance = self.get_object()
-        producto = instance.producto_elaborado
-        self.perform_destroy(instance)
-        
-        # Update stock after deletion
-        producto.actualizar_stock()
-        
-        # Check stock notifications after lot deletion
+        from django.db import transaction
         try:
-            NotificationService.check_low_stock(ProductosElaborados)
-            NotificationService.check_sin_stock(ProductosElaborados)
-        except Exception as notif_error:
-            import logging
-            logger = logging.getLogger(__name__)
-            logger.error(f"Failed to create notifications: {str(notif_error)}")
+            instance = self.get_object()
+            producto = instance.producto_elaborado
             
-        return Response(status=status.HTTP_204_NO_CONTENT)
+            with transaction.atomic():
+                self.perform_destroy(instance)
+
+                # Check stock notifications after lot deletion
+                try:
+                    NotificationService.check_low_stock(ProductosElaborados)
+                    NotificationService.check_sin_stock(ProductosElaborados)
+                except Exception as notif_error:
+                    import logging
+                    logger = logging.getLogger(__name__)
+                    logger.error(f"Failed to create notifications: {str(notif_error)}")
+                
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
     
 
     @action(detail=True, methods=['get'], url_path='change-estado-lote')
@@ -542,20 +563,26 @@ class LotesProductosReventaViewSet(viewsets.ModelViewSet):
         return super().list(request, *args, **kwargs)
 
     def destroy(self, request, *args, **kwargs):
-        instance = self.get_object()
-        # Stock update is handled by signals for ProductosReventa
-        self.perform_destroy(instance)
-        
-        # Check stock notifications after lot deletion
+        from django.db import transaction
         try:
-            NotificationService.check_low_stock(ProductosReventa)
-            NotificationService.check_sin_stock(ProductosReventa)
-        except Exception as notif_error:
-            import logging
-            logger = logging.getLogger(__name__)
-            logger.error(f"Failed to create notifications: {str(notif_error)}")
+            instance = self.get_object()
+            producto = instance.producto_reventa
             
-        return Response(status=status.HTTP_204_NO_CONTENT)
+            with transaction.atomic():
+                self.perform_destroy(instance)
+                
+                # Check stock notifications after lot deletion
+                try:
+                    NotificationService.check_low_stock(ProductosReventa)
+                    NotificationService.check_sin_stock(ProductosReventa)
+                except Exception as notif_error:
+                    import logging
+                    logger = logging.getLogger(__name__)
+                    logger.error(f"Failed to create notifications: {str(notif_error)}")
+            
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)

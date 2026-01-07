@@ -6,6 +6,7 @@ import {
   deleteProductoIntermedio,
   updateProductoIntermedio,
   changeEstadoLoteProductosIntermedios,
+  deleteLoteProductoElaborado,
 } from "../../api/api";
 import type { TProductosIntermediosSchema } from "../../schemas/schema";
 import {
@@ -112,6 +113,35 @@ export const useUpdateProductosIntermediosMutation = () => {
     },
     onError: (error) => {
       console.log(error);
+    },
+  });
+};
+
+
+
+export const useDeleteLoteProductoIntermedioMutation = (
+  productoIntermedioId: number | undefined,
+  handleClose: () => void,
+) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (id: number) => {
+      await deleteLoteProductoElaborado(id);
+    },
+    onSuccess: async () => {
+      if (productoIntermedioId) {
+        await queryClient.invalidateQueries({
+          queryKey: lotesProductosIntermediosQueryOptions(productoIntermedioId).queryKey,
+        });
+        await queryClient.invalidateQueries({
+          queryKey: productosIntermediosDetallesQueryOptions(productoIntermedioId).queryKey,
+        });
+        await queryClient.invalidateQueries({
+          queryKey: productosIntermediosQueryOptions.queryKey
+        });
+        handleClose();
+      }
     },
   });
 };

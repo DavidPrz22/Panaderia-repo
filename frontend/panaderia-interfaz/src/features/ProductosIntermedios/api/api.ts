@@ -153,3 +153,13 @@ export const changeEstadoLoteProductosIntermedios = async (id: number) => {
     return null;
   }
 };
+
+export const deleteLoteProductoElaborado = async (id: number) => {
+  try {
+    const response = await apiClient.delete(`/api/lotes-productos-elaborados/${id}/`);
+    return response.data;
+  } catch (error) {
+    console.error("Error deleting lote producto elaborado:", error);
+    throw error;
+  }
+};
