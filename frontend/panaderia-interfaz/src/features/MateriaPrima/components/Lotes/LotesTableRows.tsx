@@ -32,6 +32,14 @@ export const LotesTableRows = ({
 
   const mutation = useDeleteLoteMateriaPrimaMutation(materiaprimaId!, () => setLotToDelete(null));
 
+  const sortData = (data: LoteMateriaPrima[]) => {
+    return data.sort((a, b) => {
+      const dateA = new Date(a.fecha_caducidad);
+      const dateB = new Date(b.fecha_caducidad);
+      return dateA.getTime() - dateB.getTime();
+    });
+  };
+
   const mapLotes = (lotes: LoteMateriaPrima[]) => {
     return lotes.map((item) => (
       <div
