@@ -84,10 +84,10 @@ export const ProductosFinalesProvider = ({
 
   const [searchList, setSearchList] = useState<recetasSearchItem[]>([]);
   const [searchTimer, setSearchTimer] = useState<NodeJS.Timeout | null>(null);
-  
+
   const recetaSearchInputRef = useRef<HTMLInputElement | null>(null);
   const [productoDetalles, setProductoDetalles] = useState<ProductoFinalDetalles | null>(null);
-  
+
   const [isLoadingDetalles, setIsLoadingDetalles] =
     useState<boolean>(false);
 

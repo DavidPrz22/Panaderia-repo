@@ -538,6 +538,8 @@ class LotesProductosElaborados(models.Model):
 
     @property
     def costo_unitario_usd(self):
+        if self.cantidad_inicial_lote == 0:
+            return Decimal('0')
         return self.coste_total_lote_usd / self.cantidad_inicial_lote
 
     def __str__(self):

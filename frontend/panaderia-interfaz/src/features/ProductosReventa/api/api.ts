@@ -7,6 +7,7 @@ import type {
   LotesProductosReventa,
   UnidadesDeMedida,
   Proveedor,
+  LoteProductoReventaPagination,
 } from "../types/types";
 
 export const getUnidadesMedida = async (): Promise<UnidadesDeMedida[]> => {
@@ -98,13 +99,23 @@ export const deleteProductosReventa = async (id: number) => {
   }
 };
 
-export const getLotesProductosReventa = async (id: number): Promise<LotesProductosReventa[]> => {
+export const getLotesProductosReventa = async ({
+  pageParam,
+  producto_reventa_id,
+}: {
+  pageParam?: string | null;
+  producto_reventa_id?: number;
+} = {}): Promise<LoteProductoReventaPagination> => {
   try {
-    const response = await apiClient.get(`/api/lotes-productos-reventa/?producto_reventa=${id}`);
+    let url = pageParam || "/api/lotes-productos-reventa/";
+    if (!pageParam && producto_reventa_id) {
+      url += `?producto_reventa=${producto_reventa_id}`;
+    }
+    const response = await apiClient.get(url);
     return response.data;
   } catch (error) {
     console.error("Error fetching lotes productos reventa:", error);
-    return [];
+    throw error;
   }
 };
 
@@ -168,7 +179,7 @@ export const changeEstadoLoteProductosReventa = async (id: number) => {
 
 export const uploadCSV = async (file: string) => {
   try {
-    const response = await apiClient.post(`/api/productosreventa/register-csv/`, {file: file});
+    const response = await apiClient.post(`/api/productosreventa/register-csv/`, { file: file });
     return response.data;
   } catch (error) {
     console.error("Error uploading CSV:", error);

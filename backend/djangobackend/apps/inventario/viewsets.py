@@ -11,6 +11,7 @@ from datetime import datetime
 from collections import defaultdict
 from apps.inventario.models import LotesStatus
 from djangobackend.permissions import IsStaffOrVendedorReadOnly
+from djangobackend.pagination import StandardResultsSetPagination
 
 
 
@@ -112,6 +113,7 @@ class LotesMateriaPrimaViewSet(viewsets.ModelViewSet):
     queryset = LotesMateriasPrimas.objects.all()
     serializer_class = LotesMateriaPrimaSerializer
     permission_classes = [IsStaffOrVendedorReadOnly]
+    pagination_class = StandardResultsSetPagination
 
     def get_queryset(self):
         queryset = super().get_queryset()
@@ -348,10 +350,17 @@ class ProductosElaboradosViewSet(viewsets.ModelViewSet):
 
 
 class LotesProductosElaboradosViewSet(viewsets.ModelViewSet):
-    queryset = LotesProductosElaborados.objects.all()
+    queryset = LotesProductosElaborados.objects.order_by('fecha_caducidad')
     permission_classes = [IsStaffOrVendedorReadOnly]
-    serializer = LotesProductosElaboradosSerializer
+    serializer_class = LotesProductosElaboradosSerializer
+    pagination_class = StandardResultsSetPagination
     
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        producto_elaborado = self.request.query_params.get('producto_elaborado')
+        if producto_elaborado:
+            queryset = queryset.filter(producto_elaborado=producto_elaborado)
+        return queryset
 
     def destroy(self, request, *args, **kwargs):
         from django.db import transaction
@@ -534,9 +543,10 @@ class ProductosReventaDetallesViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class LotesProductosReventaViewSet(viewsets.ModelViewSet):
-    queryset = LotesProductosReventa.objects.all()
+    queryset = LotesProductosReventa.objects.order_by('fecha_caducidad')
     serializer_class = LotesProductosReventaSerializer
     permission_classes = [IsStaffOrVendedorReadOnly]
+    pagination_class = StandardResultsSetPagination
 
     def get_queryset(self):
         queryset = super().get_queryset()

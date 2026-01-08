@@ -69,7 +69,7 @@ export const PILotesBody = ({ data, isLoading }: { data: LotesProductosIntermedi
             <div className="rounded-b-lg">
                 {sortedData.map((item) => (
                     <div
-                        key={`${item.fecha_produccion}-${item.fecha_caducidad}`}
+                        key={item.id}
                         className="p-4 grid grid-cols-7 border-t border-gray-300 hover:bg-gray-100 cursor-pointer font-[Roboto] text-sm items-center"
                         onClick={() => handleOnClick(item)}
                     >

@@ -7,6 +7,7 @@ import type {
   recetasSearchItem,
   LotesProductosIntermedios,
   UnidadesDeMedida,
+  LoteProductoIntermedioPagination,
 } from "../types/types";
 
 export const createProductoIntermedio = async (
@@ -134,13 +135,24 @@ export const removeRecetaRelacionada = async (id: number) => {
   }
 };
 
-export const getLotesProductosIntermedios = async (id: number): Promise<LotesProductosIntermedios[]> => {
+export const getLotesProductosIntermedios = async ({
+  pageParam,
+  producto_intermedio_id,
+}: {
+  pageParam?: string | null;
+  producto_intermedio_id?: number;
+} = {}): Promise<LoteProductoIntermedioPagination> => {
   try {
-    const response = await apiClient.get(`/api/productoselaborados/${id}/lotes/`);
+    let url = pageParam || "/api/lotes-productos-elaborados/";
+    if (!pageParam && producto_intermedio_id) {
+      url += `?producto_elaborado=${producto_intermedio_id}`;
+    }
+    const response = await apiClient.get(url);
+    console.log(response.data);
     return response.data;
   } catch (error) {
     console.error(error);
-    return [];
+    throw error;
   }
 };
 

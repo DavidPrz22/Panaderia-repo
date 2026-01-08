@@ -80,9 +80,9 @@ export type ProductosIntermedios = {
 
 export type RecetaRelacionada =
   | {
-      id: number;
-      nombre: string;
-    }
+    id: number;
+    nombre: string;
+  }
   | false;
 
 export type ProductosIntermediosDetalles = {
@@ -115,3 +115,11 @@ export type LotesProductosIntermedios = {
   volumen_promedio_por_unidad: number | null;
   costo_unitario_usd: number;
 };
+
+export type LoteProductoIntermedioPagination = {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: LotesProductosIntermedios[];
+};
+

@@ -7,7 +7,7 @@ import type {
 } from "../types/types";
 
 import type { TProductoFinalSchema } from "../schemas/schemas";
-import type { UnidadesDeMedida, LotesProductosFinales } from "../types/types";
+import type { UnidadesDeMedida, LotesProductosFinales, LoteProductoFinalPagination } from "../types/types";
 
 export const getProductosFinales = async (): Promise<ProductosFinalesList> => {
   try {
@@ -127,13 +127,23 @@ export const deleteLoteProductoElaborado = async (id: number) => {
 };
 
 
-export const getLotesProductosFinales = async (id: number): Promise<LotesProductosFinales[]> => {
+export const getLotesProductosFinales = async ({
+  pageParam,
+  producto_final_id,
+}: {
+  pageParam?: string | null;
+  producto_final_id?: number;
+} = {}): Promise<LoteProductoFinalPagination> => {
   try {
-    const response = await apiClient.get(`/api/productoselaborados/${id}/lotes/`);
+    let url = pageParam || "/api/lotes-productos-elaborados/";
+    if (!pageParam && producto_final_id) {
+      url += `?producto_elaborado=${producto_final_id}`;
+    }
+    const response = await apiClient.get(url);
     return response.data;
   } catch (error) {
     console.error(error);
-    return [];
+    throw error;
   }
 };
 

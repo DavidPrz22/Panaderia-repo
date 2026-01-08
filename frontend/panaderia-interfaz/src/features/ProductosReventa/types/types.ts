@@ -136,3 +136,11 @@ export type LotesProductosReventa = {
   proveedor: { id: number; nombre_proveedor: string } | null;
   estado: string;
 };
+
+export type LoteProductoReventaPagination = {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: LotesProductosReventa[];
+};
+

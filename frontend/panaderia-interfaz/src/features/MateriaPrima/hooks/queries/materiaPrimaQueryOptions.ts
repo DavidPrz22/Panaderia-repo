@@ -5,7 +5,9 @@ import {
   handleMateriaPrimaListPK,
   handleProveedores,
   handleLotesMateriaPrimaLotes,
+  getLotesMateriaPrima,
 } from "@/features/MateriaPrima/api/api";
+import type { LoteMateriaPrimaPagination } from "../../types/types";
 
 export const createUnidadesQueryOptions = () => {
   return {
@@ -61,3 +63,14 @@ export const createLotesMateriaPrimaQueryOptions = (pk: number) => {
     staleTime: Infinity,
   };
 };
+
+
+export const lotesMateriaPrimaQueryOptions = (materia_prima_id?: number) => ({
+  queryKey: ["lotes-materia-prima-paginated", materia_prima_id],
+  queryFn: ({ pageParam }: { pageParam?: string | null }) =>
+    getLotesMateriaPrima({ pageParam, materia_prima_id }),
+  staleTime: Infinity,
+  initialPageParam: null,
+  getNextPageParam: (lastPage: LoteMateriaPrimaPagination) => lastPage.next,
+  getPreviousPageParam: (firstPage: LoteMateriaPrimaPagination) => firstPage.previous,
+});

@@ -8,6 +8,7 @@ import {
   type LoteMateriaPrimaFormResponse,
   type MateriaPrimaList,
   type Proveedor,
+  type LoteMateriaPrimaPagination,
 } from "../types/types";
 
 import type { TMateriaPrimaSchema } from "../schemas/schemas";
@@ -253,3 +254,25 @@ export const uploadCSV = async (Base64File: string): Promise<{ status: number, m
     );
   }
 }
+
+export const getLotesMateriaPrima = async ({
+  pageParam,
+  materia_prima_id,
+}: {
+  pageParam?: string | null;
+  materia_prima_id?: number;
+} = {}): Promise<LoteMateriaPrimaPagination> => {
+  try {
+    let url = pageParam || "/api/lotesmateriaprima/";
+    if (!pageParam && materia_prima_id) {
+      url += `?materia_prima=${materia_prima_id}`;
+    }
+    const response = await apiClient.get(url);
+    return response.data;
+  } catch (error) {
+    const axiosError = error as AxiosError<{ detail?: string }>;
+    throw new Error(
+      axiosError.response?.data?.detail || "Failed to fetch lotes materia prima",
+    );
+  }
+};

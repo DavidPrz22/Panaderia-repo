@@ -178,3 +178,11 @@ export type LotesMateriaPrimaFormSharedProps = {
   onSubmitSuccess: () => void;
   title: string;
 };
+
+export type LoteMateriaPrimaPagination = {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: LoteMateriaPrimaFormResponse[];
+};
+

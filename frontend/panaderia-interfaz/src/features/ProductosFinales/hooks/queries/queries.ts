@@ -1,4 +1,4 @@
-import { useQueries, useQuery } from "@tanstack/react-query";
+import { useQueries, useQuery, useInfiniteQuery } from "@tanstack/react-query";
 import {
   productoFinalDetallesQueryOptions,
   productosFinalesQueryOptions,
@@ -26,5 +26,5 @@ export const useGetParametros = () => {
 
 
 export const useGetLotesProductosFinales = (id: number) => {
-  return useQuery(lotesProductosFinalesQueryOptions(id));
+  return useInfiniteQuery(lotesProductosFinalesQueryOptions(id));
 };

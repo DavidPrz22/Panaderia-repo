@@ -6,6 +6,7 @@ import {
   getCategoriasProductoFinal,
   getLotesProductosFinales,
 } from "../../api/api";
+import type { LoteProductoFinalPagination } from "../../types/types";
 
 export const productoFinalDetallesQueryOptions = (id: number) =>
   queryOptions({
@@ -33,8 +34,12 @@ export const categoriasProductoFinalQueryOptions = {
   staleTime: Infinity,
 };
 
-export const lotesProductosFinalesQueryOptions = (id: number) => ({
-  queryKey: ["lotes-productos-finales", id],
-  queryFn: () => getLotesProductosFinales(id),
+export const lotesProductosFinalesQueryOptions = (producto_final_id?: number) => ({
+  queryKey: ["lotes-productos-finales-paginated", producto_final_id],
+  queryFn: ({ pageParam }: { pageParam?: string | null }) =>
+    getLotesProductosFinales({ pageParam, producto_final_id }),
   staleTime: Infinity,
+  initialPageParam: null,
+  getNextPageParam: (lastPage: LoteProductoFinalPagination) => lastPage.next,
+  getPreviousPageParam: (firstPage: LoteProductoFinalPagination) => firstPage.previous,
 });

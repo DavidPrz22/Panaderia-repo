@@ -25,6 +25,11 @@ export const PRLotesBody = ({ data, isLoading }: { data: LotesProductosReventa[]
     const [lotToDelete, setLotToDelete] = useState<number | null>(null);
     const mutation = useDeleteLoteProductosReventaMutation(productoReventaId || undefined, () => setLotToDelete(null));
 
+    const handleRowClick = (item: LotesProductosReventa) => {
+        setShowPRLotesDetalles(true);
+        setLotesProductosReventaDetalles(item);
+    };
+
     const content = () => {
         if (isLoading) {
             return (
@@ -63,7 +68,7 @@ export const PRLotesBody = ({ data, isLoading }: { data: LotesProductosReventa[]
             <div className="rounded-b-lg">
                 {sortedData.map((item) => (
                     <div
-                        key={`${item.fecha_recepcion}-${item.fecha_caducidad}`}
+                        key={item.id}
                         onClick={() => handleRowClick(item)}
                         className="p-4 grid grid-cols-7 border-t border-gray-300 hover:bg-gray-100 cursor-pointer font-[Roboto] text-sm items-center"
                     >

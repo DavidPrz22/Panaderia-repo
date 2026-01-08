@@ -1,12 +1,12 @@
-import { useQuery } from "@tanstack/react-query";
-import { createLotesMateriaPrimaQueryOptions } from "./materiaPrimaQueryOptions";
+import { useInfiniteQuery } from "@tanstack/react-query";
+import { lotesMateriaPrimaQueryOptions } from "./materiaPrimaQueryOptions";
 
 export const useLotesMateriaPrimaQuery = (
   materiaprimaId: number | null,
   showMateriaprimaDetalles: boolean,
 ) => {
-  return useQuery({
-    ...createLotesMateriaPrimaQueryOptions(materiaprimaId!),
+  return useInfiniteQuery({
+    ...lotesMateriaPrimaQueryOptions(materiaprimaId!),
     enabled: !!materiaprimaId && showMateriaprimaDetalles,
   });
 };

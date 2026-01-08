@@ -66,7 +66,7 @@ export const TableBody = () => {
           <span className="ml-2">Cargando...</span>
         </div>
       ) : displayData ? (
-          <TableRows data={displayData} />
+        <TableRows data={displayData} />
       ) : (
         <NoDataMessage />
       )}
