@@ -17,7 +17,7 @@ export const useGetParametros = () => {
 };
 
 export const useGetProductosIntermedios = () => {
-  return useQuery(productosIntermediosQueryOptions);
+  return useInfiniteQuery(productosIntermediosQueryOptions);
 };
 
 export const useGetProductosIntermediosDetalles = (id: number) => {

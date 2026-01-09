@@ -1,5 +1,5 @@
 import type { LotesProductosFinales, receta_relacionada, recetasSearchItem } from "@/features/ProductosFinales/types/types";
-import { createContext, useContext, useState, useRef } from "react";
+import { createContext, useContext, useState, useRef, useEffect } from "react";
 import type { CategoriaProductoFinal } from "@/features/ProductosFinales/types/types";
 import type { UnidadesDeMedida } from "@/features/ProductosFinales/types/types";
 import type { ProductoFinalDetalles } from "@/features/ProductosFinales/types/types";
@@ -52,6 +52,8 @@ type ProductosFinalesContextType = {
   setBajoStockFilter: React.Dispatch<React.SetStateAction<boolean>>;
   agotadosFilter: boolean;
   setAgotadosFilter: React.Dispatch<React.SetStateAction<boolean>>;
+  currentPage: number;
+  setCurrentPage: React.Dispatch<React.SetStateAction<number>>;
 };
 
 const ProductosFinalesContextProvider = createContext<ProductosFinalesContextType | null>(null);
@@ -109,6 +111,12 @@ export const ProductosFinalesProvider = ({
 
   const [bajoStockFilter, setBajoStockFilter] = useState<boolean>(false);
   const [agotadosFilter, setAgotadosFilter] = useState<boolean>(false);
+  const [currentPage, setCurrentPage] = useState<number>(0);
+
+  // Reset page to 0 when filters change
+  useEffect(() => {
+    setCurrentPage(0);
+  }, [productosFinalesSearchTerm, selectedUnidadesVenta, selectedCategoriasProductoFinal, bajoStockFilter, agotadosFilter]);
 
   return (
     <ProductosFinalesContextProvider.Provider
@@ -159,6 +167,8 @@ export const ProductosFinalesProvider = ({
         setBajoStockFilter,
         agotadosFilter,
         setAgotadosFilter,
+        currentPage,
+        setCurrentPage,
       }}
     >
       {children}

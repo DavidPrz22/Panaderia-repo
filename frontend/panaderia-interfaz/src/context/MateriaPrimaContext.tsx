@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useRef } from "react";
+import { createContext, useContext, useState, useRef, useEffect } from "react";
 import {
   type childrenProp,
   type LoteMateriaPrimaFormResponse,
@@ -50,6 +50,8 @@ type MateriaPrimaContextType = {
   setIsLoadingList: (value: boolean) => void;
   shouldRefreshList: boolean;
   setShouldRefreshList: (value: boolean) => void;
+  currentPage: number;
+  setCurrentPage: (page: number) => void;
   categoriasMateriaPrima: CategoriaMateriaPrima[];
   setCategoriasMateriaPrima: (value: CategoriaMateriaPrima[]) => void;
   unidadesMedida: UnidadMedida[];
@@ -112,6 +114,14 @@ export function MateriaPrimaProvider({ children }: childrenProp) {
   const [isLoadingList, setIsLoadingList] = useState<boolean>(false);
 
   const [shouldRefreshList, setShouldRefreshList] = useState<boolean>(false);
+  const [currentPage, setCurrentPage] = useState<number>(0);
+
+  // Reset page to 0 when filters change
+  useEffect(() => {
+    if (filteredApplied || MPFilteredInputSearchApplied || inputfilterDoubleApplied) {
+      setCurrentPage(0);
+    }
+  }, [filteredApplied, MPFilteredInputSearchApplied, inputfilterDoubleApplied]);
 
   return (
     <MateriaPrimaContextProvider.Provider
@@ -155,6 +165,8 @@ export function MateriaPrimaProvider({ children }: childrenProp) {
         setIsLoadingList,
         shouldRefreshList,
         setShouldRefreshList,
+        currentPage,
+        setCurrentPage,
         categoriasMateriaPrima,
         setCategoriasMateriaPrima,
         unidadesMedida,

@@ -8,7 +8,7 @@ import {
 } from "./productosFinalesQueryOptions";
 
 export const useGetProductosFinales = () => {
-  return useQuery(productosFinalesQueryOptions());
+  return useInfiniteQuery(productosFinalesQueryOptions);
 };
 
 export const useProductoFinalDetalles = (id: number) => {

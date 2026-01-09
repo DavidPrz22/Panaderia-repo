@@ -32,7 +32,7 @@ export const useCreateProductionMutation = () => {
         })
       } else {
         queryClient.invalidateQueries({
-          queryKey: productosFinalesQueryOptions().queryKey,
+          queryKey: productosFinalesQueryOptions.queryKey,
         })
       }
       handleToast("Producción registrada exitosamente");

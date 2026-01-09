@@ -179,6 +179,13 @@ export type LotesMateriaPrimaFormSharedProps = {
   title: string;
 };
 
+export type MateriaPrimaPagination = {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: MateriaPrimaList[];
+};
+
 export type LoteMateriaPrimaPagination = {
   count: number;
   next: string | null;

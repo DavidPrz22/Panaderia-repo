@@ -14,14 +14,16 @@ from apps.core.services.services import NotificationService
 from decimal import Decimal
 from django.utils import timezone
 from djangobackend.permissions import IsStaffLevelOnly
+from djangobackend.pagination import StandardResultsSetPagination
 import logging
 logger = logging.getLogger(__name__)
 
 
 class RecetasViewSet(viewsets.ModelViewSet):
-    queryset = Recetas.objects.all()
+    queryset = Recetas.objects.all().order_by('id')
     serializer_class = RecetasSerializer
     permission_classes = [IsStaffLevelOnly]
+    pagination_class = StandardResultsSetPagination
 
     def create(self, request, *args, **kwargs):
     # Step 1: Manual validation of frontend data

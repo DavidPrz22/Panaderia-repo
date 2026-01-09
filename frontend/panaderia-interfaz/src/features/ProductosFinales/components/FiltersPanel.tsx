@@ -16,26 +16,32 @@ export default function FiltersPanel() {
   } = useProductosFinalesContext();
   const { data: productosFinales } = useGetProductosFinales();
 
+  // Extract all results from all pages for filters
+  const allProductos = useMemo(() => {
+    if (!productosFinales?.pages) return [];
+    return productosFinales.pages.flatMap(page => page.results || []);
+  }, [productosFinales]);
+
   // Removed unidad search per request
   // We now derive categories directly from productos list per user request
 
   const opcionesUnidadVenta = useMemo(() => {
-    const fromProductos = (productosFinales || [])
+    const fromProductos = allProductos
       .map((p) => p.unidad_venta)
       .filter(Boolean);
     const fromContext = (unidadesMedida || []).map((u) => u.nombre_completo);
     return Array.from(new Set([...fromProductos, ...fromContext])).sort();
-  }, [productosFinales, unidadesMedida]);
+  }, [allProductos, unidadesMedida]);
 
   const opcionesCategorias = useMemo(() => {
-    const fromProductos = (productosFinales || [])
+    const fromProductos = allProductos
       .map((p) => p.categoria)
       .filter(Boolean);
     const fromContext = (categoriasProductoFinal || []).map(
       (c) => c.nombre_categoria,
     );
     return Array.from(new Set([...fromProductos, ...fromContext])).sort();
-  }, [productosFinales, categoriasProductoFinal]);
+  }, [allProductos, categoriasProductoFinal]);
 
   useEffect(() => {
     // Close panel on escape

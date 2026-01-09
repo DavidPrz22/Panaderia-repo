@@ -130,6 +130,13 @@ export type recetaListItemProps = {
   last?: boolean;
 };
 
+export type RecetasPagination = {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: recetaItem[];
+};
+
 export type fechaSeleccionadaFiltro = {
   from: string;
   to: string;

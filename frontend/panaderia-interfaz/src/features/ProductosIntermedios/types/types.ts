@@ -116,6 +116,13 @@ export type LotesProductosIntermedios = {
   costo_unitario_usd: number;
 };
 
+export type ProductosIntermediosPagination = {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: ProductosIntermedios[];
+};
+
 export type LoteProductoIntermedioPagination = {
   count: number;
   next: string | null;

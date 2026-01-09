@@ -2,9 +2,19 @@ import { useGetProductosReventa } from "../hooks/queries/queries";
 import { PRTableRows } from "./PRTableRows";
 import { PendingTubeSpinner } from "./PendingTubeSpinner";
 import { useProductosReventaContext } from "@/context/ProductosReventaContext";
+import { useEffect, useMemo, useReducer } from "react";
+import { Paginator } from "@/components/Paginator";
+
+type PaginatorActions = "next" | "previous" | "base";
 
 export const PRTableBody = () => {
-  const { data: productosReventa, isFetching } = useGetProductosReventa();
+  const {
+    data: productosPagination,
+    fetchNextPage,
+    hasNextPage,
+    isFetching,
+  } = useGetProductosReventa();
+
   const {
     productosReventaSearchTerm,
     selectedCategoriasReventa,
@@ -16,9 +26,56 @@ export const PRTableBody = () => {
     setSelectedUnidadesInventario,
     setBajoStockFilter,
     setAgotadosFilter,
+    currentPage,
+    setCurrentPage,
   } = useProductosReventaContext();
 
-  let displayData = productosReventa || [];
+  // Handle pagination state with reducer for complex logic
+  const [page, dispatch] = useReducer(
+    (state: number, action: { type: PaginatorActions; payload?: number }) => {
+      switch (action.type) {
+        case "next":
+          if (productosPagination) {
+            if (state < (productosPagination.pages?.length || 0) - 1) return state + 1;
+            if (hasNextPage) fetchNextPage();
+            return state + 1;
+          }
+          return state;
+        case "previous":
+          return Math.max(0, state - 1);
+        case "base":
+          const targetPage = action.payload ?? 0;
+          // Check if we need to fetch more pages
+          if (targetPage >= (productosPagination?.pages?.length || 0) && hasNextPage) {
+            fetchNextPage();
+          }
+          return targetPage;
+        default:
+          return state;
+      }
+    },
+    currentPage
+  );
+
+  // Update context page when local page changes
+  useEffect(() => {
+    if (page !== currentPage) {
+      setCurrentPage(page);
+    }
+  }, [page, currentPage, setCurrentPage]);
+
+  // Calculate total pages
+  const pagesCount = useMemo(() => {
+    const resultCount = productosPagination?.pages?.[0]?.count || 0;
+    const entriesPerPage = 15;
+    return Math.ceil(resultCount / entriesPerPage);
+  }, [productosPagination]);
+
+  // Get current page data
+  const currentPageData = productosPagination?.pages[page]?.results || [];
+
+  // Apply filters to current page data
+  let displayData = currentPageData;
 
   if (productosReventaSearchTerm) {
     const term = productosReventaSearchTerm.toLowerCase();
@@ -68,7 +125,7 @@ export const PRTableBody = () => {
   };
 
   const EmptyState = () => {
-    if (!productosReventa || productosReventa.length === 0) {
+    if (!productosPagination || productosPagination.pages[0]?.results?.length === 0) {
       return (
         <div className="flex flex-col gap-2 justify-center h-full items-center text-center text-gray-600 py-16">
           <p className="font-semibold text-lg">No hay datos registrados</p>
@@ -107,6 +164,20 @@ export const PRTableBody = () => {
         <PRTableRows data={displayData} />
       ) : (
         <EmptyState />
+      )}
+      {/* Show paginator only if there are multiple pages and no active filters */}
+      {!anyFilterActive && pagesCount > 1 && (
+        <div className="mt-4 flex justify-center">
+          <Paginator
+            previousPage={page > 0}
+            nextPage={hasNextPage || page < pagesCount - 1}
+            pages={Array.from({ length: pagesCount }, (_, i) => i)}
+            currentPage={page}
+            onClickPrev={() => dispatch({ type: "previous" })}
+            onClickPage={(p) => dispatch({ type: "base", payload: p })}
+            onClickNext={() => dispatch({ type: "next" })}
+          />
+        </div>
       )}
     </>
   );

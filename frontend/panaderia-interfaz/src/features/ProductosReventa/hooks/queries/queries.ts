@@ -19,7 +19,7 @@ export const useGetParametros = () => {
 };
 
 export const useGetProductosReventa = () => {
-  return useQuery(productosReventaQueryOptions);
+  return useInfiniteQuery(productosReventaQueryOptions);
 };
 
 export const useGetProductosReventaDetalles = (id: number) => {

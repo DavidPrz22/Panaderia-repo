@@ -27,6 +27,8 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.decorators import action
 from djangobackend.permissions import IsAllUsersCRUD
+from datetime import timedelta
+from django.utils import timezone
 
 class UnidadMedidaViewSet(viewsets.ModelViewSet):
     queryset = UnidadesDeMedida.objects.all()
@@ -89,9 +91,34 @@ class NotificacionesViewSet(viewsets.ModelViewSet):
     serializer_class = NotificacionesSerializer
     permission_classes = [IsAllUsersCRUD]
 
+    def delete_old_notifications(self):
+        """
+        Delete notifications that are both read and older than 10 days.
+        Returns the count of deleted notifications.
+        """
+        now = timezone.now()
+        ten_days_ago = now - timedelta(days=30)
+
+        # Filter notifications that are read AND older than 10 days
+        old_notifications = Notificaciones.objects.filter(
+            leida=True,
+            fecha_notificacion__lt=ten_days_ago
+        )
+
+        # Get count before deletion
+        count = old_notifications.count()
+        
+        # Delete the notifications if any exist
+        if count > 0:
+            old_notifications.delete()
+
+
     def list(self, request, *args, **kwargs):
+        # Clean up old read notifications first
+        self.delete_old_notifications()
+        
         limit = 100
-        min_notifications_to_show = 20
+        min_notifications_to_show = 30
         
         notificaciones_sin_leer = Notificaciones.objects.filter(
             leida=False

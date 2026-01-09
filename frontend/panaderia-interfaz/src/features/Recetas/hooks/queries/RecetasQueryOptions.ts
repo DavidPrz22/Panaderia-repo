@@ -1,9 +1,14 @@
 import { getRecetaDetalles, getRecetas } from "../../api/api";
+import type { RecetasPagination } from "../../types/types";
 
 export const recetasQueryOptions = {
   queryKey: ["recetas"],
-  queryFn: getRecetas,
+  queryFn: ({ pageParam }: { pageParam?: string | null }) =>
+    getRecetas({ pageParam }),
   staleTime: Infinity,
+  initialPageParam: null,
+  getNextPageParam: (lastPage: RecetasPagination) => lastPage.next,
+  getPreviousPageParam: (firstPage: RecetasPagination) => firstPage.previous,
 };
 
 export const recetasDetallesQueryOptions = (id: number) => {

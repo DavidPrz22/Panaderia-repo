@@ -16,9 +16,10 @@ from djangobackend.pagination import StandardResultsSetPagination
 
 
 class MateriaPrimaViewSet(viewsets.ModelViewSet):
-    queryset = MateriasPrimas.objects.all()
+    queryset = MateriasPrimas.objects.all().order_by('id')
     serializer_class = MateriaPrimaSerializer
     permission_classes = [IsStaffOrVendedorReadOnly]
+    pagination_class = StandardResultsSetPagination
 
     @action(detail=False, methods=['post'], url_path='register-csv',)
     def register_csv(self, request):
@@ -428,15 +429,17 @@ class LotesProductosElaboradosViewSet(viewsets.ModelViewSet):
 
 
 class ProductosIntermediosViewSet(viewsets.ModelViewSet):
-    queryset = ProductosIntermedios.objects.all()
+    queryset = ProductosIntermedios.objects.all().order_by('id')
     serializer_class = ProductosIntermediosSerializer
     permission_classes = [IsStaffOrVendedorReadOnly]
+    pagination_class = StandardResultsSetPagination
 
 
 class ProductosFinalesViewSet(viewsets.ModelViewSet):
-    queryset = ProductosFinales.objects.all()
+    queryset = ProductosFinales.objects.all().order_by('id')
     serializer_class = ProductosFinalesSerializer
     permission_classes = [IsStaffOrVendedorReadOnly]
+    pagination_class = StandardResultsSetPagination
 
 
 class ProductosIntermediosDetallesViewSet(viewsets.ReadOnlyModelViewSet):
@@ -494,9 +497,10 @@ class ProductosIntermediosSearchViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class ProductosReventaViewSet(viewsets.ModelViewSet):
-    queryset = ProductosReventa.objects.all()
+    queryset = ProductosReventa.objects.all().order_by('id')
     serializer_class = ProductosReventaSerializer
     permission_classes = [IsStaffOrVendedorReadOnly]
+    pagination_class = StandardResultsSetPagination
 
     @action(detail=False, methods=['post'], url_path='register-csv')
     def register_csv(self, request):

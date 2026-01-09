@@ -8,6 +8,7 @@ import type {
   UnidadesDeMedida,
   Proveedor,
   LoteProductoReventaPagination,
+  ProductosReventaPagination,
 } from "../types/types";
 
 export const getUnidadesMedida = async (): Promise<UnidadesDeMedida[]> => {
@@ -42,13 +43,18 @@ export const getProveedores = async (): Promise<Proveedor[]> => {
   }
 };
 
-export const getProductosReventa = async (): Promise<ProductosReventa[]> => {
+export const getProductosReventa = async ({
+  pageParam
+}: {
+  pageParam?: string | null
+} = {}): Promise<ProductosReventaPagination> => {
   try {
-    const response = await apiClient.get("/api/productosreventa/");
+    const url = pageParam || "/api/productosreventa/";
+    const response = await apiClient.get(url);
     return response.data;
   } catch (error) {
     console.error("Error fetching productos reventa:", error);
-    return [];
+    throw error;
   }
 };
 

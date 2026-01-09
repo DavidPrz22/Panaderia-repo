@@ -5,7 +5,7 @@ import {
   getProductosIntermediosDetalles,
   getUnidadesMedida,
 } from "../../api/api";
-import type { LoteProductoIntermedioPagination } from "../../types/types";
+import type { LoteProductoIntermedioPagination, ProductosIntermediosPagination } from "../../types/types";
 
 export const unidadesMedidaQueryOptions = {
   queryKey: ["unidades-medida"],
@@ -21,8 +21,12 @@ export const categoriasProductoIntermedioQueryOptions = {
 
 export const productosIntermediosQueryOptions = {
   queryKey: ["productos-intermedios"],
-  queryFn: getProductosIntermedios,
+  queryFn: ({ pageParam }: { pageParam?: string | null }) =>
+    getProductosIntermedios({ pageParam }),
   staleTime: Infinity,
+  initialPageParam: null,
+  getNextPageParam: (lastPage: ProductosIntermediosPagination) => lastPage.next,
+  getPreviousPageParam: (firstPage: ProductosIntermediosPagination) => firstPage.previous,
 };
 
 export const productosIntermediosDetallesQueryOptions = (id: number) => ({

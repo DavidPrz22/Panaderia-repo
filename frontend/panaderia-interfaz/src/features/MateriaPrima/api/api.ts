@@ -9,6 +9,7 @@ import {
   type MateriaPrimaList,
   type Proveedor,
   type LoteMateriaPrimaPagination,
+  type MateriaPrimaPagination,
 } from "../types/types";
 
 import type { TMateriaPrimaSchema } from "../schemas/schemas";
@@ -67,24 +68,15 @@ export const handleCreateUpdateMateriaPrima = async (
 };
 
 // API CALL FOR MATERIA PRIMA LIST
-export const handleMateriaPrimaList = async (): Promise<MateriaPrimaList[]> => {
+export const handleMateriaPrimaList = async ({
+  pageParam
+}: {
+  pageParam?: string | null
+} = {}): Promise<MateriaPrimaPagination> => {
   try {
-    const response = await apiClient.get("/api/materiaprima/");
-    const dataResponse = response.data;
-
-    const mappedData: MateriaPrimaList[] = dataResponse.map(
-      (item: MateriaPrimaListServer) => ({
-        id: item.id,
-        name: item.nombre,
-        unit: item.unidad_medida_base_detail.nombre_completo,
-        category: item.categoria_detail.nombre_categoria,
-        quantity: item.stock_actual,
-        reorderPoint: item.punto_reorden,
-        creationDate: item.fecha_creacion_registro,
-      }),
-    );
-
-    return mappedData;
+    const url = pageParam || "/api/materiaprima/";
+    const response = await apiClient.get(url);
+    return response.data;
   } catch (error) {
     const axiosError = error as AxiosError<{ detail?: string }>;
     throw new Error(

@@ -137,6 +137,13 @@ export type LotesProductosReventa = {
   estado: string;
 };
 
+export type ProductosReventaPagination = {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: ProductosReventa[];
+};
+
 export type LoteProductoReventaPagination = {
   count: number;
   next: string | null;

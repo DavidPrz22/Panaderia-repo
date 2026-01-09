@@ -123,6 +123,13 @@ export type LotesProductosFinales = {
   costo_unitario_usd: number;
 };
 
+export type ProductosFinalesPagination = {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: ProductoFinal[];
+};
+
 export type LoteProductoFinalPagination = {
   count: number;
   next: string | null;

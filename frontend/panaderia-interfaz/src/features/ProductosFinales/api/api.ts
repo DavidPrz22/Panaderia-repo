@@ -4,15 +4,20 @@ import type {
   ProductoFinalDetalles,
   ProductosFinalesList,
   recetasSearchItem,
+  ProductosFinalesPagination,
 } from "../types/types";
 
 import type { TProductoFinalSchema } from "../schemas/schemas";
 import type { UnidadesDeMedida, LotesProductosFinales, LoteProductoFinalPagination } from "../types/types";
 
-export const getProductosFinales = async (): Promise<ProductosFinalesList> => {
+export const getProductosFinales = async ({
+  pageParam
+}: {
+  pageParam?: string | null
+} = {}): Promise<ProductosFinalesPagination> => {
   try {
-    const response = await apiClient.get("/api/productosfinales/");
-    console.log(response.data);
+    const url = pageParam || "/api/productosfinales/";
+    const response = await apiClient.get(url);
     return response.data;
   } catch (error) {
     console.error("Error fetching productos finales:", error);

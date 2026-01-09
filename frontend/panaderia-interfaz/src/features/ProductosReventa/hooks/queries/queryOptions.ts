@@ -6,7 +6,7 @@ import {
   getUnidadesMedida,
   getProveedores,
 } from "../../api/api";
-import type { LoteProductoReventaPagination } from "../../types/types";
+import type { LoteProductoReventaPagination, ProductosReventaPagination } from "../../types/types";
 
 export const unidadesMedidaQueryOptions = {
   queryKey: ["unidades-medida"],
@@ -28,8 +28,12 @@ export const proveedoresQueryOptions = {
 
 export const productosReventaQueryOptions = {
   queryKey: ["productos-reventa"],
-  queryFn: getProductosReventa,
+  queryFn: ({ pageParam }: { pageParam?: string | null }) =>
+    getProductosReventa({ pageParam }),
   staleTime: Infinity,
+  initialPageParam: null,
+  getNextPageParam: (lastPage: ProductosReventaPagination) => lastPage.next,
+  getPreviousPageParam: (firstPage: ProductosReventaPagination) => firstPage.previous,
 };
 
 

@@ -16,23 +16,29 @@ export default function FiltersPanel() {
     } = useProductosReventaContext();
     const { data: productosReventa } = useGetProductosReventa();
 
+    // Extract all results from all pages for filters
+    const allProductos = useMemo(() => {
+        if (!productosReventa?.pages) return [];
+        return productosReventa.pages.flatMap(page => page.results || []);
+    }, [productosReventa]);
+
     const opcionesUnidadInventario = useMemo(() => {
-        const fromProductos = (productosReventa || [])
+        const fromProductos = allProductos
             .map((p) => p.unidad_base_inventario_nombre)
             .filter(Boolean) as string[];
         const fromContext = (unidadesMedida || []).map((u) => u.nombre_completo);
         return Array.from(new Set([...fromProductos, ...fromContext])).sort();
-    }, [productosReventa, unidadesMedida]);
+    }, [allProductos, unidadesMedida]);
 
     const opcionesCategorias = useMemo(() => {
-        const fromProductos = (productosReventa || [])
+        const fromProductos = allProductos
             .map((p) => p.categoria_nombre)
             .filter(Boolean) as string[];
         const fromContext = (categoriasProductosReventa || []).map(
             (c) => c.nombre_categoria,
         );
         return Array.from(new Set([...fromProductos, ...fromContext])).sort();
-    }, [productosReventa, categoriasProductosReventa]);
+    }, [allProductos, categoriasProductosReventa]);
 
     useEffect(() => {
         // Close panel on escape

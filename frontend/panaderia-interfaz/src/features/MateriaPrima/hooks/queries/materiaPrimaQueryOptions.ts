@@ -7,7 +7,7 @@ import {
   handleLotesMateriaPrimaLotes,
   getLotesMateriaPrima,
 } from "@/features/MateriaPrima/api/api";
-import type { LoteMateriaPrimaPagination } from "../../types/types";
+import type { LoteMateriaPrimaPagination, MateriaPrimaPagination } from "../../types/types";
 
 export const createUnidadesQueryOptions = () => {
   return {
@@ -28,8 +28,12 @@ export const createCategoriasQueryOptions = () => {
 export const createMateriaPrimaListQueryOptions = () => {
   return {
     queryKey: ["materiaPrimaList"],
-    queryFn: () => handleMateriaPrimaList(),
+    queryFn: ({ pageParam }: { pageParam?: string | null }) =>
+      handleMateriaPrimaList({ pageParam }),
     staleTime: Infinity,
+    initialPageParam: null,
+    getNextPageParam: (lastPage: MateriaPrimaPagination) => lastPage.next,
+    getPreviousPageParam: (firstPage: MateriaPrimaPagination) => firstPage.previous,
   };
 };
 export const MATERIA_PRIMA_PK_KEY = "materiaPrimaListPK";
