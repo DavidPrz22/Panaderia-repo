@@ -21,7 +21,7 @@ export const PRTableBody = ({
   const EmptyState = () => {
     if (isTrulyEmpty) {
       return (
-        <div className="flex flex-col gap-2 justify-center h-full items-center text-center text-gray-600 py-16">
+        <div className="flex flex-col gap-2 justify-center h-[80%] items-center text-center text-gray-600 py-16">
           <p className="font-semibold text-lg">No hay datos registrados</p>
           <p className="text-sm text-gray-500 max-w-sm">
             Registra un producto de reventa para comenzar.
@@ -30,7 +30,7 @@ export const PRTableBody = ({
       );
     }
     return (
-      <div className="flex flex-col gap-3 justify-center h-full items-center text-center text-gray-600 py-16">
+      <div className="flex flex-col gap-3 justify-center h-[80%] items-center text-center text-gray-600 py-16">
         <p className="font-semibold text-lg">Sin resultados</p>
         <p className="text-sm text-gray-500 max-w-sm">
           No hay coincidencias con los filtros o la búsqueda aplicada.
@@ -52,7 +52,7 @@ export const PRTableBody = ({
       {isFetching ? (
         <PendingTubeSpinner
           size={28}
-          extraClass="absolute bg-white opacity-50 w-full h-full"
+          extraClass="absolute bg-white opacity-50 w-full h-[80%]"
         />
       ) : data.length > 0 ? (
         <PRTableRows data={data} />

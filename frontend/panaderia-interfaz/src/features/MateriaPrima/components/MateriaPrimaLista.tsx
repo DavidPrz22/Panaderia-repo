@@ -31,7 +31,7 @@ export default function MateriaPrimaLista({
       hasNextPage,
       isFetching: isMateriaPrimaListFetching,
     } = useInfiniteQuery(createMateriaPrimaListQueryOptions());
-    console.log(isMateriaPrimaListFetching)
+
     // Handle pagination state with reducer for complex logic
 
     const [page, dispatch] = useReducer(

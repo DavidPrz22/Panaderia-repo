@@ -39,15 +39,15 @@ class MateriaPrimaViewSet(viewsets.ModelViewSet):
         for mp in reader:
             mp_created = MateriasPrimas(
                 nombre=mp['nombre'],
-                SKU=mp['sku'],
+                SKU=mp['SKU'],
                 precio_compra_usd=mp['precio_compra_usd'],
-                nombre_empaque_estandar=mp['nombre_empaque_estandar'] or None,
-                cantidad_empaque_estandar=mp['cantidad_empaque_estandar'] or None,
-                unidad_medida_empaque_estandar=UnidadesDeMedida.objects.get(nombre_completo=mp['unidad_medida_empaque_estandar']) or None,
+                nombre_empaque_estandar=mp.get('nombre_empaque_estandar') or None,
+                cantidad_empaque_estandar=mp.get('cantidad_empaque_estandar') or None,
+                unidad_medida_empaque_estandar_id=mp.get('unidad_medida_empaque_estandar_id') or None,
                 punto_reorden=mp['punto_reorden'],
-                unidad_medida_base=UnidadesDeMedida.objects.get(nombre_completo=mp['unidad_medida_base']) or None,
-                categoria=CategoriasMateriaPrima.objects.get(nombre_categoria=mp['categoria'].capitalize()),
-                descripcion=mp['descripcion']
+                unidad_medida_base_id=mp.get('unidad_medida_base_id'),
+                categoria_id=mp.get('categoria_id'),
+                descripcion=mp.get('descripcion')
             )
             materias_primas.append(mp_created)
 
@@ -521,18 +521,17 @@ class ProductosReventaViewSet(viewsets.ModelViewSet):
             for pr in reader:
                 pr_created = ProductosReventa(
                     nombre_producto=pr['nombre_producto'],
-                    SKU=pr['sku'],
-                    precio_compra_usd=pr['precio_compra_usd'] or None,
+                    SKU=pr['SKU'],
+                    precio_compra_usd=pr.get('precio_compra_usd') or None,
                     precio_venta_usd=pr['precio_venta_usd'],
-                    punto_reorden=pr['punto_reorden'],
-                    unidad_base_inventario=UnidadesDeMedida.objects.get(nombre_completo=pr['unidad_base_inventario']) or None,
-                    unidad_venta=UnidadesDeMedida.objects.get(nombre_completo=pr['unidad_venta']) or None,
-                    categoria=CategoriasProductosReventa.objects.get(nombre_categoria=pr['categoria']),
-                    factor_conversion=pr['factor_conversion'],
-                    marca=pr['marca'] or None,
-                    proveedor_preferido=Proveedores.objects.get(nombre_proveedor=pr['proveedor_preferido']) or None,
-                    perecedero=pr['perecedero'],
-                    descripcion=pr['descripcion']
+                    punto_reorden=pr.get('punto_reorden'),
+                    unidad_base_inventario_id=pr.get('unidad_base_inventario_id'),
+                    unidad_venta_id=pr.get('unidad_venta_id'),
+                    categoria_id=pr.get('categoria_id'),
+                    factor_conversion=pr.get('factor_conversion', 1.0),
+                    marca=pr.get('marca') or None,
+                    perecedero=pr.get('perecedero', 'FALSE').upper() == 'TRUE',
+                    descripcion=pr.get('descripcion')
                 )
                 productos_reventa.append(pr_created)
 
