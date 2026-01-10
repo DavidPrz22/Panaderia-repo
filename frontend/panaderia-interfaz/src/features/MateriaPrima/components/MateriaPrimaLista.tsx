@@ -94,7 +94,7 @@ export default function MateriaPrimaLista({
             "Nombre",
             "Unidad de medida",
             "Categoria",
-            "Cantidad",
+            "Stock",
             "Punto de reorden",
             "Fecha de creación",
           ]}
