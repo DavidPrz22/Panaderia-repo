@@ -46,7 +46,7 @@ export const MaterialPrimaDetalles = () => {
   } = useMateriaPrimaContext();
 
   const { user } = useAuth();
-
+  console.log(materiaprimaDetalles);
   const { mutateAsync: deleteMateriaPrima, isPending } =
     useDeleteMateriaPrimaMutation(handleClose, materiaprimaId!);
 
@@ -117,13 +117,10 @@ export const MaterialPrimaDetalles = () => {
     0
   );
 
-  const lotesTable = lotesPagination?.pages?.[page]?.results || [];
-
   useEffect(() => {
-    if (lotesTable) {
-      setLotesForm(lotesTable);
-    }
-  }, [lotesTable, setLotesForm]);
+    const lotesTable = lotesPagination?.pages?.[page]?.results || [];
+    setLotesForm(lotesTable);
+  }, [lotesPagination, page, setLotesForm]);
 
   const pages_count = useMemo(() => {
     if (!lotesPagination?.pages?.[0]) return 0;

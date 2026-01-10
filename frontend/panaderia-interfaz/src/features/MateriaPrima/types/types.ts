@@ -32,15 +32,6 @@ export type CategoriaMateriaPrima = {
   descripcion: string | null;
 };
 
-export type MateriaPrimaList = {
-  id: number;
-  name: string;
-  unit: string;
-  category: string;
-  quantity: number;
-  reorderPoint: number;
-  creationDate: string;
-};
 
 export type MateriaPrimaListServer = {
   id: number;
@@ -59,6 +50,9 @@ export type MateriaPrimaListServer = {
   fecha_modificacion_registro: string;
   descripcion: string;
 };
+
+export type MateriaPrimaList = MateriaPrimaListServer;
+
 
 export type submitMateriaPrima = {
   cantidad_empaque_estandar: number | null;

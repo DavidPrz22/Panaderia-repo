@@ -3,6 +3,7 @@ import { TableRow } from "./Tablerow";
 import type { MateriaPrimaList } from "@/features/MateriaPrima/types/types";
 
 export const TableRows = ({ data }: { data: MateriaPrimaList[] }) => {
+  console.log(data);
   return (
     <>
       {data.map((item, index) => (
