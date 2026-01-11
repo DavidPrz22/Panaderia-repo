@@ -137,7 +137,7 @@ class RecetasViewSet(viewsets.ModelViewSet):
                         'nombre': receta_componente.componente_producto_intermedio.nombre_producto,
                         'tipo': 'Producto Intermedio',
                         'cantidad': receta_componente.cantidad,
-                        'unidad_medida': receta_componente.componente_producto_intermedio.unidad_medida_nominal.abreviatura
+                        'unidad_medida': receta_componente.componente_producto_intermedio.unidad_produccion.abreviatura
                         })
 
             relaciones_recetas = RelacionesRecetas.objects.filter(receta_principal=receta_id)

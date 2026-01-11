@@ -4,6 +4,16 @@ from decimal import Decimal
 
 # Create your models here.
 
+# Unidades de Medida Registradas (Referencia):
+# ID | Nombre Completo | Abreviatura | Tipo
+# -------------------------------------------
+# 1  | Kilogramo       | kg          | peso
+# 2  | Gramo           | g           | peso
+# 3  | Litro           | L           | volumen
+# 4  | Miligramo       | mg          | peso
+# 5  | Mililitro       | ml          | volumen
+# 6  | Unidad          | ud          | unidad
+
 class UnidadesDeMedida(models.Model):
     nombre_completo = models.CharField(max_length=50, null=False, blank=False, unique=True)
     abreviatura = models.CharField(max_length=10, null=False, blank=False)
