@@ -1,0 +1,101 @@
+nombre_producto,SKU,descripcion,unidad_produccion_id,unidad_venta_id,precio_venta_usd,punto_reorden,categoria_id,es_intermediario,tipo_medida_fisica,vendible_por_medida_real
+Masa Hojaldre Clásica,PE-INT-001,Masa base para croissants y productos hojaldrados.,1,,,5000.0,2,TRUE,PESO,
+Crema Pastelera Vainilla,PE-INT-002,Crema base para relleno de tartas y pasteles.,1,,,3000.0,6,TRUE,PESO,
+Almíbar Simple,PE-INT-003,Jarabe de azúcar para humedecer bizcochos.,3,,,2000.0,4,TRUE,VOLUMEN,
+Relleno de Carne Molida,PE-INT-004,Relleno salado para empanadas y pastelitos.,1,,,4000.0,3,TRUE,PESO,
+Masa de Pan Blanco,PE-INT-005,Masa base para panes artesanales.,1,,,6000.0,2,TRUE,PESO,
+Crema Chantilly,PE-INT-006,Crema batida endulzada para decoración.,1,,,2500.0,6,TRUE,PESO,
+Merengue Italiano,PE-INT-007,Merengue estable para decoración y relleno.,1,,,2000.0,5,TRUE,PESO,
+Ganache de Chocolate,PE-INT-008,Crema de chocolate para relleno y cobertura.,1,,,3500.0,6,TRUE,PESO,
+Masa de Bizcocho Vainilla,PE-INT-009,Base esponjosa para tortas y pasteles.,1,,,4000.0,5,TRUE,PESO,
+Relleno de Pollo Guisado,PE-INT-010,Relleno salado con pollo y vegetales.,1,,,3500.0,3,TRUE,PESO,
+Almíbar de Frutas Rojas,PE-INT-011,Jarabe concentrado de frutas del bosque.,3,,,1500.0,4,TRUE,VOLUMEN,
+Base de Tarta Dulce,PE-INT-012,Masa quebrada para bases de tartas.,1,,,5000.0,1,TRUE,PESO,
+Crema de Limón,PE-INT-013,Crema ácida para relleno de tartas.,1,,,2500.0,6,TRUE,PESO,
+Masa de Pan Integral,PE-INT-014,Masa de pan con harina integral.,1,,,5500.0,2,TRUE,PESO,
+Relleno de Queso y Jamón,PE-INT-015,Relleno salado clásico para pastelitos.,1,,,3000.0,3,TRUE,PESO,
+Glaseado Real,PE-INT-016,Glaseado blanco para decoración de galletas.,1,,,2000.0,7,TRUE,PESO,
+Masa de Galletas Mantequilla,PE-INT-017,Masa base para galletas de mantequilla.,1,,,4500.0,2,TRUE,PESO,
+Crema de Café,PE-INT-018,Crema con sabor a café para relleno.,1,,,2800.0,6,TRUE,PESO,
+Almíbar de Naranja,PE-INT-019,Jarabe cítrico para humedecer bizcochos.,3,,,1800.0,4,TRUE,VOLUMEN,
+Masa de Pan de Maíz,PE-INT-020,Masa dulce con harina de maíz.,1,,,4000.0,2,TRUE,PESO,
+Relleno de Atún,PE-INT-021,Relleno de atún con vegetales.,1,,,3200.0,3,TRUE,PESO,
+Crema de Chocolate Blanco,PE-INT-022,Crema suave de chocolate blanco.,1,,,3000.0,6,TRUE,PESO,
+Base de Galleta Triturada,PE-INT-023,Base para cheesecakes y tartas frías.,1,,,3500.0,1,TRUE,PESO,
+Masa de Bizcocho Chocolate,PE-INT-024,Bizcocho oscuro con cacao.,1,,,4200.0,5,TRUE,PESO,
+Relleno de Vegetales Salteados,PE-INT-025,Relleno vegetariano para empanadas.,1,,,2800.0,3,TRUE,PESO,
+Crema de Dulce de Leche,PE-INT-026,Crema cremosa de dulce de leche.,1,,,3200.0,6,TRUE,PESO,
+Almíbar de Chocolate,PE-INT-027,Jarabe de chocolate para decoración.,3,,,2000.0,4,TRUE,VOLUMEN,
+Masa de Pan de Avena,PE-INT-028,Masa nutritiva con avena.,1,,,5000.0,2,TRUE,PESO,
+Relleno de Jamón y Queso Crema,PE-INT-029,Relleno cremoso para pastelitos.,1,,,3400.0,3,TRUE,PESO,
+Crema de Fresa,PE-INT-030,Crema rosada con sabor a fresa.,1,,,2700.0,6,TRUE,PESO,
+Base de Hojaldre Salado,PE-INT-031,Masa hojaldre para productos salados.,1,,,4800.0,2,TRUE,PESO,
+Glaseado de Chocolate,PE-INT-032,Cobertura brillante de chocolate.,1,,,2500.0,7,TRUE,PESO,
+Masa de Bizcocho Zanahoria,PE-INT-033,Bizcocho húmedo con zanahoria rallada.,1,,,4300.0,5,TRUE,PESO,
+Relleno de Carne Mechada,PE-INT-034,Relleno tradicional venezolano.,1,,,3800.0,3,TRUE,PESO,
+Crema de Moka,PE-INT-035,Crema combinada de café y chocolate.,1,,,3100.0,6,TRUE,PESO,
+Almíbar de Limón,PE-INT-036,Jarabe ácido de limón.,3,,,1700.0,4,TRUE,VOLUMEN,
+Masa de Pan de Bono,PE-INT-037,Masa colombiana con almidón de yuca.,1,,,4500.0,2,TRUE,PESO,
+Relleno de Espinaca y Queso,PE-INT-038,Relleno vegetariano con espinaca.,1,,,3000.0,3,TRUE,PESO,
+Crema de Pistacho,PE-INT-039,Crema verde con pistachos molidos.,1,,,3500.0,6,TRUE,PESO,
+Base de Tarta Salada,PE-INT-040,Masa quebrada para quiches.,1,,,4700.0,1,TRUE,PESO,
+Merengue Francés,PE-INT-041,Merengue ligero para decoración.,1,,,1800.0,5,TRUE,PESO,
+Masa de Galletas Chocolate,PE-INT-042,Masa oscura para galletas.,1,,,4600.0,2,TRUE,PESO,
+Relleno de Champiñones,PE-INT-043,Relleno gourmet con champiñones.,1,,,3300.0,3,TRUE,PESO,
+Crema de Coco,PE-INT-044,Crema tropical con coco rallado.,1,,,2900.0,6,TRUE,PESO,
+Almíbar de Café,PE-INT-045,Jarabe concentrado de café.,3,,,1900.0,4,TRUE,VOLUMEN,
+Masa de Pan de Centeno,PE-INT-046,Masa densa con harina de centeno.,1,,,5200.0,2,TRUE,PESO,
+Relleno de Pavo y Arándanos,PE-INT-047,Relleno festivo para empanadas.,1,,,3600.0,3,TRUE,PESO,
+Crema de Caramelo,PE-INT-048,Crema dulce de caramelo.,1,,,2800.0,6,TRUE,PESO,
+Base de Brownie,PE-INT-049,Base densa de chocolate para postres.,1,,,4000.0,1,TRUE,PESO,
+Glaseado de Vainilla,PE-INT-050,Cobertura blanca de vainilla.,1,,,2300.0,7,TRUE,PESO,
+Croissant de Chocolate,PE-FIN-001,Croissant hojaldrado relleno de chocolate.,5,5,3.50,100.0,12,FALSE,UNIDAD,FALSE
+Tarta de Limón Individual,PE-FIN-002,Tarta con crema de limón y merengue.,5,5,4.25,80.0,12,FALSE,UNIDAD,FALSE
+Pan Gallego Artesanal,PE-FIN-003,Pan rústico de corteza crujiente.,5,5,2.80,150.0,10,FALSE,UNIDAD,FALSE
+Empanada de Carne,PE-FIN-004,Empanada horneada con relleno de carne.,5,5,2.50,200.0,11,FALSE,UNIDAD,FALSE
+Canilla de Crema,PE-FIN-005,Pastel cilíndrico relleno de crema.,5,5,3.00,120.0,12,FALSE,UNIDAD,FALSE
+Torta Selva Negra XL,PE-FIN-006,Torta de chocolate con cerezas (8 porciones).,5,5,28.00,20.0,12,FALSE,UNIDAD,FALSE
+Pastelito de Pollo,PE-FIN-007,Pastelito frito con relleno de pollo.,5,5,2.20,180.0,11,FALSE,UNIDAD,FALSE
+Galletas de Mantequilla (Paquete 6u),PE-FIN-008,Galletas clásicas de mantequilla.,5,5,4.50,100.0,9,FALSE,UNIDAD,FALSE
+Pan Integral de Semillas,PE-FIN-009,Pan saludable con semillas variadas.,5,5,3.20,130.0,10,FALSE,UNIDAD,FALSE
+Pastelito de Queso y Jamón,PE-FIN-010,Pastelito horneado con relleno cremoso.,5,5,2.40,160.0,11,FALSE,UNIDAD,FALSE
+Tarta de Fresa (8 porciones),PE-FIN-011,Tarta con crema chantilly y fresas frescas.,5,5,26.00,25.0,12,FALSE,UNIDAD,FALSE
+Croissant Simple,PE-FIN-012,Croissant tradicional sin relleno.,5,5,2.80,140.0,12,FALSE,UNIDAD,FALSE
+Empanada de Atún,PE-FIN-013,Empanada horneada con relleno de atún.,5,5,2.60,170.0,11,FALSE,UNIDAD,FALSE
+Pan de Maíz Dulce,PE-FIN-014,Pan suave con sabor a maíz.,5,5,2.50,110.0,10,FALSE,UNIDAD,FALSE
+Galletas de Chocolate (Paquete 6u),PE-FIN-015,Galletas crujientes de chocolate.,5,5,4.80,90.0,9,FALSE,UNIDAD,FALSE
+Pastel de Zanahoria Individual,PE-FIN-016,Pastel húmedo con glaseado de queso crema.,5,5,3.80,100.0,12,FALSE,UNIDAD,FALSE
+Empanada Vegetariana,PE-FIN-017,Empanada con relleno de vegetales.,5,5,2.30,150.0,11,FALSE,UNIDAD,FALSE
+Pan de Avena y Miel,PE-FIN-018,Pan nutritivo con avena y miel.,5,5,3.40,120.0,10,FALSE,UNIDAD,FALSE
+Tarta de Chocolate (6 porciones),PE-FIN-019,Tarta densa de chocolate con ganache.,5,5,24.00,30.0,12,FALSE,UNIDAD,FALSE
+Pastelito de Carne Mechada,PE-FIN-020,Pastelito con relleno tradicional venezolano.,5,5,2.70,140.0,11,FALSE,UNIDAD,FALSE
+Café Latte Artesanal,PE-FIN-021,Bebida caliente de café con leche.,3,3,2.50,50.0,8,FALSE,VOLUMEN,TRUE
+Croissant de Jamón y Queso,PE-FIN-022,Croissant salado relleno.,5,5,3.80,110.0,11,FALSE,UNIDAD,FALSE
+Galletas Decoradas Navideñas (Paquete 4u),PE-FIN-023,Galletas con glaseado real decorado.,5,5,6.50,60.0,9,FALSE,UNIDAD,FALSE
+Pan de Centeno Artesanal,PE-FIN-024,Pan denso de centeno.,5,5,3.60,100.0,10,FALSE,UNIDAD,FALSE
+Empanada de Espinaca y Queso,PE-FIN-025,Empanada vegetariana horneada.,5,5,2.50,160.0,11,FALSE,UNIDAD,FALSE
+Tarta de Dulce de Leche (8 porciones),PE-FIN-026,Tarta cremosa con dulce de leche.,5,5,27.00,22.0,12,FALSE,UNIDAD,FALSE
+Pastelito de Champiñones,PE-FIN-027,Pastelito gourmet con champiñones.,5,5,2.90,130.0,11,FALSE,UNIDAD,FALSE
+Pan de Bono (Paquete 4u),PE-FIN-028,Panes colombianos de queso.,5,5,5.20,80.0,10,FALSE,UNIDAD,FALSE
+Brownie de Chocolate Individual,PE-FIN-029,Brownie denso con nueces.,5,5,3.20,110.0,9,FALSE,UNIDAD,FALSE
+Croissant de Almendras,PE-FIN-030,Croissant con relleno de crema de almendras.,5,5,4.00,90.0,12,FALSE,UNIDAD,FALSE
+Tarta de Coco (6 porciones),PE-FIN-031,Tarta tropical con crema de coco.,5,5,23.00,28.0,12,FALSE,UNIDAD,FALSE
+Empanada de Pavo y Arándanos,PE-FIN-032,Empanada festiva horneada.,5,5,3.00,100.0,11,FALSE,UNIDAD,FALSE
+Pan Artesanal Multicereal,PE-FIN-033,Pan con mezcla de cereales.,5,5,3.50,115.0,10,FALSE,UNIDAD,FALSE
+Galletas de Avena (Paquete 6u),PE-FIN-034,Galletas saludables de avena.,5,5,4.60,95.0,9,FALSE,UNIDAD,FALSE
+Pastel de Café Individual,PE-FIN-035,Pastel con crema de café.,5,5,3.90,105.0,12,FALSE,UNIDAD,FALSE
+Quiche de Vegetales Individual,PE-FIN-036,Quiche salado con vegetales frescos.,5,5,4.50,85.0,11,FALSE,UNIDAD,FALSE
+Tarta de Pistacho (8 porciones),PE-FIN-037,Tarta elegante con crema de pistacho.,5,5,32.00,18.0,12,FALSE,UNIDAD,FALSE
+Croissant de Dulce de Leche,PE-FIN-038,Croissant relleno de dulce de leche.,5,5,3.60,100.0,12,FALSE,UNIDAD,FALSE
+Pan Rústico de Aceitunas,PE-FIN-039,Pan salado con aceitunas.,5,5,3.80,95.0,10,FALSE,UNIDAD,FALSE
+Empanada de Queso Crema,PE-FIN-040,Empanada dulce con queso crema.,5,5,2.80,140.0,11,FALSE,UNIDAD,FALSE
+Tarta de Moka (6 porciones),PE-FIN-041,Tarta de café y chocolate.,5,5,25.00,24.0,12,FALSE,UNIDAD,FALSE
+Pastelito de Vegetales,PE-FIN-042,Pastelito vegetariano horneado.,5,5,2.35,155.0,11,FALSE,UNIDAD,FALSE
+Galletas de Jengibre (Paquete 6u),PE-FIN-043,Galletas especiadas de jengibre.,5,5,4.70,88.0,9,FALSE,UNIDAD,FALSE
+Pan de Ajo y Hierbas,PE-FIN-044,Pan aromático con ajo y hierbas.,5,5,3.30,108.0,10,FALSE,UNIDAD,FALSE
+Cappuccino Artesanal,PE-FIN-045,Bebida caliente de café con espuma.,3,3,2.80,45.0,8,FALSE,VOLUMEN,TRUE
+Tarta de Caramelo (8 porciones),PE-FIN-046,Tarta con crema de caramelo.,5,5,26.50,21.0,12,FALSE,UNIDAD,FALSE
+Croissant de Nutella,PE-FIN-047,Croissant relleno de crema de avellanas.,5,5,4.20,92.0,12,FALSE,UNIDAD,FALSE
+Pan Brioche Artesanal,PE-FIN-048,Pan dulce y esponjoso.,5,5,4.00,88.0,10,FALSE,UNIDAD,FALSE
+Empanada de Jamón y Queso Crema,PE-FIN-049,Empanada cremosa horneada.,5,5,2.75,145.0,11,FALSE,UNIDAD,FALSE
+Tarta de Frutos Rojos (6 porciones),PE-FIN-050,Tarta con frutas del bosque.,5,5,28.50,19.0,12,FALSE,UNIDAD,FALSE
