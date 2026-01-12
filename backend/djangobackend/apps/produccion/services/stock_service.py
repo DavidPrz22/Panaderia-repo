@@ -34,7 +34,7 @@ class StockConsumptionService:
         for pi in productos_intermedios:
             cantidad = pi_map[pi.id]
             consumed_data = pi.consumeStock(cantidad)
-            
+            print(consumed_data)
             # Create parent detail record
             detalle_produccion = DetalleProduccionCosumos(
                 produccion=produccion,

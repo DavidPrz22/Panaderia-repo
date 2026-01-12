@@ -250,6 +250,7 @@ class ProductosElaboradosViewSet(viewsets.ModelViewSet):
                 "unidad_medida": unit.abreviatura,
                 "stock": component.stock_actual,
                 "cantidad": cantidad,
+                'tipo': 'MateriaPrima'
             }
         elif detalle.componente_producto_intermedio:
             component = detalle.componente_producto_intermedio
@@ -261,6 +262,7 @@ class ProductosElaboradosViewSet(viewsets.ModelViewSet):
                 "unidad_medida": unit.abreviatura,
                 "stock": component.stock_actual,
                 "cantidad": cantidad,
+                'tipo': 'ProductoIntermedio'
             }
         return None
 

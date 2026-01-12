@@ -26,7 +26,7 @@ const ProductionComponentsBase = ({
   const { data : productionComponentes , isFetching, isFetched } = useComponentsProductionQuery();
 
   const { setInsufficientStock, componentesBaseProduccion, setComponentesBaseProduccion, setMedidaFisica, esPorUnidad, setEsPorUnidad } = useProductionContext();
-
+  
   // Cantidad a producir desde el formulario (1 por defecto)
   const cantidad = cantidadProduction ?? 1;
   
@@ -169,6 +169,8 @@ const ProductionComponentsBase = ({
     setInsufficientStock?.(insufficientStock);
   }, [isFetched, insufficientStock, setInsufficientStock]);
 
+  console.log(componentesPrincipalesProducts);
+  
   return (
     <>
       {isFetching && <DoubleSpinnerLoading extraClassName="size-30 mt-4" />}

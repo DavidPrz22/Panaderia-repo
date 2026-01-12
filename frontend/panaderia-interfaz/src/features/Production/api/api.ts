@@ -35,6 +35,7 @@ export const getRecetaComponentes = async (
     const response = await apiClient.get(
       `/api/productoselaborados/${producto_id}/get-receta-producto/`,
     );
+    console.log(response.data);
     return response.data;
   } catch (error) {
     console.error("Error fetching receta componentes:", error);
