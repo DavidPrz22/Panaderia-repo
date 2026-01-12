@@ -26,6 +26,7 @@ export const useCreateProductionMutation = () => {
       queryClient.invalidateQueries({
         queryKey: componentsProductionOptions(data.productoId).queryKey,
       })
+
       if (data.tipoProducto === "producto-intermedio") {
         queryClient.invalidateQueries({
           queryKey: productosIntermediosQueryOptions.queryKey,
@@ -35,6 +36,7 @@ export const useCreateProductionMutation = () => {
           queryKey: productosFinalesQueryOptions.queryKey,
         })
       }
+
       handleToast("Producción registrada exitosamente");
     },
     onError: (error) => {

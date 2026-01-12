@@ -14,6 +14,7 @@ import {
   createLotesMateriaPrimaQueryOptions,
   createMateriaPrimaListQueryOptions,
   createMateriaPrimaListPKQueryOptions,
+  lotesMateriaPrimaQueryOptions,
 } from "../../hooks/queries/materiaPrimaQueryOptions";
 
 
@@ -128,6 +129,9 @@ export const useDeleteLoteMateriaPrimaMutation = (
         await queryClient.invalidateQueries({
           queryKey: createMateriaPrimaListPKQueryOptions(materiaprimaId).queryKey,
         });
+        await queryClient.invalidateQueries({
+          queryKey: lotesMateriaPrimaQueryOptions(materiaprimaId).queryKey,
+        })
         handleClose();
       }
     },
@@ -149,6 +153,9 @@ export const useActivateLoteMateriaPrimaMutation = (
           queryKey:
             createLotesMateriaPrimaQueryOptions(materiaPrimaId).queryKey,
         });
+        queryClient.invalidateQueries({
+          queryKey: lotesMateriaPrimaQueryOptions(materiaPrimaId).queryKey,
+        })
       }
       queryClient.invalidateQueries({ queryKey: createMateriaPrimaListQueryOptions().queryKey });
     },
@@ -170,6 +177,9 @@ export const useInactivateLoteMateriaPrimaMutation = (
           queryKey:
             createLotesMateriaPrimaQueryOptions(materiaPrimaId).queryKey,
         });
+        queryClient.invalidateQueries({
+          queryKey: lotesMateriaPrimaQueryOptions(materiaPrimaId).queryKey,
+        })
         queryClient.invalidateQueries({ queryKey: createMateriaPrimaListQueryOptions().queryKey });
       }
     },
@@ -177,7 +187,6 @@ export const useInactivateLoteMateriaPrimaMutation = (
 };
 
 export const useCreateUpdateLoteMateriaPrimaMutation = (
-  materiaprimaId: number | undefined,
   onSubmitSuccess: () => void,
   reset: () => void,
   isUpdate?: boolean,
@@ -190,12 +199,21 @@ export const useCreateUpdateLoteMateriaPrimaMutation = (
         data,
         isUpdate ? initialDataId : undefined,
       ),
-    onSuccess: async () => {
+    onSuccess: async (_, { materia_prima }) => {
       reset();
       onSubmitSuccess();
-      await queryClient.invalidateQueries({
-        queryKey: createLotesMateriaPrimaQueryOptions(materiaprimaId!).queryKey,
-      });
+      if (materia_prima) {
+        await queryClient.invalidateQueries({
+          queryKey:
+            createMateriaPrimaListPKQueryOptions(materia_prima).queryKey,
+        });
+        await queryClient.invalidateQueries({
+          queryKey: createLotesMateriaPrimaQueryOptions(materia_prima).queryKey,
+        });
+        await queryClient.invalidateQueries({
+          queryKey: lotesMateriaPrimaQueryOptions(materia_prima).queryKey
+        })
+      };
       await queryClient.invalidateQueries({
         queryKey: createMateriaPrimaListQueryOptions().queryKey,
       });

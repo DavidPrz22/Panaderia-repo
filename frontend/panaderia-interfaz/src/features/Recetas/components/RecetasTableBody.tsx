@@ -15,7 +15,7 @@ export const RecetasTableBody = ({
       {isFetching ? (
         <PendingTubeSpinner
           size={28}
-          extraClass="absolute bg-white opacity-50 h-full w-full"
+          extraClass="absolute bg-white opacity-50 h-[80%] w-full"
         />
       ) : data.length > 0 ? (
         <RecetasTablerows data={data} />

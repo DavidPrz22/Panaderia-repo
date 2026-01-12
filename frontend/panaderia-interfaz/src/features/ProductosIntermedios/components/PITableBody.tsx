@@ -52,7 +52,7 @@ export const PITableBody = ({
       {isFetching ? (
         <PendingTubeSpinner
           size={28}
-          extraClass="absolute bg-white opacity-50 w-full h-full"
+          extraClass="absolute bg-white opacity-50 w-full h-[80%]"
         />
       ) : data.length > 0 ? (
         <PITableRows data={data} />
