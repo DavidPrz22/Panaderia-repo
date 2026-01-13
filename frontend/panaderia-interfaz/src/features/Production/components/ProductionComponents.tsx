@@ -122,8 +122,9 @@ const ProductionComponentsBase = ({
   }, [componentesPrincipalesProducts, subrecetasProducts]);
 
   const watchedComponentes = watch?.("componentes") as { id: number; cantidad: number }[] | undefined;
+
   const currentInsufficientStock = useMemo(() => {
-    const formMap = new Map((watch?.("componentes") as { id: number; cantidad: number }[] | undefined ?? []).map((c) => [c.id, c.cantidad]));
+    const formMap = new Map((watchedComponentes ?? []).map((c) => [c.id, c.cantidad]));
 
     return componentesEnProducto.filter((c) => {
       let quantityToCheck = c.cantidad;
