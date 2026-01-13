@@ -52,7 +52,7 @@ export const PFTableBody = ({
       {isFetching ? (
         <PendingTubeSpinner
           size={28}
-          extraClass="absolute bg-white opacity-50 w-full h-full"
+          extraClass="absolute bg-white opacity-50 w-full h-[80%]"
         />
       ) : displayData.length > 0 ? (
         <PFTableRows data={displayData} />
