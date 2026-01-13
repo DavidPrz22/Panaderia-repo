@@ -232,8 +232,8 @@ class RecepcionCompraSerializer(serializers.Serializer):
     fecha_recepcion = serializers.DateField()  # Add this field
     detalles = DetalleRecepcionSerializer(many=True)
     recibido_parcialmente = serializers.BooleanField()
-    monto_total_recibido_usd = serializers.DecimalField(max_digits=10, decimal_places=3)
-    monto_total_recibido_ves = serializers.DecimalField(max_digits=10, decimal_places=3)
+    monto_total_recibido_usd = serializers.DecimalField(max_digits=15, decimal_places=3)
+    monto_total_recibido_ves = serializers.DecimalField(max_digits=15, decimal_places=3)
 
     def validate(self, data):
         """Validate that received quantities don't exceed pending quantities"""

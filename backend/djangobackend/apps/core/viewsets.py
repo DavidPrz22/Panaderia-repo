@@ -120,36 +120,33 @@ class NotificacionesViewSet(viewsets.ModelViewSet):
         limit = 100
         min_notifications_to_show = 30
         
-        notificaciones_sin_leer = Notificaciones.objects.filter(
+        # Fetch unread notifications and convert to list immediately to avoid lazy evaluation issues
+        notificaciones_qs = Notificaciones.objects.filter(
             leida=False
         ).order_by('-fecha_notificacion')[:limit]
+        
+        notificaciones_sin_leer = list(notificaciones_qs)
+        notificaciones_count = len(notificaciones_sin_leer)
+        unread_ids = [n.id for n in notificaciones_sin_leer]
 
-        notificaciones_count = notificaciones_sin_leer.count()
-        
         if notificaciones_count == 0:
-            notificaciones_leidas = Notificaciones.objects.filter(
+            data_to_serialize = list(Notificaciones.objects.filter(
                 leida=True
-            ).order_by('-fecha_notificacion')[:min_notifications_to_show]
-            serializer = NotificacionesSerializer(notificaciones_leidas, many=True)
-            return Response({"notificaciones": serializer.data}, status=status.HTTP_200_OK)
-        
-        # when notifications are less than min_notifications_to_show, get the rest of the notifications
-        # If there's more than min_notifications_to_show unread notifications, get only the unread notifications
-        # This case is focused in a case where there's few unread notifications and i want to show a history of notifications to fill upp
-        if notificaciones_count < min_notifications_to_show:
+            ).order_by('-fecha_notificacion')[:min_notifications_to_show])
+        elif notificaciones_count < min_notifications_to_show:
             notificaciones_leidas = Notificaciones.objects.filter(
                 leida=True
             ).order_by('-fecha_notificacion')[:(min_notifications_to_show - notificaciones_count)]
             
-            all_notificaciones = list(notificaciones_sin_leer) + list(notificaciones_leidas)
-            
-            all_notificaciones.sort(key=lambda x: x.fecha_notificacion, reverse=True)
-            
-            serializer = NotificacionesSerializer(all_notificaciones, many=True)
-        # Return the base amount of unread notifications
+            data_to_serialize = notificaciones_sin_leer + list(notificaciones_leidas)
+            data_to_serialize.sort(key=lambda x: x.fecha_notificacion, reverse=True)
         else:
-            serializer = NotificacionesSerializer(notificaciones_sin_leer, many=True)
+            data_to_serialize = notificaciones_sin_leer
         
-        Notificaciones.objects.filter(id__in=notificaciones_sin_leer.values_list('id', flat=True)).update(leida=True)
+        serializer = NotificacionesSerializer(data_to_serialize, many=True)
+        
+        # Mark as read the notifications that were previously unread
+        if unread_ids:
+            Notificaciones.objects.filter(id__in=unread_ids).update(leida=True)
 
         return Response({"notificaciones": serializer.data}, status=status.HTTP_200_OK)
