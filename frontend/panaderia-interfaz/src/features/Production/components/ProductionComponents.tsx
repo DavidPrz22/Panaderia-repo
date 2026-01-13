@@ -23,13 +23,13 @@ const ProductionComponentsBase = ({
   cantidadProduction,
   resetProduction,
 }: watchSetvalueTypeProductionWithSubmit & { cantidadProduction?: number, resetProduction: () => void }) => {
-  const { data : productionComponentes , isFetching, isFetched } = useComponentsProductionQuery();
+  const { data: productionComponentes, isFetching, isFetched } = useComponentsProductionQuery();
 
   const { setInsufficientStock, componentesBaseProduccion, setComponentesBaseProduccion, setMedidaFisica, esPorUnidad, setEsPorUnidad } = useProductionContext();
-  
+
   // Cantidad a producir desde el formulario (1 por defecto)
   const cantidad = cantidadProduction ?? 1;
-  
+
   const roundTo3 = (n: number) => Math.round(n * 1000) / 1000;
 
   // Store unscaled base componentes from backend in context when fetched
@@ -48,7 +48,7 @@ const ProductionComponentsBase = ({
 
   useEffect(() => {
     if (!isFetched || !productionComponentes) return;
-  
+
     const medidaRaw = productionComponentes.medida_produccion;
     const m = typeof medidaRaw === "string" ? medidaRaw.toLowerCase() : undefined;
 
@@ -60,7 +60,7 @@ const ProductionComponentsBase = ({
     if (productionComponentes.tipo_medida_fisica) {
       setMedidaFisica(productionComponentes.tipo_medida_fisica);
     }
-  
+
   }, [isFetched, productionComponentes, setMedidaFisica, setEsPorUnidad]);
 
 
@@ -121,22 +121,30 @@ const ProductionComponentsBase = ({
     return all;
   }, [componentesPrincipalesProducts, subrecetasProducts]);
 
-  const insufficientStock: ComponentesLista = useMemo(() => {
-    const formComponentes = (watch?.("componentes") as { id: number; cantidad: number }[] | undefined) ?? [];
-    const byFormId = new Map(formComponentes.map((c) => [c.id, c.cantidad]));
-    
+  const watchedComponentes = watch?.("componentes") as { id: number; cantidad: number }[] | undefined;
+  const currentInsufficientStock = useMemo(() => {
+    const formMap = new Map((watch?.("componentes") as { id: number; cantidad: number }[] | undefined ?? []).map((c) => [c.id, c.cantidad]));
+
     return componentesEnProducto.filter((c) => {
-      const formQuantity = byFormId.get(c.id) ?? c.cantidad;
-      return c.stock < formQuantity;
+      let quantityToCheck = c.cantidad;
+      if (!esPorUnidad) {
+        quantityToCheck = formMap.get(c.id) ?? c.cantidad;
+      }
+      return c.stock < quantityToCheck;
     });
-  }, [componentesEnProducto, watch]);
+  }, [componentesEnProducto, watchedComponentes, esPorUnidad]);
+
+  useEffect(() => {
+    setInsufficientStock(currentInsufficientStock);
+  }, [currentInsufficientStock, setInsufficientStock]);
+
 
   useEffect(() => {
     if (!isFetched) return;
-  
+
     const existing = (watch?.("componentes") as { id: number; cantidad: number; tipo?: string }[] | undefined) ?? [];
     const byId = new Map(existing.map((c) => [c.id, c]));
-  
+
     const merged = componentesEnProducto.map(({ id, cantidad, tipo }) => {
       const prev = byId.get(id);
       const chosenCantidad = esPorUnidad
@@ -146,7 +154,7 @@ const ProductionComponentsBase = ({
           : roundTo3(cantidad);     // initial load fallback
       return { id, cantidad: chosenCantidad, tipo: tipo || "MateriaPrima" };
     });
-  
+
     setValue?.("componentes", merged, { shouldValidate: true });
   }, [isFetched, componentesEnProducto, esPorUnidad, setValue, watch]);
 
@@ -164,13 +172,7 @@ const ProductionComponentsBase = ({
     }
   }, [isFetched, setValue, watch, productionComponentes]);
 
-  useEffect(() => {
-    if (!isFetched) return;
-    setInsufficientStock?.(insufficientStock);
-  }, [isFetched, insufficientStock, setInsufficientStock]);
 
-  console.log(componentesPrincipalesProducts);
-  
   return (
     <>
       {isFetching && <DoubleSpinnerLoading extraClassName="size-30 mt-4" />}
@@ -215,7 +217,7 @@ const ProductionComponentsBase = ({
         </div>
       )}
 
-      {isFetched && componentesPrincipalesProducts.length === 0 && (
+      {isFetched && !isFetching && componentesPrincipalesProducts.length === 0 && (
         <div className="p-4 border border-gray-200 rounded-lg bg-white mt-6 shadow-md">
           <div className="p-4 text-gray-800 font-bold">
             No hay componentes disponibles
@@ -225,7 +227,10 @@ const ProductionComponentsBase = ({
 
       {
         componentesPrincipalesProducts.length > 0 && (
-          <ProductionButtons onSubmit={onSubmit} resetProduction={resetProduction} />
+          <ProductionButtons
+            onSubmit={onSubmit}
+            resetProduction={resetProduction}
+          />
         )
       }
     </>
