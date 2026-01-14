@@ -19,8 +19,10 @@ export type ProductosIntermediosFormSharedProps = {
   onSubmitSuccess: () => void;
 };
 
+export type InputType = "text" | "number" | "textarea";
+
 export type PIFormInputContainerProps = {
-  inputType: string;
+  inputType: InputType;
   title: string;
   name: Path<TProductosIntermediosSchema>;
   register: UseFormRegister<TProductosIntermediosSchema>;
@@ -33,7 +35,7 @@ export type PIFormInputContainerProps = {
 export type PIFormInputProps = {
   register: UseFormRegister<TProductosIntermediosSchema>;
   name: Path<TProductosIntermediosSchema>;
-  typeInput: string;
+  typeInput: InputType;
   placeholder?: string;
 };
 

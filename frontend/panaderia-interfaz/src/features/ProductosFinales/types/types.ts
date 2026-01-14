@@ -45,8 +45,10 @@ export type ProductoFinalDetalles = {
   vendible_por_medida_real: boolean;
 };
 
+export type InputType = "text" | "number" | "textarea";
+
 export type PFFormInputContainerProps = {
-  inputType: string;
+  inputType: InputType;
   title: string;
   name: Path<TProductoFinalSchema>;
   register: UseFormRegister<TProductoFinalSchema>;
@@ -95,7 +97,7 @@ export type recetasSearchItem = {
 };
 
 export type PFFormInputProps = {
-  typeInput: string;
+  typeInput: InputType;
   name: Path<TProductoFinalSchema>;
   placeholder?: string;
   register: UseFormRegister<TProductoFinalSchema>;

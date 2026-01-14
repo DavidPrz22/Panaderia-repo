@@ -1,8 +1,8 @@
 import { z } from "zod";
 
 export const materiaPrimaSchema = z.object({
-  nombre: z.string().min(3, "El nombre debe tener al menos 3 caracteres"),
-  SKU: z.string().min(3, "El SKU debe tener al menos 3 caracteres"),
+  nombre: z.string().min(6, "El nombre debe tener al menos 6 caracteres"),
+  SKU: z.string().min(6, "El SKU debe tener al menos 6 caracteres"),
   precio_compra_usd: z.coerce.number().min(0, "El precio de compra debe ser mayor a 0").optional().nullable(),
   nombre_empaque_estandar: z.string().optional().nullable(),
   cantidad_empaque_estandar: z.coerce.number().optional().nullable(),

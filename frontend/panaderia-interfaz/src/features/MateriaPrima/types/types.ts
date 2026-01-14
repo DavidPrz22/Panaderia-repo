@@ -75,8 +75,10 @@ export type MateriaPrimaFormSharedProps = {
   title: string;
 };
 
+export type InputType = "text" | "number" | "textarea";
+
 export type MateriaPrimaFormInputContainerProps = {
-  inputType: string;
+  inputType: InputType;
   title: string;
   name: keyof TMateriaPrimaSchema;
   register: UseFormRegister<TMateriaPrimaSchema>;
@@ -119,7 +121,7 @@ export type Proveedor = {
 };
 
 export type LotesMateriaPrimaFormInputContainerProps = {
-  inputType: string;
+  inputType: InputType;
   title: string;
   name: keyof TLoteMateriaPrimaSchema;
   register: UseFormRegister<TLoteMateriaPrimaSchema>;
@@ -186,4 +188,3 @@ export type LoteMateriaPrimaPagination = {
   previous: string | null;
   results: LoteMateriaPrimaFormResponse[];
 };
-
