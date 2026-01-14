@@ -14,8 +14,8 @@ class Command(BaseCommand):
         parser.add_argument(
             '--csv-path',
             type=str,
-            default='DataProductosElaborados.csv',
-            help='Path to the CSV file (default: DataProductosElaborados.csv in project root)'
+            default='PEnew.csv',
+            help='Path to the CSV file (default: PEnew.csv in project root)'
         )
 
     def handle(self, *args, **options):

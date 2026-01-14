@@ -60,7 +60,6 @@ export default function ProductosFinalesFormShared({
           }
         : undefined,
   });
-
   const { unidadesMedida, categoriasProductoFinal, productoId } =
     useProductosFinalesContext();
 
@@ -185,7 +184,7 @@ export default function ProductosFinalesFormShared({
   };
 
   const onSubmit = async (data: TProductoFinalSchema) => {
-
+    
     if (!checkInvalidRecetaRelacionada()) {
      toast.error("El producto debe estar relacionado con una receta"); 
      return;

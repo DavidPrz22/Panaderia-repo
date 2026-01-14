@@ -22,8 +22,8 @@ export const productoFinalSchema = z.object({
     .number()
     .optional()
     .nullable()
-    .refine(val => !val || val < 0, {
-      message: 'se require una receta valida'
+    .refine(val => !val || val > 0, {
+      message: 'Se requiere una receta valida'
     }),
   precio_venta_usd: z.coerce
     .number()

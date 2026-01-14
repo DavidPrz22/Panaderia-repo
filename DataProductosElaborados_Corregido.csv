@@ -99,3 +99,9 @@ Croissant de Nutella,PE-FIN-047,Croissant relleno de crema de avellanas.,6,6,4.2
 Pan Brioche Artesanal,PE-FIN-048,Pan dulce y esponjoso.,6,6,4.0,88.0,10,False,UNIDAD,False
 Empanada de Jamón y Queso Crema,PE-FIN-049,Empanada cremosa horneada.,6,6,2.75,145.0,11,False,UNIDAD,False
 Tarta de Frutos Rojos (6 porciones),PE-FIN-050,Tarta con frutas del bosque.,6,6,28.5,19.0,12,False,UNIDAD,False
+Pan Canilla ,PE-FIN-051,Pan típico venezolano de corteza suave.,5,5,1.50,100.0,10,FALSE,UNIDAD,FALSE
+Masa Pan de Guayaba,PE-INT-051,Masa dulce para pan de guayaba.,1,,,5000.0,2,TRUE,PESO,
+Pan de Guayaba,PE-FIN-052,Pan dulce relleno de pasta de guayaba.,5,5,3.50,100.0,10,FALSE,UNIDAD,FALSE
+Masa de Pan de Jamón,PE-INT-053,Masa base leudada para Pan de Jamón.,2,,,5000.0,2,TRUE,PESO,
+Relleno de Pan de Jamón,PE-INT-054,Mezcla preparada de jamón tocino y frutos para relleno.,2,,,3000.0,3,TRUE,PESO,
+Pan de Jamón Tradicional,PE-FIN-055,Clásico pan de jamón venezolano navideño.,6,6,15.00,100.0,10,FALSE,UNIDAD,FALSE

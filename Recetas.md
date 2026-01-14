@@ -618,6 +618,20 @@ Este documento contiene todas las recetas para los 100 productos elaborados (50 
 | Vainilla Negra (MP-ESE-8199) | MP | 50 | ml |
 | Leche Descremada (MP-LÁC-2077) | MP | 250 | g |
 
+### PE-INT-051: Masa de Pan de Jamón
+**Rendimiento**: 11200g (Batch para 20 panes)
+
+| Ingrediente | Tipo | Cantidad | Unidad |
+|-------------|------|----------|--------|
+| Harina de Trigo Panadera (MP-HAR-0001) | MP | 5680 | g |
+| Agua Potable (MP-BEB-0001) | MP | 3300 | ml |
+| Levadura Instantánea (MP-ESP-0001) | MP | 120 | g |
+| Azúcar Blanca (MP-DUL-0001) | MP | 560 | g |
+| Sal Refinada (MP-ESP-0002) | MP | 120 | g |
+| Mantequilla Sin Sal (MP-LÁC-0001) | MP | 560 | g |
+| Leche en Polvo Completa (MP-LAC-0003) | MP | 280 | g |
+| Huevo Fresco (MP-LAC-0002) | MP | 10 | ud |
+
 ---
 
 ## RECETAS DE PRODUCTOS FINALES
@@ -1154,6 +1168,21 @@ Este documento contiene todas las recetas para los 100 productos elaborados (50 
 | Crema de Fresa (PE-INT-030) | PI | 700 | g |
 | Almíbar de Frutas Rojas (PE-INT-011) | PI | 200 | ml |
 | Frutos del Bosque Mix (MP-CON-5058) | MP | 300 | g |
+
+---
+
+### PE-FIN-051: Pan de Jamón Tradicional
+**Rendimiento**: 10 unidades
+
+| Ingrediente | Tipo | Cantidad | Unidad |
+|-------------|------|----------|--------|
+| Masa de Pan de Jamón (PE-INT-051) | PI | 5600 | g |
+| Jamón Ahumado (MP-CAR-0001) | MP | 4000 | g |
+| Tocineta Ahumada (MP-CAR-0002) | MP | 1000 | g |
+| Aceitunas Rellenas (MP-VEG-0001) | MP | 500 | g |
+| Pasas de Corinto (MP-SEC-4969) | MP | 500 | g |
+| Papelón (Panela) (MP-DUL-0002) | MP | 500 | g |
+| Mostaza Preparada (MP-ESP-0003) | MP | 220 | g |
 
 ---
 

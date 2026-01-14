@@ -14,7 +14,7 @@ class Command(BaseCommand):
         parser.add_argument(
             '--md-path',
             type=str,
-            default='Recetas.md',
+            default='recetasnew.md',
             help='Path to the Recetas.md file (default: Recetas.md in project root)'
         )
 

@@ -1,6 +1,7 @@
 import { XRedIcon } from "@/assets/DashboardAssets/";
 import { useRecetasContext } from "@/context/RecetasContext";
 import type { recetaListItemProps, watchSetValueProps } from "../types/types";
+import { toast } from "sonner";
 
 export default function RecetaListItem({
   nombre,
@@ -21,6 +22,8 @@ export default function RecetaListItem({
       (itemId) => itemId !== id,
     );
     setValue("receta_relacionada", listaFiltradaValidacion || []);
+
+    toast.success("Receta eliminada");
   };
 
   return (
