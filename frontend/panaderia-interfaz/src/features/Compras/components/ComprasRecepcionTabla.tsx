@@ -318,15 +318,15 @@ export function ComprasRecepcion({
     if (
       isPartial &&
       updatedCantidadTotalRecibida <
-        (ordenCompra.detalles.find((detalle) => detalle.id === lineId)
-          ?.cantidad_pendiente || 0)
+      (ordenCompra.detalles.find((detalle) => detalle.id === lineId)
+        ?.cantidad_pendiente || 0)
     ) {
       setValue("recibido_parcialmente", true);
     } else if (
       !isPartial &&
       updatedCantidadTotalRecibida <
-        (ordenCompra.detalles.find((detalle) => detalle.id === lineId)
-          ?.cantidad_solicitada || 0)
+      (ordenCompra.detalles.find((detalle) => detalle.id === lineId)
+        ?.cantidad_solicitada || 0)
     ) {
       setValue("recibido_parcialmente", true);
     } else {
@@ -359,8 +359,11 @@ export function ComprasRecepcion({
     ordered: number,
   ) => {
     if (cantidad_total_recibida === 0) return "bg-gray-100 text-gray-700";
-    if (cantidad_total_recibida >= ordered)
-      return "bg-green-100 text-green-700";
+
+    if (cantidad_total_recibida == ordered) return "bg-green-100 text-green-700";
+
+    if (cantidad_total_recibida > ordered) return "bg-red-100 text-red-700";
+
     return "bg-orange-100 text-orange-700";
   };
 
@@ -380,6 +383,24 @@ export function ComprasRecepcion({
   };
 
   const handleSubmitReception = async (data: TRecepcionFormSchema) => {
+    // Check if any product received quantity exceeds requested/pending amount
+    const overflowItem = receptions.find((r) => {
+      const limit = isPartial
+        ? r.linea_oc.cantidad_pendiente
+        : r.linea_oc.cantidad_solicitada;
+      return r.cantidad_total_recibida > limit;
+    });
+
+    if (overflowItem) {
+      toast.error(
+        `La cantidad recibida de ${getProductDisplayName(
+          overflowItem.linea_oc
+        )} excede el monto solicitado o pendiente.`,
+        { duration: 5000 }
+      );
+      return;
+    }
+
     try {
       const response = await crearRecepcionOC(data);
       toast.success(response.message);
@@ -407,7 +428,7 @@ export function ComprasRecepcion({
     if (field === "fecha_caducidad") {
       return errors.detalles?.[lineIndex]?.lotes?.[lotIndex]?.fecha_caducidad
         ? errors.detalles?.[lineIndex]?.lotes?.[lotIndex]?.fecha_caducidad
-            .message
+          .message
         : "";
     }
     return "";
@@ -554,17 +575,57 @@ export function ComprasRecepcion({
                               <Input
                                 type="number"
                                 min="0"
-                                max={reception.linea_oc.cantidad_solicitada}
-                                step="1"
+                                max={
+                                  isPartial
+                                    ? reception.linea_oc.cantidad_pendiente
+                                    : reception.linea_oc.cantidad_solicitada
+                                }
+                                step="any"
                                 defaultValue={lot.cantidad}
-                                onChange={(e) =>
+                                onKeyDown={(e) => {
+                                  const isNumber = /^[0-9]$/.test(e.key);
+                                  const isControlKey = [
+                                    "Backspace",
+                                    "Delete",
+                                    "ArrowLeft",
+                                    "ArrowRight",
+                                    "Tab",
+                                    "Enter",
+                                    "Escape",
+                                  ].includes(e.key);
+                                  const isDecimalPoint = e.key === ".";
+                                  const isCombo = e.ctrlKey || e.metaKey;
+
+                                  if (!isNumber && !isControlKey && !isDecimalPoint && !isCombo) {
+                                    e.preventDefault();
+                                  }
+                                }}
+                                onPaste={(e) => {
+                                  const pasteData = e.clipboardData.getData("text");
+                                  if (!/^\d*\.?\d*$/.test(pasteData)) {
+                                    e.preventDefault();
+                                  }
+                                }}
+                                onWheel={(e) => (e.target as HTMLInputElement).blur()}
+                                inputMode="decimal"
+                                onChange={(e) => {
+                                  const maxVal = isPartial
+                                    ? reception.linea_oc.cantidad_pendiente
+                                    : reception.linea_oc.cantidad_solicitada;
+                                  let val = Number(e.target.value) || 0;
+
+                                  if (val > maxVal) {
+                                    val = maxVal;
+                                    e.target.value = val.toString();
+                                  }
+
                                   handleLotChange(
                                     reception.linea_oc.id,
                                     lot.id,
                                     "cantidad",
-                                    Number(e.target.value) || 0,
-                                  )
-                                }
+                                    val
+                                  );
+                                }}
                                 placeholder="Cantidad a recibir..."
                                 className="rounded border border-gray-300 px-3 py-2 text-sm focus-visible:ring-blue-200"
                               />
