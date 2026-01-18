@@ -10,6 +10,8 @@ def migrate_estado_orden(apps, schema_editor):
     OrdenVenta = apps.get_model('ventas', 'OrdenVenta')
     EstadosOrdenVenta = apps.get_model('core', 'EstadosOrdenVenta')
     
+    db_alias = schema_editor.connection.alias
+    
     # Create estado records if they don't exist
     estado_mapping = {
         'Pendiente': 'Orden pendiente de confirmación',
@@ -20,20 +22,20 @@ def migrate_estado_orden(apps, schema_editor):
     
     estados_created = {}
     for nombre, descripcion in estado_mapping.items():
-        estado, created = EstadosOrdenVenta.objects.get_or_create(
+        estado, created = EstadosOrdenVenta.objects.using(db_alias).get_or_create(
             nombre_estado=nombre,
             defaults={'descripcion': descripcion}
         )
         estados_created[nombre] = estado
     
     # Migrate existing OrdenVenta records
-    for orden in OrdenVenta.objects.all():
+    for orden in OrdenVenta.objects.using(db_alias).all():
         if hasattr(orden, 'estado_orden') and orden.estado_orden:
             # Map the old CharField value to the new ForeignKey
             estado_text = orden.estado_orden
             if estado_text in estados_created:
                 orden.estado_orden_new = estados_created[estado_text]
-                orden.save(update_fields=['estado_orden_new'])
+                orden.save(using=db_alias, update_fields=['estado_orden_new'])
 
 
 def reverse_migrate_estado_orden(apps, schema_editor):
@@ -41,11 +43,12 @@ def reverse_migrate_estado_orden(apps, schema_editor):
     Reverse migration - convert ForeignKey back to CharField values.
     """
     OrdenVenta = apps.get_model('ventas', 'OrdenVenta')
+    db_alias = schema_editor.connection.alias
     
-    for orden in OrdenVenta.objects.all():
+    for orden in OrdenVenta.objects.using(db_alias).all():
         if orden.estado_orden_new:
             orden.estado_orden = orden.estado_orden_new.nombre_estado
-            orden.save(update_fields=['estado_orden'])
+            orden.save(using=db_alias, update_fields=['estado_orden'])
 
 
 class Migration(migrations.Migration):
