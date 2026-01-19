@@ -54,6 +54,10 @@ type ProductosFinalesContextType = {
   setAgotadosFilter: React.Dispatch<React.SetStateAction<boolean>>;
   currentPage: number;
   setCurrentPage: React.Dispatch<React.SetStateAction<number>>;
+  showRecipeModal: boolean;
+  setShowRecipeModal: (value: boolean) => void;
+  selectedRecipeId: number | null;
+  setSelectedRecipeId: (value: number | null) => void;
 };
 
 const ProductosFinalesContextProvider = createContext<ProductosFinalesContextType | null>(null);
@@ -112,6 +116,8 @@ export const ProductosFinalesProvider = ({
   const [bajoStockFilter, setBajoStockFilter] = useState<boolean>(false);
   const [agotadosFilter, setAgotadosFilter] = useState<boolean>(false);
   const [currentPage, setCurrentPage] = useState<number>(0);
+  const [showRecipeModal, setShowRecipeModal] = useState<boolean>(false);
+  const [selectedRecipeId, setSelectedRecipeId] = useState<number | null>(null);
 
   // Reset page to 0 when filters change
   useEffect(() => {
@@ -169,6 +175,10 @@ export const ProductosFinalesProvider = ({
         setAgotadosFilter,
         currentPage,
         setCurrentPage,
+        showRecipeModal,
+        setShowRecipeModal,
+        selectedRecipeId,
+        setSelectedRecipeId,
       }}
     >
       {children}
