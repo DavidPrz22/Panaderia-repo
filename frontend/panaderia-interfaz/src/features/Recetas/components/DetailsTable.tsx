@@ -12,6 +12,8 @@ export const DetailsTable = () => {
         <DetailsField>Fecha de modificación</DetailsField>
         <DetailsField>Notas</DetailsField>
         <DetailsField>Rendimiento</DetailsField>
+        <DetailsField>Producto Vinculado</DetailsField>
+        <DetailsField>Unidad de medida</DetailsField>
       </div>
       <div className="grid grid-rows-4 grid-cols-1 gap-2">
         <DetailFieldValue>
@@ -25,6 +27,12 @@ export const DetailsTable = () => {
         </DetailFieldValue>
         <DetailFieldValue>
           {recetaDetalles?.receta.rendimiento || "-"}
+        </DetailFieldValue>
+        <DetailFieldValue>
+          {recetaDetalles?.receta.producto_elaborado || "-"}
+        </DetailFieldValue>
+        <DetailFieldValue>
+          {recetaDetalles?.receta.unidad_medida_producto || "-"}
         </DetailFieldValue>
       </div>
     </div>

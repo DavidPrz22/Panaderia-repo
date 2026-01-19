@@ -6,12 +6,15 @@ class RecetasSerializer(serializers.ModelSerializer):
     componente_receta = serializers.ListField(write_only=True, required=False)
     receta_relacionada = serializers.ListField(write_only=True, required=False)
     esCompuesta = serializers.SerializerMethodField(read_only=True)
+    producto_elaborado = serializers.CharField(source='producto_elaborado.nombre_producto', read_only=True)
+    unidad_medida_producto = serializers.CharField(source='producto_elaborado.unidad_produccion.nombre_completo', read_only=True)
 
     class Meta:
         model = Recetas
         fields = [
                     'id',
                     'producto_elaborado', 
+                    'unidad_medida_producto',
                     'nombre',
                     'rendimiento',
                     'fecha_creacion',

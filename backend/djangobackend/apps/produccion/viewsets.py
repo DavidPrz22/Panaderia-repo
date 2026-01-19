@@ -117,7 +117,6 @@ class RecetasViewSet(viewsets.ModelViewSet):
             receta_id = kwargs.get('pk')
             receta_componentes = RecetasDetalles.objects.filter(receta=receta_id)
             receta_instance = Recetas.objects.get(id=receta_id)
-            
             # Serialize the main recipe instance
             receta_serializer = self.get_serializer(receta_instance)
 

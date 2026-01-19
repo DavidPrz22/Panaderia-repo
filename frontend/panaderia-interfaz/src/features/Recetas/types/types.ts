@@ -98,6 +98,8 @@ export type recetaItem = {
   notas: string | null;
   esCompuesta: boolean;
   rendimiento?: number | null;
+  producto_elaborado?: string;
+  unidad_medida_producto?: string;
 };
 
 export type recetaDetallesItemComponente = {
