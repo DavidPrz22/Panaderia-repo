@@ -30,6 +30,7 @@ export default function RecetasLista({
     setCurrentPage,
   } = useRecetasContext();
 
+
   // Handle pagination state with reducer for complex logic
   const [page, dispatch] = useReducer(
     (state: number, action: { type: PaginatorActions; payload?: number }) => {
