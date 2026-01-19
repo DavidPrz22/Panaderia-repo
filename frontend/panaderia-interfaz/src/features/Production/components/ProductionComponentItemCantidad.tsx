@@ -97,19 +97,6 @@ export const ProductionComponentItemCantidad = ({
     const raw = e.target.value.replace(",", ".");
     const parsed = parseFloat(raw);
     const value = roundTo3(parsed);
-    // Cero o vacío: inválido, reflejar 0 y marcar inválido y poner form en 0
-    if (raw === "" || isNaN(parsed) || parsed <= 0) {
-      setInputValue(0);
-      const componentIndex =
-        watch("componentes")?.findIndex((c) => c.id === id) ?? -1;
-      if (componentIndex !== -1) {
-        updateFormCantidad(componentIndex, 0);
-      }
-      toggleInputsValidityClass(false);
-      // No es un caso de insuficiencia de stock; asegurarse que no esté listado
-      removeFromInsufficient(id);
-      return;
-    }
 
     // Asignar inmediatamente el valor al input local
     setInputValue(value);
@@ -129,6 +116,22 @@ export const ProductionComponentItemCantidad = ({
       updateFormCantidad(componentIndex, nuevaCantidad);
       toggleInputsValidityClass(true);
       removeFromInsufficient(id);
+    }
+  };
+
+  const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+    const raw = e.target.value;
+    const parsed = parseFloat(raw);
+    if (raw === "" || parsed < 0 || isNaN(parsed)) {
+      setInputValue(0);
+      const componentIndex = watch?.("componentes")?.findIndex((c) => c.id === id) ?? -1;
+      if (componentIndex !== -1) {
+        updateFormCantidad(componentIndex, 0);
+      }
+      toggleInputsValidityClass(false);
+      // No es un caso de insuficiencia de stock; asegurarse que no esté listado
+      removeFromInsufficient(id);
+      return;
     }
   };
 
@@ -154,12 +157,7 @@ export const ProductionComponentItemCantidad = ({
     }
   };
 
-  const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
-    const v = parseFloat(e.target.value);
-    if (e.target.value === "" || v < 0 || isNaN(v)) {
-      toggleInputsValidityClass(false);
-    }
-  };
+
 
   return (
     <div className="flex items-center gap-4 min-w-[250px]">

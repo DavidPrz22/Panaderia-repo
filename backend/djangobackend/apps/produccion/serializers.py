@@ -13,6 +13,7 @@ class RecetasSerializer(serializers.ModelSerializer):
                     'id',
                     'producto_elaborado', 
                     'nombre',
+                    'rendimiento',
                     'fecha_creacion',
                     'fecha_modificacion',
                     'notas',
@@ -23,6 +24,13 @@ class RecetasSerializer(serializers.ModelSerializer):
 
     def get_esCompuesta(self, obj):
         return RelacionesRecetas.objects.filter(receta_principal=obj).exists()
+
+    def validate_rendimiento(self, value):
+        if value is not None and value <= 0:
+            raise serializers.ValidationError(
+                "El rendimiento debe ser mayor que 0"
+            )
+        return value
 
 class RecetasSearchSerializer(serializers.ModelSerializer):
     class Meta:

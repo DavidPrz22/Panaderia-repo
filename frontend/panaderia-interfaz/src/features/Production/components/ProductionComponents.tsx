@@ -20,15 +20,14 @@ const ProductionComponentsBase = ({
   setValue,
   watch,
   onSubmit,
-  cantidadProduction,
   resetProduction,
-}: watchSetvalueTypeProductionWithSubmit & { cantidadProduction?: number, resetProduction: () => void }) => {
+}: watchSetvalueTypeProductionWithSubmit & { resetProduction: () => void }) => {
   const { data: productionComponentes, isFetching, isFetched } = useComponentsProductionQuery();
 
   const { setInsufficientStock, componentesBaseProduccion, setComponentesBaseProduccion, setMedidaFisica, esPorUnidad, setEsPorUnidad } = useProductionContext();
 
-  // Cantidad a producir desde el formulario (1 por defecto)
-  const cantidad = cantidadProduction ?? 1;
+  // Cantidad a producir desde el formulario no es necesaria para escalar mas
+
 
   const roundTo3 = (n: number) => Math.round(n * 1000) / 1000;
 
@@ -66,38 +65,26 @@ const ProductionComponentsBase = ({
 
   const componentesPrincipalesProducts: Componente[] = useMemo(() => {
     const base = componentesBaseProduccion ?? [];
-    const q = Number(cantidad) || 0;
     return base.map((c) => {
       const original = c.cantidad ?? 0;
-      // Only scale base (non-additional) components when product is unit-based
-      const scaled = esPorUnidad && !c.isAdditional ? original * q : original;
-      return { ...c, cantidad: roundTo3(scaled) };
+      // Keep original quantities regardless of unit-based scaling
+      return { ...c, cantidad: roundTo3(original) };
     });
-  }, [componentesBaseProduccion, cantidad, esPorUnidad]);
+  }, [componentesBaseProduccion]);
 
   // Escalar cantidades de subrecetas por la cantidad a producir
   const subrecetasProducts: subreceta[] = useMemo(() => {
 
     const subs = productionComponentes?.subrecetas ?? [];
-    const q = Number(cantidad) || 0;
-    if (!esPorUnidad) {
-      // Keep original quantities when not unit-based
-      return subs.map((sr) => ({
-        ...sr,
-        componentes: sr.componentes.map((c) => ({
-          ...c,
-          cantidad: roundTo3(c.cantidad ?? 0),
-        })),
-      }));
-    }
+    // Keep original quantities regardless of unit-based scaling
     return subs.map((sr) => ({
       ...sr,
       componentes: sr.componentes.map((c) => ({
         ...c,
-        cantidad: roundTo3((c.cantidad ?? 0) * q),
+        cantidad: roundTo3(c.cantidad ?? 0),
       })),
     }));
-  }, [productionComponentes, cantidad, esPorUnidad]);
+  }, [productionComponentes]);
 
   // Unificar y sumar por componente (base + subrecetas) con cantidades escaladas
   const componentesEnProducto: ComponentesLista = useMemo(() => {
@@ -159,19 +146,7 @@ const ProductionComponentsBase = ({
     setValue?.("componentes", merged, { shouldValidate: true });
   }, [isFetched, componentesEnProducto, esPorUnidad, setValue, watch]);
 
-  useEffect(() => {
-    if (!isFetched) return;
-    const current = cantidad;
 
-    if (!current || current - 1 <= 0) {
-      const input = document.getElementById("cantidadProduction");
-      if (input) {
-        input.classList.remove('invalidInput');
-        (input as HTMLInputElement).value = "1"
-      }
-      setValue?.("cantidadProduction", 1, { shouldValidate: true });
-    }
-  }, [isFetched, setValue, watch, productionComponentes]);
 
 
   return (
@@ -181,6 +156,11 @@ const ProductionComponentsBase = ({
       {isFetched && componentesPrincipalesProducts.length > 0 && (
         <div className="p-6 border border-gray-200 rounded-lg bg-white mt-6 shadow-md">
           <ProductionComponentsHeader />
+          {productionComponentes?.rendimiento && (
+            <small className="text-gray-500 text-sm">
+              Rendimiento de receta: {productionComponentes.rendimiento} {productionComponentes.medida_produccion}
+            </small>
+          )}
           <ProductionWarning />
           <div className="flex flex-col gap-2 mt-8">
             {componentesPrincipalesProducts.map((componente) => (

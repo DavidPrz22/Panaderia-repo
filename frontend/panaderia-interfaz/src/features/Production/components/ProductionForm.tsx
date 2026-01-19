@@ -19,9 +19,9 @@ export const ProductionForm = () => {
 
   // Reset function to clear form and production components
   const resetProduction = () => {
-    reset(); 
-    setComponentesBaseProduccion([]); 
-    setInsufficientStock(null); 
+    reset();
+    setComponentesBaseProduccion([]);
+    setInsufficientStock(null);
   };
 
   // Custom validation: check if any component quantity exceeds its stock
@@ -56,7 +56,6 @@ export const ProductionForm = () => {
         watch={watch}
         onSubmit={handleSubmit}
         resetProduction={resetProduction}
-        cantidadProduction={watch("cantidadProduction")}
       />
       <ProductionNewComponentModal setValue={setValue} watch={watch} />
       <Toast

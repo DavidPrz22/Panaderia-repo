@@ -97,6 +97,7 @@ export type recetaItem = {
   fecha_modificacion: string | null;
   notas: string | null;
   esCompuesta: boolean;
+  rendimiento?: number | null;
 };
 
 export type recetaDetallesItemComponente = {

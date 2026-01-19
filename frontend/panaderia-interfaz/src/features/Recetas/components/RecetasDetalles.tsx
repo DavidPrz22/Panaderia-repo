@@ -123,6 +123,7 @@ export default function RecetasDetalles() {
 
     const formatData: TRecetasFormSchema = {
       nombre: recetaDetalles!.receta.nombre,
+      rendimiento: recetaDetalles!.receta.rendimiento,
       componente_receta:
         componentesReceta as TRecetasFormSchema["componente_receta"],
       notas: recetaDetalles!.receta.notas || "",

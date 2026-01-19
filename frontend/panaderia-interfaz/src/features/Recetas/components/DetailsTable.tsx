@@ -7,12 +7,13 @@ export const DetailsTable = () => {
 
   return (
     <div className="flex items-center gap-20">
-      <div className="grid grid-rows-3 grid-cols-1 gap-2">
+      <div className="grid grid-rows-4 grid-cols-1 gap-2">
         <DetailsField>Fecha de creación</DetailsField>
         <DetailsField>Fecha de modificación</DetailsField>
         <DetailsField>Notas</DetailsField>
+        <DetailsField>Rendimiento</DetailsField>
       </div>
-      <div className="grid grid-rows-3 grid-cols-1 gap-2">
+      <div className="grid grid-rows-4 grid-cols-1 gap-2">
         <DetailFieldValue>
           {recetaDetalles?.receta.fecha_creacion?.split("T")[0] || "-"}
         </DetailFieldValue>
@@ -21,6 +22,9 @@ export const DetailsTable = () => {
         </DetailFieldValue>
         <DetailFieldValue>
           {recetaDetalles?.receta.notas || "-"}
+        </DetailFieldValue>
+        <DetailFieldValue>
+          {recetaDetalles?.receta.rendimiento || "-"}
         </DetailFieldValue>
       </div>
     </div>

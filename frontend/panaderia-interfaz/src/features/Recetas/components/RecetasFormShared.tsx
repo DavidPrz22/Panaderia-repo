@@ -48,17 +48,19 @@ export default function RecetasFormShared({
     defaultValues:
       isUpdate && initialData
         ? {
-            nombre: initialData.nombre,
-            componente_receta: initialData.componente_receta,
-            notas: initialData.notas,
-            receta_relacionada: initialData.receta_relacionada || [],
-          }
+          nombre: initialData.nombre,
+          rendimiento: initialData.rendimiento,
+          componente_receta: initialData.componente_receta,
+          notas: initialData.notas,
+          receta_relacionada: initialData.receta_relacionada || [],
+        }
         : {
-            nombre: "",
-            componente_receta: [],
-            notas: "",
-            receta_relacionada: [],
-          },
+          nombre: "",
+          rendimiento: null,
+          componente_receta: [],
+          notas: "",
+          receta_relacionada: [],
+        },
   });
 
   const handleCancelButtonClick = () => {
@@ -97,6 +99,16 @@ export default function RecetasFormShared({
               name="nombre"
               errors={errors}
               inputType="text"
+            />
+
+            <RecetasFormInputContainer
+              register={register}
+              title="Rendimiento"
+              name="rendimiento"
+              errors={errors}
+              inputType="number"
+              optional={true}
+              placeholder="0.000"
             />
 
             <RecetaComponentsContainer
@@ -138,7 +150,7 @@ export default function RecetasFormShared({
           <Button type="cancel" onClick={handleCancelButtonClick}>
             Cancelar
           </Button>
-          <Button type="submit" onClick={() => {}}>
+          <Button type="submit" onClick={() => { }}>
             Guardar
           </Button>
         </div>

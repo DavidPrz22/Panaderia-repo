@@ -335,6 +335,7 @@ class ProductosElaboradosViewSet(viewsets.ModelViewSet):
 
         producto_data = {
             'componentes': [self._get_component_data(d) for d in detalles_receta_principal if d is not None],
+            'rendimiento': receta_principal.rendimiento,
             'subrecetas': subrecetas,
             'medida_produccion': medida_produccion,
             'es_por_unidad': es_por_unidad,
