@@ -34,7 +34,7 @@ export function RecipeModal({ data, isLoading, isOpen, onClose }: RecipeModalPro
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+            <DialogContent className="w-[50%] sm:max-w-[90vw] min-w-[500px] max-h-[90vh] overflow-y-auto">
                 {isLoading ? (
                     <div className="h-40 flex items-center justify-center">
                         <PendingTubeSpinner size={40} />
@@ -73,7 +73,7 @@ export function RecipeModal({ data, isLoading, isOpen, onClose }: RecipeModalPro
                                     <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide border-b pb-1">
                                         Productos Intermedios
                                     </h3>
-                                    <div className="border rounded-lg overflow-hidden">
+                                    <div className="border rounded-lg">
                                         <Table>
                                             <TableHeader className="bg-muted/50">
                                                 <TableRow>
@@ -89,7 +89,7 @@ export function RecipeModal({ data, isLoading, isOpen, onClose }: RecipeModalPro
                                                         <TableCell>
                                                             <Badge variant="secondary">Intermedio</Badge>
                                                         </TableCell>
-                                                        <TableCell className="text-right">
+                                                        <TableCell className="text-right ">
                                                             {ingredient.cantidad} {ingredient.unidad_medida}
                                                         </TableCell>
                                                     </TableRow>
@@ -106,7 +106,7 @@ export function RecipeModal({ data, isLoading, isOpen, onClose }: RecipeModalPro
                                     <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide border-b pb-1">
                                         Materias Primas
                                     </h3>
-                                    <div className="border rounded-lg overflow-hidden">
+                                    <div className="border rounded-lg overflow-x-auto">
                                         <Table>
                                             <TableHeader className="bg-muted/50">
                                                 <TableRow>
@@ -118,11 +118,11 @@ export function RecipeModal({ data, isLoading, isOpen, onClose }: RecipeModalPro
                                             <TableBody>
                                                 {materiasPrimas.map((ingredient) => (
                                                     <TableRow key={ingredient.id}>
-                                                        <TableCell className="font-medium">{ingredient.nombre}</TableCell>
+                                                        <TableCell className="font-medium whitespace-nowrap">{ingredient.nombre}</TableCell>
                                                         <TableCell>
                                                             <Badge variant="outline">Materia Prima</Badge>
                                                         </TableCell>
-                                                        <TableCell className="text-right">
+                                                        <TableCell className="text-right whitespace-nowrap">
                                                             {ingredient.cantidad} {ingredient.unidad_medida}
                                                         </TableCell>
                                                     </TableRow>

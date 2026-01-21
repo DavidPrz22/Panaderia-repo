@@ -13,6 +13,9 @@ import { PILotesDetailsContainer } from "./PILotesDetailsContainer";
 import Title from "@/components/Title";
 import { useAuth } from "@/context/AuthContext";
 import { userHasPermission } from "@/features/Authentication/lib/utils";
+import { RecipeModal } from "@/components/RecipeModal";
+import { useQuery } from "@tanstack/react-query";
+import { recetasDetallesQueryOptions } from "@/features/Recetas/hooks/queries/RecetasQueryOptions";
 
 export default function ProductosIntermediosDetalles() {
   const {
@@ -27,6 +30,9 @@ export default function ProductosIntermediosDetalles() {
     enabledDetalles,
     setEnabledDetalles,
     showLotesDetalles,
+    showRecipeModal,
+    setShowRecipeModal,
+    selectedRecipeId,
   } = useProductosIntermediosContext();
 
   const {
@@ -39,6 +45,11 @@ export default function ProductosIntermediosDetalles() {
     mutateAsync: deleteProductoIntermedio,
     isPending: isPendingDeleteProductoIntermedio,
   } = useDeleteProductoIntermedioMutation();
+
+  const { data: recipeDetails, isLoading: isLoadingRecipe } = useQuery({
+    ...recetasDetallesQueryOptions(selectedRecipeId!),
+    enabled: !!selectedRecipeId && showRecipeModal,
+  });
 
   const { user } = useAuth();
   const userCanEdit = userHasPermission(user!, 'productos_elaborados', 'edit');
@@ -131,7 +142,12 @@ export default function ProductosIntermediosDetalles() {
         </div>
       </div>
 
-
+      <RecipeModal
+        isOpen={showRecipeModal}
+        onClose={() => setShowRecipeModal(false)}
+        data={recipeDetails}
+        isLoading={isLoadingRecipe}
+      />
     </div>
   );
 }
