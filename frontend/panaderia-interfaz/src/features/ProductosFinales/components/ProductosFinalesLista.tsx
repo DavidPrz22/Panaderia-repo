@@ -130,7 +130,7 @@ export default function ProductosFinalesLista() {
 
   return (
     <>
-      <div className="relative mx-8 border border-gray-200 rounded-md min-h-[80%]">
+      <div className="relative mx-8 border border-gray-200 rounded-md min-h-[80%] h-full">
         <PFTableHeader
           headers={[
             "ID",

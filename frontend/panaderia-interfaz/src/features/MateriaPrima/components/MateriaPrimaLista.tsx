@@ -16,78 +16,78 @@ export default function MateriaPrimaLista({
 }: {
   isLoadingDetalles: boolean;
 }) {
-      const {
-        setListaMateriaPrimaCached,
-        filteredApplied,
-        MPFilteredInputSearchApplied,
-        inputfilterDoubleApplied,
-        currentPage,
-        setCurrentPage,
-      } = useMateriaPrimaContext();
+  const {
+    setListaMateriaPrimaCached,
+    filteredApplied,
+    MPFilteredInputSearchApplied,
+    inputfilterDoubleApplied,
+    currentPage,
+    setCurrentPage,
+  } = useMateriaPrimaContext();
 
-    const {
-      data: materiaPrimaPagination,
-      fetchNextPage,
-      hasNextPage,
-      isFetching: isMateriaPrimaListFetching,
-    } = useInfiniteQuery(createMateriaPrimaListQueryOptions());
+  const {
+    data: materiaPrimaPagination,
+    fetchNextPage,
+    hasNextPage,
+    isFetching: isMateriaPrimaListFetching,
+  } = useInfiniteQuery(createMateriaPrimaListQueryOptions());
 
-    // Handle pagination state with reducer for complex logic
+  // Handle pagination state with reducer for complex logic
 
-    const [page, dispatch] = useReducer(
-      (state: number, action: { type: PaginatorActions; payload?: number }) => {
-        switch (action.type) {
-          case "next":
-            if (materiaPrimaPagination) {
-              if (state < (materiaPrimaPagination.pages?.length || 0) - 1) return state + 1;
-              if (hasNextPage) fetchNextPage();
-              return state + 1;
-            }
-            return state;
-          case "previous":
-            return Math.max(0, state - 1);
-          case "base":
-            const targetPage = action.payload ?? 0;
-            // Check if we need to fetch more pages
-            if (targetPage >= (materiaPrimaPagination?.pages?.length || 0) && hasNextPage) {
-              fetchNextPage();
-            }
-            return targetPage;
-          default:
-            return state;
-        }
-      },
-      currentPage
-    );
+  const [page, dispatch] = useReducer(
+    (state: number, action: { type: PaginatorActions; payload?: number }) => {
+      switch (action.type) {
+        case "next":
+          if (materiaPrimaPagination) {
+            if (state < (materiaPrimaPagination.pages?.length || 0) - 1) return state + 1;
+            if (hasNextPage) fetchNextPage();
+            return state + 1;
+          }
+          return state;
+        case "previous":
+          return Math.max(0, state - 1);
+        case "base":
+          const targetPage = action.payload ?? 0;
+          // Check if we need to fetch more pages
+          if (targetPage >= (materiaPrimaPagination?.pages?.length || 0) && hasNextPage) {
+            fetchNextPage();
+          }
+          return targetPage;
+        default:
+          return state;
+      }
+    },
+    currentPage
+  );
 
-      // Update cached list when pagination data changes
-      useEffect(() => {
-        const allResults = materiaPrimaPagination?.pages.flatMap(page => page.results) || [];
-        setListaMateriaPrimaCached(allResults);
-      }, [materiaPrimaPagination, setListaMateriaPrimaCached]);
+  // Update cached list when pagination data changes
+  useEffect(() => {
+    const allResults = materiaPrimaPagination?.pages.flatMap(page => page.results) || [];
+    setListaMateriaPrimaCached(allResults);
+  }, [materiaPrimaPagination, setListaMateriaPrimaCached]);
 
-      // Update context page when local page changes
-      useEffect(() => {
-        if (page !== currentPage) {
-          setCurrentPage(page);
-        }
-      }, [page, setCurrentPage]); // Removed currentPage to prevent circular dependency
-    
-    
-      // Calculate total pages
-      const pagesCount = useMemo(() => {
-        const resultCount = materiaPrimaPagination?.pages?.[0]?.count || 0;
-        const entriesPerPage = 15;
-        return Math.ceil(resultCount / entriesPerPage);
-      }, [materiaPrimaPagination]);
-    
-      // Get current page data
-      const currentPageData = materiaPrimaPagination?.pages[page]?.results || [];
+  // Update context page when local page changes
+  useEffect(() => {
+    if (page !== currentPage) {
+      setCurrentPage(page);
+    }
+  }, [page, setCurrentPage]); // Removed currentPage to prevent circular dependency
 
-  
+
+  // Calculate total pages
+  const pagesCount = useMemo(() => {
+    const resultCount = materiaPrimaPagination?.pages?.[0]?.count || 0;
+    const entriesPerPage = 15;
+    return Math.ceil(resultCount / entriesPerPage);
+  }, [materiaPrimaPagination]);
+
+  // Get current page data
+  const currentPageData = materiaPrimaPagination?.pages[page]?.results || [];
+
+
   return (
     <>
-      <div className="relative mx-8 border border-gray-200 rounded-md min-h-[80%]">
+      <div className="relative mx-8 border border-gray-200 rounded-md min-h-[80%] h-full">
         <TableHeader
           headers={[
             "Id",
@@ -100,7 +100,7 @@ export default function MateriaPrimaLista({
           ]}
         />
 
-        <TableBody 
+        <TableBody
           currentPageData={currentPageData}
           isMateriaPrimaListFetching={isMateriaPrimaListFetching}
         />

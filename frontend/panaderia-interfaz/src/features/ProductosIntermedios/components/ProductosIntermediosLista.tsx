@@ -127,7 +127,7 @@ export default function ProductosIntermediosLista() {
 
   return (
     <>
-      <div className="relative mx-8 border border-gray-200 rounded-md min-h-[80%]">
+      <div className="relative mx-8 border border-gray-200 rounded-md min-h-[80%] h-full">
         <PITableHeader
           headers={[
             "ID",

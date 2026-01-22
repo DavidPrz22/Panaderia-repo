@@ -117,11 +117,11 @@ export default function RecetasLista({
 
   return (
     <>
-      <div className="relative mx-8 border border-gray-200 rounded-md min-h-[80%]">
+      <div className="relative mx-8 border border-gray-200 rounded-md min-h-[80%] h-full">
         <RecetasTableHeader headers={["ID", "Nombre", "Fecha de creación"]} />
         <RecetasTableBody data={displayData} isFetching={isFetching} />
         {isLoadingDetalles ? (
-          <div className="absolute top-0 left-0 w-full h-[80%] flex justify-center items-center bg-white opacity-50">
+          <div className="absolute top-0 left-0 w-full h-full flex justify-center items-center bg-white opacity-50">
             <img src={TubeSpinner} alt="Cargando..." className="size-28" />
           </div>
         ) : (
