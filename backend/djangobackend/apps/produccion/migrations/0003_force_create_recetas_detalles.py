@@ -5,21 +5,9 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('produccion', '0001_initial'),  # Adjust number if needed
+        ('produccion', '0001_initial'),
     ]
 
     operations = [
-        migrations.CreateModel(
-            name='RecetasDetalles',
-            fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('nombre', models.CharField(default='Receta', max_length=255)),
-                ('fecha_creacion', models.DateTimeField(auto_now_add=True)),
-            ],
-        ),
-        migrations.AddField(
-            model_name='recetas',
-            name='receta_detalle',
-            field=models.ForeignKey(on_delete=models.CASCADE, to='produccion.recetasdetalles'),
-        ),
+        # Redundant operations removed to fix SQLite initialization conflict.
     ]
