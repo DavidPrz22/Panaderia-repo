@@ -2,6 +2,8 @@ import React, { useState, useCallback } from 'react';
 import { SearchResultsList } from './SearchProductsContainer';
 import type { searchResults } from '../types/types';
 import { CerrarIcon } from '@/assets/DashboardAssets';
+import { Input } from '@/components/ui/input';
+
 
 interface SearchInputProps {
     query: string;
@@ -54,12 +56,12 @@ export const SearchInput: React.FC<SearchInputProps> = ({
     return (
         <div className="relative w-full">
             <div className="relative flex items-center">
-                <input
+                <Input
                     type="text"
                     value={selectedResult ? selectedResult.nombre_producto : query}
                     onChange={handleInputChange}
                     placeholder={placeholder}
-                    className={`border border-gray-300 text-sm text-gray-500 w-full rounded-md p-2 pr-8 ${className}`}
+                    className={`border border-gray-300 text-sm text-gray-500 w-full rounded-lg py-5 ${className}`}
                     disabled={!!selectedResult} // Deshabilitar input si hay una selección
                 />
                 {selectedResult && (

@@ -1,15 +1,22 @@
-import { searchProductosFinales, searchTransformaciones } from "@/features/Transformation/api/api";
-import { useQuery } from "@tanstack/react-query";
+import { getTransformaciones, searchProductosFinales, searchTransformaciones } from "@/features/Transformation/api/api";
+import { queryOptions, useQuery } from "@tanstack/react-query";
 
 export const DEBOUNCE_DELAY = 300;
 
+export const transformacionesOptions = () => {
+    return queryOptions({
+        queryKey: ["transformaciones"],
+        queryFn: () => getTransformaciones(),
+        staleTime: Infinity,
+    });
+};
 
 export const productosFinalesSearchOptions = (query: string, enabled: boolean = false) => {
     return useQuery({
         queryKey: ["productosFinalesSearch", query],
         queryFn: () => searchProductosFinales.search({ query, limit: 10 }),
         enabled: enabled && query.length >= 2,
-        staleTime: 1000 * 60 * 5, // 5 minutos
+        staleTime: Infinity,
         select: (data) => {
             // Debug: Ver datos recibidos de la API
             console.log('API productosFinalesSearchOptions data:', data);
@@ -33,7 +40,7 @@ export const transformacionesSearchOptions = (query: string, enabled: boolean = 
         queryKey: ["transformacionesSearch", query],
         queryFn: () => searchTransformaciones.search({ query, limit: 10 }),
         enabled: enabled && query.length >= 2,
-        staleTime: 1000 * 60 * 5, // 5 minutos
+        staleTime: Infinity,
         select: (data) => {
             // Filtrar resultados en frontend si la API no lo hace
             if (!data || !data.results) return { results: [] };

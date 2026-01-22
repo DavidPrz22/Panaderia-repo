@@ -23,6 +23,7 @@ export const SearchProductsDestino: React.FC<SearchProductsDestinoProps> = ({ on
                 error={error}
                 selectedResult={selectedResult}
                 placeholder="Buscar producto de destino..."
+                className='focus-visible:ring-blue-200 focus-visible:ring-2 focus-visible:border-blue-300'
             />
         </div>
     );

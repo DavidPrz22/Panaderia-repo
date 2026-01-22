@@ -23,6 +23,7 @@ export const SearchTransformaciones: React.FC<SearchTransformacionesProps> = ({ 
                 error={error}
                 selectedResult={selectedResult}
                 placeholder="Buscar transformación..."
+                className='focus-visible:ring-blue-200 focus-visible:ring-2 focus-visible:border-blue-300'
             />
         </div>
     );

@@ -12,42 +12,42 @@ interface TransformacionResponse {
     activo: boolean;
 }
 
-export const createTransformacion = async (data: { 
-    nombre_transformacion: string; 
-    cantidad_origen: number; 
-    cantidad_destino: number; 
-    fecha_creacion: Date; 
-    activo: boolean; 
+export const createTransformacion = async (data: {
+    nombre_transformacion: string;
+    cantidad_origen: number;
+    cantidad_destino: number;
+    fecha_creacion: Date;
+    activo: boolean;
 }): Promise<TransformacionResponse> => {
     try {
         const response = await apiClient.post('/api/transformacion/', data, {
             headers: { 'Content-Type': 'application/json' }
-    });
-    
-    // Verifica que la respuesta tenga datos
-    if (!response.data) {
-        throw new Error('La respuesta del servidor está vacía');
-    }
-    
-    console.log("Transformación creada:", response.data);
-    return response.data;
-    
+        });
+
+        // Verifica que la respuesta tenga datos
+        if (!response.data) {
+            throw new Error('La respuesta del servidor está vacía');
+        }
+
+        console.log("Transformación creada:", response.data);
+        return response.data;
+
     } catch (error) {
-    const axiosError = error as AxiosError<{ detail?: string; errors?: string[] }>;
-    const errorMessage = axiosError.response?.data?.detail || 
-        axiosError.message || 'Error creando transformación';
-    
-    console.error("Error al crear transformación:", errorMessage);
-    throw new Error(errorMessage);
+        const axiosError = error as AxiosError<{ detail?: string; errors?: string[] }>;
+        const errorMessage = axiosError.response?.data?.detail ||
+            axiosError.message || 'Error creando transformación';
+
+        console.error("Error al crear transformación:", errorMessage);
+        throw new Error(errorMessage);
     }
 };
 
-export const getTransformaciones = async (data: { 
-    nombre_transformacion: string; 
-    cantidad_origen: number; 
-    cantidad_destino: number; 
-    fecha_creacion: Date; 
-    activo: boolean; 
+export const getTransformaciones = async (data?: {
+    nombre_transformacion?: string;
+    cantidad_origen?: number;
+    cantidad_destino?: number;
+    fecha_creacion?: Date;
+    activo?: boolean;
 }): Promise<TransformacionResponse[]> => {
     try {
         const response = await apiClient.get('/api/transformacion/', {
@@ -62,11 +62,11 @@ export const getTransformaciones = async (data: {
     }
 };
 
-export const updateTransformacion = async (id: number, data: { 
-    nombre_transformacion?: string; 
+export const updateTransformacion = async (id: number, data: {
+    nombre_transformacion?: string;
     cantidad_origen?: number;
     cantidad_destino?: number;
-    fecha_creacion?: Date; 
+    fecha_creacion?: Date;
     activo?: boolean;
 }): Promise<TransformacionResponse> => {
     try {
@@ -142,5 +142,24 @@ export const searchProductosFinales = {
             console.error("Error al buscar productos:", errorMessage);
             throw new Error(errorMessage);
         }
+    }
+};
+
+export const ejecutarTransformacion = async (data: {
+    transformacionId: number;
+    productoOrigenId: number;
+    productoDestinoId: number;
+}): Promise<void> => {
+    try {
+        const response = await apiClient.post("/api/ejecutar-transformacion/", data);
+        if (response.status !== 200) {
+            throw new Error("Error al ejecutar la transformación");
+        }
+    } catch (error) {
+        const axiosError = error as AxiosError<{ error?: string }>;
+        const errorMessage = axiosError.response?.data?.error ||
+            axiosError.message || 'Error al ejecutar la transformación';
+        console.error("Error al ejecutar transformación:", errorMessage);
+        throw new Error(errorMessage);
     }
 };

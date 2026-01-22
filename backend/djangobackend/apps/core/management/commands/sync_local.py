@@ -3,7 +3,7 @@ from django.core.management import call_command
 from django.db import connections, transaction
 from apps.core.models import UnidadesDeMedida, CategoriasMateriaPrima, CategoriasProductosElaborados, CategoriasProductosReventa, MetodosDePago, EstadosOrdenVenta, EstadosOrdenCompra, ConversionesUnidades
 from apps.inventario.models import MateriasPrimas, ProductosElaborados, ProductosReventa, LotesMateriasPrimas, LotesProductosElaborados, LotesProductosReventa
-from apps.produccion.models import Recetas, RecetasDetalles, DefinicionTransformacion
+from apps.produccion.models import Recetas, RecetasDetalles, DefinicionTransformacion, Produccion, DetalleProduccionCosumos, DetalleProduccionLote
 from apps.compras.models import Proveedores, OrdenesCompra, DetalleOrdenesCompra
 
 from apps.users.models import User
@@ -48,10 +48,17 @@ class Command(BaseCommand):
             RecetasDetalles,
             DefinicionTransformacion,
             
+            # Production Events
+            Produccion,
+            DetalleProduccionCosumos,
+            
             # Active Stock / Batches
             LotesMateriasPrimas,
             LotesProductosElaborados,
             LotesProductosReventa,
+            
+            # Post-Lote Links
+            DetalleProduccionLote,
         ]
 
         for model in models_to_sync:
