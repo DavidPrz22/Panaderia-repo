@@ -1,4 +1,4 @@
-import { useTransformacionContext } from "@/context/TransformacionContext";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ListIcon } from "lucide-react";
 import {
@@ -17,11 +17,8 @@ import { useTransformacionesQuery } from "../hooks/queries/TransformacionQueries
 import { useDeleteTransformacionMutation } from "../hooks/mutations/mutations";
 
 export const RegistrosBtn = () => {
-    const {
-        isRegistroOpen, setIsRegistroOpen,
-        setEditingTransformacion,
-        setFormData
-    } = useTransformacionContext();
+    const [isRegistroOpen, setIsRegistroOpen] = useState(false);
+    const [editingTransformacion, setEditingTransformacion] = useState<Transformacion | null>(null);
 
     const { data: transformacion, isLoading } = useTransformacionesQuery();
     const deleteMutation = useDeleteTransformacionMutation();
@@ -35,12 +32,6 @@ export const RegistrosBtn = () => {
 
     const handleEdit = (t: Transformacion) => {
         setEditingTransformacion(t);
-        setFormData({
-            nombre_transformacion: t.nombre_transformacion,
-            cantidad_origen: t.cantidad_origen,
-            cantidad_destino: t.cantidad_destino,
-            activo: t.activo,
-        });
     };
 
     return (
@@ -120,7 +111,10 @@ export const RegistrosBtn = () => {
                     </div>
                 </div>
 
-                <EditingModalTransformacion />
+                <EditingModalTransformacion
+                    editingTransformacion={editingTransformacion}
+                    onClose={() => setEditingTransformacion(null)}
+                />
             </DialogContent>
         </Dialog>
     );

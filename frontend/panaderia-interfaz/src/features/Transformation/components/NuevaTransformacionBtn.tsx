@@ -1,5 +1,6 @@
-import { useEffect, useRef } from "react";
-import { useTransformacionContext } from "@/context/TransformacionContext";
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -11,69 +12,48 @@ import {
     DialogTitle,
     DialogTrigger,
 } from "@/components/ui/dialog";
-import { Plus } from "lucide-react";
+import { Plus, Loader2 } from "lucide-react";
 import { useCreateTransformacionMutation } from "../hooks/mutations/mutations";
+import { TransformacionSchema, type TTransformacionSchema } from "../schemas/schemas";
 
 export const NuevaTransformacionBtn = () => {
+    const [isOpen, setIsOpen] = useState(false);
+
     const {
-        isOpen, setIsOpen,
-        nombre, setNombre,
-        cantidadOrigen, setCantidadOrigen,
-        cantidadDestino, setCantidadDestino,
-    } = useTransformacionContext();
+        register,
+        handleSubmit,
+        reset,
+        formState: { errors, isValid }
+    } = useForm<TTransformacionSchema>({
+        resolver: zodResolver(TransformacionSchema),
+        mode: "onChange",
+        defaultValues: {
+            nombre_transformacion: "",
+            cantidad_origen: 0,
+            cantidad_destino: 0,
+            activo: true,
+            fecha_creacion: new Date()
+        }
+    });
 
     const createMutation = useCreateTransformacionMutation();
-    const timeoutRef = useRef<number | null>(null);
 
-    const limpiarFormulario = () => {
-        setNombre("");
-        setCantidadOrigen("");
-        setCantidadDestino("");
-    };
-
-    const cerrarModal = () => {
-        limpiarFormulario();
-        setIsOpen(false);
-    };
-
-    useEffect(() => {
-        if (isOpen) {
-            limpiarFormulario();
-        }
-    }, [isOpen]);
-
-    const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-        e.preventDefault();
-
-        const data = {
-            nombre_transformacion: nombre,
-            cantidad_origen: Number(cantidadOrigen),
-            cantidad_destino: Number(cantidadDestino),
-            fecha_creacion: new Date(),
-            activo: true,
-        };
-
+    const onSubmit = (data: TTransformacionSchema) => {
         createMutation.mutate(data, {
             onSuccess: () => {
-                timeoutRef.current = window.setTimeout(() => {
-                    cerrarModal();
-                }, 1000);
+                reset();
+                setIsOpen(false);
             }
         });
     };
 
-    useEffect(() => {
-        return () => {
-            if (timeoutRef.current) {
-                clearTimeout(timeoutRef.current);
-            }
-        };
-    }, []);
-
     const loading = createMutation.isPending;
 
     return (
-        <Dialog open={isOpen} onOpenChange={setIsOpen}>
+        <Dialog open={isOpen} onOpenChange={(open) => {
+            setIsOpen(open);
+            if (!open) reset();
+        }}>
             <DialogTrigger asChild>
                 <Button
                     size={'lg'}
@@ -83,7 +63,7 @@ export const NuevaTransformacionBtn = () => {
                     Nueva Transformación
                 </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[600px]">
+            <DialogContent className="sm:max-w-[500px]">
                 <DialogHeader>
                     <DialogTitle className="text-2xl font-bold">Agregar Nueva Transformación</DialogTitle>
                     <DialogDescription>
@@ -91,20 +71,21 @@ export const NuevaTransformacionBtn = () => {
                     </DialogDescription>
                 </DialogHeader>
 
-                <form onSubmit={onSubmit} className="space-y-6 pt-4">
+                <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 pt-4">
                     <div className="space-y-2">
-                        <Label htmlFor="nombre" className="text-sm font-semibold">
+                        <Label htmlFor="nombre_transformacion" className="text-sm font-semibold">
                             Nombre de la Transformación *
                         </Label>
                         <Input
-                            id="nombre"
+                            id="nombre_transformacion"
                             type="text"
                             placeholder="Ej. Producción de Pan"
-                            value={nombre}
-                            onChange={(e) => setNombre(e.target.value)}
-                            className="focus-visible:ring-blue-200 focus-visible:ring-2 focus-visible:border-blue-300"
-                            required
+                            {...register("nombre_transformacion")}
+                            className={`focus-visible:ring-blue-200 focus-visible:ring-2 focus-visible:border-blue-300 ${errors.nombre_transformacion ? 'border-red-500' : ''}`}
                         />
+                        {errors.nombre_transformacion && (
+                            <p className="text-xs text-red-500">{errors.nombre_transformacion.message}</p>
+                        )}
                     </div>
 
                     <div className="grid grid-cols-2 gap-6">
@@ -114,13 +95,15 @@ export const NuevaTransformacionBtn = () => {
                             </Label>
                             <Input
                                 type="number"
+                                step="any"
                                 id="cantidad_origen"
                                 placeholder="0"
-                                value={cantidadOrigen}
-                                onChange={(e) => setCantidadOrigen(e.target.value)}
-                                className="focus-visible:ring-blue-200 focus-visible:ring-2 focus-visible:border-blue-300"
-                                required
+                                {...register("cantidad_origen", { valueAsNumber: true })}
+                                className={`focus-visible:ring-blue-200 focus-visible:ring-2 focus-visible:border-blue-300 ${errors.cantidad_origen ? 'border-red-500' : ''}`}
                             />
+                            {errors.cantidad_origen && (
+                                <p className="text-xs text-red-500">{errors.cantidad_origen.message}</p>
+                            )}
                         </div>
 
                         <div className="space-y-2">
@@ -129,13 +112,15 @@ export const NuevaTransformacionBtn = () => {
                             </Label>
                             <Input
                                 type="number"
+                                step="any"
                                 id="cantidad_destino"
                                 placeholder="0"
-                                value={cantidadDestino}
-                                onChange={(e) => setCantidadDestino(e.target.value)}
-                                className="focus-visible:ring-blue-200 focus-visible:ring-2 focus-visible:border-blue-300"
-                                required
+                                {...register("cantidad_destino", { valueAsNumber: true })}
+                                className={`focus-visible:ring-blue-200 focus-visible:ring-2 focus-visible:border-blue-300 ${errors.cantidad_destino ? 'border-red-500' : ''}`}
                             />
+                            {errors.cantidad_destino && (
+                                <p className="text-xs text-red-500">{errors.cantidad_destino.message}</p>
+                            )}
                         </div>
                     </div>
 
@@ -143,7 +128,7 @@ export const NuevaTransformacionBtn = () => {
                         <Button
                             type="button"
                             variant="outline"
-                            onClick={cerrarModal}
+                            onClick={() => setIsOpen(false)}
                             disabled={loading}
                             className="cursor-pointer"
                         >
@@ -152,10 +137,15 @@ export const NuevaTransformacionBtn = () => {
 
                         <Button
                             type="submit"
-                            className="bg-blue-600 hover:bg-blue-500 cursor-pointer text-white"
-                            disabled={loading || !nombre || !cantidadOrigen || !cantidadDestino}
+                            className="bg-blue-600 hover:bg-blue-500 cursor-pointer text-white min-w-[140px]"
+                            disabled={loading || !isValid}
                         >
-                            {loading ? "Guardando..." : "Guardar Transformación"}
+                            {loading ? (
+                                <>
+                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                    Guardando...
+                                </>
+                            ) : "Guardar Transformación"}
                         </Button>
                     </div>
                 </form>

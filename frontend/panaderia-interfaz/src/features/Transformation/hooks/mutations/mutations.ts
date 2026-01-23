@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { ejecutarTransformacion, createTransformacion, updateTransformacion, deleteTransformacion } from "../../api/api";
 import { toast } from "sonner";
+import type { TTransformacionSchema } from "../../schemas/schemas";
 
 export const useEjecutarTransformacionMutation = () => {
     const queryClient = useQueryClient();
@@ -23,7 +24,7 @@ export const useCreateTransformacionMutation = () => {
     const queryClient = useQueryClient();
 
     return useMutation({
-        mutationFn: createTransformacion,
+        mutationFn: (data: TTransformacionSchema) => createTransformacion(data),
         onSuccess: () => {
             toast.success("Transformación creada correctamente.");
             queryClient.invalidateQueries({ queryKey: ["transformaciones"] });

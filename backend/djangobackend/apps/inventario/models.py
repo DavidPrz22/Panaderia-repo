@@ -456,7 +456,7 @@ class ProductosElaborados(ComponentesStockManagement, ProductosStockManagement):
         choices=MedidasFisicas.choices,
         max_length=10, null=False, blank=False, default=MedidasFisicas.PESO
     )
-
+    
     es_intermediario = models.BooleanField(default=False, null=False)
 
     def checkAvailability(self, cantidad):
