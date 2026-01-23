@@ -344,6 +344,7 @@ class ProductosFinalesSerializer(serializers.ModelSerializer):
             'unidad_produccion',
             'tipo_medida_fisica',
             'descripcion',
+            'usado_en_transformaciones',
         ]
         # Rename read-only fields in the output to match the frontend type
         extra_kwargs = {
@@ -424,6 +425,7 @@ class ProductosFinalesDetallesSerializer(serializers.ModelSerializer):
             'fecha_modificacion_registro',
             'descripcion',
             'receta_relacionada',
+            'usado_en_transformaciones',
         ]
 
     def get_categoria_producto(self, obj):

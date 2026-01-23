@@ -96,52 +96,24 @@ export const deleteTransformacion = async (id: number): Promise<void> => {
     }
 };
 
-export const searchTransformaciones = {
-    search: async (params: searchTerm): Promise<searchResponse> => {
-        try {
-            console.log('🌐 disparando petición de transformaciones con query:', params.query);
-            const response = await apiClient.get(`/api/transformacion/`, {
-                params: { search: params.query, limit: params.limit }
-            });
-            // Adaptar la respuesta al formato searchResponse
-            const adaptedResults = response.data.map((t: TransformacionResponse) => ({
-                id: t.id,
-                nombre_producto: t.nombre_transformacion, // Usamos nombre_producto para mantener la consistencia
-            }));
-            return { results: adaptedResults };
-        } catch (error) {
-            const axiosError = error as AxiosError<{ detail?: string }>;
-            const errorMessage = axiosError.response?.data?.detail ||
-                axiosError.message || 'Error buscando transformaciones';
-            console.error("Error al buscar transformaciones:", errorMessage);
-            throw new Error(errorMessage);
-        }
-    }
-};
-
-export const searchProductosFinales = {
-    search: async (params: searchTerm): Promise<searchResponse> => {
-        try {
-            console.log('🌐 disparando petición con query:', params.query);
-            const response = await apiClient.get(`/api/productosfinales-lista-transformacion/`, {
-                params: { q: params.query, limit: params.limit }
-            });
-            // Adaptar la respuesta al formato searchResponse
-            // La API puede devolver un objeto con { results: [...] } o directamente un array.
-            const raw = response.data;
-            const list = Array.isArray(raw) ? raw : (raw.results || []);
-            const adaptedResults = list.map((item: any) => ({
-                ...item,
-                nombre_producto: item.nombre_producto || item.nombre || item.producto_origen || item.producto_destino || "",
-            }));
-            return { results: adaptedResults };
-        } catch (error) {
-            const axiosError = error as AxiosError<{ detail?: string }>;
-            const errorMessage = axiosError.response?.data?.detail ||
-                axiosError.message || 'Error buscando productos';
-            console.error("Error al buscar productos:", errorMessage);
-            throw new Error(errorMessage);
-        }
+export const searchTransformaciones = async (params: searchTerm): Promise<searchResponse> => {
+    try {
+        console.log('🌐 disparando petición de transformaciones con query:', params.query);
+        const response = await apiClient.get(`/api/transformacion/`, {
+            params: { search: params.query, limit: params.limit }
+        });
+        // Adaptar la respuesta al formato searchResponse
+        const adaptedResults = response.data.map((t: TransformacionResponse) => ({
+            id: t.id,
+            nombre_producto: t.nombre_transformacion, // Usamos nombre_producto para mantener la consistencia
+        }));
+        return { results: adaptedResults };
+    } catch (error) {
+        const axiosError = error as AxiosError<{ detail?: string }>;
+        const errorMessage = axiosError.response?.data?.detail ||
+            axiosError.message || 'Error buscando transformaciones';
+        console.error("Error al buscar transformaciones:", errorMessage);
+        throw new Error(errorMessage);
     }
 };
 
@@ -161,5 +133,17 @@ export const ejecutarTransformacion = async (data: {
             axiosError.message || 'Error al ejecutar la transformación';
         console.error("Error al ejecutar transformación:", errorMessage);
         throw new Error(errorMessage);
+    }
+};
+
+export const searchProducts = async (query: string, type: 'origen' | 'destino') => {
+    try {
+        const response = await apiClient.get('/api/productosfinales/search/', {
+            params: { q: query, type }
+        });
+        return response.data;
+    } catch (error) {
+        console.error('Error in searchProducts:', error);
+        throw error;
     }
 };

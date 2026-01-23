@@ -444,6 +444,26 @@ class ProductosFinalesViewSet(viewsets.ModelViewSet):
     permission_classes = [IsStaffOrVendedorReadOnly]
     pagination_class = StandardResultsSetPagination
 
+    @action(detail=False, methods=['get'])
+    def search(self, request):
+        query = request.query_params.get('q', '').strip()
+        search_type = request.query_params.get('type', 'origen')
+        
+        queryset = self.get_queryset()
+        
+        # Filtrar según el uso en transformaciones
+        if search_type == 'destino':
+            queryset = queryset.filter(usado_en_transformaciones=True)
+        else:
+            queryset = queryset.filter(usado_en_transformaciones=False)
+            
+        # Filtrar por nombre si hay query
+        if query:
+            queryset = queryset.filter(nombre_producto__icontains=query)
+            
+        serializer = ProductosFinalesSearchSerializer(queryset, many=True)
+        return Response(serializer.data)
+
 
 class ProductosIntermediosDetallesViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = ProductosIntermedios.objects.all()

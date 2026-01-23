@@ -36,6 +36,7 @@ export const productoFinalSchema = z.object({
     .number()
     .min(1, "La unidad de producción es requerida"),
   vendible_por_medida_real: z.boolean(),
+  usado_en_transformaciones: z.boolean(),
 });
 
 export type TProductoFinalSchema = z.infer<typeof productoFinalSchema>;

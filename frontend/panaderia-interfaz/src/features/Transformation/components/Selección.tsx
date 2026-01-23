@@ -1,9 +1,8 @@
 import { useState } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { SearchProductsOrigin } from "./SearchProductsOrigin";
 import { SearchTransformaciones } from "./SearchTransformaciones";
-import { SearchProductsDestino } from "./SearchProductsDestino";
+import { ProductSearchInput } from "./ProductSearchInput";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Play, Loader2 } from "lucide-react";
 import type { searchResults } from "../types/types";
@@ -29,6 +28,8 @@ export default function Seleccion() {
     const { mutate, isPending } = useEjecutarTransformacionMutation();
 
     const onSubmit = (data: TEjecutarTransformacionSchema) => {
+        console.log(data);
+        return;
         mutate({
             transformacionId: data.transformacion_id,
             productoOrigenId: data.producto_origen_id,
@@ -84,7 +85,8 @@ export default function Seleccion() {
                         control={control}
                         render={({ field }) => (
                             <div className="space-y-1">
-                                <SearchProductsOrigin
+                                <ProductSearchInput
+                                    type="origen"
                                     onSelect={(res) => {
                                         setSelectedOrigen(res);
                                         field.onChange(res ? Number(res.id) : undefined);
@@ -110,7 +112,8 @@ export default function Seleccion() {
                         control={control}
                         render={({ field }) => (
                             <div className="space-y-1">
-                                <SearchProductsDestino
+                                <ProductSearchInput
+                                    type="destino"
                                     onSelect={(res) => {
                                         setSelectedDestino(res);
                                         field.onChange(res ? Number(res.id) : undefined);

@@ -184,7 +184,6 @@ export default function ProductosFinalesFormShared({
   };
 
   const onSubmit = async (data: TProductoFinalSchema) => {
-    
     if (!checkInvalidRecetaRelacionada()) {
      toast.error("El producto debe estar relacionado con una receta"); 
      return;
@@ -306,6 +305,7 @@ export default function ProductosFinalesFormShared({
                 onCheckedChange={() => {
                   setUsadoEnTransformaciones(!usadoEnTransformaciones);
                   setValue('receta_relacionada', null)
+                  setValue('usado_en_transformaciones', !usadoEnTransformaciones)
                   const input: HTMLInputElement | null = document.querySelector('input[data-input="search"]')
                   if (input) input.value = ''
                 }}
