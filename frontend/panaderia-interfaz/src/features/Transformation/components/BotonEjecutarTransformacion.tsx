@@ -22,11 +22,11 @@ export const BotonEjecutarTransformacion = ({
     const handleEjecutar = () => {
         if (transformacionId === undefined || productoOrigenId === undefined || productoDestinoId === undefined) return;
 
-        
+
         mutate({
-            transformacionId: Number(transformacionId),
-            productoOrigenId: Number(productoOrigenId),
-            productoDestinoId: Number(productoDestinoId)
+            transformacion_id: Number(transformacionId),
+            producto_origen_id: Number(productoOrigenId),
+            producto_destino_id: Number(productoDestinoId)
         }, {
             onSuccess: () => {
                 if (onSuccess) onSuccess();

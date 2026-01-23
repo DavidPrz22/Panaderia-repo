@@ -1,53 +1,88 @@
 import threading
-from django.db import transaction
+import queue
+import time
+from django.db import transaction, connections
 from django.db.models.signals import post_save, post_delete
-from django.dispatch import receiver
+
+# Create a queue for sync tasks to serialize writes
+SYNC_QUEUE = queue.Queue()
+
+def sync_worker():
+    """
+    Worker thread that processes sync tasks sequentially.
+    This prevents 'database is locked' errors by ensuring only one thread 
+    writes to the local SQLite database at a time.
+    """
+    # Optional: Enable WAL mode for better concurrency
+    try:
+        with connections['local'].cursor() as cursor:
+            cursor.execute('PRAGMA journal_mode=WAL;')
+    except Exception:
+        pass
+
+    while True:
+        try:
+            task = SYNC_QUEUE.get()
+            if task is None:
+                break
+            
+            model_class, instance_id, deleted = task
+            perform_sync(model_class, instance_id, deleted)
+            
+        except Exception as e:
+            print(f"Sync Worker Error: {e}")
+        finally:
+            SYNC_QUEUE.task_done()
+
+def perform_sync(model_class, instance_id, deleted):
+    """
+    The actual sync logic, moved out of the thread spawner.
+    """
+    try:
+        if deleted:
+            # Handle deletion
+            model_class.objects.using('local').filter(id=instance_id).delete()
+            return
+
+        # Fetch the latest data from Neon (default)
+        remote_obj = model_class.objects.using('default').filter(id=instance_id).first()
+        if not remote_obj:
+            return
+
+        # Prepare data for entry
+        data = {}
+        for field in remote_obj._meta.fields:
+            if field.is_relation:
+                # Store the ID directly
+                data[f"{field.name}_id"] = getattr(remote_obj, f"{field.name}_id")
+            else:
+                data[field.name] = getattr(remote_obj, field.name)
+
+        # Update or create in local SQLite
+        # We disable foreign key checks temporarily for this operation to avoid order issues
+        with connections['local'].cursor() as cursor:
+            cursor.execute('PRAGMA foreign_keys = OFF;')
+            
+        model_class.objects.using('local').update_or_create(
+            id=remote_obj.id,
+            defaults=data
+        )
+
+        with connections['local'].cursor() as cursor:
+            cursor.execute('PRAGMA foreign_keys = ON;')
+
+    except Exception as e:
+        print(f"Background Sync Error for {model_class.__name__} {instance_id}: {e}")
+
+# Start the worker thread
+thread = threading.Thread(target=sync_worker, daemon=True)
+thread.start()
 
 def sync_instance_to_local(model_class, instance_id, deleted=False):
     """
-    Syncs a single instance from the 'default' (remote) database to the 'local' database.
-    This runs in a background thread to avoid blocking the main request.
+    Enqueues a sync task instead of spawning a new thread immediately.
     """
-    def _do_sync():
-        try:
-            if deleted:
-                # Handle deletion
-                model_class.objects.using('local').filter(id=instance_id).delete()
-                return
-
-            # Fetch the latest data from Neon (default)
-            remote_obj = model_class.objects.using('default').filter(id=instance_id).first()
-            if not remote_obj:
-                return
-
-            # Prepare data for entry
-            data = {}
-            for field in remote_obj._meta.fields:
-                if field.is_relation:
-                    data[f"{field.name}_id"] = getattr(remote_obj, f"{field.name}_id")
-                else:
-                    data[field.name] = getattr(remote_obj, field.name)
-
-            # Update or create in local SQLite
-            # We disable foreign key checks temporarily for this tiny operation to avoid order issues
-            from django.db import connections
-            with connections['local'].cursor() as cursor:
-                cursor.execute('PRAGMA foreign_keys = OFF;')
-                
-            model_class.objects.using('local').update_or_create(
-                id=remote_obj.id,
-                defaults=data
-            )
-
-            with connections['local'].cursor() as cursor:
-                cursor.execute('PRAGMA foreign_keys = ON;')
-
-        except Exception as e:
-            # In a production environment, you might want to log this to Sentry or a file
-            print(f"Background Sync Error for {model_class.__name__} {instance_id}: {e}")
-
-    # Start the sync in a background thread
-    threading.Thread(target=_do_sync, daemon=True).start()
+    SYNC_QUEUE.put((model_class, instance_id, deleted))
 
 
 def register_sync_signals():
@@ -76,13 +111,15 @@ def register_sync_signals():
                 # We only sync if the change happened in the 'default' database
                 # to avoid loops or redundant local-to-local syncing
                 if kwargs.get('using') == 'default' or kwargs.get('using') is None:
-                    sync_instance_to_local(m, instance.id)
+                    # Use on_commit to ensure the data is actually in the DB 
+                    # before the background thread tries to read it.
+                    transaction.on_commit(lambda: sync_instance_to_local(m, instance.id))
             return handle_save
 
         def make_delete_handler(m):
             def handle_delete(sender, instance, **kwargs):
                 if kwargs.get('using') == 'default' or kwargs.get('using') is None:
-                    sync_instance_to_local(m, instance.id, deleted=True)
+                     transaction.on_commit(lambda: sync_instance_to_local(m, instance.id, deleted=True))
             return handle_delete
 
         post_save.connect(make_save_handler(model), sender=model, dispatch_uid=f"sync_save_{model.__name__}")

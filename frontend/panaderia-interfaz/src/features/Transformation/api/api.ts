@@ -118,13 +118,15 @@ export const searchTransformaciones = async (params: searchTerm): Promise<search
 };
 
 export const ejecutarTransformacion = async (data: {
-    transformacionId: number;
-    productoOrigenId: number;
-    productoDestinoId: number;
+    transformacion_id: number;
+    producto_origen_id: number;
+    producto_destino_id: number;
+    cantidad?: number;
 }): Promise<void> => {
     try {
         const response = await apiClient.post("/api/ejecutar-transformacion/", data);
-        if (response.status !== 200) {
+        // Backend returns 201 Created or 200 OK
+        if (response.status !== 200 && response.status !== 201) {
             throw new Error("Error al ejecutar la transformación");
         }
     } catch (error) {

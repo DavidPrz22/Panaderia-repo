@@ -28,12 +28,11 @@ export default function Seleccion() {
     const { mutate, isPending } = useEjecutarTransformacionMutation();
 
     const onSubmit = (data: TEjecutarTransformacionSchema) => {
-        console.log(data);
-        return;
+        // console.log(data);
         mutate({
-            transformacionId: data.transformacion_id,
-            productoOrigenId: data.producto_origen_id,
-            productoDestinoId: data.producto_destino_id
+            transformacion_id: Number(data.transformacion_id),
+            producto_origen_id: Number(data.producto_origen_id),
+            producto_destino_id: Number(data.producto_destino_id)
         }, {
             onSuccess: () => {
                 reset();
