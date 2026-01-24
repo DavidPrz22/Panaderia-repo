@@ -353,27 +353,42 @@ class NotificationService:
         for elemento in elementos:
             producto_id = elemento.get('producto_id')
             tipo_producto = elemento.get('tipo_producto')
-            
+            prioridad = elemento.get('prioridad')
+            descripcion = elemento.get('descripcion')
             # Check if unread notification already exists for this product/type
-            exists = Notificaciones.objects.filter(
+            notificacion_existente = Notificaciones.objects.filter(
                 tipo_notificacion=tipo_notificacion,
                 tipo_producto=tipo_producto,
                 producto_id=producto_id,
+                prioridad=prioridad,
+                descripcion=descripcion,
                 leida=False
-            ).exists()
+            ).first()
             
-            if not exists:
+            should_create = True
+            
+            if notificacion_existente:
+                time_difference = timezone.now() - notificacion_existente.fecha_notificacion
+                if time_difference.days >= 1:
+                    # If older than 1 day, delete and recreate to refresh timestamp/description
+                    notificacion_existente.delete()
+                    should_create = True
+                else:
+                    # If recent, do not create duplicate
+                    should_create = False
+                
+            if should_create:
                 notification = Notificaciones(
                     tipo_notificacion=tipo_notificacion,
                     tipo_producto=tipo_producto,
                     producto_id=producto_id,
-                    descripcion=elemento.get('descripcion'),
-                    prioridad=elemento.get('prioridad'),
+                    descripcion=descripcion,
+                    prioridad=prioridad,
                 )
                 notification_bucket.append(notification)
 
         if notification_bucket:
-            Notificaciones.objects.bulk_create(notification_bucket)
+            Notificaciones.objects.bulk_create(notification_bucket, ignore_conflicts=True)
         
         return len(notification_bucket)
 

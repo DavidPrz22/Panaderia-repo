@@ -194,3 +194,12 @@ class Notificaciones(models.Model):
     fecha_notificacion = models.DateTimeField(auto_now_add=True)
     leida = models.BooleanField(default=False)
     prioridad = models.CharField(max_length=50, choices=TiposPrioridades.choices, null=True, blank=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['tipo_notificacion', 'tipo_producto', 'producto_id', 'prioridad'],
+                condition=models.Q(leida=False),
+                name='unique_unread_notification'
+            )
+        ]
