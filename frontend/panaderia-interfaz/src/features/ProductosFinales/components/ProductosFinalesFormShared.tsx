@@ -57,6 +57,7 @@ export default function ProductosFinalesFormShared({
               initialData.unidad_produccion_producto.id,
             descripcion: initialData.descripcion,
             vendible_por_medida_real: initialData.vendible_por_medida_real,
+            usado_en_transformaciones: initialData.usado_en_transformaciones,
           }
         : undefined,
   });
@@ -172,7 +173,7 @@ export default function ProductosFinalesFormShared({
     );
   }
 
-  const [usadoEnTransformaciones, setUsadoEnTransformaciones] = useState(false);
+  const [usadoEnTransformaciones, setUsadoEnTransformaciones] = useState(initialData?.usado_en_transformaciones ?? false);
 
   const checkInvalidRecetaRelacionada = () => {
     if (!usadoEnTransformaciones && !watch("receta_relacionada")) return false;
@@ -200,6 +201,7 @@ export default function ProductosFinalesFormShared({
   const recetaRelacionadaValidatedData = initialData?.receta_relacionada
     ? initialData.receta_relacionada
     : false;
+
   return (
     <form onSubmit={handleSubmit(onSubmit)} id="productos-finales-form">
       <div className="flex flex-col mx-8 mt-4 rounded-md border border-gray-200 shadow-md relative">

@@ -157,17 +157,8 @@ DATABASES = {
         'HOST': tmpPostgres.hostname,
         'PORT': 5432,
         'OPTIONS': dict(parse_qsl(tmpPostgres.query)),
-    },
-    'local': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db_local.sqlite3',
-        'OPTIONS': {
-            'timeout': 20,  # Wait up to 20 seconds for the lock
-        }
     }
 }
-
-DATABASE_ROUTERS = ['djangobackend.routers.HybridRouter']
 
 
 # Password validation

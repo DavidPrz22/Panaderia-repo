@@ -43,6 +43,7 @@ export type ProductoFinalDetalles = {
   fecha_modificacion_registro: string;
   receta_relacionada: receta_relacionada | null;
   vendible_por_medida_real: boolean;
+  usado_en_transformaciones: boolean;
 };
 
 export type InputType = "text" | "number" | "textarea";

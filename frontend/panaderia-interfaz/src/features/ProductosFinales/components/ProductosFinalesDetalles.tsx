@@ -90,7 +90,7 @@ export default function ProductosFinalesDetalles() {
 
     return (
       <ProductosFinalesFormShared
-        title="Editar Producto Intermedio"
+        title="Editar Producto Final"
         isUpdate={true}
         onClose={handleCloseUpdate}
         onSubmitSuccess={handleCloseUpdate}
