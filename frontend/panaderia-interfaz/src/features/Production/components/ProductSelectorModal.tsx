@@ -7,7 +7,6 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { useProductSearchQueries } from "../hooks/queries/ProductionQueries";
 import { useProductionContext } from "@/context/ProductionContext";
 import type { searchItem } from "../types/types";
@@ -112,7 +111,7 @@ export const ProductSelectorModal = ({
             </div>
 
             {/* Products Grid/List */}
-            <ScrollArea className="flex-1 mt-4 pr-4 overflow-y-auto">
+            <div className="flex-1 mt-4 pr-4 overflow-y-auto">
                 {isLoading ? (
                     <div className="flex flex-col items-center justify-center h-full text-muted-foreground py-12">
                         <p>Cargando productos...</p>
@@ -153,7 +152,7 @@ export const ProductSelectorModal = ({
                         ))}
                     </div>
                 )}
-            </ScrollArea>
+            </div>
 
         </DialogContent>
     );
