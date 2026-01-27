@@ -8,7 +8,7 @@ export type childrenProp = {
 
 export type ProductionType = "producto-final" | "producto-intermedio";
 
-export type searchItem = { id: number; nombre_producto: string; unidad_medida: string };
+export type searchItem = { id: number; nombre_producto: string; unidad_medida: string, categoria: string };
 
 export type RecetaComponenteProduccion = {
   id: number;

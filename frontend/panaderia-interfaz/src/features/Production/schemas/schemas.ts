@@ -14,7 +14,11 @@ const componenteSchema = z.object({
 export const productionSchema = z.object({
   productoId: z
     .number()
-    .min(0, { message: "El ID del producto debe ser un número positivo" }),
+    .min(0, { message: "El ID del producto debe ser un número positivo" })
+    .nullable()
+    .refine((value) => value, {
+      message: "El producto es requerido",
+    }),
   componentes: z
     .array(componenteSchema)
     .min(1, { message: "Debe haber al menos un componente" }),
