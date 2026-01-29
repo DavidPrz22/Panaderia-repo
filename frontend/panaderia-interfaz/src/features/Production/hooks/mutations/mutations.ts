@@ -3,7 +3,7 @@ import { createProduction, componentesRecetaSearch } from "../../api/api";
 import type { TProductionFormData } from "../../schemas/schemas";
 import { useProductionContext } from "@/context/ProductionContext";
 import { useQueryClient } from "@tanstack/react-query";
-import { componentsProductionOptions } from "../../hooks/queries/ProductionQueryOptions";
+import { COMPONENTES_PRODUCCION } from "../../hooks/queries/ProductionQueryOptions";
 import { productosFinalesQueryOptions } from "@/features/ProductosFinales/hooks/queries/productosFinalesQueryOptions";
 import { productosIntermediosQueryOptions } from "@/features/ProductosIntermedios/hooks/queries/queryOptions";
 
@@ -24,17 +24,19 @@ export const useCreateProductionMutation = () => {
 
       // Then invalidate queries to fetch fresh data
       queryClient.invalidateQueries({
-        queryKey: componentsProductionOptions(data.productoId).queryKey,
+        queryKey: [COMPONENTES_PRODUCCION],
       })
+
       if (data.tipoProducto === "producto-intermedio") {
         queryClient.invalidateQueries({
           queryKey: productosIntermediosQueryOptions.queryKey,
         })
       } else {
         queryClient.invalidateQueries({
-          queryKey: productosFinalesQueryOptions().queryKey,
+          queryKey: productosFinalesQueryOptions.queryKey,
         })
       }
+
       handleToast("Producción registrada exitosamente");
     },
     onError: (error) => {

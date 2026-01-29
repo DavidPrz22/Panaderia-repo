@@ -11,13 +11,15 @@ from datetime import datetime
 from collections import defaultdict
 from apps.inventario.models import LotesStatus
 from djangobackend.permissions import IsStaffOrVendedorReadOnly
+from djangobackend.pagination import StandardResultsSetPagination
 
 
 
 class MateriaPrimaViewSet(viewsets.ModelViewSet):
-    queryset = MateriasPrimas.objects.all()
+    queryset = MateriasPrimas.objects.all().order_by('id')
     serializer_class = MateriaPrimaSerializer
     permission_classes = [IsStaffOrVendedorReadOnly]
+    pagination_class = StandardResultsSetPagination
 
     @action(detail=False, methods=['post'], url_path='register-csv',)
     def register_csv(self, request):
@@ -37,15 +39,15 @@ class MateriaPrimaViewSet(viewsets.ModelViewSet):
         for mp in reader:
             mp_created = MateriasPrimas(
                 nombre=mp['nombre'],
-                SKU=mp['sku'],
+                SKU=mp['SKU'],
                 precio_compra_usd=mp['precio_compra_usd'],
-                nombre_empaque_estandar=mp['nombre_empaque_estandar'] or None,
-                cantidad_empaque_estandar=mp['cantidad_empaque_estandar'] or None,
-                unidad_medida_empaque_estandar=UnidadesDeMedida.objects.get(nombre_completo=mp['unidad_medida_empaque_estandar']) or None,
+                nombre_empaque_estandar=mp.get('nombre_empaque_estandar') or None,
+                cantidad_empaque_estandar=mp.get('cantidad_empaque_estandar') or None,
+                unidad_medida_empaque_estandar_id=mp.get('unidad_medida_empaque_estandar_id') or None,
                 punto_reorden=mp['punto_reorden'],
-                unidad_medida_base=UnidadesDeMedida.objects.get(nombre_completo=mp['unidad_medida_base']) or None,
-                categoria=CategoriasMateriaPrima.objects.get(nombre_categoria=mp['categoria'].capitalize()),
-                descripcion=mp['descripcion']
+                unidad_medida_base_id=mp.get('unidad_medida_base_id'),
+                categoria_id=mp.get('categoria_id'),
+                descripcion=mp.get('descripcion')
             )
             materias_primas.append(mp_created)
 
@@ -112,6 +114,7 @@ class LotesMateriaPrimaViewSet(viewsets.ModelViewSet):
     queryset = LotesMateriasPrimas.objects.all()
     serializer_class = LotesMateriaPrimaSerializer
     permission_classes = [IsStaffOrVendedorReadOnly]
+    pagination_class = StandardResultsSetPagination
 
     def get_queryset(self):
         queryset = super().get_queryset()
@@ -131,6 +134,24 @@ class LotesMateriaPrimaViewSet(viewsets.ModelViewSet):
         
         return super().list(request, *args, **kwargs)
 
+    def destroy(self, request, *args, **kwargs):
+        from django.db import transaction
+        try:
+            instance = self.get_object()
+            materia_prima = instance.materia_prima
+            
+            with transaction.atomic():
+                self.perform_destroy(instance)
+                try:
+                    NotificationService.check_low_stock(MateriasPrimas)
+                    NotificationService.check_sin_stock(MateriasPrimas)
+                except Exception as notif_error:
+                    import logging
+                    logger = logging.getLogger(__name__)
+                    logger.error(f"Failed to create notifications: {str(notif_error)}")
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -229,6 +250,7 @@ class ProductosElaboradosViewSet(viewsets.ModelViewSet):
                 "unidad_medida": unit.abreviatura,
                 "stock": component.stock_actual,
                 "cantidad": cantidad,
+                'tipo': 'MateriaPrima'
             }
         elif detalle.componente_producto_intermedio:
             component = detalle.componente_producto_intermedio
@@ -240,6 +262,7 @@ class ProductosElaboradosViewSet(viewsets.ModelViewSet):
                 "unidad_medida": unit.abreviatura,
                 "stock": component.stock_actual,
                 "cantidad": cantidad,
+                'tipo': 'ProductoIntermedio'
             }
         return None
 
@@ -312,6 +335,7 @@ class ProductosElaboradosViewSet(viewsets.ModelViewSet):
 
         producto_data = {
             'componentes': [self._get_component_data(d) for d in detalles_receta_principal if d is not None],
+            'rendimiento': receta_principal.rendimiento,
             'subrecetas': subrecetas,
             'medida_produccion': medida_produccion,
             'es_por_unidad': es_por_unidad,
@@ -330,29 +354,39 @@ class ProductosElaboradosViewSet(viewsets.ModelViewSet):
 
 
 class LotesProductosElaboradosViewSet(viewsets.ModelViewSet):
-    queryset = LotesProductosElaborados.objects.all()
+    queryset = LotesProductosElaborados.objects.order_by('fecha_caducidad')
     permission_classes = [IsStaffOrVendedorReadOnly]
-    serializer = LotesProductosElaboradosSerializer
+    serializer_class = LotesProductosElaboradosSerializer
+    pagination_class = StandardResultsSetPagination
     
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        producto_elaborado = self.request.query_params.get('producto_elaborado')
+        if producto_elaborado:
+            queryset = queryset.filter(producto_elaborado=producto_elaborado)
+        return queryset
 
     def destroy(self, request, *args, **kwargs):
-        instance = self.get_object()
-        producto = instance.producto_elaborado
-        self.perform_destroy(instance)
-        
-        # Update stock after deletion
-        producto.actualizar_stock()
-        
-        # Check stock notifications after lot deletion
+        from django.db import transaction
         try:
-            NotificationService.check_low_stock(ProductosElaborados)
-            NotificationService.check_sin_stock(ProductosElaborados)
-        except Exception as notif_error:
-            import logging
-            logger = logging.getLogger(__name__)
-            logger.error(f"Failed to create notifications: {str(notif_error)}")
+            instance = self.get_object()
+            producto = instance.producto_elaborado
             
-        return Response(status=status.HTTP_204_NO_CONTENT)
+            with transaction.atomic():
+                self.perform_destroy(instance)
+
+                # Check stock notifications after lot deletion
+                try:
+                    NotificationService.check_low_stock(ProductosElaborados)
+                    NotificationService.check_sin_stock(ProductosElaborados)
+                except Exception as notif_error:
+                    import logging
+                    logger = logging.getLogger(__name__)
+                    logger.error(f"Failed to create notifications: {str(notif_error)}")
+                
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
     
 
     @action(detail=True, methods=['get'], url_path='change-estado-lote')
@@ -398,15 +432,37 @@ class LotesProductosElaboradosViewSet(viewsets.ModelViewSet):
 
 
 class ProductosIntermediosViewSet(viewsets.ModelViewSet):
-    queryset = ProductosIntermedios.objects.all()
+    queryset = ProductosIntermedios.objects.all().order_by('id')
     serializer_class = ProductosIntermediosSerializer
     permission_classes = [IsStaffOrVendedorReadOnly]
+    pagination_class = StandardResultsSetPagination
 
 
 class ProductosFinalesViewSet(viewsets.ModelViewSet):
-    queryset = ProductosFinales.objects.all()
+    queryset = ProductosFinales.objects.all().order_by('id')
     serializer_class = ProductosFinalesSerializer
     permission_classes = [IsStaffOrVendedorReadOnly]
+    pagination_class = StandardResultsSetPagination
+
+    @action(detail=False, methods=['get'])
+    def search(self, request):
+        query = request.query_params.get('q', '').strip()
+        search_type = request.query_params.get('type', 'origen')
+        
+        queryset = self.get_queryset()
+        
+        # Filtrar según el uso en transformaciones
+        if search_type == 'destino':
+            queryset = queryset.filter(usado_en_transformaciones=True)
+        else:
+            queryset = queryset.filter(usado_en_transformaciones=False)
+            
+        # Filtrar por nombre si hay query
+        if query:
+            queryset = queryset.filter(nombre_producto__icontains=query)
+            
+        serializer = ProductosFinalesSearchSerializer(queryset, many=True)
+        return Response(serializer.data)
 
 
 class ProductosIntermediosDetallesViewSet(viewsets.ReadOnlyModelViewSet):
@@ -464,9 +520,10 @@ class ProductosIntermediosSearchViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class ProductosReventaViewSet(viewsets.ModelViewSet):
-    queryset = ProductosReventa.objects.all()
+    queryset = ProductosReventa.objects.all().order_by('id')
     serializer_class = ProductosReventaSerializer
     permission_classes = [IsStaffOrVendedorReadOnly]
+    pagination_class = StandardResultsSetPagination
 
     @action(detail=False, methods=['post'], url_path='register-csv')
     def register_csv(self, request):
@@ -487,18 +544,17 @@ class ProductosReventaViewSet(viewsets.ModelViewSet):
             for pr in reader:
                 pr_created = ProductosReventa(
                     nombre_producto=pr['nombre_producto'],
-                    SKU=pr['sku'],
-                    precio_compra_usd=pr['precio_compra_usd'] or None,
+                    SKU=pr['SKU'],
+                    precio_compra_usd=pr.get('precio_compra_usd') or None,
                     precio_venta_usd=pr['precio_venta_usd'],
-                    punto_reorden=pr['punto_reorden'],
-                    unidad_base_inventario=UnidadesDeMedida.objects.get(nombre_completo=pr['unidad_base_inventario']) or None,
-                    unidad_venta=UnidadesDeMedida.objects.get(nombre_completo=pr['unidad_venta']) or None,
-                    categoria=CategoriasProductosReventa.objects.get(nombre_categoria=pr['categoria']),
-                    factor_conversion=pr['factor_conversion'],
-                    marca=pr['marca'] or None,
-                    proveedor_preferido=Proveedores.objects.get(nombre_proveedor=pr['proveedor_preferido']) or None,
-                    perecedero=pr['perecedero'],
-                    descripcion=pr['descripcion']
+                    punto_reorden=pr.get('punto_reorden'),
+                    unidad_base_inventario_id=pr.get('unidad_base_inventario_id'),
+                    unidad_venta_id=pr.get('unidad_venta_id'),
+                    categoria_id=pr.get('categoria_id'),
+                    factor_conversion=pr.get('factor_conversion', 1.0),
+                    marca=pr.get('marca') or None,
+                    perecedero=pr.get('perecedero', 'FALSE').upper() == 'TRUE',
+                    descripcion=pr.get('descripcion')
                 )
                 productos_reventa.append(pr_created)
 
@@ -513,9 +569,10 @@ class ProductosReventaDetallesViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class LotesProductosReventaViewSet(viewsets.ModelViewSet):
-    queryset = LotesProductosReventa.objects.all()
+    queryset = LotesProductosReventa.objects.order_by('fecha_caducidad')
     serializer_class = LotesProductosReventaSerializer
     permission_classes = [IsStaffOrVendedorReadOnly]
+    pagination_class = StandardResultsSetPagination
 
     def get_queryset(self):
         queryset = super().get_queryset()
@@ -542,20 +599,26 @@ class LotesProductosReventaViewSet(viewsets.ModelViewSet):
         return super().list(request, *args, **kwargs)
 
     def destroy(self, request, *args, **kwargs):
-        instance = self.get_object()
-        # Stock update is handled by signals for ProductosReventa
-        self.perform_destroy(instance)
-        
-        # Check stock notifications after lot deletion
+        from django.db import transaction
         try:
-            NotificationService.check_low_stock(ProductosReventa)
-            NotificationService.check_sin_stock(ProductosReventa)
-        except Exception as notif_error:
-            import logging
-            logger = logging.getLogger(__name__)
-            logger.error(f"Failed to create notifications: {str(notif_error)}")
+            instance = self.get_object()
+            producto = instance.producto_reventa
             
-        return Response(status=status.HTTP_204_NO_CONTENT)
+            with transaction.atomic():
+                self.perform_destroy(instance)
+                
+                # Check stock notifications after lot deletion
+                try:
+                    NotificationService.check_low_stock(ProductosReventa)
+                    NotificationService.check_sin_stock(ProductosReventa)
+                except Exception as notif_error:
+                    import logging
+                    logger = logging.getLogger(__name__)
+                    logger.error(f"Failed to create notifications: {str(notif_error)}")
+            
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)

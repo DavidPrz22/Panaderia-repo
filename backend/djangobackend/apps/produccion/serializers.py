@@ -6,13 +6,17 @@ class RecetasSerializer(serializers.ModelSerializer):
     componente_receta = serializers.ListField(write_only=True, required=False)
     receta_relacionada = serializers.ListField(write_only=True, required=False)
     esCompuesta = serializers.SerializerMethodField(read_only=True)
+    producto_elaborado = serializers.CharField(source='producto_elaborado.nombre_producto', read_only=True)
+    unidad_medida_producto = serializers.CharField(source='producto_elaborado.unidad_produccion.nombre_completo', read_only=True)
 
     class Meta:
         model = Recetas
         fields = [
                     'id',
                     'producto_elaborado', 
+                    'unidad_medida_producto',
                     'nombre',
+                    'rendimiento',
                     'fecha_creacion',
                     'fecha_modificacion',
                     'notas',
@@ -23,6 +27,13 @@ class RecetasSerializer(serializers.ModelSerializer):
 
     def get_esCompuesta(self, obj):
         return RelacionesRecetas.objects.filter(receta_principal=obj).exists()
+
+    def validate_rendimiento(self, value):
+        if value is not None and value <= 0:
+            raise serializers.ValidationError(
+                "El rendimiento debe ser mayor que 0"
+            )
+        return value
 
 class RecetasSearchSerializer(serializers.ModelSerializer):
     class Meta:

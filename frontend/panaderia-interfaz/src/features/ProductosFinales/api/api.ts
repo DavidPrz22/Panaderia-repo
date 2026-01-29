@@ -4,15 +4,20 @@ import type {
   ProductoFinalDetalles,
   ProductosFinalesList,
   recetasSearchItem,
+  ProductosFinalesPagination,
 } from "../types/types";
 
 import type { TProductoFinalSchema } from "../schemas/schemas";
-import type { UnidadesDeMedida, LotesProductosFinales } from "../types/types";
+import type { UnidadesDeMedida, LotesProductosFinales, LoteProductoFinalPagination } from "../types/types";
 
-export const getProductosFinales = async (): Promise<ProductosFinalesList> => {
+export const getProductosFinales = async ({
+  pageParam
+}: {
+  pageParam?: string | null
+} = {}): Promise<ProductosFinalesPagination> => {
   try {
-    const response = await apiClient.get("/api/productosfinales/");
-    console.log(response.data);
+    const url = pageParam || "/api/productosfinales/";
+    const response = await apiClient.get(url);
     return response.data;
   } catch (error) {
     console.error("Error fetching productos finales:", error);
@@ -116,14 +121,34 @@ export const removeRecetaRelacionada = async (id: number) => {
   }
 };
 
-
-export const getLotesProductosFinales = async (id: number): Promise<LotesProductosFinales[]> => {
+export const deleteLoteProductoElaborado = async (id: number) => {
   try {
-    const response = await apiClient.get(`/api/productoselaborados/${id}/lotes/`);
+    const response = await apiClient.delete(`/api/lotes-productos-elaborados/${id}/`);
+    return response.data;
+  } catch (error) {
+    console.error("Error deleting lote producto elaborado:", error);
+    throw error;
+  }
+};
+
+
+export const getLotesProductosFinales = async ({
+  pageParam,
+  producto_final_id,
+}: {
+  pageParam?: string | null;
+  producto_final_id?: number;
+} = {}): Promise<LoteProductoFinalPagination> => {
+  try {
+    let url = pageParam || "/api/lotes-productos-elaborados/";
+    if (!pageParam && producto_final_id) {
+      url += `?producto_elaborado=${producto_final_id}`;
+    }
+    const response = await apiClient.get(url);
     return response.data;
   } catch (error) {
     console.error(error);
-    return [];
+    throw error;
   }
 };
 

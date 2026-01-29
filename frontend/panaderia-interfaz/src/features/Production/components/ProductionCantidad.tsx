@@ -2,13 +2,50 @@ import type { watchSetvalueTypeProduction } from "../types/types";
 import { useProductionContext } from "@/context/ProductionContext";
 import "@/styles/validationStyles.css";
 
+import { useComponentsProductionQuery } from "../hooks/queries/ProductionQueries";
+import { useEffect, useState, useRef } from "react";
+
 export const ProductionCantidad = ({
   setValue,
   watch,
 }: watchSetvalueTypeProduction) => {
 
   const { productUnitRef } = useProductionContext();
+  const { data: productionComponentes, isFetched } = useComponentsProductionQuery();
+  const inputRef = useRef<HTMLInputElement>(null);
+
   const roundTo3 = (n: number) => Math.round(n * 1000) / 1000;
+
+  useEffect(() => {
+    // Logic to initialize quantity when product/recipe loads
+    if (productionComponentes) {
+      if (productionComponentes.rendimiento && productionComponentes.rendimiento > 0) {
+
+        // Priority 1: Use Recipe Yield if available
+        if (setValue) {
+          setValue("cantidadProduction", productionComponentes.rendimiento, {
+            shouldValidate: true,
+            shouldDirty: true,
+          });
+          if (inputRef.current) {
+            inputRef.current.value = productionComponentes.rendimiento.toString();
+            inputRef.current.focus();
+          }
+        }
+      } else {
+        // Priority 2: Default to 1 if no yield is defined and current value is 0/invalid
+        const currentVal = watch?.("cantidadProduction");
+        if (!currentVal || currentVal <= 0) {
+          if (setValue) {
+            setValue("cantidadProduction", 1, {
+              shouldValidate: true,
+              shouldDirty: true,
+            });
+          }
+        }
+      }
+    }
+  }, [productionComponentes, isFetched, setValue]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const raw = e.target.value.replace(",", ".");
@@ -75,24 +112,27 @@ export const ProductionCantidad = ({
             step={0.01}
             placeholder="Cantidad a producir..."
             defaultValue={watch?.("cantidadProduction") ?? 0}
+            // If the user manually changes the input, we update the state
+            key={productionComponentes?.rendimiento}
             onChange={handleChange}
             onKeyDown={handleKeyDown}
             onBlur={handleBlur}
+            ref={inputRef}
           />
           <div
             className="absolute top-1/2 right-9 -translate-y-1/2 text-sm font-medium font-[Roboto] pointer-events-none"
           >
             <div
               ref={productUnitRef}
-              className={`flex items-center justify-center bg-gray-200 rounded-md ${
-                productUnitRef.current?.textContent === "" ? "" : "size-7"
-              }`}
+              className={`flex items-center justify-center bg-gray-200 rounded-md ${productUnitRef.current?.textContent === "" ? "" : "size-7"
+                }`}
             >
-              {productUnitRef.current?.textContent}          
-              </div>
+              {productUnitRef.current?.textContent}
+            </div>
           </div>
         </div>
       </div>
+
     </div>
   );
 };

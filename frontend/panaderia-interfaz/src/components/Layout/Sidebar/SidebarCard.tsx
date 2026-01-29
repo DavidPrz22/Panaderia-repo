@@ -18,6 +18,8 @@ export default function SidebarCard({
   } = useAppContext();
 
   function handleClick(e: React.MouseEvent<HTMLDivElement>) {
+    if (e.ctrlKey || e.metaKey || e.shiftKey) return;
+
     onclick(e);
 
     if (dropdownContained) {
@@ -36,15 +38,22 @@ export default function SidebarCard({
   }
 
   return (
-    <div
-      className={`flex items-center gap-2.5 p-2 hover:bg-white/20 transition-colors duration-200 ease-in-out rounded-md cursor-pointer ${
-        id === selectedModule ? "bg-white/20" : ""
-      }`}
-      onClick={handleClick}
-      id={id}
+    <a
+      onClick={(e) => {
+        if (e.ctrlKey || e.metaKey || e.shiftKey) return;
+        e.preventDefault();
+      }}
+      href={link}
     >
-      <img src={icon} alt={icon} />
-      <div className="font-[Roboto] text-md text-white ">{children}</div>
-    </div>
+      <div
+        className={`flex items-center gap-2.5 p-2 hover:bg-white/20 transition-colors duration-200 ease-in-out rounded-md cursor-pointer ${id === selectedModule ? "bg-white/20" : ""
+          }`}
+        onClick={handleClick}
+        id={id}
+      >
+        <img src={icon} alt={icon} />
+        <div className="font-[Roboto] text-md text-white ">{children}</div>
+      </div>
+    </a>
   );
 }

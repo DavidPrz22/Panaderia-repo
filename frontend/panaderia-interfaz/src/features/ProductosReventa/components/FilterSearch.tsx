@@ -43,7 +43,7 @@ export default function FilterSearch() {
             descripcion="Selecciona un archivo CSV para importar los datos de los productos de reventa"
             uploadFunction={mutateAsync}
             isPending={isPending}
-            csvContent={"nombre_producto,sku,categoria,precio_venta_usd,precio_compra_usd,punto_reorden,unidad_medida_base,marca,proveedor_preferido,unidad_base_inventario,unidad_venta,factor_conversion,descripcion,perecedero\n"}
+            csvContent={"nombre_producto,SKU,categoria_id,marca,precio_venta_usd,precio_compra_usd,punto_reorden,unidad_medida_base,proveedor_preferido,unidad_base_inventario,unidad_venta,factor_conversion,descripcion,perecedero\n"}
           />
         )}
         <div className="relative">

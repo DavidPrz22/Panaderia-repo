@@ -1,4 +1,4 @@
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useState, useEffect } from "react";
 import type {
   CategoriaProductosReventa,
   childrenProp,
@@ -48,6 +48,8 @@ type ProductosReventaContextType = {
   setLotesProductosReventaDetalles: (value: LotesProductosReventa | null) => void;
   updateLoteRegistro: boolean;
   setUpdateLoteRegistro: (value: boolean) => void;
+  currentPage: number;
+  setCurrentPage: React.Dispatch<React.SetStateAction<number>>;
 };
 
 const ProductosReventaContext =
@@ -84,6 +86,12 @@ export const ProductosReventaProvider = ({ children }: childrenProp) => {
   const [showPRLotesDetalles, setShowPRLotesDetalles] = useState(false);
   const [lotesProductosReventaDetalles, setLotesProductosReventaDetalles] = useState<LotesProductosReventa | null>(null);
   const [updateLoteRegistro, setUpdateLoteRegistro] = useState(false);
+  const [currentPage, setCurrentPage] = useState<number>(0);
+
+  // Reset page to 0 when filters change
+  useEffect(() => {
+    setCurrentPage(0);
+  }, [productosReventaSearchTerm, selectedCategoriasReventa, selectedUnidadesInventario, bajoStockFilter, agotadosFilter]);
 
   return (
     <ProductosReventaContext.Provider
@@ -126,6 +134,8 @@ export const ProductosReventaProvider = ({ children }: childrenProp) => {
         setLotesProductosReventaDetalles,
         updateLoteRegistro,
         setUpdateLoteRegistro,
+        currentPage,
+        setCurrentPage,
       }}
     >
       {children}

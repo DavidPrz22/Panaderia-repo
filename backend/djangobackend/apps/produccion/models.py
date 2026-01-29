@@ -9,6 +9,7 @@ from apps.users.models import User
 class Recetas(models.Model):
     nombre = models.CharField(max_length=255, null=True, blank=True)
     producto_elaborado = models.OneToOneField(ProductosElaborados, on_delete=models.SET_NULL, related_name='receta_producto_elaborado', null=True, blank=True, unique=True)
+    rendimiento = models.DecimalField(max_digits=10, decimal_places=3, null=True, blank=True, help_text="Cantidad de producto que genera esta receta")
     fecha_creacion = models.DateTimeField(auto_now_add=True, null=True, blank=True)
     fecha_modificacion = models.DateTimeField(auto_now=True, null=True, blank=True)
     notas = models.TextField(max_length=250, null=True, blank=True)

@@ -1,5 +1,5 @@
 import type { LotesProductosFinales, receta_relacionada, recetasSearchItem } from "@/features/ProductosFinales/types/types";
-import { createContext, useContext, useState, useRef } from "react";
+import { createContext, useContext, useState, useRef, useEffect } from "react";
 import type { CategoriaProductoFinal } from "@/features/ProductosFinales/types/types";
 import type { UnidadesDeMedida } from "@/features/ProductosFinales/types/types";
 import type { ProductoFinalDetalles } from "@/features/ProductosFinales/types/types";
@@ -52,6 +52,12 @@ type ProductosFinalesContextType = {
   setBajoStockFilter: React.Dispatch<React.SetStateAction<boolean>>;
   agotadosFilter: boolean;
   setAgotadosFilter: React.Dispatch<React.SetStateAction<boolean>>;
+  currentPage: number;
+  setCurrentPage: React.Dispatch<React.SetStateAction<number>>;
+  showRecipeModal: boolean;
+  setShowRecipeModal: (value: boolean) => void;
+  selectedRecipeId: number | null;
+  setSelectedRecipeId: (value: number | null) => void;
 };
 
 const ProductosFinalesContextProvider = createContext<ProductosFinalesContextType | null>(null);
@@ -84,10 +90,10 @@ export const ProductosFinalesProvider = ({
 
   const [searchList, setSearchList] = useState<recetasSearchItem[]>([]);
   const [searchTimer, setSearchTimer] = useState<NodeJS.Timeout | null>(null);
-  
+
   const recetaSearchInputRef = useRef<HTMLInputElement | null>(null);
   const [productoDetalles, setProductoDetalles] = useState<ProductoFinalDetalles | null>(null);
-  
+
   const [isLoadingDetalles, setIsLoadingDetalles] =
     useState<boolean>(false);
 
@@ -109,6 +115,14 @@ export const ProductosFinalesProvider = ({
 
   const [bajoStockFilter, setBajoStockFilter] = useState<boolean>(false);
   const [agotadosFilter, setAgotadosFilter] = useState<boolean>(false);
+  const [currentPage, setCurrentPage] = useState<number>(0);
+  const [showRecipeModal, setShowRecipeModal] = useState<boolean>(false);
+  const [selectedRecipeId, setSelectedRecipeId] = useState<number | null>(null);
+
+  // Reset page to 0 when filters change
+  useEffect(() => {
+    setCurrentPage(0);
+  }, [productosFinalesSearchTerm, selectedUnidadesVenta, selectedCategoriasProductoFinal, bajoStockFilter, agotadosFilter]);
 
   return (
     <ProductosFinalesContextProvider.Provider
@@ -159,6 +173,12 @@ export const ProductosFinalesProvider = ({
         setBajoStockFilter,
         agotadosFilter,
         setAgotadosFilter,
+        currentPage,
+        setCurrentPage,
+        showRecipeModal,
+        setShowRecipeModal,
+        selectedRecipeId,
+        setSelectedRecipeId,
       }}
     >
       {children}

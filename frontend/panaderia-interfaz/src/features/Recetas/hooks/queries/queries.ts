@@ -1,11 +1,11 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useInfiniteQuery } from "@tanstack/react-query";
 import {
   recetasDetallesQueryOptions,
   recetasQueryOptions,
 } from "./RecetasQueryOptions";
 
 export const useRecetasQuery = () => {
-  return useQuery(recetasQueryOptions);
+  return useInfiniteQuery(recetasQueryOptions);
 };
 
 export const useRecetaDetallesQuery = (id: number) => {

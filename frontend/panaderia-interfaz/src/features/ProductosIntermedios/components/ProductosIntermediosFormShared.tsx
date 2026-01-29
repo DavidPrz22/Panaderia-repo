@@ -15,6 +15,7 @@ import {
 } from "../hooks/mutations/productosIntermediosMutations";
 import { PendingTubeSpinner } from "./PendingTubeSpinner";
 
+
 export default function ProductosIntermediosFormShared({
   title,
   isUpdate = false,
@@ -56,7 +57,6 @@ export default function ProductosIntermediosFormShared({
 
   const { unidadesMedida, categoriasProductoIntermedio, productoIntermedioId } =
     useProductosIntermediosContext();
-
   const {
     mutateAsync: createProductosIntermedios,
     isPending: isPendingCreateProductosIntermedios,

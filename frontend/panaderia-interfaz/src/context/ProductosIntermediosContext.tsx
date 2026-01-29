@@ -1,4 +1,4 @@
-import { createContext, useContext, useRef, useState } from "react";
+import { createContext, useContext, useRef, useState, useEffect } from "react";
 import type {
   CategoriaProductoIntermedio,
   childrenProp,
@@ -52,6 +52,12 @@ type ProductosIntermediosContextType = {
   setShowLotesDetalles: (value: boolean) => void;
   lotesProductosIntermediosDetalles: LotesProductosIntermedios | null;
   setLotesProductosIntermediosDetalles: (value: LotesProductosIntermedios | null) => void;
+  currentPage: number;
+  setCurrentPage: React.Dispatch<React.SetStateAction<number>>;
+  showRecipeModal: boolean;
+  setShowRecipeModal: (value: boolean) => void;
+  selectedRecipeId: number | null;
+  setSelectedRecipeId: (value: number | null) => void;
 };
 
 const ProductosIntermediosContext =
@@ -95,6 +101,16 @@ export const ProductosIntermediosProvider = ({ children }: childrenProp) => {
 
   const [showLotesDetalles, setShowLotesDetalles] = useState(false);
   const [lotesProductosIntermediosDetalles, setLotesProductosIntermediosDetalles] = useState<LotesProductosIntermedios | null>(null);
+  const [currentPage, setCurrentPage] = useState<number>(0);
+
+  const [showRecipeModal, setShowRecipeModal] = useState(false);
+  const [selectedRecipeId, setSelectedRecipeId] = useState<number | null>(null);
+
+  // Reset page to 0 when filters change
+  useEffect(() => {
+    setCurrentPage(0);
+  }, [productosIntermediosSearchTerm, selectedUnidadesProduccion, selectedCategoriasIntermedio, bajoStockFilter, agotadosFilter]);
+
   return (
     <ProductosIntermediosContext.Provider
       value={{
@@ -139,6 +155,12 @@ export const ProductosIntermediosProvider = ({ children }: childrenProp) => {
         setShowLotesDetalles,
         lotesProductosIntermediosDetalles,
         setLotesProductosIntermediosDetalles,
+        currentPage,
+        setCurrentPage,
+        showRecipeModal,
+        setShowRecipeModal,
+        selectedRecipeId,
+        setSelectedRecipeId,
       }}
     >
       {children}

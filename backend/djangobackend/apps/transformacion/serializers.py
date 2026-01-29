@@ -10,5 +10,5 @@ class TransformacionSerializer(serializers.ModelSerializer):
 class EjecutarTransformacionSerializer(serializers.ModelSerializer):
     class Meta:
         model = EjecutarTransformacion
-        fields = '__all__'
+        fields = ['transformacion', 'producto_origen', 'producto_destino']
 

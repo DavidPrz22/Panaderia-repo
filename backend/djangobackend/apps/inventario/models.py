@@ -458,7 +458,8 @@ class ProductosElaborados(ComponentesStockManagement, ProductosStockManagement):
     )
 
     es_intermediario = models.BooleanField(default=False, null=False)
-
+    usado_en_transformaciones = models.BooleanField(default=False, null=False)
+    
     def checkAvailability(self, cantidad):
         return self.stock_actual >= cantidad
 
@@ -480,13 +481,6 @@ class ProductosElaborados(ComponentesStockManagement, ProductosStockManagement):
 
     def __str__(self):
         return f"Producto {self.id} - {self.nombre_producto}"
-
-    def actualizar_stock(self, cantidad, tipo='resta'):   # tipo = 'resta' | 'suma'
-        if tipo == 'resta':
-            self.stock_actual -= cantidad
-        else:
-            self.stock_actual += cantidad
-        self.save()
     
     
     class Meta:
@@ -538,6 +532,8 @@ class LotesProductosElaborados(models.Model):
 
     @property
     def costo_unitario_usd(self):
+        if self.cantidad_inicial_lote == 0:
+            return Decimal('0')
         return self.coste_total_lote_usd / self.cantidad_inicial_lote
 
     def __str__(self):

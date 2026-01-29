@@ -1,75 +1,25 @@
-// import { useEffect } from "react";
-// import { DoubleSpinner } from "@/assets";
-
-import { useGetProductosIntermedios } from "../hooks/queries/queries";
 import { PITableRows } from "./PITableRows";
 import { PendingTubeSpinner } from "./PendingTubeSpinner";
-import { useProductosIntermediosContext } from "@/context/ProductosIntermediosContext";
+import type { ProductosIntermedios } from "../types/types";
 
-export const PITableBody = () => {
-  const { data: productosIntermedios, isFetching } = useGetProductosIntermedios();
-  const {
-    productosIntermediosSearchTerm,
-    selectedUnidadesProduccion,
-    selectedCategoriasIntermedio,
-    agotadosFilter,
-    bajoStockFilter,
-    setSelectedUnidadesProduccion,
-    setSelectedCategoriasIntermedio,
-    setProductosIntermediosSearchTerm,
-    setBajoStockFilter,
-    setAgotadosFilter,
-  } = useProductosIntermediosContext();
+interface PITableBodyProps {
+  data: ProductosIntermedios[];
+  isFetching: boolean;
+  anyFilterActive: boolean;
+  clearFilters: () => void;
+  isTrulyEmpty: boolean;
+}
 
-  let displayData = productosIntermedios || [];
-
-  if (productosIntermediosSearchTerm) {
-    const term = productosIntermediosSearchTerm.toLowerCase();
-    displayData = displayData.filter(
-      (p) =>
-        p.nombre_producto.toLowerCase().includes(term) ||
-        p.SKU.toLowerCase().includes(term) ||
-        (p.categoria_nombre || "").toLowerCase().includes(term) ||
-        (p.unidad_produccion_producto || "").toLowerCase().includes(term),
-    );
-  }
-  if (selectedUnidadesProduccion.length > 0) {
-    displayData = displayData.filter((p) =>
-      selectedUnidadesProduccion.includes(p.unidad_produccion_producto),
-    );
-  }
-  if (selectedCategoriasIntermedio.length > 0) {
-    displayData = displayData.filter((p) =>
-      selectedCategoriasIntermedio.includes(p.categoria_nombre),
-    );
-  }
-
-  if (agotadosFilter && bajoStockFilter) {
-    displayData = displayData.filter((p) => Number(p.stock_actual) === 0 || Number(p.stock_actual) < Number(p.punto_reorden));
-  }
-  else if (agotadosFilter) {
-    displayData = displayData.filter((p) => Number(p.stock_actual) === 0);
-  } else if (bajoStockFilter) {
-    displayData = displayData.filter((p) => Number(p.stock_actual) < Number(p.punto_reorden));
-  }
-
-  const anyFilterActive =
-    productosIntermediosSearchTerm.length > 0 ||
-    selectedUnidadesProduccion.length > 0 ||
-    selectedCategoriasIntermedio.length > 0 ||
-    agotadosFilter ||
-    bajoStockFilter;
-
-  const clearFilters = () => {
-    setProductosIntermediosSearchTerm("");
-    setSelectedUnidadesProduccion([]);
-    setSelectedCategoriasIntermedio([]);
-    setBajoStockFilter(false);
-    setAgotadosFilter(false);
-  };
+export const PITableBody = ({
+  data,
+  isFetching,
+  anyFilterActive,
+  clearFilters,
+  isTrulyEmpty,
+}: PITableBodyProps) => {
 
   const EmptyState = () => {
-    if (!productosIntermedios || productosIntermedios.length === 0) {
+    if (isTrulyEmpty) {
       return (
         <div className="flex flex-col gap-2 justify-center h-full items-center text-center text-gray-600 py-16">
           <p className="font-semibold text-lg">No hay datos registrados</p>
@@ -102,13 +52,14 @@ export const PITableBody = () => {
       {isFetching ? (
         <PendingTubeSpinner
           size={28}
-          extraClass="absolute bg-white opacity-50 w-full h-full"
+          extraClass="absolute bg-white opacity-50 w-full h-[80%]"
         />
-      ) : displayData.length > 0 ? (
-        <PITableRows data={displayData} />
+      ) : data.length > 0 ? (
+        <PITableRows data={data} />
       ) : (
         <EmptyState />
       )}
     </>
   );
 };
+

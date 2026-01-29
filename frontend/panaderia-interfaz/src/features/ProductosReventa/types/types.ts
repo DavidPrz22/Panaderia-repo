@@ -19,8 +19,10 @@ export type ProductosReventaFormSharedProps = {
   onSubmitSuccess: () => void;
 };
 
+export type InputType = "text" | "number" | "textarea";
+
 export type PRFormInputContainerProps = {
-  inputType: string;
+  inputType: InputType;
   title: string;
   name: Path<TProductosReventaSchema>;
   register: UseFormRegister<TProductosReventaSchema>;
@@ -31,7 +33,7 @@ export type PRFormInputContainerProps = {
 export type PRFormInputProps = {
   register: UseFormRegister<TProductosReventaSchema>;
   name: Path<TProductosReventaSchema>;
-  typeInput: string;
+  typeInput: InputType;
   placeholder?: string;
 };
 
@@ -136,3 +138,18 @@ export type LotesProductosReventa = {
   proveedor: { id: number; nombre_proveedor: string } | null;
   estado: string;
 };
+
+export type ProductosReventaPagination = {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: ProductosReventa[];
+};
+
+export type LoteProductoReventaPagination = {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: LotesProductosReventa[];
+};
+

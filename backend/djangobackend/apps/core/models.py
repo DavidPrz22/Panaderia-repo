@@ -4,6 +4,16 @@ from decimal import Decimal
 
 # Create your models here.
 
+# Unidades de Medida Registradas (Referencia):
+# ID | Nombre Completo | Abreviatura | Tipo
+# -------------------------------------------
+# 1  | Kilogramo       | kg          | peso
+# 2  | Gramo           | g           | peso
+# 3  | Litro           | L           | volumen
+# 4  | Miligramo       | mg          | peso
+# 5  | Mililitro       | ml          | volumen
+# 6  | Unidad          | ud          | unidad
+
 class UnidadesDeMedida(models.Model):
     nombre_completo = models.CharField(max_length=50, null=False, blank=False, unique=True)
     abreviatura = models.CharField(max_length=10, null=False, blank=False)
@@ -184,3 +194,12 @@ class Notificaciones(models.Model):
     fecha_notificacion = models.DateTimeField(auto_now_add=True)
     leida = models.BooleanField(default=False)
     prioridad = models.CharField(max_length=50, choices=TiposPrioridades.choices, null=True, blank=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['tipo_notificacion', 'tipo_producto', 'producto_id', 'prioridad'],
+                condition=models.Q(leida=False),
+                name='unique_unread_notification'
+            )
+        ]

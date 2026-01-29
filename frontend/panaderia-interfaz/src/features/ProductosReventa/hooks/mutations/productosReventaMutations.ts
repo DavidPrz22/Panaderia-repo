@@ -116,7 +116,10 @@ export const useCreateUpdateLoteProductosReventaMutation = (
   });
 };
 
-export const useDeleteLoteProductosReventaMutation = (productoReventaId: number | undefined) => {
+export const useDeleteLoteProductosReventaMutation = (
+  productoReventaId: number | undefined,
+  handleClose?: () => void,
+) => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (id: number) => deleteLoteProductosReventa(id),
@@ -132,6 +135,7 @@ export const useDeleteLoteProductosReventaMutation = (productoReventaId: number 
       await queryClient.invalidateQueries({
         queryKey: productosReventaQueryOptions.queryKey,
       });
+      if (handleClose) handleClose();
     },
     onError: (error) => {
       console.error("Error deleting lote productos reventa:", error);

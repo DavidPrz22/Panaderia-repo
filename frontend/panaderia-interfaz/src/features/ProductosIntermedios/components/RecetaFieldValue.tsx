@@ -12,17 +12,30 @@ export const RecetaFieldValue = ({
 }) => {
   const { user } = useAuth();
   const userCanEdit = userHasPermission(user!, 'productos_elaborados', 'edit');
-  const { setDeleteRecetaRelacionada } = useProductosIntermediosContext();
+  const { setDeleteRecetaRelacionada, setShowRecipeModal, setSelectedRecipeId } = useProductosIntermediosContext();
 
-  const HandleRemoveReceta = () => {
+  const HandleRemoveReceta = (e: React.MouseEvent) => {
+    e.stopPropagation();
     setDeleteRecetaRelacionada(true);
+  };
+
+  const handleRecipeClick = () => {
+    if (recetaRelacionada) {
+      setSelectedRecipeId(recetaRelacionada.id);
+      setShowRecipeModal(true);
+    }
   };
 
   return (
     <DetailFieldValue extraClass="min-h-[25px] flex items-center">
       {recetaRelacionada !== false ? (
         <div className="flex items-center gap-2 w-full">
-          <span>{recetaRelacionada?.nombre}</span>
+          <span
+            onClick={handleRecipeClick}
+            className="cursor-pointer hover:underline text-blue-600 font-medium transition-colors"
+          >
+            {recetaRelacionada?.nombre}
+          </span>
           {userCanEdit && (
             <button
               onClick={HandleRemoveReceta}

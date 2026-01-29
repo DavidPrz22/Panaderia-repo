@@ -2,7 +2,7 @@ import { BorrarIcon } from "@/assets/DashboardAssets";
 import { DetailFieldValue } from "@/components/DetailFieldValue";
 import type { receta_relacionada } from "../types/types";
 import { useProductosFinalesContext } from "@/context/ProductosFinalesContext";
-import {userHasPermission} from "@/features/Authentication/lib/utils";
+import { userHasPermission } from "@/features/Authentication/lib/utils";
 import { useAuth } from "@/context/AuthContext";
 
 export const RecetaFieldValue = ({
@@ -12,7 +12,7 @@ export const RecetaFieldValue = ({
 }) => {
   const { user } = useAuth();
   const userCanEdit = userHasPermission(user!, 'productos_elaborados', 'edit');
-  const { setDeleteRecetaRelacionada } = useProductosFinalesContext();
+  const { setDeleteRecetaRelacionada, setShowRecipeModal, setSelectedRecipeId } = useProductosFinalesContext();
 
   const HandleRemoveReceta = () => {
     setDeleteRecetaRelacionada(true);
@@ -22,7 +22,17 @@ export const RecetaFieldValue = ({
     <DetailFieldValue extraClass="min-h-[25px] flex items-center">
       {recetaRelacionada !== false ? (
         <div className="flex items-center gap-2 w-full">
-          <span>{recetaRelacionada?.nombre}</span>
+          <span
+            className="cursor-pointer hover:underline text-blue-600 font-medium transition-colors"
+            onClick={() => {
+              if (recetaRelacionada && 'id' in recetaRelacionada) {
+                setSelectedRecipeId(recetaRelacionada.id);
+                setShowRecipeModal(true);
+              }
+            }}
+          >
+            {recetaRelacionada?.nombre}
+          </span>
           {userCanEdit && (
             <button
               onClick={HandleRemoveReceta}

@@ -97,6 +97,9 @@ export type recetaItem = {
   fecha_modificacion: string | null;
   notas: string | null;
   esCompuesta: boolean;
+  rendimiento?: number | null;
+  producto_elaborado?: string;
+  unidad_medida_producto?: string;
 };
 
 export type recetaDetallesItemComponente = {
@@ -128,6 +131,13 @@ export type recetaListItemProps = {
   nombre: string;
   id: number;
   last?: boolean;
+};
+
+export type RecetasPagination = {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: recetaItem[];
 };
 
 export type fechaSeleccionadaFiltro = {

@@ -21,23 +21,29 @@ export default function PIFiltersPanel() {
   } = useProductosIntermediosContext();
   const { data: productosIntermedios } = useGetProductosIntermedios();
 
+  // Extract all results from all pages for filters
+  const allProductos = useMemo(() => {
+    if (!productosIntermedios?.pages) return [];
+    return productosIntermedios.pages.flatMap(page => page.results || []);
+  }, [productosIntermedios]);
+
   const opcionesUnidades = useMemo(() => {
-    const fromProductos = (productosIntermedios || [])
+    const fromProductos = allProductos
       .map((p: ProductoIntermedioItem) => p.unidad_produccion_producto)
       .filter(Boolean);
     const fromContext = (unidadesMedida || []).map((u) => u.nombre_completo);
     return Array.from(new Set([...fromProductos, ...fromContext])).sort();
-  }, [productosIntermedios, unidadesMedida]);
+  }, [allProductos, unidadesMedida]);
 
   const opcionesCategorias = useMemo(() => {
-    const fromProductos = (productosIntermedios || [])
+    const fromProductos = allProductos
       .map((p: ProductoIntermedioItem) => p.categoria_nombre)
       .filter(Boolean);
     const fromContext = (categoriasProductoIntermedio || []).map(
       (c) => c.nombre_categoria,
     );
     return Array.from(new Set([...fromProductos, ...fromContext])).sort();
-  }, [productosIntermedios, categoriasProductoIntermedio]);
+  }, [allProductos, categoriasProductoIntermedio]);
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {

@@ -1,6 +1,8 @@
 import { WarningIcon } from "@/assets/DashboardAssets";
 import { useProductionContext } from "@/context/ProductionContext";
+
 export const ProductionWarning = () => {
+
   const { insufficientStock } = useProductionContext();
 
   return insufficientStock && insufficientStock.length > 0 ? (
@@ -28,3 +30,4 @@ export const ProductionWarning = () => {
     <></>
   );
 };
+

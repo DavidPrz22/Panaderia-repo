@@ -37,14 +37,14 @@ export default function SearchInput() {
     if (filteredApplied) {
       filteredMateriaPrimaByName = listaMateriaPrimaFiltered.filter(
         (materiaprima) =>
-          materiaprima.name
+          materiaprima.nombre
             .toLowerCase()
             .includes(searchValue?.toLowerCase() || ""),
       );
     } else if (listaMateriaPrimaCached.length > 0) {
       filteredMateriaPrimaByName = listaMateriaPrimaCached.filter(
         (materiaprima) =>
-          materiaprima.name
+          materiaprima.nombre
             .toLowerCase()
             .includes(searchValue?.toLowerCase() || ""),
       );

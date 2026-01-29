@@ -1,74 +1,25 @@
-import { useGetProductosReventa } from "../hooks/queries/queries";
 import { PRTableRows } from "./PRTableRows";
 import { PendingTubeSpinner } from "./PendingTubeSpinner";
-import { useProductosReventaContext } from "@/context/ProductosReventaContext";
+import type { ProductosReventa } from "../types/types";
 
-export const PRTableBody = () => {
-  const { data: productosReventa, isFetching } = useGetProductosReventa();
-  const {
-    productosReventaSearchTerm,
-    selectedCategoriasReventa,
-    selectedUnidadesInventario,
-    agotadosFilter,
-    bajoStockFilter,
-    setProductosReventaSearchTerm,
-    setSelectedCategoriasReventa,
-    setSelectedUnidadesInventario,
-    setBajoStockFilter,
-    setAgotadosFilter,
-  } = useProductosReventaContext();
+interface PRTableBodyProps {
+  data: ProductosReventa[];
+  isFetching: boolean;
+  anyFilterActive: boolean;
+  clearFilters: () => void;
+  isTrulyEmpty: boolean;
+}
 
-  let displayData = productosReventa || [];
-
-  if (productosReventaSearchTerm) {
-    const term = productosReventaSearchTerm.toLowerCase();
-    displayData = displayData.filter(
-      (p) =>
-        p.nombre_producto.toLowerCase().includes(term) ||
-        (p.SKU || "").toLowerCase().includes(term) ||
-        (p.categoria_nombre || "").toLowerCase().includes(term) ||
-        (p.unidad_base_inventario_nombre || "").toLowerCase().includes(term),
-    );
-  }
-
-  if (selectedCategoriasReventa.length > 0) {
-    displayData = displayData.filter((p) =>
-      selectedCategoriasReventa.includes(p.categoria_nombre),
-    );
-  }
-
-  if (selectedUnidadesInventario.length > 0) {
-    displayData = displayData.filter((p) =>
-      p.unidad_base_inventario_nombre && selectedUnidadesInventario.includes(p.unidad_base_inventario_nombre)
-    );
-  }
-
-  if (agotadosFilter && bajoStockFilter) {
-    displayData = displayData.filter((p) => Number(p.stock_actual) === 0 || Number(p.stock_actual) < Number(p.punto_reorden));
-  }
-  else if (agotadosFilter) {
-    displayData = displayData.filter((p) => Number(p.stock_actual) === 0);
-  } else if (bajoStockFilter) {
-    displayData = displayData.filter((p) => Number(p.stock_actual) < Number(p.punto_reorden));
-  }
-
-  const anyFilterActive =
-    productosReventaSearchTerm.length > 0 ||
-    selectedCategoriasReventa.length > 0 ||
-    selectedUnidadesInventario.length > 0 ||
-    agotadosFilter ||
-    bajoStockFilter;
-
-  const clearFilters = () => {
-    setProductosReventaSearchTerm("");
-    setSelectedCategoriasReventa([]);
-    setSelectedUnidadesInventario([]);
-    setBajoStockFilter(false);
-    setAgotadosFilter(false);
-  };
+export const PRTableBody = ({
+  data,
+  isFetching,
+  anyFilterActive,
+  clearFilters,
+  isTrulyEmpty,
+}: PRTableBodyProps) => {
 
   const EmptyState = () => {
-    if (!productosReventa || productosReventa.length === 0) {
+    if (isTrulyEmpty) {
       return (
         <div className="flex flex-col gap-2 justify-center h-full items-center text-center text-gray-600 py-16">
           <p className="font-semibold text-lg">No hay datos registrados</p>
@@ -101,10 +52,10 @@ export const PRTableBody = () => {
       {isFetching ? (
         <PendingTubeSpinner
           size={28}
-          extraClass="absolute bg-white opacity-50 w-full h-full"
+          extraClass="absolute bg-white opacity-50 w-full h-[80%]"
         />
-      ) : displayData.length > 0 ? (
-        <PRTableRows data={displayData} />
+      ) : data.length > 0 ? (
+        <PRTableRows data={data} />
       ) : (
         <EmptyState />
       )}

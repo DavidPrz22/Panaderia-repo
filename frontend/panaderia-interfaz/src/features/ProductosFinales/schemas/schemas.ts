@@ -22,8 +22,8 @@ export const productoFinalSchema = z.object({
     .number()
     .optional()
     .nullable()
-    .refine(val => !val || val < 0, {
-      message: 'se require una receta valida'
+    .refine(val => !val || val > 0, {
+      message: 'Se requiere una receta valida'
     }),
   precio_venta_usd: z.coerce
     .number()
@@ -36,6 +36,7 @@ export const productoFinalSchema = z.object({
     .number()
     .min(1, "La unidad de producción es requerida"),
   vendible_por_medida_real: z.boolean(),
+  usado_en_transformaciones: z.boolean(),
 });
 
 export type TProductoFinalSchema = z.infer<typeof productoFinalSchema>;

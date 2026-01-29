@@ -14,14 +14,16 @@ from apps.core.services.services import NotificationService
 from decimal import Decimal
 from django.utils import timezone
 from djangobackend.permissions import IsStaffLevelOnly
+from djangobackend.pagination import StandardResultsSetPagination
 import logging
 logger = logging.getLogger(__name__)
 
 
 class RecetasViewSet(viewsets.ModelViewSet):
-    queryset = Recetas.objects.all()
+    queryset = Recetas.objects.all().order_by('id')
     serializer_class = RecetasSerializer
     permission_classes = [IsStaffLevelOnly]
+    pagination_class = StandardResultsSetPagination
 
     def create(self, request, *args, **kwargs):
     # Step 1: Manual validation of frontend data
@@ -115,7 +117,6 @@ class RecetasViewSet(viewsets.ModelViewSet):
             receta_id = kwargs.get('pk')
             receta_componentes = RecetasDetalles.objects.filter(receta=receta_id)
             receta_instance = Recetas.objects.get(id=receta_id)
-            
             # Serialize the main recipe instance
             receta_serializer = self.get_serializer(receta_instance)
 
@@ -135,7 +136,7 @@ class RecetasViewSet(viewsets.ModelViewSet):
                         'nombre': receta_componente.componente_producto_intermedio.nombre_producto,
                         'tipo': 'Producto Intermedio',
                         'cantidad': receta_componente.cantidad,
-                        'unidad_medida': receta_componente.componente_producto_intermedio.unidad_medida_nominal.abreviatura
+                        'unidad_medida': receta_componente.componente_producto_intermedio.unidad_produccion.abreviatura
                         })
 
             relaciones_recetas = RelacionesRecetas.objects.filter(receta_principal=receta_id)

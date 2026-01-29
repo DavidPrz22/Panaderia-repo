@@ -5,6 +5,7 @@ import {
   getProductosIntermediosDetalles,
   getUnidadesMedida,
 } from "../../api/api";
+import type { LoteProductoIntermedioPagination, ProductosIntermediosPagination } from "../../types/types";
 
 export const unidadesMedidaQueryOptions = {
   queryKey: ["unidades-medida"],
@@ -20,8 +21,12 @@ export const categoriasProductoIntermedioQueryOptions = {
 
 export const productosIntermediosQueryOptions = {
   queryKey: ["productos-intermedios"],
-  queryFn: getProductosIntermedios,
+  queryFn: ({ pageParam }: { pageParam?: string | null }) =>
+    getProductosIntermedios({ pageParam }),
   staleTime: Infinity,
+  initialPageParam: null,
+  getNextPageParam: (lastPage: ProductosIntermediosPagination) => lastPage.next,
+  getPreviousPageParam: (firstPage: ProductosIntermediosPagination) => firstPage.previous,
 };
 
 export const productosIntermediosDetallesQueryOptions = (id: number) => ({
@@ -30,8 +35,12 @@ export const productosIntermediosDetallesQueryOptions = (id: number) => ({
   staleTime: Infinity,
 });
 
-export const lotesProductosIntermediosQueryOptions = (id: number) => ({
-  queryKey: ["lotes-productos-intermedios", id],
-  queryFn: () => getLotesProductosIntermedios(id),
+export const lotesProductosIntermediosQueryOptions = (producto_intermedio_id?: number) => ({
+  queryKey: ["lotes-productos-intermedios-paginated", producto_intermedio_id],
+  queryFn: ({ pageParam }: { pageParam?: string | null }) =>
+    getLotesProductosIntermedios({ pageParam, producto_intermedio_id }),
   staleTime: Infinity,
+  initialPageParam: null,
+  getNextPageParam: (lastPage: LoteProductoIntermedioPagination) => lastPage.next,
+  getPreviousPageParam: (firstPage: LoteProductoIntermedioPagination) => firstPage.previous,
 });

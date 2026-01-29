@@ -22,9 +22,9 @@ export type ProductosFinalesList = ProductoFinal[];
 
 export type receta_relacionada =
   | {
-      id: number;
-      nombre: string;
-    }
+    id: number;
+    nombre: string;
+  }
   | false;
 
 export type ProductoFinalDetalles = {
@@ -43,10 +43,13 @@ export type ProductoFinalDetalles = {
   fecha_modificacion_registro: string;
   receta_relacionada: receta_relacionada | null;
   vendible_por_medida_real: boolean;
+  usado_en_transformaciones: boolean;
 };
 
+export type InputType = "text" | "number" | "textarea";
+
 export type PFFormInputContainerProps = {
-  inputType: string;
+  inputType: InputType;
   title: string;
   name: Path<TProductoFinalSchema>;
   register: UseFormRegister<TProductoFinalSchema>;
@@ -95,7 +98,7 @@ export type recetasSearchItem = {
 };
 
 export type PFFormInputProps = {
-  typeInput: string;
+  typeInput: InputType;
   name: Path<TProductoFinalSchema>;
   placeholder?: string;
   register: UseFormRegister<TProductoFinalSchema>;
@@ -121,4 +124,18 @@ export type LotesProductosFinales = {
   peso_promedio_por_unidad: number | null;
   volumen_promedio_por_unidad: number | null;
   costo_unitario_usd: number;
+};
+
+export type ProductosFinalesPagination = {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: ProductoFinal[];
+};
+
+export type LoteProductoFinalPagination = {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: LotesProductosFinales[];
 };

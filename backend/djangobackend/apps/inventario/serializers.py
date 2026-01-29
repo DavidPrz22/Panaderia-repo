@@ -344,6 +344,7 @@ class ProductosFinalesSerializer(serializers.ModelSerializer):
             'unidad_produccion',
             'tipo_medida_fisica',
             'descripcion',
+            'usado_en_transformaciones',
         ]
         # Rename read-only fields in the output to match the frontend type
         extra_kwargs = {
@@ -424,6 +425,7 @@ class ProductosFinalesDetallesSerializer(serializers.ModelSerializer):
             'fecha_modificacion_registro',
             'descripcion',
             'receta_relacionada',
+            'usado_en_transformaciones',
         ]
 
     def get_categoria_producto(self, obj):
@@ -588,16 +590,18 @@ class ProductosElaboradosSerializer(serializers.ModelSerializer):
 
 class ProductosFinalesSearchSerializer(serializers.ModelSerializer):
     unidad_medida = serializers.CharField(source='unidad_produccion.abreviatura', read_only=True)
+    categoria = serializers.CharField(source='categoria.nombre_categoria', read_only=True)
     class Meta:
         model = ProductosFinales
-        fields = ['id', 'nombre_producto', 'unidad_medida']
+        fields = ['id', 'nombre_producto', 'unidad_medida', 'categoria']
 
 
 class ProductosIntermediosSearchSerializer(serializers.ModelSerializer):
     unidad_medida = serializers.CharField(source='unidad_produccion.abreviatura', read_only=True)
+    categoria = serializers.CharField(source='categoria.nombre_categoria', read_only=True)
     class Meta:
         model = ProductosIntermedios
-        fields = ['id', 'nombre_producto', 'unidad_medida']
+        fields = ['id', 'nombre_producto', 'unidad_medida', 'categoria']
 
 
 class ProductosReventaSerializer(serializers.ModelSerializer):

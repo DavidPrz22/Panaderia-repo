@@ -42,7 +42,6 @@ export const LotesMateriaPrimaFormShared = ({
 
   const { mutate: createUpdateLoteMateriaPrima, isPending: isLoading } =
     useCreateUpdateLoteMateriaPrimaMutation(
-      materiaprimaId!,
       onSubmitSuccess,
       reset,
       isUpdate,
@@ -137,7 +136,7 @@ export const LotesMateriaPrimaFormShared = ({
               <Button type="cancel" onClick={onClose}>
                 Cerrar
               </Button>
-              <Button type="submit" onClick={() => {}}>
+              <Button type="submit" onClick={() => { }}>
                 Guardar
               </Button>
             </div>

@@ -41,7 +41,7 @@ export const LotesTable = ({
   };
 
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-col">
       <LotesTableHeader
         headers={[
           "Fecha de recepción",
@@ -51,6 +51,7 @@ export const LotesTable = ({
           "Costo unitario USD",
           "Proveedor",
           "Estado",
+          "Acciones",
         ]}
       />
       <LotesTableRows data={formatedLotes} onClick={handleClick} />

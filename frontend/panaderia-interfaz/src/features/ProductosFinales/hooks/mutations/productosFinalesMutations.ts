@@ -6,6 +6,7 @@ import {
   getRecetasSearch,
   removeRecetaRelacionada,
   changeEstadoLoteProductosFinales,
+  deleteLoteProductoElaborado,
 } from "../../api/api";
 import type { TProductoFinalSchema } from "../../schemas/schemas";
 
@@ -24,7 +25,7 @@ export const useCreateProductoFinal = () => {
     mutationFn: (data: TProductoFinalSchema) => registerProductoFinal(data),
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: productosFinalesQueryOptions().queryKey,
+        queryKey: productosFinalesQueryOptions.queryKey,
       });
       queryClient.invalidateQueries({
         queryKey: finalesSearchOptions.queryKey,
@@ -45,7 +46,7 @@ export const useUpdateProductoFinal = () => {
     }) => updateProductoFinal(id, producto),
     onSuccess: (_, { id }) => {
       queryClient.invalidateQueries({
-        queryKey: productosFinalesQueryOptions().queryKey,
+        queryKey: productosFinalesQueryOptions.queryKey,
       });
       queryClient.invalidateQueries({
         queryKey: productoFinalDetallesQueryOptions(id).queryKey,
@@ -63,7 +64,7 @@ export const useDeleteProductoFinal = () => {
     mutationFn: (id: number) => deleteProductoFinal(id),
     onSuccess: (id) => {
       queryClient.invalidateQueries({
-        queryKey: productosFinalesQueryOptions().queryKey,
+        queryKey: productosFinalesQueryOptions.queryKey,
       });
       queryClient.removeQueries({
         queryKey: productoFinalDetallesQueryOptions(id).queryKey,
@@ -103,8 +104,35 @@ export const useChangeEstadoLoteProductosFinales = () => {
         queryKey: lotesProductosFinalesQueryOptions(productoId!).queryKey,
       });
       await queryClient.invalidateQueries({
-        queryKey: productosFinalesQueryOptions().queryKey,
+        queryKey: productosFinalesQueryOptions.queryKey,
       });
+    },
+  });
+};
+
+export const useDeleteLoteProductoElaboradoMutation = (
+  productoId: number | undefined,
+  handleClose: () => void,
+) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (id: number) => {
+      await deleteLoteProductoElaborado(id);
+    },
+    onSuccess: async () => {
+      if (productoId) {
+        await queryClient.invalidateQueries({
+          queryKey: lotesProductosFinalesQueryOptions(productoId).queryKey,
+        });
+        await queryClient.invalidateQueries({
+          queryKey: productoFinalDetallesQueryOptions(productoId).queryKey,
+        });
+        await queryClient.invalidateQueries({
+          queryKey: productosFinalesQueryOptions.queryKey
+        });
+        handleClose();
+      }
     },
   });
 };

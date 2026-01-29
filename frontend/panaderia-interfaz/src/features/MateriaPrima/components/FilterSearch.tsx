@@ -30,7 +30,7 @@ export default function FilterSearch() {
           descripcion="Selecciona un archivo CSV para importar los datos de las materias primas"
           uploadFunction={mutateAsync}
           isPending={isPending}
-          csvContent={"nombre,sku,precio_compra_usd,nombre_empaque_estandar,cantidad_empaque_estandar,unidad_medida_empaque_estandar,punto_reorden,unidad_medida_base,categoria,descripcion\n"}
+          csvContent={"nombre,SKU,precio_compra_usd,nombre_empaque_estandar,cantidad_empaque_estandar,unidad_medida_empaque_estandar_id,punto_reorden,unidad_medida_base_id,categoria_id,descripcion\n"}
         />
         }
         <FilterButton />

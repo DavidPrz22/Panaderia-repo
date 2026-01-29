@@ -3,7 +3,7 @@ import type {
   recetaRelacionada,
   recetasSearchList,
 } from "@/features/Recetas/types/types";
-import { createContext, useContext, useState, useRef } from "react";
+import { createContext, useContext, useState, useRef, useEffect } from "react";
 import type { componenteListadosReceta, fechaSeleccionadaFiltro } from "@/features/Recetas/types/types";
 
 type RecetasContextType = {
@@ -49,6 +49,8 @@ type RecetasContextType = {
   setFechaSeleccionadaFiltro: (fechaSeleccionadaFiltro: fechaSeleccionadaFiltro | undefined) => void;
   searchTermFilter: string | null;
   setSeachTermFilter: (searchTermFilter: string | null) => void;
+  currentPage: number;
+  setCurrentPage: React.Dispatch<React.SetStateAction<number>>;
 };
 
 const RecetasContext = createContext<RecetasContextType | null>(null);
@@ -109,6 +111,12 @@ export const RecetasProvider = ({
   const [fechaSeleccionadaFiltro, setFechaSeleccionadaFiltro] = useState<fechaSeleccionadaFiltro | undefined>(undefined);
 
   const [searchTermFilter, setSeachTermFilter] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState<number>(0);
+
+  // Reset page to 0 when filters change
+  useEffect(() => {
+    setCurrentPage(0);
+  }, [searchTermFilter, recetaUnicaFiltro, recetaCompuestaFiltro, fechaSeleccionadaFiltro]);
 
   return (
     <RecetasContext.Provider
@@ -152,7 +160,9 @@ export const RecetasProvider = ({
         fechaSeleccionadaFiltro,
         setFechaSeleccionadaFiltro,
         searchTermFilter,
-        setSeachTermFilter
+        setSeachTermFilter,
+        currentPage,
+        setCurrentPage
       }}
     >
       {children}

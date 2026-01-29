@@ -87,13 +87,15 @@ export default function FilterButton() {
       if (MPFilteredInputSearchApplied) {
         listaFiltrada = listaMateriaPrimaFilteredInputSearch.filter(
           (materiaPrima) =>
-            materiaPrima.category === categoria.nombre_categoria,
+            materiaPrima.categoria_detail.nombre_categoria ===
+            categoria.nombre_categoria,
         );
         setInputfilterDoubleApplied(true);
       } else {
         listaFiltrada = listaMateriaPrimaCached.filter(
           (materiaPrima) =>
-            materiaPrima.category === categoria.nombre_categoria,
+            materiaPrima.categoria_detail.nombre_categoria ===
+            categoria.nombre_categoria,
         );
       }
 
@@ -111,12 +113,16 @@ export default function FilterButton() {
     if (unidadMedida) {
       if (MPFilteredInputSearchApplied) {
         listaFiltrada = listaMateriaPrimaFilteredInputSearch.filter(
-          (materiaPrima) => materiaPrima.unit === unidadMedida.nombre_completo,
+          (materiaPrima) =>
+            materiaPrima.unidad_medida_base_detail.nombre_completo ===
+            unidadMedida.nombre_completo,
         );
         setInputfilterDoubleApplied(true);
       } else {
         listaFiltrada = listaMateriaPrimaCached.filter(
-          (materiaPrima) => materiaPrima.unit === unidadMedida.nombre_completo,
+          (materiaPrima) =>
+            materiaPrima.unidad_medida_base_detail.nombre_completo ===
+            unidadMedida.nombre_completo,
         );
       }
 
@@ -189,14 +195,14 @@ export default function FilterButton() {
     if (MPFilteredInputSearchApplied) {
       listaFiltrada = listaMateriaPrimaFilteredInputSearch.filter(
         (materiaprima) => {
-          const fechaCreacion = new Date(materiaprima.creationDate);
-          return fechaFiltrada(fechaCreacion);
+          const fechaCreacion = new Date(materiaprima.fecha_creacion_registro);
+          return fechaFiltrada(fechaCreacion) ?? true;
         },
       );
     } else {
       listaFiltrada = listaMateriaPrimaCached.filter((materiaprima) => {
-        const fechaCreacion = new Date(materiaprima.creationDate);
-        return fechaFiltrada(fechaCreacion);
+        const fechaCreacion = new Date(materiaprima.fecha_creacion_registro);
+        return fechaFiltrada(fechaCreacion) ?? true;
       });
     }
 

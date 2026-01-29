@@ -8,7 +8,7 @@ export type childrenProp = {
 
 export type ProductionType = "producto-final" | "producto-intermedio";
 
-export type searchItem = { id: number; nombre_producto: string; unidad_medida: string };
+export type searchItem = { id: number; nombre_producto: string; unidad_medida: string, categoria: string };
 
 export type RecetaComponenteProduccion = {
   id: number;
@@ -32,6 +32,7 @@ export type subrecetasLista = subreceta[];
 export type componentesRecetaProducto = {
   componentes: ComponentesLista;
   subrecetas: subrecetasLista;
+  rendimiento?: number;
   // Optional flags from backend to determine how to scale production quantities
   // If "es_por_unidad" is true OR "medida_produccion" equals "Unidad" (case-insensitive),
   // the UI will scale component quantities by the production amount. Otherwise, it won't.
@@ -66,7 +67,7 @@ export type newComponentItem = {
   stock: number;
   unidad_medida: string;
   invalid?: boolean;
-}; 
+};
 
 export type componentesSearchList = {
   [categoria: string]: componentesSearchItem[];
@@ -76,18 +77,18 @@ export type componentesSearchList = {
 export type ProductionComponentDetail = {
   materia_prima_consumida: string | null;
   producto_intermedio_consumido: string | null;
-  cantidad_consumida: string; 
+  cantidad_consumida: string;
   unidad_medida: string;
 };
 
 export type ProductionDetails = {
   id: number;
   producto_produccion: string;
-  cantidad_producida: string; 
+  cantidad_producida: string;
   unidad_medida_produccion: string;
-  fecha_produccion: string; 
-  fecha_expiracion: string; 
-  costo_total_componentes_usd: string; 
+  fecha_produccion: string;
+  fecha_expiracion: string;
+  costo_total_componentes_usd: string;
   componentes_produccion: ProductionComponentDetail[];
-  usuario_produccion: string; 
+  usuario_produccion: string;
 };

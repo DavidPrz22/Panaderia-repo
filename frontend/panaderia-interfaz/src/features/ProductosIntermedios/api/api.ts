@@ -7,6 +7,8 @@ import type {
   recetasSearchItem,
   LotesProductosIntermedios,
   UnidadesDeMedida,
+  LoteProductoIntermedioPagination,
+  ProductosIntermediosPagination,
 } from "../types/types";
 
 export const createProductoIntermedio = async (
@@ -69,16 +71,18 @@ export const createProductosIntermedios = async (
   }
 };
 
-export const getProductosIntermedios = async (): Promise<
-  ProductosIntermedios[]
-> => {
+export const getProductosIntermedios = async ({
+  pageParam
+}: {
+  pageParam?: string | null
+} = {}): Promise<ProductosIntermediosPagination> => {
   try {
-    const response = await apiClient.get("/api/productosintermedios/");
-    console.log(response.data);
+    const url = pageParam || "/api/productosintermedios/";
+    const response = await apiClient.get(url);
     return response.data;
   } catch (error) {
     console.error(error);
-    return [];
+    throw error;
   }
 };
 
@@ -134,13 +138,24 @@ export const removeRecetaRelacionada = async (id: number) => {
   }
 };
 
-export const getLotesProductosIntermedios = async (id: number): Promise<LotesProductosIntermedios[]> => {
+export const getLotesProductosIntermedios = async ({
+  pageParam,
+  producto_intermedio_id,
+}: {
+  pageParam?: string | null;
+  producto_intermedio_id?: number;
+} = {}): Promise<LoteProductoIntermedioPagination> => {
   try {
-    const response = await apiClient.get(`/api/productoselaborados/${id}/lotes/`);
+    let url = pageParam || "/api/lotes-productos-elaborados/";
+    if (!pageParam && producto_intermedio_id) {
+      url += `?producto_elaborado=${producto_intermedio_id}`;
+    }
+    const response = await apiClient.get(url);
+    console.log(response.data);
     return response.data;
   } catch (error) {
     console.error(error);
-    return [];
+    throw error;
   }
 };
 
@@ -151,5 +166,15 @@ export const changeEstadoLoteProductosIntermedios = async (id: number) => {
   } catch (error) {
     console.error(error);
     return null;
+  }
+};
+
+export const deleteLoteProductoElaborado = async (id: number) => {
+  try {
+    const response = await apiClient.delete(`/api/lotes-productos-elaborados/${id}/`);
+    return response.data;
+  } catch (error) {
+    console.error("Error deleting lote producto elaborado:", error);
+    throw error;
   }
 };

@@ -1,192 +1,159 @@
-import { useTransformacionContext } from "@/context/TransformacionContext";
-import { updateTransformacion } from "../api/api";
-import { CerrarIcon } from "@/assets/DashboardAssets";
+import { useEffect } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogFooter,
+} from "@/components/ui/dialog";
+import { useUpdateTransformacionMutation } from "../hooks/mutations/mutations";
+import { TransformacionSchema, type TTransformacionSchema } from "../schemas/schemas";
+import { Loader2 } from "lucide-react";
+import type { Transformacion } from "../types/types";
 
-export default function EditingTransformacion() {
+interface EditingTransformacionProps {
+    editingTransformacion: Transformacion | null;
+    onClose: () => void;
+}
+
+export default function EditingTransformacion({ editingTransformacion, onClose }: EditingTransformacionProps) {
     const {
-        editingTransformacion, setEditingTransformacion,
-        formData, setFormData,
-        transformacion, setTransformacion,
-        loading, setLoading,
-        error, setError,
-    } = useTransformacionContext();
+        register,
+        handleSubmit,
+        reset,
+        setValue,
+        watch,
+        formState: { errors, isValid }
+    } = useForm<any>({
+        resolver: zodResolver(TransformacionSchema),
+        mode: "onChange"
+    });
 
-const handleEdit = (transformacion) => {
-        setEditingTransformacion(transformacion);
-        setFormData({
-            nombre_transformacion: transformacion.nombre_transformacion,
-            cantidad_origen: transformacion.cantidad_origen,
-            cantidad_destino: transformacion.cantidad_destino,
-            activo: transformacion.activo,
+    const updateMutation = useUpdateTransformacionMutation();
+
+    useEffect(() => {
+        if (editingTransformacion) {
+            reset({
+                nombre_transformacion: editingTransformacion.nombre_transformacion,
+                cantidad_origen: Number(editingTransformacion.cantidad_origen),
+                cantidad_destino: Number(editingTransformacion.cantidad_destino),
+                activo: editingTransformacion.activo,
+                fecha_creacion: new Date(editingTransformacion.fecha_creacion)
+            });
+        }
+    }, [editingTransformacion, reset]);
+
+    const onSubmit = (data: TTransformacionSchema) => {
+        if (!editingTransformacion) return;
+
+        updateMutation.mutate({
+            id: editingTransformacion.id,
+            data
+        }, {
+            onSuccess: () => {
+                onClose();
+            }
         });
     };
-    
-    // Función para cerrar el modal de edición
-    const closeEditModal = () => {
-        setEditingTransformacion(null);
-    };
 
-    // Manejar cambios en el formulario
-    const handleInputChange = (
-        e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-    ) => {
-        const target = e.target as HTMLInputElement;
-        const { name, value, type, checked } = target;
-        setFormData((prev: import("@/context/TransformacionContext").TransformacionForm | undefined) => ({
-            ...(prev ?? {
-                nombre_transformacion: "",
-                cantidad_origen: 0,
-                cantidad_destino: 0,
-                activo: false,
-            }),
-            [name]:
-                type === "checkbox"
-                    ? checked
-                    : name === "cantidad_origen" || name === "cantidad_destino"
-                    ? Number(value)
-                    : value,
-        }));
-    };
-
-    // Manejar envío del formulario
-    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-        e.preventDefault();
-
-        if (!editingTransformacion) {
-            setError("No hay transformación seleccionada para editar.");
-            return;
-        }
-
-        if (!formData) {
-            setError("Datos del formulario no válidos.");
-            setLoading(false);
-            return;
-        }
-
-        try {
-            setLoading(true);
-            // Llamada a la API para actualizar
-            const updatedTransformacion = await updateTransformacion(editingTransformacion.id, formData);
-
-            // Actualiza el estado global con la transformación editada
-            const updatedTransformaciones = transformacion.map(t => {
-                const updated = t.id === editingTransformacion.id ? updatedTransformacion : t;
-                return {
-                    ...updated,
-                    fecha_creacion: updated.fecha_creacion instanceof Date ? updated.fecha_creacion : new Date(updated.fecha_creacion)
-                };
-            });
-            setTransformacion(updatedTransformaciones);
-            closeEditModal();
-            alert("Transformación actualizada correctamente");
-        } catch (error: any) {
-            console.error("Error actualizando transformación:", error);
-            setError(error.message || "Error al actualizar la transformación");
-        } finally {
-            setLoading(false);
-        }
-    };
+    const activo = watch("activo");
 
     return (
-        <>
-            {editingTransformacion && (
-                <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
-                    <div className="bg-white p-6 rounded-lg shadow-xl w-full max-w-md">
-                        <div className="flex justify-between items-center mb-4">
-                            <h2 className="text-xl font-semibold">Editar Transformación</h2>
-                            <button 
-                                onClick={closeEditModal}
-                                className="text-gray-500 hover:text-gray-700"
-                            >
-                                <img src={CerrarIcon} className="size-5" alt="Cerrar" />
-                            </button>
-                        </div>
-                        
-                        <form onSubmit={handleSubmit} className="space-y-4">
-                            <div>
-                                <label htmlFor="nombre_transformacion" className="block text-sm font-medium text-gray-700 mb-1">
-                                    Nombre de la Transformación
-                                </label>
-                                <input
-                                    type="text"
-                                    id="nombre_transformacion"
-                                    name="nombre_transformacion"
-                                    value={formData.nombre_transformacion}
-                                    onChange={handleInputChange}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                    required
-                                />
-                            </div>
-                            
-                            <div>
-                                <label htmlFor="cantidad_origen" className="block text-sm font-medium text-gray-700 mb-1">
-                                    Cantidad Origen
-                                </label>
-                                <input
-                                    type="number"
-                                    id="cantidad_origen"
-                                    name="cantidad_origen"
-                                    value={formData.cantidad_origen}
-                                    onChange={handleInputChange}
-                                    min="0"
-                                    step="0.01"
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                    required
-                                />
-                            </div>
-                            
-                            <div>
-                                <label htmlFor="cantidad_destino" className="block text-sm font-medium text-gray-700 mb-1">
-                                    Cantidad Destino
-                                </label>
-                                <input
-                                    type="number"
-                                    id="cantidad_destino"
-                                    name="cantidad_destino"
-                                    value={formData.cantidad_destino}
-                                    onChange={handleInputChange}
-                                    min="0"
-                                    step="0.01"
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                    required
-                                />
-                            </div>
-                            
-                            <div className="flex items-center">
-                                <input
-                                    type="checkbox"
-                                    id="activo"
-                                    name="activo"
-                                    checked={formData.activo}
-                                    onChange={handleInputChange}
-                                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                                />
-                                <label htmlFor="activo" className="ml-2 block text-sm text-gray-900">
-                                    Transformación activa
-                                </label>
-                            </div>
-                            
-                            <div className="flex justify-end space-x-3 pt-4">
-                                <button 
-                                    type="button"
-                                    onClick={closeEditModal}
-                                    className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 transition-colors"
-                                    disabled={loading}
-                                >
-                                    Cancelar
-                                </button>
-                                <button 
-                                    type="submit"
-                                    className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors disabled:opacity-50"
-                                    disabled={loading}
-                                >
-                                    {loading ? "Guardando..." : "Guardar Cambios"}
-                                </button>
-                            </div>
-                        </form>
+        <Dialog open={!!editingTransformacion} onOpenChange={(open) => !open && onClose()}>
+            <DialogContent className="sm:max-w-[425px]">
+                <DialogHeader>
+                    <DialogTitle className="text-2xl font-bold">Editar Transformación</DialogTitle>
+                </DialogHeader>
+
+                <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 py-4">
+                    <div className="space-y-2">
+                        <Label htmlFor="edit_nombre_transformacion" className="font-semibold">
+                            Nombre de la Transformación
+                        </Label>
+                        <Input
+                            id="edit_nombre_transformacion"
+                            {...register("nombre_transformacion")}
+                            className={errors.nombre_transformacion ? "border-red-500" : ""}
+                        />
+                        {errors.nombre_transformacion && (
+                            <p className="text-xs text-red-500">{String(errors.nombre_transformacion.message)}</p>
+                        )}
                     </div>
-                </div>
-            )}
-        </>
+
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="edit_cantidad_origen" className="font-semibold">Cantidad Origen</Label>
+                            <Input
+                                type="number"
+                                step="any"
+                                id="edit_cantidad_origen"
+                                {...register("cantidad_origen", { valueAsNumber: true })}
+                                className={errors.cantidad_origen ? "border-red-500" : ""}
+                            />
+                            {errors.cantidad_origen && (
+                                <p className="text-xs text-red-500">{String(errors.cantidad_origen.message)}</p>
+                            )}
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="edit_cantidad_destino" className="font-semibold">Cantidad Destino</Label>
+                            <Input
+                                type="number"
+                                step="any"
+                                id="edit_cantidad_destino"
+                                {...register("cantidad_destino", { valueAsNumber: true })}
+                                className={errors.cantidad_destino ? "border-red-500" : ""}
+                            />
+                            {errors.cantidad_destino && (
+                                <p className="text-xs text-red-500">{String(errors.cantidad_destino.message)}</p>
+                            )}
+                        </div>
+                    </div>
+
+                    <div className="flex items-center space-x-2 bg-gray-50 p-3 rounded-lg border border-gray-100">
+                        <Checkbox
+                            id="edit_activo"
+                            checked={activo}
+                            onCheckedChange={(checked) => setValue("activo", !!checked, { shouldValidate: true })}
+                        />
+                        <Label
+                            htmlFor="edit_activo"
+                            className="text-sm font-medium leading-none cursor-pointer"
+                        >
+                            Transformación activa
+                        </Label>
+                    </div>
+
+                    <DialogFooter className="gap-2 sm:gap-0">
+                        <Button
+                            variant="outline"
+                            type="button"
+                            onClick={onClose}
+                            disabled={updateMutation.isPending}
+                            className="cursor-pointer"
+                        >
+                            Cancelar
+                        </Button>
+                        <Button
+                            type="submit"
+                            disabled={updateMutation.isPending || !isValid}
+                            className="bg-blue-600 hover:bg-blue-500 text-white min-w-[120px] cursor-pointer"
+                        >
+                            {updateMutation.isPending ? (
+                                <>
+                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                    Guardando...
+                                </>
+                            ) : "Guardar Cambios"}
+                        </Button>
+                    </DialogFooter>
+                </form>
+            </DialogContent>
+        </Dialog>
     );
 }

@@ -203,7 +203,7 @@ export const ComprasForm = ({ orden, onClose }: ComprasFormProps) => {
       );
     }
   };
-  console.log(orden);
+  console.log(watch())
   return (
     <div className="mx-8 py-5 relative">
       {(isCreatingOCMutation || isUpdatingOCMutation) && (

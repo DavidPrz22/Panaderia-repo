@@ -35,7 +35,7 @@ export default function SearchInput() {
         <input
           id="searchInput"
           type="text"
-          placeholder="Buscar materia prima..."
+          placeholder="Buscar receta..."
           className="font-semibold font-[Roboto] outline-none w-full"
           ref={inputRef}
           onChange={(e) => handleSearch(e.target.value)}

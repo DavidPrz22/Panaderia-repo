@@ -18,9 +18,11 @@ export const intermediosSearchOptions = {
   staleTime: Infinity,
 };
 
+export const COMPONENTES_PRODUCCION = "componentesProduccion"
+
 export const componentsProductionOptions = (id: number) => {
   return {
-    queryKey: ["componentesProduccion", id],
+    queryKey: [COMPONENTES_PRODUCCION, id],
     queryFn: () => getRecetaComponentes(id),
     staleTime: Infinity,
   };

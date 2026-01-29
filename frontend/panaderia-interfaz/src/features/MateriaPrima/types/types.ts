@@ -32,15 +32,6 @@ export type CategoriaMateriaPrima = {
   descripcion: string | null;
 };
 
-export type MateriaPrimaList = {
-  id: number;
-  name: string;
-  unit: string;
-  category: string;
-  quantity: number;
-  reorderPoint: number;
-  creationDate: string;
-};
 
 export type MateriaPrimaListServer = {
   id: number;
@@ -59,6 +50,9 @@ export type MateriaPrimaListServer = {
   fecha_modificacion_registro: string;
   descripcion: string;
 };
+
+export type MateriaPrimaList = MateriaPrimaListServer;
+
 
 export type submitMateriaPrima = {
   cantidad_empaque_estandar: number | null;
@@ -81,8 +75,10 @@ export type MateriaPrimaFormSharedProps = {
   title: string;
 };
 
+export type InputType = "text" | "number" | "textarea";
+
 export type MateriaPrimaFormInputContainerProps = {
-  inputType: string;
+  inputType: InputType;
   title: string;
   name: keyof TMateriaPrimaSchema;
   register: UseFormRegister<TMateriaPrimaSchema>;
@@ -125,7 +121,7 @@ export type Proveedor = {
 };
 
 export type LotesMateriaPrimaFormInputContainerProps = {
-  inputType: string;
+  inputType: InputType;
   title: string;
   name: keyof TLoteMateriaPrimaSchema;
   register: UseFormRegister<TLoteMateriaPrimaSchema>;
@@ -177,4 +173,18 @@ export type LotesMateriaPrimaFormSharedProps = {
   onClose: () => void;
   onSubmitSuccess: () => void;
   title: string;
+};
+
+export type MateriaPrimaPagination = {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: MateriaPrimaList[];
+};
+
+export type LoteMateriaPrimaPagination = {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: LoteMateriaPrimaFormResponse[];
 };

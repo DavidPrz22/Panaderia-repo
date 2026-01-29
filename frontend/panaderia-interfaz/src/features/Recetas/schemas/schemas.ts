@@ -36,6 +36,14 @@ export const recetasFormSchema = z.object({
       invalid_type_error: "El nombre no es válido",
     })
     .min(3, "El nombre debe tener al menos 3 caracteres"),
+
+  rendimiento: z.coerce
+    .number()
+    .positive({ message: "El rendimiento debe ser mayor que 0" })
+    .optional()
+    .or(z.literal(null))
+    .or(z.literal("")),
+
   componente_receta: z.array(componentesRecetasSchema).min(1, {
     message: "El componente es requerido",
   }),

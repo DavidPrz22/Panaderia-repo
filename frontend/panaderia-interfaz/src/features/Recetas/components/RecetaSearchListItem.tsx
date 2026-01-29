@@ -1,3 +1,4 @@
+import { toast } from "sonner";
 import type {
   componenteListadosReceta,
   itemRecetasSearchList,
@@ -57,6 +58,8 @@ export default function RecetaSearchListItem({
 
     // Update form field
     setValue("componente_receta", [...currentFormData, componenteReceta]);
+
+    toast.success("Componente agregado a la receta");
   };
 
   return (

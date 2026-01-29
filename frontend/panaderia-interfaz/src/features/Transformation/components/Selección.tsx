@@ -1,90 +1,162 @@
 import { useState } from "react";
-import apiClient from "@/api/client";
-import { SearchProductsOrigin } from "./SearchProductsOrigin";
+import { useForm, Controller } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { SearchTransformaciones } from "./SearchTransformaciones";
-import { SearchProductsDestino } from "./SearchProductsDestino"; // Importar el nuevo componente
+import { ProductSearchInput } from "./ProductSearchInput";
+import { Button } from "@/components/ui/button";
+import { ArrowRight, Play, Loader2 } from "lucide-react";
 import type { searchResults } from "../types/types";
+import { useEjecutarTransformacionMutation } from "../hooks/mutations/mutations";
+import { EjecutarTransformacionSchema, type TEjecutarTransformacionSchema } from "../schemas/schemas";
 
 export default function Seleccion() {
+    // Estados locales para los objetos completos (necesarios para la UI de búsqueda)
     const [selectedTransformacion, setSelectedTransformacion] = useState<searchResults | null>(null);
     const [selectedOrigen, setSelectedOrigen] = useState<searchResults | null>(null);
     const [selectedDestino, setSelectedDestino] = useState<searchResults | null>(null);
-    const [loading, setLoading] = useState(false);
-    const [message, setMessage] = useState<string | null>(null);
 
-    const handleEjecutarTransformacion = async () => {
-        setMessage(null);
-        if (!selectedTransformacion || !selectedOrigen || !selectedDestino) {
-            setMessage("Selecciona transformación, producto de origen y destino.");
-            return;
-        }
-        setLoading(true);
-        try {
-            const response = await apiClient.post("/api/ejecutar-transformacion/", {
-                transformacionId: selectedTransformacion.id,
-                productoOrigenId: selectedOrigen.id,
-                productoDestinoId: selectedDestino.id,
-            });
-            if (response.status === 200) {
-                setMessage("Transformación ejecutada correctamente.");
-            } else {
-                setMessage("Error al ejecutar la transformación.");
+    const {
+        control,
+        reset,
+        handleSubmit,
+        formState: { errors, isSubmitting }
+    } = useForm<TEjecutarTransformacionSchema>({
+        resolver: zodResolver(EjecutarTransformacionSchema),
+        mode: "onChange",
+    });
+
+    const { mutate, isPending } = useEjecutarTransformacionMutation();
+
+    const onSubmit = (data: TEjecutarTransformacionSchema) => {
+        // console.log(data);
+        mutate({
+            transformacion_id: Number(data.transformacion_id),
+            producto_origen_id: Number(data.producto_origen_id),
+            producto_destino_id: Number(data.producto_destino_id)
+        }, {
+            onSuccess: () => {
+                reset();
+                setSelectedTransformacion(null);
+                setSelectedOrigen(null);
+                setSelectedDestino(null);
             }
-        } catch (error: any) {
-            setMessage(error?.response?.data?.error || "Error al ejecutar la transformación.");
-        } finally {
-            setLoading(false);
-        }
+        });
     };
 
+    const handleReset = () => {
+        reset();
+        setSelectedTransformacion(null);
+        setSelectedOrigen(null);
+        setSelectedDestino(null);
+    };
+
+    const loading = isPending || isSubmitting;
+
     return (
-        <div className="w-full flex flex-col items-center">
-            <div className="w-full max-w-6xl mx-auto border-2 border-gray-300 rounded-3xl p-6 mt-6 bg-white hover:shadow-md">
-                <div className="mb-6">
-                    <h2 className="text-2xl font-bold text-gray-900 mb-3">Seleccione Transformación</h2>
-                    <SearchTransformaciones 
-                        onSelect={setSelectedTransformacion} 
-                        selectedResult={selectedTransformacion} 
+        <form onSubmit={handleSubmit(onSubmit)} className="mx-8 border border-gray-300 rounded-3xl p-8 mt-4 bg-white shadow-md">
+            <div className="mb-10">
+                <h2 className="text-md text-gray-900 mb-2 font-semibold">Seleccione Transformación</h2>
+                <Controller
+                    name="transformacion_id"
+                    control={control}
+                    render={({ field }) => (
+                        <div className="space-y-1">
+                            <SearchTransformaciones
+                                onSelect={(res) => {
+                                    setSelectedTransformacion(res);
+                                    field.onChange(res ? Number(res.id) : undefined);
+                                }}
+                                selectedResult={selectedTransformacion}
+                            />
+                            {errors.transformacion_id && (
+                                <p className="text-xs text-red-500">{String(errors.transformacion_id.message)}</p>
+                            )}
+                        </div>
+                    )}
+                />
+            </div>
+
+            <div className="flex-col flex md:flex-row gap-8">
+                <div className="flex-1">
+                    <h3 className="text-md text-gray-900 mb-2 font-semibold">Seleccione Producto de Origen</h3>
+                    <Controller
+                        name="producto_origen_id"
+                        control={control}
+                        render={({ field }) => (
+                            <div className="space-y-1">
+                                <ProductSearchInput
+                                    type="origen"
+                                    onSelect={(res) => {
+                                        setSelectedOrigen(res);
+                                        field.onChange(res ? Number(res.id) : undefined);
+                                    }}
+                                    selectedResult={selectedOrigen}
+                                />
+                                {errors.producto_origen_id && (
+                                    <p className="text-xs text-red-500">{String(errors.producto_origen_id.message)}</p>
+                                )}
+                            </div>
+                        )}
                     />
                 </div>
 
-                <div className="flex flex-col md:flex-row gap-8 mt-6">
-                    <div className="flex-1">
-                        <h3 className="text-xl font-bold mb-3">Seleccione Producto de Origen</h3>
-                        <SearchProductsOrigin 
-                            onSelect={setSelectedOrigen} 
-                            selectedResult={selectedOrigen} 
-                        />
-                    </div>
-
-                    <div className="flex-1">
-                        <h3 className="text-xl font-bold mb-3">Seleccione Producto Destino</h3>
-                        <SearchProductsDestino 
-                            onSelect={setSelectedDestino} 
-                            selectedResult={selectedDestino} 
-                        />
-                    </div>
+                <div className="flex items-center justify-center pt-8">
+                    <ArrowRight className="size-10 text-white bg-blue-500 rounded-full p-2" />
                 </div>
 
-                {message && (
-                    <div className={`mt-4 text-sm ${message.includes("correctamente") ? "text-green-600" : "text-red-600"}`}>
-                        {message}
-                    </div>
-                )}
+                <div className="flex-1">
+                    <h3 className="text-md text-gray-900 mb-2 font-semibold">Seleccione Producto Destino</h3>
+                    <Controller
+                        name="producto_destino_id"
+                        control={control}
+                        render={({ field }) => (
+                            <div className="space-y-1">
+                                <ProductSearchInput
+                                    type="destino"
+                                    onSelect={(res) => {
+                                        setSelectedDestino(res);
+                                        field.onChange(res ? Number(res.id) : undefined);
+                                    }}
+                                    selectedResult={selectedDestino}
+                                />
+                                {errors.producto_destino_id && (
+                                    <p className="text-xs text-red-500">{String(errors.producto_destino_id.message)}</p>
+                                )}
+                            </div>
+                        )}
+                    />
+                </div>
             </div>
 
             <div className="w-full max-w-6xl mx-auto flex justify-end gap-4 mt-8">
-                <button className="flex items-center gap-3 bg-white text-gray-700 border border-gray-300 px-4 py-2 h-10 rounded cursor-pointer shadow-sm font-[Roboto] font-medium hover:bg-gray-100">
+                <Button
+                    variant="outline"
+                    type="button"
+                    onClick={handleReset}
+                    disabled={loading}
+                    className="flex items-center gap-3 bg-white text-gray-700 border border-gray-300 px-4 py-2 h-10 rounded-lg cursor-pointer shadow-sm font-[Roboto] font-medium hover:bg-gray-100"
+                >
                     Cancelar
-                </button>
-                <button
-                    className="flex items-center gap-3 bg-blue-600 text-white px-4 py-2 h-10 rounded cursor-pointer shadow-md font-[Roboto] font-medium hover:bg-blue-500"
-                    onClick={handleEjecutarTransformacion}
+                </Button>
+
+                <Button
+                    type="submit"
+                    className="flex items-center gap-3 bg-blue-600 text-white px-4 py-2 h-10 rounded-lg cursor-pointer shadow-md font-[Roboto] font-medium hover:bg-blue-500 min-w-[200px]"
                     disabled={loading}
                 >
-                    {loading ? "Ejecutando..." : "Ejecutar Transformación"}
-                </button>
+                    {loading ? (
+                        <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Ejecutando...
+                        </>
+                    ) : (
+                        <>
+                            <Play className="size-4" />
+                            Ejecutar Transformación
+                        </>
+                    )}
+                </Button>
             </div>
-        </div>
+        </form>
     );
 }

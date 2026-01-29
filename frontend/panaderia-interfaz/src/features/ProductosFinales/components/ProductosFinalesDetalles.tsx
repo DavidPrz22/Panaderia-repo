@@ -13,6 +13,9 @@ import { PFLotesTable } from "./PFLotesTable";
 import { PFLotesDetailsContainer } from "./PFLotesDetailsContainer";
 import { useAuth } from "@/context/AuthContext";
 import { userHasPermission } from "@/features/Authentication/lib/utils";
+import { RecipeModal } from "@/components/RecipeModal";
+import { useQuery } from "@tanstack/react-query";
+import { recetasDetallesQueryOptions } from "@/features/Recetas/hooks/queries/RecetasQueryOptions";
 
 export default function ProductosFinalesDetalles() {
   const {
@@ -27,6 +30,9 @@ export default function ProductosFinalesDetalles() {
     enabledProductoDetalles,
     setEnabledProductoDetalles,
     showLotesDetalles,
+    selectedRecipeId,
+    showRecipeModal,
+    setShowRecipeModal,
   } = useProductosFinalesContext();
 
   const {
@@ -43,6 +49,11 @@ export default function ProductosFinalesDetalles() {
   const { user } = useAuth();
   const userCanEdit = userHasPermission(user!, 'productos_elaborados', 'edit');
   const userCanDelete = userHasPermission(user!, 'productos_elaborados', 'delete');
+
+  const { data: recipeDetails, isLoading: isLoadingRecipe } = useQuery({
+    ...recetasDetallesQueryOptions(selectedRecipeId ?? 0),
+    enabled: !!selectedRecipeId && showRecipeModal,
+  });
 
   useEffect(() => {
     if (isSuccessDetalles && productoFinalDetalles && enabledProductoDetalles) {
@@ -79,7 +90,7 @@ export default function ProductosFinalesDetalles() {
 
     return (
       <ProductosFinalesFormShared
-        title="Editar Producto Intermedio"
+        title="Editar Producto Final"
         isUpdate={true}
         onClose={handleCloseUpdate}
         onSubmitSuccess={handleCloseUpdate}
@@ -129,6 +140,13 @@ export default function ProductosFinalesDetalles() {
         <Title extraClass="text-blue-600">Lotes de producto final</Title>
         <PFLotesTable />
       </div>
+
+      <RecipeModal
+        isOpen={showRecipeModal}
+        onClose={() => setShowRecipeModal(false)}
+        data={recipeDetails}
+        isLoading={isLoadingRecipe}
+      />
     </div>
   );
 }

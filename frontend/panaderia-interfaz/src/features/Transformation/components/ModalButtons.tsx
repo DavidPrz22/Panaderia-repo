@@ -1,21 +1,32 @@
-export const ModalButtons = ({ onEdit, onDelete, loading }) => {
+import { Button } from "@/components/ui/button";
+
+interface ModalButtonsProps {
+    onEdit: () => void;
+    onDelete: () => void;
+    loading: boolean;
+}
+
+export const ModalButtons = ({ onEdit, onDelete, loading }: ModalButtonsProps) => {
     return (
-        <>
-        <div className="flex gap-2 start-end justify-end ">
-            <button className="bg-white text-blue-600 font-semibold border-2 border-blue-500 px-4 py-2 rounded-full hover:bg-blue-400 transition-colors"
-            onClick={onEdit}
+        <div className="flex gap-2 justify-end">
+            <Button
+                variant="outline"
+                className="text-blue-600 border-blue-500 hover:bg-blue-50 hover:text-blue-700 cursor-pointer"
+                onClick={onEdit}
                 disabled={loading}
-                >
+            >
                 Modificar
-            </button>
-            <button className="bg-white text-red-600 font-semibold border-2 border-red-500 px-4 py-2 rounded-full hover:bg-red-400 transition-colors"
+            </Button>
+            <Button
+                variant="destructive"
+                className='cursor-pointer'
                 onClick={onDelete}
                 disabled={loading}
-                >
+            >
                 Eliminar
-            </button>
+            </Button>
         </div>
-        </>
     );
-}
+};
+
 

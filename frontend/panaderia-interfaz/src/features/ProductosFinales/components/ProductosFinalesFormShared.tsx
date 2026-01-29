@@ -57,10 +57,10 @@ export default function ProductosFinalesFormShared({
               initialData.unidad_produccion_producto.id,
             descripcion: initialData.descripcion,
             vendible_por_medida_real: initialData.vendible_por_medida_real,
+            usado_en_transformaciones: initialData.usado_en_transformaciones,
           }
         : undefined,
   });
-
   const { unidadesMedida, categoriasProductoFinal, productoId } =
     useProductosFinalesContext();
 
@@ -173,7 +173,7 @@ export default function ProductosFinalesFormShared({
     );
   }
 
-  const [usadoEnTransformaciones, setUsadoEnTransformaciones] = useState(false);
+  const [usadoEnTransformaciones, setUsadoEnTransformaciones] = useState(initialData?.usado_en_transformaciones ?? false);
 
   const checkInvalidRecetaRelacionada = () => {
     if (!usadoEnTransformaciones && !watch("receta_relacionada")) return false;
@@ -185,7 +185,6 @@ export default function ProductosFinalesFormShared({
   };
 
   const onSubmit = async (data: TProductoFinalSchema) => {
-
     if (!checkInvalidRecetaRelacionada()) {
      toast.error("El producto debe estar relacionado con una receta"); 
      return;
@@ -202,6 +201,7 @@ export default function ProductosFinalesFormShared({
   const recetaRelacionadaValidatedData = initialData?.receta_relacionada
     ? initialData.receta_relacionada
     : false;
+
   return (
     <form onSubmit={handleSubmit(onSubmit)} id="productos-finales-form">
       <div className="flex flex-col mx-8 mt-4 rounded-md border border-gray-200 shadow-md relative">
@@ -307,6 +307,7 @@ export default function ProductosFinalesFormShared({
                 onCheckedChange={() => {
                   setUsadoEnTransformaciones(!usadoEnTransformaciones);
                   setValue('receta_relacionada', null)
+                  setValue('usado_en_transformaciones', !usadoEnTransformaciones)
                   const input: HTMLInputElement | null = document.querySelector('input[data-input="search"]')
                   if (input) input.value = ''
                 }}

@@ -1,6 +1,7 @@
 import MateriaInputForm from "./MateriaInputForm";
 import type { MateriaPrimaFormInputContainerProps } from "@/features/MateriaPrima/types/types";
 
+
 export const MateriaPrimaFormInputContainer = ({
   inputType,
   title,

@@ -5,6 +5,7 @@ import type {
   recetaItem,
   recetaRelacionada,
   recetasSearchList,
+  RecetasPagination,
 } from "../types/types";
 
 export const componentesRecetaSearch = async (
@@ -16,7 +17,7 @@ export const componentesRecetaSearch = async (
         search,
       },
     });
-  
+
     return response.data;
   } catch (error) {
     console.error("Error fetching componentes receta search:", error);
@@ -34,9 +35,14 @@ export const registerReceta = async (data: TRecetasFormSchema) => {
   }
 };
 
-export const getRecetas = async (): Promise<recetaItem[]> => {
+export const getRecetas = async ({
+  pageParam
+}: {
+  pageParam?: string | null
+} = {}): Promise<RecetasPagination> => {
   try {
-    const response = await apiClient.get("/api/recetas/");
+    const url = pageParam || "/api/recetas/";
+    const response = await apiClient.get(url);
     return response.data;
   } catch (error) {
     console.error("Error fetching recetas:", error);

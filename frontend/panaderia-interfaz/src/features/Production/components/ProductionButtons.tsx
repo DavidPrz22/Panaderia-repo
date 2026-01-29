@@ -5,16 +5,20 @@ import { useCreateProductionMutation } from "../hooks/mutations/mutations";
 import { PendingTubeSpinner } from "@/components/PendingTubeSpinner";
 import { Toast } from "@/components/Toast";
 import { useProductionContext } from "@/context/ProductionContext";
+import type { ComponentesLista } from "../types/types";
+
 export default function ProductionButtons({
   onSubmit,
   resetProduction,
 }: {
   onSubmit: UseFormHandleSubmit<TProductionFormData>;
   resetProduction: () => void;
+  insufficientStock?: ComponentesLista;
 }) {
   const { mutate: createProduction, isPending: isCreateProductionPending } = useCreateProductionMutation();
   const { medidaFisica, esPorUnidad, showToast, setShowToast, toastMessage, insufficientStock } = useProductionContext();
-  
+
+
   const handleSubmit = (data: TProductionFormData) => {
     // Prevent submission if there are components with insufficient stock
     if (insufficientStock && insufficientStock.length > 0) {
@@ -36,8 +40,8 @@ export default function ProductionButtons({
       <Button type="cancel" onClick={resetProduction}>
         Cancelar
       </Button>
-      <Button 
-        type="submit" 
+      <Button
+        type="submit"
         onClick={onSubmit(handleSubmit)}
         disabled={Boolean(insufficientStock && insufficientStock.length > 0)}
       >

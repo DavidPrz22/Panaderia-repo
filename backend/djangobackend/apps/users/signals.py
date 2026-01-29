@@ -8,10 +8,8 @@ import logging
 def handle_login(sender, user, request, **kwargs):
     print("Login signal received")
     ComponentesStockManagement.expirar_todos_lotes_viejos()
-   
     # Check notifications after expiration
     try:
-        
         NotificationService.check_all_notifications_after_expiration()
     except Exception as e:
         # Log error but don't fail the expiration process
