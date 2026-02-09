@@ -21,6 +21,7 @@ export const ProductSelectorModalTrigger = ({
   const { setSelectedProduct, setProductoId } = useProductionContext();
 
   const handleSelectProduct = (product: searchItem) => {
+    
     // 1. Update form/state first
     if (setValue) setValue('productoId', product.id);
     setSelectedProduct(product);

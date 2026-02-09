@@ -499,11 +499,13 @@ class PagosProveedoresViewSet(viewsets.ModelViewSet):
                     status=status.HTTP_400_BAD_REQUEST
                 )
 
-            # Calculate remaining balance
-            monto_pendiente_pago_usd = monto_a_pagar_usd - monto_pago_usd
 
             # Update compra if it exists
             if compra_asociada:
+                
+                # Calculate remaining balance
+                monto_pendiente_pago_usd = monto_a_pagar_usd - monto_pago_usd
+
                 compra_asociada.monto_pendiente_pago_usd = monto_pendiente_pago_usd
                 compra_asociada.pagado = (monto_pendiente_pago_usd == 0)
                 compra_asociada.save()

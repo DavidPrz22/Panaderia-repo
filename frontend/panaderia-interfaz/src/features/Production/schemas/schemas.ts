@@ -22,7 +22,7 @@ export const productionSchema = z.object({
   componentes: z
     .array(componenteSchema)
     .min(1, { message: "Debe haber al menos un componente" }),
-  cantidadProduction: z
+  cantidadProduction: z.coerce
     .number()
     .min(1, { message: "La cantidad a producir debe ser al menos 1" }),
   tipoProducto: z.enum(["producto-final", "producto-intermedio"], {
@@ -32,6 +32,7 @@ export const productionSchema = z.object({
   }),
   fechaExpiracion: z.string({
     required_error: "La fecha de expiración es requerida",
+    message: "La fecha de expiración es requerida",
   }).refine((date) => {
     // Validate that the date is in YYYY-MM-DD format and not before today
     const dateRegex = /^\d{4}-\d{2}-\d{2}$/;

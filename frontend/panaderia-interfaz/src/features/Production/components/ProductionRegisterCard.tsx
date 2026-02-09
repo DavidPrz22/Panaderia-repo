@@ -14,7 +14,7 @@ export const ProductionRegisterCard = ({
   setValue,
 }: watchSetvalueTypeProduction) => {
 
-  const { esPorUnidad, medidaFisica, selectedProduct } = useProductionContext();
+  const { esPorUnidad, medidaFisica, selectedProduct, productType } = useProductionContext();
 
   const [openModal, setOpenModal] = useState(false);
 
@@ -25,6 +25,10 @@ export const ProductionRegisterCard = ({
     }
   }, [esPorUnidad, medidaFisica, setValue]);
 
+  const handleSetOpenModal = (open: boolean) => {
+    if (!productType) return;
+    setOpenModal(open);
+  }
   return (
     <div className="flex flex-col gap-5 p-8 bg-white rounded-lg shadow-md border border-gray-200 font-[Roboto]">
       <ProductionRegisterCardTitle />
@@ -33,7 +37,7 @@ export const ProductionRegisterCard = ({
       <div className="flex lg:flex-row flex-col items-center gap-2 ">
         <ProductSelectorModalTrigger
           openModal={openModal}
-          setOpenModal={setOpenModal}
+          setOpenModal={handleSetOpenModal}
           selectedProduct={selectedProduct!}
           setValue={setValue}
 

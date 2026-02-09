@@ -28,7 +28,6 @@ const ProductionComponentsBase = ({
 
   // Cantidad a producir desde el formulario no es necesaria para escalar mas
 
-
   const roundTo3 = (n: number) => Math.round(n * 1000) / 1000;
 
   // Store unscaled base componentes from backend in context when fetched

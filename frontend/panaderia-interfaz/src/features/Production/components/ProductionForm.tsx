@@ -4,26 +4,30 @@ import { useForm } from "react-hook-form";
 import { productionSchema, type TProductionFormData } from "../schemas/schemas";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ProductionNewComponentModal } from "@/features/Production/components/ProductionNewComponentModal";
-import { Toast } from "@/components/Toast";
 import { useProductionContext } from "@/context/ProductionContext";
 import { useEffect } from "react";
 
 
 
 export const ProductionForm = () => {
-  const { watch, setValue, handleSubmit, setError, clearErrors, reset } = useForm<TProductionFormData>({
+  const {
+    watch,
+    setValue,
+    handleSubmit,
+    setError,
+    clearErrors,
+    reset
+  } = useForm<TProductionFormData>({
     resolver: zodResolver(productionSchema),
   });
-  console.log(watch());
-  const { showToast, setShowToast, toastMessage, insufficientStock, setComponentesBaseProduccion, setInsufficientStock } = useProductionContext();
-
+  const { insufficientStock, setComponentesBaseProduccion, setInsufficientStock } = useProductionContext();
+  
   // Reset function to clear form and production components
   const resetProduction = () => {
     reset();
     setComponentesBaseProduccion([]);
     setInsufficientStock(null);
   };
-
   // Custom validation: check if any component quantity exceeds its stock
   useEffect(() => {
     const componentes = watch("componentes");
@@ -58,12 +62,6 @@ export const ProductionForm = () => {
         resetProduction={resetProduction}
       />
       <ProductionNewComponentModal setValue={setValue} watch={watch} />
-      <Toast
-        open={showToast}
-        message={toastMessage}
-        severity="success"
-        onClose={() => setShowToast(false)}
-      />
     </>
   );
 };

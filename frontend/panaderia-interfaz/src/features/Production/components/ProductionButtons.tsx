@@ -3,9 +3,8 @@ import type { TProductionFormData } from "../schemas/schemas";
 import type { UseFormHandleSubmit } from "react-hook-form";
 import { useCreateProductionMutation } from "../hooks/mutations/mutations";
 import { PendingTubeSpinner } from "@/components/PendingTubeSpinner";
-import { Toast } from "@/components/Toast";
 import { useProductionContext } from "@/context/ProductionContext";
-import type { ComponentesLista } from "../types/types";
+import { toast } from 'sonner';
 
 export default function ProductionButtons({
   onSubmit,
@@ -13,18 +12,27 @@ export default function ProductionButtons({
 }: {
   onSubmit: UseFormHandleSubmit<TProductionFormData>;
   resetProduction: () => void;
-  insufficientStock?: ComponentesLista;
 }) {
   const { mutate: createProduction, isPending: isCreateProductionPending } = useCreateProductionMutation();
-  const { medidaFisica, esPorUnidad, showToast, setShowToast, toastMessage, insufficientStock } = useProductionContext();
+  const { medidaFisica, esPorUnidad, insufficientStock } = useProductionContext();
 
-
-  const handleSubmit = (data: TProductionFormData) => {
-    // Prevent submission if there are components with insufficient stock
+  const handleChecks = () => {
     if (insufficientStock && insufficientStock.length > 0) {
-      console.warn("Cannot submit: components with insufficient stock", insufficientStock);
+      toast.error("No se puede registrar la producción con componentes con stock insuficiente");
       return;
     }
+
+    onSubmit(handleSubmit, (errors) => {
+      if (errors.cantidadProduction) {
+        toast.error(errors.cantidadProduction.message);
+      }
+      if (errors.fechaExpiracion) {
+        toast.error(errors.fechaExpiracion.message);
+      }
+    })();
+  }
+
+  const handleSubmit = (data: TProductionFormData) => {
     if (medidaFisica === "PESO" && !esPorUnidad) {
       data.peso = data.cantidadProduction;
     }
@@ -32,7 +40,14 @@ export default function ProductionButtons({
     if (medidaFisica === "VOLUMEN" && !esPorUnidad) {
       data.volumen = data.cantidadProduction;
     }
-    createProduction(data);
+    createProduction(data, {
+      onSuccess: () => {
+        toast.success("Producción registrada exitosamente");
+      },
+      onError: () => {
+        toast.error("Error al registrar la producción");
+      },
+    });
   };
 
   return (
@@ -42,8 +57,7 @@ export default function ProductionButtons({
       </Button>
       <Button
         type="submit"
-        onClick={onSubmit(handleSubmit)}
-        disabled={Boolean(insufficientStock && insufficientStock.length > 0)}
+        onClick={handleChecks}
       >
         {isCreateProductionPending ? (
           <div className="flex items-center gap-2">
@@ -54,12 +68,6 @@ export default function ProductionButtons({
           "Registrar Producción"
         )}
       </Button>
-      <Toast
-        open={showToast}
-        message={toastMessage}
-        severity="success"
-        onClose={() => setShowToast(false)}
-      />
     </div>
   );
 }

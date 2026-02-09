@@ -29,10 +29,6 @@ type ProductionContextType = {
     setInvalidCantidadError: (value: boolean | null) => void;
     componentesBaseProduccion: ComponentesLista;
     setComponentesBaseProduccion: React.Dispatch<React.SetStateAction<ComponentesLista>>;
-    showToast: boolean;
-    setShowToast: (value: boolean) => void;
-    toastMessage: string;
-    setToastMessage: (value: string) => void;
     productUnitRef: React.RefObject<HTMLDivElement | null>;
     medidaFisica: "UNIDAD" | "PESO" | "VOLUMEN" | null;
     setMedidaFisica: (value: "UNIDAD" | "PESO" | "VOLUMEN" | null) => void;
@@ -60,8 +56,6 @@ export function ProductionProvider({ children }: { children: React.ReactNode }) 
   const [showComponentSearch, setShowComponentSearch] = useState<boolean>(false);
   const [invalidCantidadError, setInvalidCantidadError] = useState<boolean | null>(null);
   const [componentesBaseProduccion, setComponentesBaseProduccion] = useState<ComponentesLista>([]);
-  const [showToast, setShowToast] = useState<boolean>(false);
-  const [toastMessage, setToastMessage] = useState<string>("");
   const productUnitRef = useRef<HTMLDivElement | null>(null);
   const [medidaFisica, setMedidaFisica] = useState<"UNIDAD" | "PESO" | "VOLUMEN" | null>(null);
   const [esPorUnidad, setEsPorUnidad] = useState<boolean | null>(null);
@@ -94,10 +88,6 @@ export function ProductionProvider({ children }: { children: React.ReactNode }) 
       setInvalidCantidadError,
       componentesBaseProduccion,
       setComponentesBaseProduccion,
-      showToast,
-      setShowToast,
-      toastMessage,
-      setToastMessage,
       productUnitRef,
       medidaFisica,
       setMedidaFisica,

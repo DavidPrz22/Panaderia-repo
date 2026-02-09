@@ -32,17 +32,6 @@ export const ProductionCantidad = ({
             inputRef.current.focus();
           }
         }
-      } else {
-        // Priority 2: Default to 1 if no yield is defined and current value is 0/invalid
-        const currentVal = watch?.("cantidadProduction");
-        if (!currentVal || currentVal <= 0) {
-          if (setValue) {
-            setValue("cantidadProduction", 1, {
-              shouldValidate: true,
-              shouldDirty: true,
-            });
-          }
-        }
       }
     }
   }, [productionComponentes, isFetched, setValue]);
